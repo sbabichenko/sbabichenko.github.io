@@ -1,0 +1,7 @@
+[[project]]
+name = "Decision Mesh"
+desc = "A hierarchical mesh based decision tree that yields continuity with minimal drawbacks"
+tags = ["personal", "data science"]
+links = [
+    { name = "github", url = "https://github.com/sbabichenko/Decision-Mesh" }
+]
