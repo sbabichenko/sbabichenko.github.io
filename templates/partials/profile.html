@@ -1,0 +1,43 @@
+{% if config.extra.profile.avatar_url or config.extra.profile.name %}
+
+<div class="mb-16 lg:flex items-start">
+  {% if config.extra.profile.avatar_url %}
+  <div
+    class="not-prose mr-5 shrink-0 rounded-full border-[0.5px] border-black/10 bg-white/50 overflow-hidden shadow-sm dark:bg-white/10"
+    style="width: {{ config.extra.profile.avatar_diameter | default(value='90px') }}; height: {{
+    config.extra.profile.avatar_diameter | default(value='90px') }}; padding: {{ config.extra.profile.avatar_padding |
+    default(value='6px') }};">
+    <img
+      class="{% if config.extra.profile.avatar_invert %}dark:invert{% endif %} w-full h-full object-cover rounded-full my-0 bg-black/5"
+      src="{{ get_url(path=config.extra.profile.avatar_url) }}"
+      alt="{{ config.extra.profile.name | default(value=config.title) }}"
+      style="animation: spin-configurable {{ config.extra.profile.avatar_spin_speed | default(value='1s') }} linear
+      infinite; animation-play-state: paused;" onmouseover="this.style.animationPlayState='running'"
+      onmouseout="this.style.animationPlayState='paused'" />
+  </div>
+  {% endif %}
+
+  {% if config.extra.profile.name %}
+  <div>
+    <h1 class="mb-2 text-3xl font-bold">{{ config.extra.profile.name }}</h1>
+    <div class="mb-2 break-words">
+      {{ config.extra.profile.bio | default(value=`A blog by ` ~ config.extra.profile.name) }}
+    </div>
+    {% if config.extra.profile.social %}
+    <nav class="flex justify-start space-x-3 dark:invert">
+      {% for social in config.extra.profile.social %}
+      <a class="primary-link h-8 w-8 flex items-center justify-center object-contain"
+        href="{{ social.url | replace(from=`$BASE_URL`, to=config.base_url) | safe }}" target="_blank"
+        rel="{% if social.name == `rss` %}alternate{% else %}me{% endif %}"
+        aria-label="{{ social.title | default(value=social.name | capitalize) }}"
+        title="{{ social.title | default(value=social.name | capitalize) }}"
+      >
+        {{ macros::get_social_icon(icon=social.name, size=32) | safe }}
+      </a>
+      {% endfor %}
+    </nav>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}

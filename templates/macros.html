@@ -1,0 +1,12 @@
+{% macro get_social_icon(icon, size=24) %}
+{% set path = "icons/" ~ icon ~ ".svg" %}
+{% set local = get_url(path=path, trailing_slash=false) %}
+<img 
+    src="{{ local | default(value="https://cdn.jsdelivr.net/npm/simple-icons/icons/" ~ icon ~ ".svg") }}"
+    width="{{ size }}"
+    height="{{ size }}"
+    loading="lazy"
+    aria-hidden="true"
+    style="vertical-align: middle;"
+/>
+{% endmacro get_social_icon %}

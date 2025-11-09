@@ -1,0 +1,140 @@
+# The base URL of the site; the only required configuration variable.
+base_url = "https://sbabichenko.com"
+
+# Theme
+theme = "kita"
+
+# The site title and description; used in feeds by default.
+title = "Samuel Babichenko"
+description = "Sam's website and blog"
+
+# The default site author.
+author = ""
+# The default language; used in feeds.
+default_language = "en"
+
+# When set to "true", a feed is automatically generated.
+generate_feeds = true
+
+# The filenames to use for the feeds. Used as the template filenames, too.
+# Defaults to ["atom.xml"], which has a built-in template that renders an Atom 1.0 feed.
+# There is also a built-in template "rss.xml" that renders an RSS 2.0 feed.
+feed_filenames = ["atom.xml"]
+
+# The taxonomies to be rendered for the site and their configuration of the default languages
+# Example:
+#     taxonomies = [
+#       {name = "tags", feed = true}, # each tag will have its own feed
+#       {name = "tags"}, # you can have taxonomies with the same name in multiple languages
+#       {name = "categories", paginate_by = 5},  # 5 items per page for a term
+#       {name = "authors"}, # Basic definition: no feed or pagination
+#     ]
+#
+taxonomies = [{ name = "writing/tags", rss = true, paginate_by = 5}]
+slugify.taxonomies = "off"
+
+# Configuration of the Markdown rendering
+[markdown]
+# When set to "true", all code blocks are highlighted.
+highlight_code = true
+
+# A list of directories used to search for additional `.sublime-syntax` and `.tmTheme` files.
+extra_syntaxes_and_themes = []
+
+# The theme to use for code highlighting.
+# See below for list of allowed values.
+highlight_theme = "base16-ocean-dark"
+
+# The Kita theme style config.
+[extra]
+# Enable KaTex math formula support globally.
+math = true
+# Enable mermaid support globally.
+mermaid = false
+# Enable comment support globally.
+comment = false
+# The URL of social image.
+social_image = ""
+
+[extra.style]
+# The custom background color.
+bg_color = "#FFFFF0"
+
+# The custom background color in dark mode.
+bg_dark_color = "#1F2022"
+
+# Enable header blur.
+header_blur = true
+
+# The custom header color, only available when `header_blur` is false.
+# header_color = ""
+
+# The custom header color in dark mode, only available when `header_blur` is false.
+# header_dark_color = ""
+
+# The profile on home page.
+[extra.profile]
+name = "Welcome to my website!"
+bio = """
+Hello, I’m in my final year of doing a PhD in statistics and financial mathematics at UCSB. This site is here out of admiration for my friends who have their own sites and the blogs I read in my spare time. I plan to share some projects I’ve been working on and to let anyone interested find a window into what’s been on my mind. Feel free to reach out!
+"""
+# The URL of avatar.
+avatar_url = "images/headshot.png"
+# Invert color in dark mode.
+avatar_invert = false
+# Profile circle settings
+avatar_diameter = "150px"
+avatar_padding = "0px"
+avatar_spin_speed = "0s"
+
+# The social icons below the profile on the home page.
+# The `name` should be the file name of static/icons/*.svg or the icon name of https://simpleicons.org/
+[[extra.profile.social]] 
+name = "linkedin"
+url = "https://www.linkedin.com/in/samuel-babichenko/"
+
+[[extra.profile.social]]
+name = "email"
+url = "mailto:sam@sbabichenko.com"
+title = "sam@sbabichenko.com"
+
+[[extra.profile.social]]
+name = "github"
+url = "https://github.com/sbabichenko"
+
+
+
+[[extra.profile.social]]
+name = "twitter"
+url = "https://x.com/SamTheMostBest"
+
+# The top menu.
+[[extra.menu]]
+name = "Curriculum Vitae"
+url = "$BASE_URL/cv"
+
+[[extra.menu]]
+name = "Writing"
+url = "$BASE_URL/writing"
+
+
+# The page footer options.
+[extra.footer]
+since = 2025
+license = "CC BY 4.0"
+license_url = "https://creativecommons.org/licenses/by/4.0/deed.en"
+
+# The giscus comment options, only available when comment is enabled.
+[extra.giscus]
+repo = ""
+repo_id = ""
+category = ""
+category_id = ""
+mapping = "pathname"
+strict = 1
+reactions_enabled = 0
+emit_metadata = 0
+input_position = "top"
+theme = "light"
+lang = "en"
+loading = "lazy"
