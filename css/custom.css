@@ -1,0 +1,5 @@
+@keyframes spin-configurable {
+  to {
+    transform: rotate(360deg);
+  }
+}
