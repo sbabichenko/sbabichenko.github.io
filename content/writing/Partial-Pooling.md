@@ -15,11 +15,16 @@ A few weeks ago I woke up to this tweet by Gappy:
 </blockquote>
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-Gappy is currently the head of quantitative research at BAM, known also for his work in gardening and his books on portfolio management. His day job involves managing portfolio managers. Most likely, some portfolio manager naively intersected stock characteristics and had to deal with the consequences.
+Gappy is currently the head of quantitative research at BAM, known also for his work in gardening and his books on portfolio management. His day job involves managing portfolio managers. Some portfolio manager wanted to chase the abnormal returns of stocks with high momentum, high profitability, and low short interest. Who am I to judge? They saw a corner of the market they wanted to understand, build intuition around, maybe even trade. Reasonable enough.
+But in doing so, they threw out seven-eighths of the market.
+Reasonable? Maybe less so.
 
-Stocks living at the intersection of different characteristics supposedly have abnormal returns. The signal is hard to isolate, and naive overfitting and overconfidence is a quick killer. Financial data has low signal-to-noise, and we cannot afford to shrink the dataset so much if we'd like to avoid overfitting our strategies. If half of the stocks on the market have high mtmo, half of those have high profitability, and half of those had low short interest, then the effective size of the dataset gets cut by a factor of 8. For n factors, that cuts the dataset by an average factor of $2^n$. 
+Take the whole universe of stocks. Keep only those with high momentum: half remain. Add a filter for high profitability: now you’re down to a quarter.
+Every additional filter halves the sample again. Each one has a cost.
 
-We want to estimate the abnormality of the returns without shrinking our dataset too much. There's a way out of this mess. There are many more stocks that share $n-1$ (out of $n$) of the characteristics we care about, and even more which share only $n-2$. If we can find a way to use these near-miss stocks to raise our effective sample size, we may be able to sufficiently isolate the signals we care about. Before we dive into our technique for estimating these signals more effectively, we should first talk about what we mean by the signals we're trying to isolate.
+And yes, the stocks you filtered out aren’t treasure. In the data-poor world of alpha-seeking, they aren’t trash either. No one is too good to scavenge the leftovers.
+
+We want to estimate the abnormality of the returns without leaving food on the table. There are many stocks that share some but not of the characteristics we care about. If we can find a way to use these near-miss stocks to raise our effective sample size, we may be able to isolate the signals we care about. We should first talk about what we mean by isolating abnormal signals.
 
 
 # What Do We Mean by Abnormal Returns, Anyway?
