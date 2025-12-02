@@ -24,7 +24,7 @@ Every additional filter halves the sample again. Each one has a cost.
 
 And yes, the stocks you filtered out aren’t treasure. In the data-poor world of alpha-seeking, they aren’t trash either. No one is too good to scavenge the leftovers.
 
-We want to estimate the abnormality of the returns without leaving food on the table. There are many stocks that share some but not of the characteristics we care about. If we can find a way to use these near-miss stocks to raise our effective sample size, we may be able to isolate the signals we care about. We should first talk about what we mean by isolating abnormal signals.
+We want to estimate the abnormality of the returns without leaving food on the table. There are many stocks that share some - but not all - of the characteristics we care about. If we can find a way to use these near-miss stocks to raise our effective sample size, we might be able to isolate the signals we care about. Before that, we need to pin down what the PM is hunting for.
 
 
 # What Do We Mean by Abnormal Returns, Anyway?
