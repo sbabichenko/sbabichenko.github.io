@@ -108,10 +108,7 @@ url = "https://github.com/sbabichenko"
 name = "twitter"
 url = "https://x.com/SamTheMostBest"
 
-# The top menu.
-[[extra.menu]]
-name = "Curriculum Vitae"
-url = "$BASE_URL/cv"
+
 
 [[extra.menu]]
 name = "Writing"
