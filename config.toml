@@ -35,15 +35,9 @@ slugify.taxonomies = "off"
 
 # Configuration of the Markdown rendering
 [markdown]
-# When set to "true", all code blocks are highlighted.
-highlight_code = true
 
-# A list of directories used to search for additional `.sublime-syntax` and `.tmTheme` files.
-extra_syntaxes_and_themes = []
-
-# The theme to use for code highlighting.
-# See below for list of allowed values.
-highlight_theme = "base16-ocean-dark"
+[markdown.highlighting]
+theme = "gruvbox-dark"
 
 # The Kita theme style config.
 [extra]
