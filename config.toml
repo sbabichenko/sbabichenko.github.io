@@ -37,7 +37,7 @@ slugify.taxonomies = "off"
 [markdown]
 
 [markdown.highlighting]
-theme = "gruvbox-dark"
+theme = "dark-plus"
 
 # The Kita theme style config.
 [extra]
