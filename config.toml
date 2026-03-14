@@ -73,7 +73,7 @@ bio = """
 Hello, I’m in my final year of doing a PhD in statistics and financial mathematics at UCSB. This site is here out of admiration for my friends who have their own sites and the blogs I read in my spare time. I plan to share some projects I’ve been working on and to let anyone interested find a window into what’s been on my mind. Feel free to reach out!
 """
 # The URL of avatar.
-avatar_url = "images/profile.jpeg"
+avatar_url = "images/av.jpg"
 # Invert color in dark mode.
 avatar_invert = false
 # Profile circle settings
