@@ -34,7 +34,7 @@ taxonomies = [{ name = "tags", rss = true, paginate_by = 5 }]
 [markdown]
 
 [markdown.highlighting]
-theme = "gruvbox-dark"
+theme = "dark-plus"
 
 # The Kita theme config.
 [extra]
