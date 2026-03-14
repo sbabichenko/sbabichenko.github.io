@@ -68,9 +68,9 @@ header_blur = true
 
 # The profile on home page.
 [extra.profile]
-name = "Welcome to my website!"
+name = "Samuel Babichenko"
 bio = """
-Hello, I’m in my final year of doing a PhD in statistics and financial mathematics at UCSB. This site is here out of admiration for my friends who have their own sites and the blogs I read in my spare time. I plan to share some projects I’ve been working on and to let anyone interested find a window into what’s been on my mind. Feel free to reach out!
+PhD candidate in statistics and financial mathematics at UCSB. I work on game theory, stochastic control, and quantitative finance. Here I share projects and writing about what’s been on my mind. Feel free to reach out!
 """
 # The URL of avatar.
 avatar_url = "images/profile.jpeg"
@@ -83,7 +83,11 @@ avatar_spin_speed = "0s"
 
 # The social icons below the profile on the home page.
 # The `name` should be the file name of static/icons/*.svg or the icon name of https://simpleicons.org/
-[[extra.profile.social]] 
+[[extra.profile.social]]
+name = "github"
+url = "https://github.com/sbabichenko"
+
+[[extra.profile.social]]
 name = "linkedin"
 url = "https://www.linkedin.com/in/samuel-babichenko/"
 
@@ -91,12 +95,6 @@ url = "https://www.linkedin.com/in/samuel-babichenko/"
 name = "email"
 url = "mailto:sam@sbabichenko.com"
 title = "sam@sbabichenko.com"
-
-[[extra.profile.social]]
-name = "github"
-url = "https://github.com/sbabichenko"
-
-
 
 [[extra.profile.social]]
 name = "twitter"
@@ -107,6 +105,14 @@ url = "https://x.com/SamTheMostBest"
 [[extra.menu]]
 name = "Writing"
 url = "$BASE_URL/writing"
+
+[[extra.menu]]
+name = "CV"
+url = "$BASE_URL/cv"
+
+[[extra.menu]]
+name = "Projects"
+url = "$BASE_URL"
 
 
 # The page footer options.
