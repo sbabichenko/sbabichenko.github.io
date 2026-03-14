@@ -1235,8 +1235,35 @@ function updateActive() {
     }, 10);
 }
 
+const SLIDER_PARAMS = {
+    'sl-p1': 'p1', 'sl-p2': 'p2', 'sl-b1': 'b1', 'sl-b2': 'b2',
+    'sl-r1': 'r1', 'sl-r2': 'r2', 'sl-N': 'N', 'sl-T': 'T'
+};
+
+function applyUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    for (const [id, key] of Object.entries(SLIDER_PARAMS)) {
+        if (params.has(key)) {
+            const el = document.getElementById(id);
+            const v = parseFloat(params.get(key));
+            if (!isNaN(v) && v >= parseFloat(el.min) && v <= parseFloat(el.max)) {
+                el.value = v;
+            }
+        }
+    }
+}
+
+function updateUrl() {
+    const params = new URLSearchParams();
+    for (const [id, key] of Object.entries(SLIDER_PARAMS)) {
+        params.set(key, document.getElementById(id).value);
+    }
+    history.replaceState(null, '', '?' + params.toString());
+}
+
 function onSliderChange() {
     updateLabels();
+    updateUrl();
     // Mark all tabs dirty
     for (const k in dirty) dirty[k] = true;
     // If a solve is already running, ensure it re-runs with latest values
@@ -1271,10 +1298,13 @@ wasmSetGrid = mod.cwrap('wasm_set_grid', null, ['number', 'number']);
     document.getElementById('loading').style.display = 'none';
     document.getElementById('app').style.display = 'block';
 
+    applyUrlParams();
+
     for (const id of ['sl-p1', 'sl-p2', 'sl-b1', 'sl-b2', 'sl-r1', 'sl-r2', 'sl-N', 'sl-T']) {
         document.getElementById(id).addEventListener('input', onSliderChange);
     }
-updateLabels();
+    updateLabels();
+    updateUrl();
     updateActive();
 });
 </script>
