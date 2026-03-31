@@ -4,21 +4,21 @@
 
 {% set_global data = load_data(path="projects.toml", format="toml") %}<!---->
 
-<h1 class="mb-16">Projects</h1>
+<h1 class="mb-8">Projects</h1>
 {% for project in data.project %}
-<div class="not-prose block-bg my-4 flex w-full flex-col rounded-lg px-5 py-1.5">
-  <h3 class="my-2 text-xl font-bold text-black dark:text-white">{{ project.name }}</h3>
-  <p>{{ project.desc }}</p>
-  <div class="my-2 flex flex-wrap items-center justify-between">
-    <div class="flex flex-wrap gap-x-2 text-sm opacity-60">
+<div class="project-card not-prose block-bg my-5 flex w-full flex-col rounded-lg px-6 py-4">
+  <h3 class="mt-1 mb-2 text-xl font-bold text-black dark:text-white">{{ project.name }}</h3>
+  <p class="text-sm leading-relaxed opacity-80 mb-3">{{ project.desc }}</p>
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <div class="flex flex-wrap gap-2">
       {% for tag in project.tags %}
-      <span>#{{ tag }}</span>
+      <span class="project-tag">#{{ tag }}</span>
       {% endfor %}
     </div>
-    <div class="flex flex-wrap gap-x-2">
+    <div class="flex flex-wrap gap-3">
       {% for link in project.links %}
       <a
-        class="underline"
+        class="project-link"
         href="{{ link.url | replace(from=`$BASE_URL`, to=config.base_url) | safe  }}"
         rel="noopener"
         target="_blank"

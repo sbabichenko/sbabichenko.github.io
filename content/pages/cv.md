@@ -3,70 +3,69 @@ title = "Curriculum Vitae"
 path = "cv"
 +++
 
+<a href="/Resume_Samuel_Babichenko.docx" download style="display:inline-block; padding:6px 18px; background:#3b82f6; color:#fff; border-radius:6px; text-decoration:none; font-size:0.9em; font-weight:600; margin-bottom:16px;">Download Resume</a>
 
 ---
 
 ## Education
 
-**University of California, Santa Barbara**  
-Ph.D. candidate in Statistics and Applied Probability (Financial Mathematics)  
-Expected June 2026  
+**PhD in Statistics and Applied Probability, UC Santa Barbara** &mdash; Sep 2021 &ndash; Jun 2026
+Advisor: Tomoyuki Ichiba. Thesis: *Continuous-time LQG games with endogenous signals.*
+Passed all qualifying exams prior to the first term of the PhD.
+Graduate Teaching Assistant. Mentored 10+ undergraduates, majority of whom are now in PhD programs. Presented at UCSD Stochastic Systems Seminar.
 
-**University of California, San Diego**  
-B.S. in Mathematics  
-June 2021  
-
-**Orange Coast College**  
-A.S in Mathematics, Chemistry, Physics, Biology  
-May 2019
+**BS in Mathematics, UC San Diego** &mdash; Sep 2019 &ndash; Jun 2021
+Dean's Undergraduate Excellence Award (top 0.5%, Physical Sciences).
 
 ---
 
-## Work Experience
+## Research
 
-**Wells Fargo**, Charlotte NC  
-*Quantitative Analyst Intern, Mortgage Model Development*  
-June 2025 – August 2025  
-- Updated prepayment models for a large mortgage portfolio using a decision-tree framework with an empirical Bayes loss.  
-- Evaluated model robustness and performance through backtesting and diagnostic tools.
-- Raised the returns on the bank's portfolio by ~0.1% per year
+**Forecasting and Manipulating the Forecasts of Others** &mdash; [arXiv: 2603.12140](https://arxiv.org/abs/2603.12140)
+Solo-authored. Submitted March 2026.
 
-**University of California, Santa Barbara**, Goleta CA  
-*Graduate Student Researcher*  
-June 2022 – September 2022  
-- Worked with Tomoyuki Ichiba on modeling large-scale interactions in financial markets under partial information.  
-- Developed a semi-analytic framework for control and game theory with imperfect information.
+First exact solution to a class of trading games with private information open since Townsend (1983). Solves for equilibrium trading strategies, price impact, and welfare costs in markets where traders learn from each other's order flow. Works in the exact model class behind Kyle-type market microstructure, optimal execution, and multi-agent control, with no approximation or large-population limit.
 
----
+Quantifies how information asymmetry distorts prices and trading behavior: not just added noise, but systematic bias in mean prices, excess volatility, and wasted effort from strategic belief manipulation. Decomposes the total cost into an estimation component and a strategic component, showing the strategic channel dominates by an order of magnitude.
 
-## Projects
+C++ solver computes equilibria in ~10ms. Compiled to WebAssembly for a browser-side interactive explorer at ~60ms. [Live demo: sbabichenko.com/lqg](/lqg).
 
-- **Portfolio optimization:** Multi-factor model for risk and portfolio construction based on the book "Elements of Quantitative Investing".  
-- **Triangle-based regression:** Continuous regression approach addressing discontinuities in tree-based methods through adaptive triangular refinement.
+**Asymmetric Competition Among Endogenously Informed Traders** &mdash; *In preparation*
+
+Models markets where traders choose how much to invest in private information, then compete through order flow that reveals their knowledge to others. Shows that endogenous information acquisition systematically distorts prices and amplifies volatility, quantitatively resolving the Grossman&ndash;Stiglitz paradox.
 
 ---
 
-## Coursework
+## Experience
 
-- Graduate: martingale optimal transport, neural-network approaches to stochastic control, as well as courses in economics, computer science, materials science, etc.  
-- Undergraduate: Enrolled or audited ~five hundred units of graduate classes across various stem fields, mainly in mathematics.
+**Wells Fargo**, Charlotte, NC &mdash; *Quantitative Researcher Intern, Mortgage Model Development* &mdash; Jun &ndash; Aug 2025
 
----
-
-## Other Activities
-
-- Passed all qualifying exams before the first term of the Ph.D. program.  
-- Consulted faculty in physics and economics with statistical and computational questions.
+- Led collaboration between model developers and validators to improve prepayment models for a $200B mortgage portfolio; delivered a model upgrade projected to generate $100M in additional annual profit.
+- Applied high-dimensional probability techniques to reduce overfitting; updated KPIs to isolate systemic estimation errors and identified a stable 2-year half-life in model alpha signals.
+- Independently designed an improved cohorting method that accelerated model runtime, and built diagnostic tools quantifying the accuracy&ndash;speed tradeoff to help stakeholders evaluate the resulting approximations.
 
 ---
 
-## Technical Skills
+## Selected Projects
 
-**Languages:** Python 3.10, C++23, Rust, Shell(Bash)
+**Multi-Agent Traffic Simulation** (Waymo Open Motion Dataset)
+Reimplemented BehaviorGPT for multi-agent traffic simulation: decoder-only transformer with agent&ndash;agent attention, relative spacetime embeddings, and next-patch prediction generating closed-loop 10 Hz trajectories on the Waymo Open Motion Dataset.
 
-**Libraries:** Pandas, Polars, NumPy, SciPy, PyTorch, LightGBM, Plotly, Boost.Asio
+Extending to a two-stage architecture: the transformer predicts only at branch points where agent behavior becomes multimodal (lane changes, yielding decisions, intersection entries), then a conditional diffusion model interpolates realistic trajectories between branch points with guided sampling.
 
+**Adaptive Triangle-Mesh Regression**
+Continuous surface model on an adaptive right-triangle bisection mesh with hierarchical partial pooling and wavelet shrinkage, addressing the discontinuity problem of tree-based models observed in the Wells Fargo prepayment project.
 
+---
 
+## Skills
 
-Last updated: **October 2025**
+**Programming:** C++23, Python, CUDA, Triton, Linux, bash, SQL
+
+**ML & Data:** Transformer architectures, diffusion models, neural networks for control, PyTorch, NumPy, Polars, Pandas, LightGBM, XGBoost
+
+**Methods:** Stochastic calculus, stochastic control, Kalman filtering, Monte Carlo, PDE methods, time series, derivatives pricing
+
+---
+
+Last updated: **March 2026**
