@@ -3,3 +3,76 @@
     transform: rotate(360deg);
   }
 }
+
+/* Accent color for links and interactive elements */
+:root {
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+}
+
+/* Style links in prose content with accent color */
+.prose a {
+  color: var(--accent) !important;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.prose a:hover {
+  color: var(--accent-hover) !important;
+  text-decoration: underline;
+}
+
+/* Project card improvements */
+.project-card {
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 1px solid transparent;
+}
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.project-card .project-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+}
+.project-card .project-link:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.project-card .project-tag {
+  font-size: 0.75em;
+  padding: 1px 8px;
+  border-radius: 9999px;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent);
+}
+.dark .project-card .project-tag {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--accent-hover);
+}
+
+/* Nav link accent on hover */
+header a:hover {
+  color: var(--accent-hover) !important;
+}
+
+/* Profile social icons accent on hover */
+.dark nav a:hover {
+  opacity: 0.7;
+}
+
+/* Smoother page transitions */
+main {
+  animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
