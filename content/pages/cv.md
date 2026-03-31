@@ -22,9 +22,9 @@ Dean's Undergraduate Excellence Award (top 0.5%, Physical Sciences).
 **Forecasting and Manipulating the Forecasts of Others** &mdash; [arXiv: 2603.12140](https://arxiv.org/abs/2603.12140)
 Solo-authored. Submitted March 2026.
 
-First exact solution to a class of trading games with private information open since Townsend (1983). Solves for equilibrium trading strategies, price impact, and welfare costs in markets where traders learn from each other's order flow. Works in the exact model class behind Kyle-type market microstructure, optimal execution, and multi-agent control, with no approximation or large-population limit.
+First exact solution to a class of multi-agent games with private signals open since Townsend (1983). Solves for equilibrium strategies, price impact, and welfare costs in markets where agents learn from each other's actions. Works in the exact model class behind Kyle-type market microstructure, optimal execution, and multi-agent control, with no approximation or large-population limit.
 
-Quantifies how information asymmetry distorts prices and trading behavior: not just added noise, but systematic bias in mean prices, excess volatility, and wasted effort from strategic belief manipulation. Decomposes the total cost into an estimation component and a strategic component, showing the strategic channel dominates by an order of magnitude.
+Quantifies how information asymmetry distorts prices and behavior: not just added noise, but systematic bias in mean prices, excess volatility, and wasted effort from strategic belief manipulation. Decomposes the total cost into an estimation component and a strategic component, showing the strategic channel dominates by an order of magnitude. Identifies welfare reversals where more precise private information raises total cost&mdash;a non-monotone equilibrium effect absent from cooperative or single-agent models.
 
 C++ solver computes equilibria in ~10ms. Compiled to WebAssembly for a browser-side interactive explorer at ~60ms. [Live demo: sbabichenko.com/lqg](/lqg).
 
@@ -58,11 +58,11 @@ Continuous surface model on an adaptive right-triangle bisection mesh with hiera
 
 ## Skills
 
-**Programming:** C++23, Python, CUDA, Triton, Linux, bash, SQL
+**Programming:** C++23, Python, CUDA, Triton, Linux, bash, SQL, computer architecture
 
 **ML & Data:** Transformer architectures, diffusion models, neural networks for control, PyTorch, NumPy, Polars, Pandas, LightGBM, XGBoost
 
-**Methods:** Stochastic calculus, stochastic control, Kalman filtering, Monte Carlo, PDE methods, time series, derivatives pricing
+**Methods:** Stochastic calculus, stochastic control, Kalman filtering, Monte Carlo, PDE methods, time series, derivatives pricing, Bayesian inference, causal inference, experimental design
 
 ---
 
