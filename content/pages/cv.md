@@ -3,8 +3,6 @@ title = "Curriculum Vitae"
 path = "cv"
 +++
 
-<a href="/Resume_Samuel_Babichenko.docx" download style="display:inline-block; padding:6px 18px; background:#3b82f6; color:#fff; border-radius:6px; text-decoration:none; font-size:0.9em; font-weight:600; margin-bottom:16px;">Download Resume</a>
-
 ---
 
 ## Education
@@ -67,5 +65,9 @@ Continuous surface model on an adaptive right-triangle bisection mesh with hiera
 **Methods:** Stochastic calculus, stochastic control, Kalman filtering, Monte Carlo, PDE methods, time series, derivatives pricing
 
 ---
+
+<div style="text-align:center; margin:24px 0 8px;">
+<a href="/Resume_Samuel_Babichenko.docx" download style="display:inline-block; padding:5px 16px; border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.6); border-radius:6px; text-decoration:none; font-size:0.85em; transition:all 0.15s;">Download Resume</a>
+</div>
 
 Last updated: **March 2026**
