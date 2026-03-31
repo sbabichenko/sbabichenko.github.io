@@ -1,0 +1,328 @@
+<!doctype html>
+<html class="not-ready lg:text-base" lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Title -->
+  <title>
+    Curriculum Vitae - Samuel Babichenko
+  </title>
+
+  <!-- Meta -->
+  <meta name="theme-color" />
+
+  
+  <!-- Author -->
+  
+  <!---->
+  
+  <!---->
+  
+  <!---->
+  
+  <!---->
+  
+  <!---->
+  <meta name="description" content="Curriculum Vitae" />
+  <meta name="author" content="" />
+  <!-- The Open Graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Curriculum Vitae" />
+  <meta property="og:site_name" content="Samuel Babichenko" />
+  <meta property="og:description" content="Curriculum Vitae" />
+  <meta property="og:url" content="https:&#x2F;&#x2F;sbabichenko.com&#x2F;cv&#x2F;" />
+  
+  <!---->
+  
+  <!---->
+  
+
+  <!-- CSS & JS -->
+  <link rel="preload stylesheet" as="style" href="https://sbabichenko.com/main.css" />
+  <style>
+    :root {
+      --bg: #FFFFF0;
+      --bg-dark: #1F2022;
+      --header: #e4e4e7;
+      --header-dark: #27272a;
+    }
+  </style>
+
+  
+
+  <!-- Dark Icon -->
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/theme.svg" />
+
+  <!-- Math -->
+  
+  <!---->
+  <link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css"
+  crossorigin="anonymous"
+/>
+<script
+  defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.js"
+  crossorigin="anonymous"
+></script>
+<script
+  defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/contrib/auto-render.min.js"
+  crossorigin="anonymous"
+></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () =>
+    renderMathInElement(document.body, {
+      // customised options
+      // • auto-render specific keys, e.g.:
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false },
+      ],
+      // • rendering keys, e.g.:
+      throwOnError: false,
+    }),
+  );
+</script>
+
+  <!---->
+  
+  <!---->
+
+  <!-- Mermaid -->
+  
+  <!---->
+
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://sbabichenko.com/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://sbabichenko.com/favicon-16x16.png">
+  <link rel="shortcut icon" href="https://sbabichenko.com/favicon.ico">
+  <link rel="apple-touch-icon" href="https://sbabichenko.com/apple-touch-icon.png">
+
+
+  <!-- Feeds -->
+  
+  <!---->
+  
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title="Atom"
+    href="https://sbabichenko.com/atom.xml"
+  />
+   
+  <!---->
+  
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https:&#x2F;&#x2F;sbabichenko.com&#x2F;cv&#x2F;" />
+
+  <!-- Head inject -->
+  <link rel="stylesheet" href="https://sbabichenko.com/css/custom.css">
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <header
+  class="blur-header fixed top-0 z-40 mx-auto min-h-[3.5rem] w-full"
+>
+  <div class="mx-auto w-full max-w-4xl p-3 lg:flex lg:justify-between">
+    <div class="flex justify-between">
+      <div class="flex items-center">
+        <a class="text-2xl font-semibold" href="https://sbabichenko.com">Samuel Babichenko</a>
+        <div
+          class="btn-dark ml-4 h-6 w-6 shrink-0 cursor-pointer text-[0px] [background:url(./icons/theme.svg)_left_center/cover_no-repeat] dark:[background-position:right] dark:invert"
+          role="button"
+          aria-label="Dark"
+        ></div>
+      </div>
+      
+      <div
+        class="btn-menu relative z-50 flex h-8 w-8 shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+        role="button"
+        aria-label="Menu"
+      ></div>
+      
+    </div>
+    <script>
+      // base
+      const htmlClass = document.documentElement.classList;
+      setTimeout(() => {
+        htmlClass.remove("not-ready");
+      }, 10);
+
+      // mobile menu
+      const btnMenu = document.querySelector(".btn-menu");
+      btnMenu?.addEventListener("click", () => {
+        htmlClass.toggle("open");
+      });
+
+      // dark theme
+      const setDark = (isDark) => {
+        if (isDark) {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
+          htmlClass.add("dark");
+        } else {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "light" }));
+          htmlClass.remove("dark");
+        }
+        localStorage.setItem("dark", isDark);
+      };
+
+      // init
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      if (htmlClass.contains("dark")) {
+        setDark(true);
+      } else {
+        const darkVal = localStorage.getItem("dark");
+        setDark(darkVal ? darkVal === "true" : darkScheme.matches);
+      }
+
+      // listen system
+      darkScheme.addEventListener("change", (event) => {
+        setDark(event.matches);
+      });
+
+      // manual switch
+      const btnDark = document.querySelector(".btn-dark");
+      btnDark.addEventListener("click", () => {
+        setDark(localStorage.getItem("dark") !== "true");
+      });
+    </script>
+    
+    <nav class="flex w-full items-center lg:w-auto">
+      <ul
+        class="nav-wrapper flex w-full flex-col py-2 lg:w-auto lg:flex-row lg:self-center lg:py-0"
+      >
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/writing"
+            >Writing</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/cv"
+            >CV</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com"
+            >Projects</a
+          >
+        </li>
+        
+      </ul>
+      <!-- Header Nav inject -->
+      
+    </nav>
+    
+  </div>
+</header>
+
+
+    <!-- Body Start inject -->
+    
+
+    <div class="flex">
+      <div class="order-1 hidden w-[calc((100%-var(--container-3xl))/2)] lg:block"></div>
+      <aside
+        class="sticky top-0 order-3 mt-48 hidden h-min w-[calc((100%-var(--container-3xl))/2)] lg:block"
+      >
+        
+
+      </aside>
+      <main
+        class="prose prose-neutral dark:prose-invert prose-pre:rounded-lg prose-img:rounded-lg order-2 mx-auto min-h-[calc(100vh-9rem)] w-full max-w-3xl px-4 pt-24 pb-16 break-words lg:pt-32"
+      >
+        
+<article>
+  <header class="mb-16">
+    <h1 class="my-0! pb-2.5">Curriculum Vitae</h1>
+  </header>
+
+  <section><hr />
+<h2 id="education">Education</h2>
+<p><strong>PhD in Statistics and Applied Probability, UC Santa Barbara</strong> — Sep 2021 – Jun 2026
+Advisor: Tomoyuki Ichiba. Thesis: <em>Continuous-time LQG games with endogenous signals.</em>
+Passed all qualifying exams prior to the first term of the PhD.
+Graduate Teaching Assistant. Mentored 10+ undergraduates, majority of whom are now in PhD programs. Presented at UCSD Stochastic Systems Seminar.</p>
+<p><strong>BS in Mathematics, UC San Diego</strong> — Sep 2019 – Jun 2021
+Dean's Undergraduate Excellence Award (top 0.5%, Physical Sciences).</p>
+<hr />
+<h2 id="research">Research</h2>
+<p><strong>Forecasting and Manipulating the Forecasts of Others</strong> — <a rel="external" href="https://arxiv.org/abs/2603.12140">arXiv: 2603.12140</a>
+Solo-authored. Submitted March 2026.</p>
+<p>First exact solution to a class of multi-agent games with private signals open since Townsend (1983). Solves for equilibrium strategies, price impact, and welfare costs in markets where agents learn from each other's actions. Works in the exact model class behind Kyle-type market microstructure, optimal execution, and multi-agent control, with no approximation or large-population limit.</p>
+<p>Quantifies how information asymmetry distorts prices and behavior: not just added noise, but systematic bias in mean prices, excess volatility, and wasted effort from strategic belief manipulation. Decomposes the total cost into an estimation component and a strategic component, showing the strategic channel dominates by an order of magnitude. Identifies welfare reversals where more precise private information raises total cost—a non-monotone equilibrium effect absent from cooperative or single-agent models.</p>
+<p>C++ solver computes equilibria in ~10ms. Compiled to WebAssembly for a browser-side interactive explorer at ~60ms. <a href="/lqg">Live demo: sbabichenko.com/lqg</a>.</p>
+<p><strong>Asymmetric Competition Among Endogenously Informed Traders</strong> — <em>In preparation</em></p>
+<p>Models markets where traders choose how much to invest in private information, then compete through order flow that reveals their knowledge to others. Shows that endogenous information acquisition systematically distorts prices and amplifies volatility, quantitatively resolving the Grossman–Stiglitz paradox.</p>
+<hr />
+<h2 id="experience">Experience</h2>
+<p><strong>Wells Fargo</strong>, Charlotte, NC — <em>Quantitative Researcher Intern, Mortgage Model Development</em> — Jun – Aug 2025</p>
+<ul>
+<li>Completed assigned mortgage pool segmentation project in two days; independently built an improved tree-based alternative with diagnostic tools in one week. Work led the buy-side trading desk to pull me onto a harder open-ended problem.</li>
+<li>With no prior MBS background, identified a structural flaw in the team's prepayment models: normal approximations miss the binomial structure of discrete loan-level prepayment. Built a binomial model correcting for effective loan count, partitioned pools to isolate systemic errors, and found them highly persistent (R² ≈ 0.8 at 5-month horizon), converting model misspecification into a tradeable signal for a $200B portfolio.</li>
+<li>Delivered a model upgrade projected to generate $100M in additional annual profit. Bridged model development and validation teams by synthesizing ideas from cross-team talks that neither group had connected.</li>
+</ul>
+<hr />
+<h2 id="selected-projects">Selected Projects</h2>
+<p><strong>Multi-Agent Traffic Simulation</strong> (Waymo Open Motion Dataset)
+Reimplemented BehaviorGPT for multi-agent traffic simulation: decoder-only transformer with agent–agent attention, relative spacetime embeddings, and next-patch prediction generating closed-loop 10 Hz trajectories on the Waymo Open Motion Dataset.</p>
+<p>Extending to a two-stage architecture: the transformer predicts only at branch points where agent behavior becomes multimodal (lane changes, yielding decisions, intersection entries), then a conditional diffusion model interpolates realistic trajectories between branch points with guided sampling.</p>
+<p><strong>Adaptive Triangle-Mesh Regression</strong>
+Continuous surface model on an adaptive right-triangle bisection mesh with hierarchical partial pooling and wavelet shrinkage, addressing the discontinuity problem of tree-based models observed in the Wells Fargo prepayment project.</p>
+<hr />
+<h2 id="skills">Skills</h2>
+<p><strong>Programming:</strong> C++23, Python, CUDA, Triton, Linux, bash, SQL, computer architecture</p>
+<p><strong>ML &amp; Data:</strong> Transformer architectures, diffusion models, neural networks for control, PyTorch, NumPy, Polars, Pandas, LightGBM, XGBoost</p>
+<p><strong>Methods:</strong> Stochastic calculus, stochastic control, Kalman filtering, Monte Carlo, PDE methods, time series, derivatives pricing, Bayesian inference, causal inference, experimental design</p>
+<hr />
+<div style="text-align:center; margin:24px 0 8px;">
+<a href="/Resume_Samuel_Babichenko.docx" download style="display:inline-block; padding:5px 16px; border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.6); border-radius:6px; text-decoration:none; font-size:0.85em; transition:all 0.15s;">Download Resume</a>
+</div>
+<p>Last updated: <strong>March 2026</strong></p>
+</section>
+</article>
+
+      </main>
+    </div>
+
+    <footer class="mx-auto flex max-w-3xl flex-wrap items-center px-8 py-4 text-sm opacity-60">
+  <div class="mr-auto basis-full lg:basis-1/2">
+    <!---->
+    <!---->
+    &copy; 2025 - 2026<!---->
+    
+    <a class="link" href="https://sbabichenko.com">
+      
+    </a>
+     |<!---->
+    <!---->
+    <a class="link" href="https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by&#x2F;4.0&#x2F;deed.en" rel="noopener" target="_blank">
+      CC BY 4.0
+    </a>
+    <!---->
+    
+  </div>
+  <!-- Footer inject -->
+  <a href="/colophon">Colophon & Acknowledgements</a>
+</footer>
+
+
+    <!-- Body End inject -->
+    
+  </body>
+</html>

@@ -1,0 +1,17 @@
+[[project]]
+name = "Forecasting and Manipulating the Forecasts of Others"
+desc = "First exact equilibrium characterization of finite-player continuous-time LQG games with endogenous signals"
+tags = ["research", "game theory"]
+links = [
+    { name = "arxiv", url = "https://arxiv.org/abs/2603.12140" },
+    { name = "interactive demo", url = "/lqg" },
+    { name = "github", url = "https://github.com/sbabichenko/Noise-State-Games" }
+]
+
+[[project]]
+name = "Decision Mesh"
+desc = "A hierarchical mesh based decision tree that yields continuity with minimal drawbacks"
+tags = ["personal", "data science"]
+links = [
+    { name = "github", url = "https://github.com/sbabichenko/Decision-Mesh" }
+]
