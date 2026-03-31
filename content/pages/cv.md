@@ -38,9 +38,9 @@ Models markets where traders choose how much to invest in private information, t
 
 **Wells Fargo**, Charlotte, NC &mdash; *Quantitative Researcher Intern, Mortgage Model Development* &mdash; Jun &ndash; Aug 2025
 
-- Led collaboration between model developers and validators to improve prepayment models for a $200B mortgage portfolio; delivered a model upgrade projected to generate $100M in additional annual profit.
-- Applied high-dimensional probability techniques to reduce overfitting; updated KPIs to isolate systemic estimation errors and identified a stable 2-year half-life in model alpha signals.
-- Independently designed an improved cohorting method that accelerated model runtime, and built diagnostic tools quantifying the accuracy&ndash;speed tradeoff to help stakeholders evaluate the resulting approximations.
+- Completed assigned mortgage pool segmentation project in two days; independently built an improved tree-based alternative with diagnostic tools in one week. Work led the buy-side trading desk to pull me onto a harder open-ended problem.
+- With no prior MBS background, identified a structural flaw in the team's prepayment models: normal approximations miss the binomial structure of discrete loan-level prepayment. Built a binomial model correcting for effective loan count, partitioned pools to isolate systemic errors, and found them highly persistent (R&sup2; &asymp; 0.8 at 5-month horizon), converting model misspecification into a tradeable signal for a $200B portfolio.
+- Delivered a model upgrade projected to generate $100M in additional annual profit. Bridged model development and validation teams by synthesizing ideas from cross-team talks that neither group had connected.
 
 ---
 
