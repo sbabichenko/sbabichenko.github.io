@@ -54,6 +54,9 @@ code, pre, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, m
 .ctl label .val { color: var(--text); font-family: ui-monospace, Menlo, monospace; }
 .ctl input[type=range] { width: 100%; accent-color: var(--accent); margin: 4px 0 0; }
 .ctl select, .ctl input[type=number] { width: 100%; font: inherit; padding: 5px 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); margin-top: 4px; }
+.ctl .checks { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: 0.88rem; color: var(--muted); }
+.ctl .checks label { display: inline-flex; gap: 6px; align-items: center; }
+.ctl.opts > label + select { margin-bottom: 6px; }
 .hint { font-size: 0.8rem; color: var(--faint); margin-top: 2px; }
 textarea#yaml { width: 100%; min-height: 320px; font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px; resize: vertical; tab-size: 2; }
 .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
@@ -124,6 +127,7 @@ footer { color: var(--faint); font-size: 0.82rem; margin-top: 28px; }
         horizon (<code>stationary</code> with a <code>window</code>, or <code>finite</code> with <code>T</code>) and numerics.
         Transitions (a past and a continuation) and the cell engine run in the Python package only.</p>
       <div class="controls" id="paramcontrols"></div>
+      <div class="controls" id="paramopts"></div>
       <div class="row" style="margin-top:12px"><button class="primary" id="solvecustom">Solve this model</button>
         <span class="small error" id="yamlerror"></span></div>
     </div>
@@ -142,8 +146,9 @@ footer { color: var(--faint); font-size: 0.82rem; margin-top: 28px; }
 
   <footer>
     The solver is a C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a> 1.0.1 (MIT licence) with
-    the same equations and algorithms; on the package's example models its costs, kernels and first-order-condition terms
-    agree with the Python package to 1e-12 or better. Plots by Plotly, YAML by js-yaml. This page replaces an earlier
+    the same equations and algorithms: the stationary, spectral and cells engines, transitions with their past, band, buffer
+    and march in T, and the refinement and stability checks. On a test grid of 42 solves its costs, kernels, loss paths and
+    first-order-condition terms agree with the Python package to 1e-10 or better. Plots by Plotly, YAML by js-yaml. This page replaces an earlier
     explorer built on a pre-release solver. The page address keeps the game and its parameters, so a link reproduces a solve.
   </footer>
 </main>
@@ -268,17 +273,130 @@ numerics: {nodes: 16}
     defaultVar: "P", defaultCtl: "D1",
     channelNames: { wV: "value shock", wZ: "noise-trader flow shock", w1: "trader's signal noise" },
   },
+  tr: {
+    tab: "Regime change",
+    title: "A change of regime in the tracking game",
+    desc: `<p class="small muted" style="margin:0">Chapter 3's tracking game, with mean reversion, has run in a stationary equilibrium for ever.
+      At time 0 player 1's signal precision jumps. The shocks born before 0 still drive the state and both players' forecasts,
+      so the players move from the old equilibrium toward the new one. After T the new stationary equilibrium takes over.</p>
+      <div class="eq"><div>dX = (&minus;a X + D<sup>1</sup> + D<sup>2</sup>) dt + dW<sup>0</sup></div>
+      <div>dY<sup>i</sup> = &radic;p<sub>i</sub>(t) X dt + dW<sup>i</sup>, &nbsp; p<sub>1</sub>(t) = p<sub>1</sub><sup>before</sup> for t &lt; 0, p<sub>1</sub> after</div>
+      <div>player i minimises E &int;<sub>0</sub><sup>T</sup> [ &frac12; X<sup>2</sup> + &frac12; r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup> ] dt, then the new stationary flow</div></div>
+      <p class="small muted" style="margin:0">The strip carries the old shocks on a band of depth L = 3 below s = 0.
+      "Until settled" lets the solver pick T: it marches T = 0, 3, 6, &hellip; until the best-response rules on the last window are within 2% of the new stationary ones.</p>`,
+    yaml: `name: regime_change
+params: {p1: 6.0, p2: 3.0, r1: 1.0, r2: 1.0, a: 1.0, T: 6.0}
+channels: [w0, w1, w2]
+states:
+  X: {drift: {X: "-a", D1: 1.0, D2: 1.0}, noise: {w0: 1.0}}
+agents:
+  player1:
+    controls: [D1]
+    signals: {y1: {drift: {X: "sqrt(p1)"}, noise: {w1: 1.0}}}
+    loss: [[0.5, X, X], ["0.5*r1", D1, D1]]
+  player2:
+    controls: [D2]
+    signals: {y2: {drift: {X: "sqrt(p2)"}, noise: {w2: 1.0}}}
+    loss: [[0.5, X, X], ["0.5*r2", D2, D2]]
+horizon:
+  kind: transition
+  T: T
+  past:
+    model:
+      name: before
+      params: {p1: 1.0, p2: 3.0, r1: 1.0, r2: 1.0, a: 1.0}
+      channels: [w0, w1, w2]
+      states:
+        X: {drift: {X: "-a", D1: 1.0, D2: 1.0}, noise: {w0: 1.0}}
+      agents:
+        player1:
+          controls: [D1]
+          signals: {y1: {drift: {X: "sqrt(p1)"}, noise: {w1: 1.0}}}
+          loss: [[0.5, X, X], ["0.5*r1", D1, D1]]
+        player2:
+          controls: [D2]
+          signals: {y2: {drift: {X: "sqrt(p2)"}, noise: {w2: 1.0}}}
+          loss: [[0.5, X, X], ["0.5*r2", D2, D2]]
+      horizon: {kind: stationary, window: 3.0}
+      numerics: {nodes: 12}
+  continuation: stationary
+numerics: {nodes: 6, continuation_nodes: 12}
+`,
+    sliders: [
+      { key: "p1_before", param: "p1", where: "past", label: "p₁ before 0, player 1", min: 0.1, max: 100, log: true },
+      { key: "p1", label: "p₁ after 0, player 1", min: 0.1, max: 100, log: true },
+      { key: "p2", where: "both", label: "p₂ precision, player 2", min: 0.1, max: 100, log: true },
+      { key: "r1", where: "both", label: "r₁ effort cost, player 1", min: 0.1, max: 10, log: true },
+      { key: "r2", where: "both", label: "r₂ effort cost, player 2", min: 0.1, max: 10, log: true },
+      { key: "a", where: "both", label: "a mean reversion", min: 0.3, max: 3, step: 0.05 },
+      { key: "T", label: "T end of the transition", min: 3, max: 12, step: 0.5, march: false },
+    ],
+    nodes: { def: 6, options: [[5, "5: fastest, rough"], [6, "6: quick"], [8, "8: finer, a few seconds"], [10, "10: fine, slowest"]] },
+    march: true,
+    defaultVar: "D1", defaultCtl: "D1",
+    meansCaption: "",
+  },
   custom: {
     tab: "Your model",
     title: "Your model",
     desc: `<p class="small muted" style="margin:0">Write or paste a model file, or start from one of the examples of the noisestate package.
-      The solver takes any model the package's grammar allows on a stationary or finite horizon.</p>`,
+      The solver takes any model the package's grammar allows: stationary, finite (spectral or cells engine) and transition
+      horizons, with the past model written inline under horizon.past.model and an optional horizon.settle for the march in T.</p>`,
   },
 };
 const EXAMPLES = {
   "tracking game with targets (Ch. 1)": PRESETS.ch1.yaml,
   "stationary tracking (Ch. 3)": PRESETS.ch3.yaml,
   "Kyle–Back market (Ch. 4)": PRESETS.ch4.yaml,
+  "change of regime (Ch. 3 transition)": PRESETS.tr.yaml,
+  "transition shorter than the past's window, initial shock": `# T = 1 < L = 2: the old shocks stay alive on the buffer; an initial shock xi
+# loads on the state and player 2 sees it at once; player 1 is myopic.
+name: tr_short
+params: {p1: 10.0, p2: 3.0, r1: 1.0, r2: 1.0}
+channels: [w0, w1, w2]
+states:
+  X: {drift: {X: -0.2, D1: 1.0, D2: 1.0}, noise: {w0: 1.0}}
+agents:
+  player1:
+    controls: [D1]
+    myopic: true
+    signals:
+      y1: {drift: {X: "sqrt(p1)"}, noise: {w1: 1.0}}
+    loss: [[0.5, X, X], ["0.5*r1", D1, D1]]
+  player2:
+    controls: [D2]
+    signals:
+      y2: {drift: {X: "sqrt(p2)"}, noise: {w2: 1.0}}
+    loss: [[0.5, X, X], ["0.5*r2", D2, D2]]
+horizon:
+  kind: transition
+  T: 1.0
+  past:
+    model:
+      name: tr_short_past
+      params: {p1: 3.0, p2: 3.0, r1: 1.0, r2: 1.0}
+      channels: [w0, w1, w2]
+      states:
+        X: {drift: {X: -0.2, D1: 1.0, D2: 1.0}, noise: {w0: 1.0}}
+      agents:
+        player1:
+          controls: [D1]
+          signals:
+            y1: {drift: {X: "sqrt(p1)"}, noise: {w1: 1.0}}
+          loss: [[0.5, X, X], ["0.5*r1", D1, D1]]
+        player2:
+          controls: [D2]
+          signals:
+            y2: {drift: {X: "sqrt(p2)"}, noise: {w2: 1.0}}
+          loss: [[0.5, X, X], ["0.5*r2", D2, D2]]
+      horizon: {kind: stationary, window: 2.0}
+      numerics: {nodes: 10}
+    initial:
+      - {name: xi, loads: {X: 0.5}, rows: {player2.y2: 1.0}}
+  continuation: stationary
+numerics: {nodes: 5, continuation_nodes: 10}
+`,
+  "tracking game on the cells engine (Ch. 1)": PRESETS.ch1.yaml.replace("numerics: {nodes: 12}", "numerics: {engine: cells, nodes: 24}"),
   "delayed control and observation (Ch. 1), about 10 s": `# Finite-horizon two-player game with a control delay and a delayed observation.
 name: ch1_delayed_finite
 params: {p1: 3.0, p2: 3.0, r1: 0.1, r2: 0.1, sigma: 1.0, tau: 0.25}
@@ -323,7 +441,8 @@ const AGENT_LABEL = { player1: "Player 1", player2: "Player 2", market_maker: "M
 // ---------------------------------------------------------------------------------------------
 // State
 let game = "ch1";
-const values = {};              // preset -> {param: value, nodes}
+const values = {};              // preset -> {slider key: value, nodes}
+const opts = { refine: false, stability: false, engine: "spectral", march: false };
 let customYaml = "";
 let worker = null, workerReady = false;
 let reqId = 0, inFlight = null, pending = false, debounce = null, lastResult = null;
@@ -336,6 +455,13 @@ const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 function presetModel(g) { return jsyaml.load(PRESETS[g].yaml); }
+// a slider's parameter lives in the model's params ("now"), the past model's ("past"), or both
+function sliderParams(d, s) {
+  const where = s.where || "now", out = [];
+  if (where !== "past") out.push(d.params);
+  if (where !== "now" && d.horizon.past && d.horizon.past.model) out.push(d.horizon.past.model.params);
+  return out;
+}
 function label(name) { return NAME_LABEL[name] || (name.match(/^[A-Z]\d*$/) ? `control ${name}` : name); }
 function chLabel(res, c) { return (PRESETS[game] && PRESETS[game].channelNames && PRESETS[game].channelNames[c]) || CHANNEL_LABEL[c] || c; }
 
@@ -346,10 +472,14 @@ function b64decode(s) { return decodeURIComponent(escape(atob(s.replace(/-/g, "+
 function readHash() {
   const h = new URLSearchParams(location.hash.slice(1));
   if (h.get("game") && PRESETS[h.get("game")]) game = h.get("game");
-  for (const g of ["ch1", "ch3", "ch4"]) {
+  for (const g of Object.keys(PRESETS)) {
+    if (!PRESETS[g].sliders) continue;
     const m = presetModel(g);
-    values[g] = { ...m.params, nodes: m.numerics.nodes };
+    values[g] = { nodes: m.numerics.nodes };
+    for (const s of PRESETS[g].sliders) values[g][s.key] = sliderParams(m, s)[0][s.param || s.key];
   }
+  opts.refine = h.get("refine") === "1"; opts.stability = h.get("stability") === "1";
+  opts.engine = h.get("engine") === "cells" ? "cells" : "spectral"; opts.march = h.get("march") === "1";
   customYaml = PRESETS.ch1.yaml;
   if (game === "custom" && h.get("model")) {
     try { customYaml = b64decode(h.get("model")); } catch (e) { /* keep the default */ }
@@ -372,6 +502,10 @@ function writeHash() {
     if (PRESETS[game].nodes) v.nodes = values[game].nodes;
     h = new URLSearchParams({ game, ...v });
   }
+  if (opts.refine) h.set("refine", "1");
+  if (opts.stability) h.set("stability", "1");
+  if (opts.engine === "cells" && game === "ch1") h.set("engine", "cells");
+  if (opts.march && PRESETS[game].march) h.set("march", "1");
   history.replaceState(null, "", "#" + h.toString());
 }
 
@@ -407,8 +541,9 @@ function renderControls() {
   $("gamedesc").innerHTML = def.desc;
   const box = $("controls"); box.innerHTML = "";
   $("editor").hidden = game !== "custom";
-  if (game === "custom") { renderEditor(); return; }
+  if (game === "custom") { renderEditor(); renderOptions($("paramopts")); return; }
   for (const p of def.sliders) {
+    if (p.march === false && opts.march) continue;
     const wrap = document.createElement("div"); wrap.className = "ctl";
     const id = "ctl-" + p.key;
     wrap.innerHTML = `<label for="${id}"><span>${p.label}</span><span class="val"></span></label><input type="range" id="${id}" min="0" max="1000" step="1">`;
@@ -430,6 +565,29 @@ function renderControls() {
     const sel = wrap.querySelector("select"); sel.value = values[game].nodes;
     sel.addEventListener("change", () => { values[game].nodes = +sel.value; writeHash(); requestSolve(0); });
   }
+  renderOptions(box);
+}
+
+// solver options: the end of a transition, the engine of the finite game, and the after-solve checks
+function renderOptions(box) {
+  const def = PRESETS[game];
+  const wrap = document.createElement("div"); wrap.className = "ctl opts";
+  let html = "";
+  if (def.march) html += `<label for="opt-march"><span>End of the transition</span></label><select id="opt-march">
+      <option value="0">Fixed T (the slider)</option><option value="1">Until settled (the march in T)</option></select>`;
+  if (game === "ch1") html += `<label for="opt-engine"><span>Engine</span></label><select id="opt-engine">
+      <option value="spectral">Spectral (triangle grid)</option><option value="cells">Cells (forward march, twice the nodes)</option></select>`;
+  html += `<div class="checks"><label><input type="checkbox" id="opt-refine"> Refinement check</label>
+      <label><input type="checkbox" id="opt-stability"> Stability</label></div>
+      <div class="hint">Refinement re-solves on a grid 1.5 times finer and reports how much costs and kernels move; stability is the spectral radius of the best-response map. Each adds time.</div>`;
+  wrap.innerHTML = html; box.appendChild(wrap);
+  const on = (id, f) => { const e = wrap.querySelector("#" + id); if (e) e.addEventListener("change", () => { f(e); writeHash(); requestSolve(0); }); return e; };
+  const m = on("opt-march", (e) => { opts.march = e.value === "1"; renderControls(); });
+  if (m) m.value = opts.march ? "1" : "0";
+  const g = on("opt-engine", (e) => { opts.engine = e.value; });
+  if (g) g.value = opts.engine;
+  on("opt-refine", (e) => { opts.refine = e.checked; }).checked = opts.refine;
+  on("opt-stability", (e) => { opts.stability = e.checked; }).checked = opts.stability;
 }
 
 function renderEditor() {
@@ -533,12 +691,15 @@ function stopSolve() {
 
 function currentModel() {
   if (game === "custom") return customModel();
-  const d = presetModel(game);
-  for (const s of PRESETS[game].sliders) d.params[s.key] = values[game][s.key];
-  if (PRESETS[game].nodes) d.numerics.nodes = values[game].nodes;
+  const def = PRESETS[game], d = presetModel(game);
+  for (const s of def.sliders) for (const P of sliderParams(d, s)) P[s.param || s.key] = values[game][s.key];
+  if (def.nodes) d.numerics.nodes = values[game].nodes;
+  if (game === "ch1" && opts.engine === "cells") { d.numerics.engine = "cells"; d.numerics.nodes = 2 * values[game].nodes; }
+  if (def.march && opts.march) { delete d.horizon.T; delete d.params.T; d.horizon.settle = 0.02; }
   return d;
 }
 
+function currentRequest() { return { refine: opts.refine, stability: opts.stability }; }
 function requestSolve(delay) {
   clearTimeout(debounce);
   if (lastResult) $("results").classList.add("stale");
@@ -553,17 +714,17 @@ function sendSolve() {
   try { model = currentModel(); }
   catch (e) { $("yamlerror").textContent = e.message; setStatus("bad", "Error", e.message); return; }
   $("yamlerror").textContent = "";
-  inFlight = { id: ++reqId, game, key: JSON.stringify(model) };
+  inFlight = { id: ++reqId, game, key: JSON.stringify([model, currentRequest()]) };
   pending = false;
   $("solvebtn").disabled = true; $("stopbtn").disabled = false;
   startTimer();
-  worker.postMessage({ type: "solve", id: inFlight.id, model, request: {} });
+  worker.postMessage({ type: "solve", id: inFlight.id, model, request: currentRequest() });
 }
 function onSolved(m) {
   const req = inFlight; inFlight = null; stopTimer();
   $("solvebtn").disabled = false; $("stopbtn").disabled = true;
   let key = null;
-  try { key = JSON.stringify(currentModel()); } catch (e) { /* the editor holds an unfinished edit */ }
+  try { key = JSON.stringify([currentModel(), currentRequest()]); } catch (e) { /* the editor holds an unfinished edit */ }
   const stale = pending || !req || req.game !== game || (key !== null && key !== req.key);
   const res = JSON.parse(m.result);
   if (!res.ok) {
@@ -628,7 +789,8 @@ function renderResults(res) {
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Equilibrium costs</h2><div class="cards">${cards}</div>
     <p class="caption">Expected losses at the equilibrium (${esc(res.cost_kind)}); smaller is better.</p>
     ${res.warnings && res.warnings.length ? `<p class="caption" style="color:var(--warn)">${res.warnings.map(esc).join("<br>")}</p>` : ""}</section>`);
-  if (res.kind === "finite") renderFinite(res, out, keepVar, keepCtl);
+  if (res.kind === "transition") renderTransition(res, out);
+  if (res.kind.startsWith("finite") || res.kind === "transition") renderFinite(res, out, keepVar, keepCtl);
   else renderStationary(res, out, keepVar, keepCtl);
   renderDiagnostics(res, out);
 }
@@ -638,7 +800,7 @@ function renderFinite(res, out, keepVar, keepCtl) {
   const pathNames = res.names.filter((n) => nonzero(S.means[n] || []));
   if (res.has_means && pathNames.length) {
     out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Mean paths</h2><div class="plot" id="p-means"></div>
-      <p class="caption">${esc(PRESETS[game].meansCaption || "The expected states and controls over time: the deterministic part that targets, constant drifts and initial states move.")}</p></section>`);
+      <p class="caption">${esc((PRESETS[game] && PRESETS[game].meansCaption) || "The expected states and controls over time: the deterministic part that targets, constant drifts and initial states move.")}</p></section>`);
     const pal = palette();
     Plotly.newPlot("p-means", pathNames.map((n, i) => line(S.mean_t, S.means[n], "mean " + n, pal[(i + 1) % pal.length],
       res.states.includes(n) ? { line: { color: pal[(i + 1) % pal.length], width: 2, dash: "dash" } } : {})),
@@ -649,20 +811,56 @@ function renderFinite(res, out, keepVar, keepCtl) {
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Shock responses</h2>
     <div class="row"><label for="kvar" class="small muted">Response of</label><select id="kvar">${vars.map((v) => `<option value="${esc(v)}">${esc(label(v))}</option>`).join("")}</select></div>
     <div class="grid3" id="kgrid"></div>
-    <p class="caption">Each curve fixes a date t and shows the response at t to a unit shock that struck at time s ≤ t. Channels with no response are left out.</p></section>`);
+    <p class="caption">Each curve fixes a date t and shows the response at t to a unit shock that struck at time s ≤ t.${res.kind === "transition" ? " Shocks left of the dotted line struck under the old regime; the band reaches back one past window. An initial shock is a single draw at time 0, plotted at s = 0." : ""} Channels with no response are left out.</p></section>`);
   const drawK = (v) => {
     const box = out.querySelector("#kgrid"); box.innerHTML = "";
-    for (const c of res.channels) {
+    const tr = res.kind === "transition";
+    const smin = Math.min(0, ...S.kernels[v][res.channels[0]].map((cv) => cv.s[0]));
+    for (const c of (res.shocks || res.channels)) {
       const curves = S.kernels[v][c];
+      if (!curves) continue;
       if (!curves.some((cv) => nonzero(cv.v))) continue;
       const div = document.createElement("div"); div.className = "plot"; box.appendChild(div);
       Plotly.newPlot(div, curves.map((cv, i) => line(cv.s, cv.v, `t = ${fmt(cv.t, 2)}`, ramp(i, curves.length))),
-        baseLayout({ title: titleOf(chLabel(res, c)), xaxis: { ...baseLayout().xaxis, title: { text: "shock time s" }, range: [0, T] } }), plotCfg);
+        baseLayout({ title: titleOf(chLabel(res, c) + (tr && (res.transition.initial || []).includes(c) ? " (initial shock)" : "")),
+          xaxis: { ...baseLayout().xaxis, title: { text: "shock time s" }, range: [smin, T] },
+          shapes: tr ? [{ type: "line", x0: 0, x1: 0, yref: "paper", y0: 0, y1: 1, line: { color: css("--faint"), width: 1, dash: "dot" } }] : [] }), plotCfg);
     }
     if (!box.children.length) box.innerHTML = `<p class="small muted">No channel moves ${esc(label(v))}.</p>`;
   };
   const ksel = out.querySelector("#kvar"); ksel.value = kv; ksel.onchange = () => drawK(ksel.value); drawK(kv);
-  renderFoc(res, out, keepCtl, `Split at t = ${fmt(T / 2, 2)} across shock times s. The physical part is what the first-order condition would be if nobody reacted to the player's deviation; the information wedge is the rest, which comes from the other agents revising their forecasts.`, "shock time s");
+  renderFoc(res, out, keepCtl, `Split at t = ${fmt(T / 2, 2)} across shock times s${res.kind === "transition" ? ", old shocks included" : ""}. The physical part is what the first-order condition would be if nobody reacted to the player's deviation; the information wedge is the rest, which comes from the other agents revising their forecasts.`, "shock time s");
+}
+
+// a transition: the loss path against the old and new stationary flows, the forecast errors, the march in T
+function renderTransition(res, out) {
+  const X = res.transition, pal = palette(), agents = Object.keys(res.costs);
+  const cards = agents.map((a) => `<div class="card"><div class="k">${esc(AGENT_LABEL[a] || a)}</div>
+    <div class="v">${fmt(X.excess_costs[a], 4)}</div><div class="d">excess over the new flow; flows ${fmt(X.old_flows[a], 3)} before, ${fmt(X.new_flows[a], 3)} after</div></div>`).join("");
+  out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Cost of the transition</h2><div class="cards">${cards}</div>
+    <p class="caption">The expected loss over [0, T] minus what the new stationary flow would cost over the same span${res.transition.excess_tail && res.transition.excess_tail.source ? ", with the tail after T extrapolated from the " + esc(res.transition.excess_tail.source) : ""}.
+    Positive numbers mean the adjustment costs the player more than starting in the new equilibrium would.</p>
+    <div class="grid3" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))"><div class="plot" id="p-loss"></div><div class="plot" id="p-belief"></div></div>
+    <p class="caption">Left: the expected flow loss E[loss(t)] of each player (solid) between its old and new stationary flows (dotted, dashed).
+    Right: each player's forecast error variance of the state, Var(X − E<sub>i</sub>[X]). A sharper signal lowers player 1's error at once; player 2 learns only through the state.</p>
+    ${X.march ? `<details style="margin-top:10px"${opts.march ? " open" : ""}><summary>The march in T (${esc(X.march_stop)})</summary>
+      <div class="tablewrap"><table class="diag"><thead><tr><th>T</th><th>Gap to the stationary rules</th><th>Rounds</th><th>Unknowns</th><th>Seconds</th></tr></thead><tbody>
+      ${X.march.map((r) => `<tr><td class="mono">${fmt(r.T, 2)}</td><td class="mono">${Object.entries(r.gap).map(([a, g]) => `${esc(AGENT_LABEL[a] || a)} ${fmtE(g)}`).join(", ")}</td><td class="mono">${r.evaluations}${r.polish ? " + " + r.polish : ""}</td><td class="mono">${r.unknowns}</td><td class="mono">${fmt(r.seconds, 2)}</td></tr>`).join("")}
+      </tbody></table></div><p class="caption">The gap is the relative distance of the best-response rules on the last window from the new stationary ones; the march stops once it is under ${fmtE(X.march_settle)}.</p></details>` : ""}
+    </section>`);
+  const tr = [], br = [];
+  const keep = X.times.map((t, k) => t <= res.T * (1 + 1e-9) ? k : -1).filter((k) => k >= 0);   // [0, T]: the buffer is the continuation's
+  const cut = (v) => keep.map((k) => v[k]);
+  agents.forEach((a, i) => {
+    const c = pal[(i + 1) % pal.length], t = cut(X.times), t0 = t[0], t1 = t[t.length - 1];
+    tr.push(line(t, cut(X.loss_path[a]), AGENT_LABEL[a] || a, c));
+    tr.push(line([t0, t1], [X.old_flows[a], X.old_flows[a]], "before", c, { line: { color: c, width: 1, dash: "dot" }, showlegend: i === 0, hoverinfo: "skip" }));
+    tr.push(line([t0, t1], [X.new_flows[a], X.new_flows[a]], "after", c, { line: { color: c, width: 1, dash: "dash" }, showlegend: i === 0, hoverinfo: "skip" }));
+    for (const [st, v] of Object.entries((X.belief_error || {})[a] || {})) br.push(line(t.slice(0, -1), cut(v).slice(0, -1), `${AGENT_LABEL[a] || a}, ${st}`, c));   // t < T: the value at T itself is the buffer's
+  });
+  Plotly.newPlot("p-loss", tr, baseLayout({ title: titleOf("Flow loss"), xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
+  if (br.length) Plotly.newPlot("p-belief", br, baseLayout({ title: titleOf("Forecast error variance"), xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
+  else $("p-belief").remove();
 }
 
 function renderStationary(res, out, keepVar, keepCtl) {
@@ -691,16 +889,17 @@ function renderFoc(res, out, keepCtl, caption, xlabel) {
   const F = res.samples.foc; const ctls = Object.keys(F); if (!ctls.length) return;
   const def = PRESETS[game] || {};
   const kc = ctls.includes(keepCtl) ? keepCtl : (def.defaultCtl && ctls.includes(def.defaultCtl) ? def.defaultCtl : ctls[0]);
-  const x = res.kind === "finite" ? null : res.samples.age;
+  const x = res.kind !== "stationary" ? null : res.samples.age;
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>First-order condition: physical part and information wedge</h2>
     <div class="row"><label for="fctl" class="small muted">Control</label><select id="fctl">${ctls.map((c) => `<option value="${esc(c)}">${esc(label(c))} (${esc(AGENT_LABEL[F[c].agent] || F[c].agent)})</option>`).join("")}</select></div>
     <div class="grid3" id="fgrid"></div><p class="caption">${caption}</p></section>`);
   const drawF = (ctl) => {
     const box = out.querySelector("#fgrid"); box.innerHTML = "";
     const f = F[ctl];
-    const xs = x || (() => { const n = f.channels[res.channels[0]].physical.length, t = f.t; return Array.from({ length: n }, (_, i) => t * i / (n - 1)); })();
-    for (const c of res.channels) {
+    const xs = x || f.s || (() => { const n = f.channels[res.channels[0]].physical.length, t = f.t; return Array.from({ length: n }, (_, i) => t * i / (n - 1)); })();
+    for (const c of (res.shocks || res.channels)) {
       const d = f.channels[c];
+      if (!d || (d.physical.length !== xs.length)) continue;
       if (!nonzero(d.physical) && !nonzero(d.wedge)) continue;
       const div = document.createElement("div"); div.className = "plot"; box.appendChild(div);
       Plotly.newPlot(div, [
@@ -718,16 +917,28 @@ const CHECK_MEANING = {
   resolution: "Whether the strategies are represented accurately on this grid (representation error against its threshold).",
   window: "Whether the stationary kernels have died out before the end of the lag window.",
   second_order: "Whether each agent's best response is a minimum, not only a stationary point (lowest curvature of its loss).",
+  refinement: "Whether the costs and kernels stay put when the game is re-solved on a finer grid.",
+  "past window": "Whether the old regime's kernels have died out before the end of its window, the depth of the band.",
+  settled: "Whether the best-response rules on the last window of the transition are close to the new stationary ones, so T is long enough.",
+  "continuation window": "Whether the new stationary kernels have died out before the end of their window.",
 };
 function checkName(n) { const [root, who] = n.split(":"); return who ? `${root.replace("_", " ")}, ${AGENT_LABEL[who] || who}` : root.replace("_", " "); }
+function checkValue(d) {
+  if (d.value !== null && typeof d.value === "object")
+    return `costs ${fmtE(d.value.cost_change)} / ${fmtE(d.threshold.cost_change)}<br>kernels ${fmtE(d.value.kernel_change)} / ${fmtE(d.threshold.kernel_change)}<br>at ${d.value.nodes} nodes`;
+  return (d.value === null ? "–" : fmtE(d.value)) + (d.threshold === null ? "" : " / " + fmtE(d.threshold));
+}
 function renderDiagnostics(res, out) {
   const rows = res.checks.map((d) => `<tr><td>${esc(checkName(d.name))}</td><td><span class="chip ${d.ok === false ? "warn" : "ok"}">${d.ok === false ? "failed" : "passed"}</span></td>
-    <td class="mono">${d.value === null ? "–" : fmtE(d.value)}${d.threshold === null ? "" : " / " + fmtE(d.threshold)}</td>
+    <td class="mono">${checkValue(d)}</td>
     <td>${esc(d.ok === false ? (d.flag || d.meaning) : (CHECK_MEANING[d.name.split(":")[0]] || d.meaning))}</td></tr>`).join("");
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Diagnostics</h2>
     <p class="small muted" style="margin-top:0">${esc(res.version)} · ${esc(res.message)} · solve ${fmt(res.seconds, 2)} s.
     A failed check means the numbers may be off in the digits shown here; the row says what to raise.</p>
     <div class="tablewrap"><table class="diag"><thead><tr><th>Check</th><th>Status</th><th>Value / threshold</th><th>What it means</th></tr></thead><tbody>${rows}</tbody></table></div>
+    ${res.stability ? `<p class="small" style="margin:10px 0 0">Stability: spectral radius of the best-response map ${fmt(res.stability.radius, 4)}
+      (${res.stability.stable ? "below 1, so the equilibrium is locally stable under best-response iteration" : "1 or more, so best-response iteration moves away from it"}; ${esc(res.stability.method)}, ${res.stability.evaluations} evaluations).</p>` : ""}
+    ${res.refinement ? `<p class="small" style="margin:6px 0 0">Refinement: re-solved at ${res.refinement.nodes} nodes in ${fmt(res.refinement.seconds, 1)} s; costs moved ${fmtE(res.refinement.cost_change)}, kernels ${fmtE(res.refinement.kernel_change)}.</p>` : ""}
     ${game !== "custom" ? `<details style="margin-top:12px"><summary>The model file</summary><pre class="describe" style="overflow-x:auto">${esc(jsyaml.dump(currentModel(), { flowLevel: 3 }))}</pre></details>` : ""}</section>`);
 }
 
