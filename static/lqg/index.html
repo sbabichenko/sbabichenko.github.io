@@ -89,6 +89,8 @@ button:disabled { opacity: 0.5; cursor: default; }
 .card .k { font-size: 0.8rem; color: var(--muted); }
 .card .v { font-size: 1.35rem; font-family: ui-monospace, Menlo, monospace; }
 .card .d { font-size: 0.78rem; color: var(--faint); }
+.delta { font-size: 0.8rem; font-family: inherit; margin-left: 4px; }
+.delta.up { color: var(--bad); } .delta.down { color: var(--ok); }
 .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 820px) { .grid3 { grid-template-columns: 1fr; } }
 .plot { width: 100%; height: 300px; }
@@ -140,6 +142,7 @@ footer { color: var(--faint); font-size: 0.82rem; margin-top: 28px; }
     <span class="chip idle" id="chip">Loading</span>
     <span id="statustext">Loading the solver.</span>
     <span class="buttons">
+      <button class="secondary" id="sharebtn" title="Copy a link that reproduces this solve">Copy link</button>
       <button class="secondary" id="stopbtn" disabled>Stop</button>
       <button class="primary" id="solvebtn" disabled>Solve again</button>
     </span>
@@ -448,7 +451,9 @@ let game = "ch1";
 const values = {};              // preset -> {slider key: value, nodes}
 const opts = { refine: false, stability: false, engine: "spectral", march: false };
 const lastStart = {};
-let solverThreads = 1;             // preset -> the raw maps of its last equilibrium
+let solverThreads = 1;
+let prevResult = null;            // the result before the last change, drawn faintly for comparison
+let pathSeed = 1;             // preset -> the raw maps of its last equilibrium
 let customYaml = "";
 let worker = null, workerReady = false;
 let reqId = 0, inFlight = null, pending = false, debounce = null, lastResult = null;
@@ -727,6 +732,8 @@ function sendSolve() {
   // a warm start: the last equilibrium of this tab, which the solver uses when the shapes match (a parameter moved)
   // and ignores otherwise (a new grid or a new model)
   const request = { ...currentRequest(), return_start: true };
+  const hk = model.horizon && model.horizon.kind;
+  if (!(model.numerics && model.numerics.engine === "cells")) request.path_grid = hk === "stationary" ? 150 : hk === "transition" ? 48 : 60;
   if (lastStart[game]) request.start = lastStart[game];
   else request.start_policy = "coarse";          // a cold solve starts from the same model on a coarser grid
   worker.postMessage({ type: "solve", id: inFlight.id, model, request });
@@ -748,7 +755,10 @@ function onSolved(m) {
     return;
   }
   if (res.start && req) { lastStart[req.game] = res.start; delete res.start; }
-  if (req && req.game === game) { lastResult = res; renderResults(res); }
+  if (req && req.game === game) {
+    prevResult = lastResult && lastResult.name === res.name && lastResult.kind === res.kind ? lastResult : null;
+    lastResult = res; renderResults(res);
+  }
   if (stale) { sendSolve(); return; }
   $("results").classList.remove("stale");
   const failed = res.checks.filter((d) => d.ok === false && d.name !== "converged");
@@ -796,12 +806,16 @@ function renderResults(res) {
     if (def.constCost) { shown = v + extra; note = "expected cost over [0, T]"; }
     const parts = res.cost_parts[a];
     const split = parts && Math.abs(parts.mean) > 1e-12 ? `variance ${fmt(parts.variance, 3)}, mean ${fmt(parts.mean + extra, 3)}` : "";
-    return `<div class="card"><div class="k">${esc(AGENT_LABEL[a] || a)}</div><div class="v">${fmt(shown, 4)}</div><div class="d">${split || note}</div></div>`;
+    const before = prevResult && prevResult.costs[a] !== undefined ? prevResult.costs[a] + extra : null;
+    const dv = before === null ? 0 : shown - before;
+    const delta = before !== null && Math.abs(dv) > 5e-5 ? `<span class="delta ${dv > 0 ? "up" : "down"}">${dv > 0 ? "▲" : "▼"} ${fmt(Math.abs(dv), 4)}</span>` : "";
+    return `<div class="card"><div class="k">${esc(AGENT_LABEL[a] || a)}</div><div class="v">${fmt(shown, 4)} ${delta}</div><div class="d">${split || note}</div></div>`;
   }).join("");
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Equilibrium costs</h2><div class="cards">${cards}</div>
-    <p class="caption">Expected losses at the equilibrium (${esc(res.cost_kind)}); smaller is better.</p>
+    <p class="caption">Expected losses at the equilibrium (${esc(res.cost_kind)}); smaller is better.${prevResult ? " Arrows: the change from the previous solve." : ""}</p>
     ${res.warnings && res.warnings.length ? `<p class="caption" style="color:var(--warn)">${res.warnings.map(esc).join("<br>")}</p>` : ""}</section>`);
   if (res.kind === "transition") renderTransition(res, out);
+  if (res.paths) renderPaths(res, out);
   if (res.kind.startsWith("finite") || res.kind === "transition") renderFinite(res, out, keepVar, keepCtl);
   else renderStationary(res, out, keepVar, keepCtl);
   renderDiagnostics(res, out);
@@ -814,8 +828,10 @@ function renderFinite(res, out, keepVar, keepCtl) {
     out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Mean paths</h2><div class="plot" id="p-means"></div>
       <p class="caption">${esc((PRESETS[game] && PRESETS[game].meansCaption) || "The expected states and controls over time: the deterministic part that targets, constant drifts and initial states move.")}</p></section>`);
     const pal = palette();
+    const PS = prevResult && prevResult.samples && prevResult.samples.means;
     Plotly.newPlot("p-means", pathNames.map((n, i) => line(S.mean_t, S.means[n], "mean " + n, pal[(i + 1) % pal.length],
-      res.states.includes(n) ? { line: { color: pal[(i + 1) % pal.length], width: 2, dash: "dash" } } : {})),
+      res.states.includes(n) ? { line: { color: pal[(i + 1) % pal.length], width: 2, dash: "dash" } } : {}))
+      .concat(PS ? pathNames.filter((n) => PS[n]).map((n, i) => line(prevResult.samples.mean_t, PS[n], "before", pal[(i + 1) % pal.length], { line: { color: pal[(i + 1) % pal.length], width: 1, dash: "dot" }, opacity: 0.45, showlegend: false })) : []),
       baseLayout({ xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
   }
   const vars = res.names.concat(res.definitions || []);
@@ -842,6 +858,122 @@ function renderFinite(res, out, keepVar, keepCtl) {
   };
   const ksel = out.querySelector("#kvar"); ksel.value = kv; ksel.onchange = () => drawK(ksel.value); drawK(kv);
   renderFoc(res, out, keepCtl, `Split at t = ${fmt(T / 2, 2)} across shock times s${res.kind === "transition" ? ", old shocks included" : ""}. The physical part is what the first-order condition would be if nobody reacted to the player's deviation; the information wedge is the rest, which comes from the other agents revising their forecasts.`, "shock time s");
+}
+
+// ---------------------------------------------------------------------------------------------
+// Sample paths: the solver returns every primary's kernel on a regular grid (res.paths); the shocks are drawn here,
+// so a new draw is instant.  X(t) = mean + sum over channels and shock cells of K(t, s) dW(s), dW ~ N(0, h).
+function rng(seed) {
+  let a = seed >>> 0;
+  const u = () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  let spare = null;
+  return () => { if (spare !== null) { const v = spare; spare = null; return v; }
+    let x, y, r; do { x = 2 * u() - 1; y = 2 * u() - 1; r = x * x + y * y; } while (r >= 1 || r === 0);
+    const f = Math.sqrt(-2 * Math.log(r) / r); spare = y * f; return x * f; };
+}
+function simulatePaths(res, draws, seed) {
+  const P = res.paths, names = Object.keys(P.kernels), sq = Math.sqrt(P.h);
+  const out = {};
+  if (P.kind === "stationary") {
+    const M = P.cells, n = Math.round(2 * M);                     // two windows of time
+    const t = Array.from({ length: n + 1 }, (_, j) => j * P.h);
+    const chans = [...new Set(names.flatMap((nm) => Object.keys(P.kernels[nm])))];
+    for (const nm of names) out[nm] = { t, draws: [], mean: [], sd: [] };
+    for (let d = 0; d < draws; d++) {
+      const g = rng(seed * 7919 + d);
+      const dW = {}; for (const c of chans) dW[c] = Float64Array.from({ length: n + M + 1 }, () => g() * sq);
+      for (const nm of names) {
+        const mu = res.has_means ? (res.means[nm] || 0) : 0, y = new Array(n + 1).fill(mu);
+        for (const [c, K] of Object.entries(P.kernels[nm])) {
+          const w = dW[c];
+          for (let j = 0; j <= n; j++) { let acc = 0; for (let i = 0; i < M; i++) acc += K[i] * w[j + M - 1 - i]; y[j] += acc; }
+        }
+        out[nm].draws.push(y);
+      }
+    }
+    for (const nm of names) {
+      let v = 0; for (const K of Object.values(P.kernels[nm])) for (const k of K) v += k * k * P.h;
+      const mu = res.has_means ? (res.means[nm] || 0) : 0;
+      out[nm].mean = t.map(() => mu); out[nm].sd = t.map(() => Math.sqrt(v));
+    }
+    return out;
+  }
+  const t = P.times, nb = P.band, M = t.length - 1;
+  const chans = [...new Set(names.flatMap((nm) => Object.keys(P.kernels[nm])))];
+  const inits = [...new Set(names.flatMap((nm) => Object.keys(P.initial[nm] || {})))];
+  for (const nm of names) {
+    const mean = P.means && P.means[nm] ? P.means[nm] : t.map(() => 0);
+    const sd = t.map((_, j) => { let v = 0;
+      for (const K of Object.values(P.kernels[nm])) for (const k of K[j]) v += k * k * P.h;
+      for (const I of Object.values(P.initial[nm] || {})) v += I[j] * I[j];
+      return Math.sqrt(v); });
+    out[nm] = { t, draws: [], mean, sd };
+  }
+  for (let d = 0; d < draws; d++) {
+    const g = rng(seed * 7919 + d);
+    const dW = {}; for (const c of chans) dW[c] = Float64Array.from({ length: nb + M }, () => g() * sq);
+    const xi = {}; for (const x of inits) xi[x] = g();
+    for (const nm of names) {
+      const y = out[nm].mean.slice();
+      for (const [c, K] of Object.entries(P.kernels[nm])) {
+        const w = dW[c];
+        for (let j = 0; j <= M; j++) { const row = K[j]; let acc = 0; for (let i = 0; i < row.length; i++) acc += row[i] * w[i]; y[j] += acc; }
+      }
+      for (const [x, I] of Object.entries(P.initial[nm] || {})) for (let j = 0; j <= M; j++) y[j] += I[j] * xi[x];
+      out[nm].draws.push(y);
+    }
+  }
+  return out;
+}
+function renderPaths(res, out) {
+  const names = Object.keys(res.paths.kernels).filter((nm) => Object.keys(res.paths.kernels[nm]).length || Object.keys((res.paths.initial || {})[nm] || {}).length);
+  if (!names.length) return;
+  const stat = res.paths.kind === "stationary";
+  out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Sample paths</h2>
+    <div class="row"><button class="secondary" id="redraw">Draw new shocks</button><span class="small muted" id="seedlab"></span></div>
+    <div class="grid3" id="pgrid"></div>
+    <p class="caption">Three draws of the shocks pushed through the equilibrium${stat ? ", over two lag windows of the stationary game" : res.kind === "transition" ? ", old shocks before time 0 included" : ""}. The band is the mean plus and minus two standard deviations. The shocks are drawn in your browser, so a new draw is instant.</p></section>`);
+  const draw = () => {
+    const sim = simulatePaths(res, 3, pathSeed), box = out.querySelector("#pgrid"); box.innerHTML = "";
+    out.querySelector("#seedlab").textContent = `draw ${pathSeed}`;
+    const pal = palette();
+    for (const nm of names) {
+      const S = sim[nm], div = document.createElement("div"); div.className = "plot"; box.appendChild(div);
+      const hi = S.mean.map((m, j) => m + 2 * S.sd[j]), lo = S.mean.map((m, j) => m - 2 * S.sd[j]);
+      const traces = [
+        { x: S.t, y: hi, mode: "lines", line: { width: 0 }, hoverinfo: "skip", showlegend: false },
+        { x: S.t, y: lo, mode: "lines", line: { width: 0 }, fill: "tonexty", fillcolor: css("--grid"), name: "± 2 sd", hoverinfo: "skip" },
+        line(S.t, S.mean, "mean", css("--faint"), { line: { color: css("--faint"), width: 1, dash: "dot" } }),
+        ...S.draws.map((y, d) => line(S.t, y, `draw ${d + 1}`, pal[(d + 1) % pal.length], { line: { color: pal[(d + 1) % pal.length], width: 1.5 } })),
+      ];
+      Plotly.newPlot(div, traces, baseLayout({ title: titleOf(label(nm)), showlegend: false, xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
+    }
+  };
+  out.querySelector("#redraw").onclick = () => { pathSeed++; draw(); };
+  draw();
+  if (!stat) renderSurface(res, out, names);
+}
+
+// the whole kernel K(t, s) of a finite or transition game as a heat map: a row per date, a column per shock time
+function renderSurface(res, out, names) {
+  const P = res.paths;
+  const pairs = names.flatMap((nm) => Object.keys(P.kernels[nm]).map((c) => [nm, c]));
+  if (!pairs.length) return;
+  out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Response surface</h2>
+    <div class="row"><label for="svar" class="small muted">Response of</label><select id="svar">${pairs.map(([nm, c], i) => `<option value="${i}">${esc(label(nm))} to ${esc(chLabel(res, c))}</option>`).join("")}</select></div>
+    <div class="plot tall" id="psurf"></div>
+    <p class="caption">Each row is a date t, each column a shock time s: the colour is how much a unit shock at s moves the quantity at t. Rows of the shock-response plots above are horizontal slices of this picture.${res.kind === "transition" ? " Columns left of s = 0 are the old regime's shocks." : ""}</p></section>`);
+  const draw = (i) => {
+    const [nm, c] = pairs[i], rows = P.kernels[nm][c], M = P.times.length - 1, nb = P.band;
+    const sgrid = Array.from({ length: nb + M }, (_, k) => (k - nb + 0.5) * P.h);
+    const z = rows.map((r) => sgrid.map((_, k) => (k < r.length ? r[k] : null)));
+    let mx = 0; for (const r of z) for (const v of r) if (v !== null) mx = Math.max(mx, Math.abs(v));
+    Plotly.react("psurf", [{ type: "heatmap", x: sgrid, y: P.times, z, zmin: -mx, zmax: mx, colorscale: [[0, css("--c2")], [0.5, css("--panel")], [1, css("--c1")]], hoverongaps: false,
+      colorbar: { thickness: 10, outlinewidth: 0, tickfont: { color: css("--muted") } } }],
+      baseLayout({ showlegend: false, hovermode: "closest", xaxis: { ...baseLayout().xaxis, title: { text: "shock time s" } },
+        yaxis: { ...baseLayout().yaxis, title: { text: "date t" } }, margin: { l: 52, r: 12, t: 20, b: 50 } }), plotCfg);
+  };
+  const sel = out.querySelector("#svar"); sel.onchange = () => draw(+sel.value); draw(0);
 }
 
 // a transition: the loss path against the old and new stationary flows, the forecast errors, the march in T
@@ -886,11 +1018,14 @@ function renderStationary(res, out, keepVar, keepCtl) {
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Shock responses</h2>
     <div class="row"><label for="kvar" class="small muted">Response of</label><select id="kvar">${vars.map((v) => `<option value="${esc(v)}">${esc(label(v))}</option>`).join("")}</select></div>
     <div class="plot tall" id="pk"></div>
-    <p class="caption">Response to a unit shock as a function of its age: how much of a shock that struck a units of time ago is still present. Channels with no response are left out.</p></section>`);
+    <p class="caption">Response to a unit shock as a function of its age: how much of a shock that struck a units of time ago is still present. Channels with no response are left out.${prevResult ? " Dotted: the previous solve, before your last change." : ""}</p></section>`);
   const drawK = (v) => {
     const pal = palette();
     const traces = res.channels.map((c, i) => [c, i]).filter(([c]) => nonzero(S.kernels[v][c]))
       .map(([c, i]) => line(S.age, S.kernels[v][c], chLabel(res, c), pal[i % pal.length]));
+    // the previous solve's curves, faint, to show what the last change did
+    const P = prevResult && prevResult.samples && prevResult.samples.kernels && prevResult.samples.kernels[v];
+    if (P) res.channels.forEach((c, i) => { if (P[c] && nonzero(P[c])) traces.unshift(line(prevResult.samples.age, P[c], chLabel(res, c) + " (before)", pal[i % pal.length], { line: { color: pal[i % pal.length], width: 1, dash: "dot" }, opacity: 0.5, showlegend: false })); });
     Plotly.react("pk", traces, baseLayout({ title: titleOf("Response of " + label(v)), xaxis: { ...baseLayout().xaxis, title: { text: "shock age" } } }), plotCfg);
   };
   const ksel = out.querySelector("#kvar"); ksel.value = kv; ksel.onchange = () => drawK(ksel.value); drawK(kv);
@@ -957,6 +1092,12 @@ function renderDiagnostics(res, out) {
 // ---------------------------------------------------------------------------------------------
 $("solvebtn").onclick = () => requestSolve(0);
 $("stopbtn").onclick = stopSolve;
+$("sharebtn").onclick = async () => {
+  writeHash();
+  try { await navigator.clipboard.writeText(location.href); $("sharebtn").textContent = "Copied"; }
+  catch (e) { prompt("Copy this link:", location.href); }
+  setTimeout(() => { $("sharebtn").textContent = "Copy link"; }, 1500);
+};
 $("solvecustom").onclick = () => { customYaml = $("yaml").value; renderParamControls(); writeHash(); requestSolve(0); };
 $("loadexample").onclick = () => { customYaml = EXAMPLES[$("example").value]; $("yaml").value = customYaml; renderParamControls(); writeHash(); };
 $("yaml").addEventListener("input", () => { customYaml = $("yaml").value; });
