@@ -128,11 +128,15 @@
         <h2>Work</h2>
         <div class="work">
           {% for project in data.project %}
-          <article class="item">
+          <article class="item{% if project.detour %} with-still{% endif %}">
             <div>
               <h3>{{ project.name }}</h3>
               <p>{{ project.desc }}</p>
             </div>
+            {%- if project.detour %}
+            <a class="dstill" href="{{ get_url(path='dissertation/') }}#detour" aria-label="The detour map: ninety years of economics going around one problem">
+              <svg data-detour="still" aria-hidden="true"></svg></a>
+            {%- endif %}
             <div class="foot">
             <div class="tags">{% for tag in project.tags %}<span>{{ tag }}</span>{% endfor %}</div>
             <div class="out">
@@ -171,5 +175,6 @@
     <script src="{{ get_url(path='mesh/decision-mesh.js') }}"></script>
     <script src="{{ get_url(path='js/heroink.js') }}"></script>
     <script src="{{ get_url(path='js/formula.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/detour.js') }}"></script>
   </body>
 </html>

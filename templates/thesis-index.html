@@ -28,6 +28,20 @@
         <p class="scrollhint" aria-hidden="true">scroll</p>
       </section>
 
+      <section class="detour" id="detour" aria-label="Ninety years of economics going around one problem">
+        <div class="dt-sticky">
+          <svg class="dt-map" aria-hidden="true"></svg>
+          <div class="dt-caps">
+            <p class="dt-cap" data-at="0">In 1936 Keynes described a beauty contest won by guessing what everyone expects everyone else to pick. Whenever people learn from each other&rsquo;s actions, the same regress appears.</p>
+            <p class="dt-cap" data-at="0.12">Economics kept running into it, and kept finding a way around.</p>
+            <p class="dt-cap" data-at="0.36">Each way around became a literature, and the next generation learned the subject through them.</p>
+            <p class="dt-cap" data-at="0.56">From outside, the ground looks covered. It was only circled.</p>
+            <p class="dt-cap" data-at="0.66">This dissertation goes through.</p>
+            <p class="dt-cap" data-at="0.82">Now the field can build the models it set out to build.</p>
+          </div>
+        </div>
+      </section>
+
       <section class="story" id="story">
         <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
         <div class="steps">
@@ -112,6 +126,7 @@
 
     {% include "partials/footer.html" %}
     <script src="{{ get_url(path='dissertation/opening.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/detour.js') }}"></script>
     <script src="{{ get_url(path='dissertation/search.js') }}"></script>
   </body>
 </html>
