@@ -581,6 +581,35 @@ horizon:
   continuation: stationary
 numerics: {nodes: 5, continuation_nodes: 10}
 `,
+  "Kyle–Back from a prior (Back 1992): the value is drawn at time 0": `# The insider sees V at once; the market maker learns it from the order flow.
+# Draw sample paths: each draw's price P walks toward its own V by T.
+name: kyle_back_prior
+params: {eps: 0.2, Sigma0: 1.0, sigma_Z: 1.0}
+channels: [wZ]
+states:
+  V: {drift: {}, noise: {}}
+agents:
+  market_maker:
+    controls: [P]
+    myopic: true
+    signals:
+      flow: {drift: {D1: 1.0}, noise: {wZ: sigma_Z}}
+    loss: [[1.0, P, P], [-2.0, P, V]]
+  trader1:
+    controls: [D1]
+    signals:
+      flow: {drift: {}, noise: {wZ: sigma_Z}}
+    loss: [[-1.0, D1, V], [1.0, D1, P], [eps, D1, D1]]
+numerics: {nodes: 10}
+horizon:
+  kind: transition
+  T: 2.0
+  discount: 0.0
+  past:
+    initial:
+      - {name: v0, loads: {V: "sqrt(Sigma0)"}, rows: {trader1.flow: 1.0}}
+  continuation: end
+`,
   "tracking game on the cells engine (Ch. 1)": PRESETS.ch1.yaml.replace("numerics: {nodes: 12}", "numerics: {engine: cells, nodes: 24}"),
   "delayed control and observation (Ch. 1), a few seconds": `# Finite-horizon two-player game with a control delay and a delayed observation.
 name: ch1_delayed_finite
@@ -949,7 +978,9 @@ function onSolved(m) {
   if (res.start && req) { lastStart[req.game] = res.start; delete res.start; }
   if (req && req.game === game) {
     prevResult = lastResult && lastResult.name === res.name && lastResult.kind === res.kind ? lastResult : null;
-    lastResult = res; renderResults(res);
+    lastResult = res;
+    try { renderResults(res); }
+    catch (e) { console.error(e); setStatus("warn", "Solved, drawing failed", "The solve finished but a plot could not be drawn: " + e.message); $("results").classList.remove("stale"); return; }
   }
   if (stale) { sendSolve(); return; }
   $("results").classList.remove("stale");
@@ -1177,11 +1208,13 @@ function renderSurface(res, out, names) {
 // a transition: the loss path against the old and new stationary flows, the forecast errors, the march in T
 function renderTransition(res, out) {
   const X = res.transition, pal = palette(), agents = Object.keys(res.costs);
-  const cards = agents.map((a) => `<div class="card"><div class="k">${esc(AGENT_LABEL[a] || a)}</div>
-    <div class="v">${fmt(X.excess_costs[a], 4)}</div><div class="d">excess over the new flow; flows ${fmt(X.old_flows[a], 3)} before, ${fmt(X.new_flows[a], 3)} after</div></div>`).join("");
-  out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Cost of the transition</h2><div class="cards">${cards}</div>
+  // a game that ends at T (continuation "end") or starts from a prior alone has no stationary flows to compare with
+  const flows = X.excess_costs && X.old_flows && X.new_flows && agents.every((a) => X.excess_costs[a] !== undefined);
+  const cards = flows ? agents.map((a) => `<div class="card"><div class="k">${esc(AGENT_LABEL[a] || a)}</div>
+    <div class="v">${fmt(X.excess_costs[a], 4)}</div><div class="d">excess over the new flow; flows ${fmt(X.old_flows[a], 3)} before, ${fmt(X.new_flows[a], 3)} after</div></div>`).join("") : "";
+  out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>${flows ? "Cost of the transition" : "Over the horizon"}</h2>${flows ? `<div class="cards">${cards}</div>
     <p class="caption">The expected loss over [0, T] minus what the new stationary flow would cost over the same span${res.transition.excess_tail && res.transition.excess_tail.source ? ", with the tail after T extrapolated from the " + esc(res.transition.excess_tail.source) : ""}.
-    Positive numbers mean the adjustment costs the player more than starting in the new equilibrium would.</p>
+    Positive numbers mean the adjustment costs the player more than starting in the new equilibrium would.</p>` : ""}
     <div class="grid3" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))"><div class="plot" id="p-loss"></div><div class="plot" id="p-belief"></div></div>
     <p class="caption">Left: the expected flow loss E[loss(t)] of each player (solid) between its old and new stationary flows (dotted, dashed).
     Right: each player's forecast error variance of the state, Var(X − E<sub>i</sub>[X]). A sharper signal lowers player 1's error at once; player 2 learns only through the state.</p>
@@ -1196,8 +1229,10 @@ function renderTransition(res, out) {
   agents.forEach((a, i) => {
     const c = pal[(i + 1) % pal.length], t = cut(X.times), t0 = t[0], t1 = t[t.length - 1];
     tr.push(line(t, cut(X.loss_path[a]), AGENT_LABEL[a] || a, c));
-    tr.push(line([t0, t1], [X.old_flows[a], X.old_flows[a]], "before", c, { line: { color: c, width: 1, dash: "dot" }, showlegend: i === 0, hoverinfo: "skip" }));
-    tr.push(line([t0, t1], [X.new_flows[a], X.new_flows[a]], "after", c, { line: { color: c, width: 1, dash: "dash" }, showlegend: i === 0, hoverinfo: "skip" }));
+    if (flows) {
+      tr.push(line([t0, t1], [X.old_flows[a], X.old_flows[a]], "before", c, { line: { color: c, width: 1, dash: "dot" }, showlegend: i === 0, hoverinfo: "skip" }));
+      tr.push(line([t0, t1], [X.new_flows[a], X.new_flows[a]], "after", c, { line: { color: c, width: 1, dash: "dash" }, showlegend: i === 0, hoverinfo: "skip" }));
+    }
     for (const [st, v] of Object.entries((X.belief_error || {})[a] || {})) br.push(line(t.slice(0, -1), cut(v).slice(0, -1), `${AGENT_LABEL[a] || a}, ${st}`, c));   // t < T: the value at T itself is the buffer's
   });
   Plotly.newPlot("p-loss", tr, baseLayout({ title: titleOf("Flow loss"), xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
