@@ -114,6 +114,61 @@
   const scenes = {};
   const group = (name) => { const g = el("g", { "data-scene": name }, svg); g.style.opacity = 0; g.style.transition = "opacity 0.6s"; return g; };
 
+  // ------------------------------------------------------------------ 0. a few researchers and a telescope
+  function person(g, x, y, cls) {
+    const p = el("g", { transform: `translate(${x} ${y})` }, g);
+    el("circle", { cx: 0, cy: -13, r: 7, class: cls }, p);
+    el("path", { d: "M-11,12 Q-11,-3 0,-3 Q11,-3 11,12 Z", class: cls }, p);
+    return p;
+  }
+  scenes.telescope = (() => {
+    const g = group("telescope");
+    const sun = el("g", { transform: "translate(470 110)" }, g);
+    for (let a = 0; a < 8; ++a) { const t = (a * Math.PI) / 4; el("line", { x1: 30 * Math.cos(t), y1: 30 * Math.sin(t), x2: 44 * Math.cos(t), y2: 44 * Math.sin(t), class: "pencil warm", "stroke-width": 2 }, sun); }
+    el("circle", { r: 24, class: "fillwarm" }, sun);
+    const scope = el("g", { transform: "translate(150 190)" }, g);
+    el("path", { d: "M0,0 L-14,40 M0,0 L14,40 M0,0 L2,42", class: "pencil", "stroke-width": 1.8 }, scope);
+    el("path", { d: "M-6,4 L74,-44 L82,-32 L2,16 Z", class: "box pencil", "stroke-width": 1.8 }, scope);
+    const sight = el("line", { x1: 230, y1: 150, x2: 440, y2: 118, class: "pencil soft", "stroke-width": 1, "stroke-dasharray": "3 5" }, g);
+    const crowd = [], know = new Set(["3,1", "2,1", "4,1", "3,2", "3,0"]);
+    for (let i = 0; i < 8; ++i) for (let j = 0; j < 3; ++j) {
+      const x = 85 + i * 62, y = 330 + j * 72, k = know.has(`${i},${j}`);
+      const p = person(g, x, y, "fillacc"); p.style.fill = k ? "var(--accent)" : "currentColor";
+      crowd.push({ p, x, y, k, d: Math.hypot(i - 3, (j - 1) * 1.15) });
+    }
+    const rings = [0, 1, 2].map(() => el("circle", { cx: 271, cy: 402, class: "pencil accent", "stroke-width": 1.2 }, g));
+    const cap = text(g, 300, 585, "five know; the rest find out from what they do", "mono");
+    return { g, update(t, now) {
+      fade(sun, seg(t, 0, 0.1)); fade(scope, seg(t, 0.02, 0.12)); fade(sight, seg(t, 0.08, 0.18) * 0.8);
+      const spread = seg(t, 0.35, 0.95) * 2.4;          // word spreads, but slowly: the far edge never hears
+      crowd.forEach((c) => {
+        if (c.k) { fade(c.p, seg(t, 0.1, 0.2)); return; }
+        const learned = clamp(spread - c.d + 1);
+        c.p.style.opacity = seg(t, 0.05, 0.15) * (0.28 + 0.5 * learned);
+        c.p.style.fill = learned > 0.5 ? "var(--accent)" : "currentColor";
+      });
+      rings.forEach((r, i) => { const ph = ((now / 2400 + i / 3) % 1); r.setAttribute("r", 30 + ph * 200); fade(r, seg(t, 0.3, 0.4) * (1 - ph) * 0.5); });
+      fade(cap, seg(t, 0.6, 0.75));
+    } };
+  })();
+
+  // ------------------------------------------------------------------ 0b. many hands on the state
+  scenes.hands = (() => {
+    const g = group("hands");
+    const l1 = el("g", {}, g), l2 = el("g", {}, g), l3 = el("g", {}, g);
+    formula("hands1", 300, 170, 470, l1, "middle");
+    text(l2, 300, 260, "each applies the single-controller rule", "mono");
+    formula("hands2", 300, 300, 190, l2, "middle");
+    formula("hands3", 300, 410, 490, l3, "middle");
+    const ul = [];
+    for (const [x, w2] of [[300 - 490 / 2 + 205, 70], [300 - 490 / 2 + 300, 70]]) ul.push(stroke(g, pencil([[x - w2 / 2, 440], [x + w2 / 2, 441]], x, 1), "warm", 2.2));
+    const cap = text(g, 300, 500, "the state now moves with everyone's estimates", "label warmt");
+    return { g, update(t) {
+      fade(l1, seg(t, 0, 0.15)); fade(l2, seg(t, 0.2, 0.35)); fade(l3, seg(t, 0.4, 0.55));
+      ul.forEach((u) => u.set(seg(t, 0.6, 0.75))); fade(cap, seg(t, 0.7, 0.85));
+    } };
+  })();
+
   // ------------------------------------------------------------------ 1. the tower
   scenes.tower = (() => {
     const g = group("tower");
@@ -128,12 +183,43 @@
       for (let d = 0; d < 3; ++d) el("circle", { cx: 150 + (x - w / 2 - 150) * (0.25 + d * 0.22), cy: 490 - (490 - y - 32) * (0.25 + d * 0.22), r: 3 + d, class: "pencil soft", "stroke-width": 1.2 }, lg);
       return lg;
     });
+    const counts = ["1", "n", "n²", "n³"].map((c, i) => text(g, 28, 436 - i * 92, c, "label acc", "start"));
     const dots = text(g, 300, 58, "…", "label"); dots.style.fontSize = "34px";
     const cap = text(g, 300, 585, "forecasting the forecasts of others, without end", "mono");
     return { g, update(t, now) {
       fade(p1, seg(t, 0, 0.1)); fade(p2, seg(t, 0, 0.1));
       levels.forEach((l, i) => { fade(l, seg(t, 0.08 + i * 0.14, 0.2 + i * 0.14)); l.setAttribute("transform", `translate(0 ${Math.sin(now / 900 + i) * 3})`); });
+      counts.forEach((c, i) => fade(c, seg(t, 0.14 + i * 0.14, 0.24 + i * 0.14)));
       fade(dots, seg(t, 0.66, 0.8) * (0.6 + 0.4 * Math.sin(now / 300))); fade(cap, seg(t, 0.75, 0.9));
+    } };
+  })();
+
+  // ------------------------------------------------------------------ 1b. beliefs about randomness
+  scenes.randomness = (() => {
+    const g = group("randomness");
+    const heads = [[150, 210, "1"], [450, 210, "2"]].map(([x, y, l]) => { const h = el("g", {}, g); el("circle", { cx: x, cy: y, r: 40, class: "box pencil", "stroke-width": 1.8 }, h); text(h, x, y + 7, l); return { h, x, y }; });
+    // the nested models, each struck out
+    const models = [["1's model of 2", 150, 110], ["2's model of 1", 450, 110], ["1's model of 2's model of 1", 150, 60], ["2's model of 1's model of 2", 450, 60]].map(([s2, x, y], i) => {
+      const m = el("g", {}, g); const tt = text(m, x, y, s2, "label"); tt.style.fontSize = "14px";
+      const w2 = s2.length * 6.4;
+      const strike = stroke(m, pencil([[x - w2 / 2 - 4, y - 3], [x + w2 / 2 + 4, y - 7]], 70 + i, 1), "warm", 2);
+      return { m, strike };
+    });
+    const oval = el("g", {}, g);
+    el("ellipse", { cx: 300, cy: 440, rx: 170, ry: 48, class: "pencil warm", "stroke-width": 2 }, oval);
+    el("ellipse", { cx: 300, cy: 440, rx: 170, ry: 48, class: "fillwarm", opacity: 0.1 }, oval);
+    text(oval, 300, 446, "sources of randomness", "label warmt");
+    // a few shocks jiggling inside it
+    const r = mulberry32(3), kicks = [];
+    for (let k = 0; k < 18; ++k) kicks.push({ x: 160 + k * 16.5, h: gauss(r) * 16, el: el("line", { x1: 160 + k * 16.5, x2: 160 + k * 16.5, y1: 470, y2: 470, class: "pencil warm", "stroke-width": 2 }, oval) });
+    const arrows = heads.map((h, i) => stroke(g, pencil([[300 + (i ? 60 : -60), 392], [h.x + (i ? -8 : 8), 330 - 40 - 10 + 60], [h.x, h.y + 44]], 80 + i, 2), "warm", 1.8));
+    const cap = text(g, 300, 560, "both estimate the same thing: the shocks", "mono");
+    return { g, update(t, now) {
+      heads.forEach((h) => fade(h.h, seg(t, 0, 0.1)));
+      models.forEach((m, i) => { fade(m.m, seg(t, 0.02 + i * 0.04, 0.12 + i * 0.04) * (1 - 0.55 * seg(t, 0.45, 0.6))); m.strike.set(seg(t, 0.25 + i * 0.05, 0.35 + i * 0.05)); });
+      fade(oval, seg(t, 0.45, 0.6));
+      kicks.forEach((k, i) => { const hh = k.h * (0.6 + 0.4 * Math.sin(now / 300 + i)); k.el.setAttribute("y2", 470 - Math.abs(hh)); k.el.setAttribute("y1", 470); });
+      arrows.forEach((a) => a.set(seg(t, 0.6, 0.8))); fade(cap, seg(t, 0.8, 0.92));
     } };
   })();
 

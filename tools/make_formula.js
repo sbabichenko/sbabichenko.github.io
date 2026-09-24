@@ -21,6 +21,9 @@ const LINES = {
   // the idea page (templates/idea.html): a linear process, and a player's forecast of it
   linear: String.raw`L_t = \bar L(t) + \int_0^t L(t,s)\, dW_s`,
   cond: String.raw`\widehat L^{i}_t = \bar L(t) + \int_0^t L(t,u)\, d_u\widehat W^{i}_t(u)`,
+  hands1: String.raw`\Delta X_{t+1} = A X_t + a^1_t + a^2_t + a^3_t + \cdots + \text{noise}_{t+1}`,
+  hands2: String.raw`a^i_t = K^i\,\widehat X^{i}_t + k^i`,
+  hands3: String.raw`\Delta X_{t+1} = A X_t + K^1\widehat X^{1}_t + K^2\widehat X^{2}_t + \cdots + \text{noise}_{t+1}`,
   t1: String.raw`\mathbb{E}^1[X]`,
   t2: String.raw`\mathbb{E}^1\big[\mathbb{E}^2[X]\big]`,
   t3: String.raw`\mathbb{E}^1\Big[\mathbb{E}^2\big[\mathbb{E}^1[X]\big]\Big]`,
