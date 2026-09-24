@@ -280,6 +280,184 @@ numerics: {nodes: 16}
     defaultVar: "P", defaultCtl: "D1",
     channelNames: { wV: "value shock", wZ: "noise-trader flow shock", w1: "trader's signal noise" },
   },
+  ch5: {
+    tab: "Supply-chain cycle",
+    title: "Three firms in a supply-chain cycle",
+    desc: `<p class="small muted" style="margin:0">Chapter 5. Firm i buys from firm i - 1 and sells to firm i + 1 and to consumers, around a cycle of three.
+      Each firm sets a price P<sub>i</sub> and an order o<sub>i</sub>, which take effect after a delay &tau;, and sees only noisy signals:
+      its own sales, its supplier's price, its customer's order book and the order upstream. Demand, cost and firm-level shocks drive the market.</p>
+      <div class="eq"><div>sales<sub>i</sub> = q + (&theta; &minus; 1) &middot; price index &minus; &theta; P<sub>i</sub> + &eta;<sub>i</sub> &nbsp; (all prices at lag &tau;)</div>
+      <div>firm i minimises the average of (price deviation)<sup>2</sup> + m (inventory mismatch)<sup>2</sup> + r o<sub>i</sub><sup>2</sup> + &hellip; &minus; 2&kappa; (revenue terms)</div></div>
+      <p class="small muted" style="margin:0">The firms are symmetric, so the solver finds one firm's strategy and relabels it around the cycle.
+      This is the heaviest game on the page: a solve takes a few seconds on the quick grid and about half a minute on the dissertation's.</p>`,
+    yaml: `name: ch5_cycle_market
+params: {theta: 4.0, xi: 0.15, zeta: 0.5, kappa: 0.3, m: 1.0, r: 0.2, rP: 0.0, c: 0.2, sigma_u: 1.0, theta_a: 0.5,
+  sigma_a: 1.0, theta_eta: 0.5, sigma_eta: 1.0, s1: 2.5, s2: 0.3, s3: 0.3, s4: 2.0, tau: 0.5}
+channels: [w_q, w_a0, w_eta0, w_0_0, w_0_1, w_0_2, w_0_3, w_a1, w_eta1, w_1_0, w_1_1, w_1_2, w_1_3, w_a2, w_eta2,
+  w_2_0, w_2_1, w_2_2, w_2_3]
+states:
+  q:
+    drift: {}
+    noise: {w_q: sigma_u}
+  a0:
+    drift: {a0: -theta_a}
+    noise: {w_a0: sigma_a}
+  eta0:
+    drift: {eta0: -theta_eta}
+    noise: {w_eta0: sigma_eta}
+  a1:
+    drift: {a1: -theta_a}
+    noise: {w_a1: sigma_a}
+  eta1:
+    drift: {eta1: -theta_eta}
+    noise: {w_eta1: sigma_eta}
+  a2:
+    drift: {a2: -theta_a}
+    noise: {w_a2: sigma_a}
+  eta2:
+    drift: {eta2: -theta_eta}
+    noise: {w_eta2: sigma_eta}
+definitions:
+  Pidx: {P0@tau: 0.3333333333333333, P1@tau: 0.3333333333333333, P2@tau: 0.3333333333333333}
+  Pnext: {P0: 0.3333333333333333, P1: 0.3333333333333333, P2: 0.3333333333333333}
+  pi0: {P0@tau: 1.0}
+  i0: {o0@tau: 1.0}
+  d0: {o1@tau: 1.0}
+  yH0: {q: 1.0, Pidx: theta - 1, pi0: -theta, eta0: 1.0}
+  pi1: {P1@tau: 1.0}
+  i1: {o1@tau: 1.0}
+  d1: {o2@tau: 1.0}
+  yH1: {q: 1.0, Pidx: theta - 1, pi1: -theta, eta1: 1.0}
+  pi2: {P2@tau: 1.0}
+  i2: {o2@tau: 1.0}
+  d2: {o0@tau: 1.0}
+  yH2: {q: 1.0, Pidx: theta - 1, pi2: -theta, eta2: 1.0}
+  dev0: {pi0: 1.0, Pidx: -(1 - xi - zeta), q: -xi, pi2: -zeta, a0@tau: zeta}
+  mis0: {a0@tau: 1.0, i0: 1.0, d0: -1.0, yH0: -1.0}
+  bill0: {P2: 1.0, Pnext: -1.0}
+  quote_gap0: {P0: 1.0, Pnext: -1.0}
+  dev1: {pi1: 1.0, Pidx: -(1 - xi - zeta), q: -xi, pi0: -zeta, a1@tau: zeta}
+  mis1: {a1@tau: 1.0, i1: 1.0, d1: -1.0, yH1: -1.0}
+  bill1: {P0: 1.0, Pnext: -1.0}
+  quote_gap1: {P1: 1.0, Pnext: -1.0}
+  dev2: {pi2: 1.0, Pidx: -(1 - xi - zeta), q: -xi, pi1: -zeta, a2@tau: zeta}
+  mis2: {a2@tau: 1.0, i2: 1.0, d2: -1.0, yH2: -1.0}
+  bill2: {P1: 1.0, Pnext: -1.0}
+  quote_gap2: {P2: 1.0, Pnext: -1.0}
+agents:
+  firm0:
+    controls: [P0, o0]
+    signals:
+      sales:
+        drift: {yH0: 1.0}
+        noise: {w_0_0: s1}
+        delay: 0.0
+      trans_price:
+        drift: {P2: 1.0}
+        noise: {w_0_1: s2}
+        delay: 0.0
+      order_book:
+        drift: {o1: 1.0}
+        noise: {w_0_2: s3}
+        delay: 0.0
+      upstream_order:
+        drift: {o2: 1.0}
+        noise: {w_0_3: s4}
+        delay: 0.0
+      own_prod:
+        drift: {}
+        noise: {w_a0: 1.0}
+        delay: 0.0
+    loss:
+    - [1.0, dev0, dev0]
+    - [-2*kappa, d0]
+    - [-2*kappa, yH0]
+    - [m, mis0, mis0]
+    - [r, o0, o0]
+    - [rP, quote_gap0, quote_gap0]
+    - [2*c, o0, bill0]
+    myopic: false
+  firm1:
+    controls: [P1, o1]
+    signals:
+      sales:
+        drift: {yH1: 1.0}
+        noise: {w_1_0: s1}
+        delay: 0.0
+      trans_price:
+        drift: {P0: 1.0}
+        noise: {w_1_1: s2}
+        delay: 0.0
+      order_book:
+        drift: {o2: 1.0}
+        noise: {w_1_2: s3}
+        delay: 0.0
+      upstream_order:
+        drift: {o0: 1.0}
+        noise: {w_1_3: s4}
+        delay: 0.0
+      own_prod:
+        drift: {}
+        noise: {w_a1: 1.0}
+        delay: 0.0
+    loss:
+    - [1.0, dev1, dev1]
+    - [-2*kappa, d1]
+    - [-2*kappa, yH1]
+    - [m, mis1, mis1]
+    - [r, o1, o1]
+    - [rP, quote_gap1, quote_gap1]
+    - [2*c, o1, bill1]
+    myopic: false
+  firm2:
+    controls: [P2, o2]
+    signals:
+      sales:
+        drift: {yH2: 1.0}
+        noise: {w_2_0: s1}
+        delay: 0.0
+      trans_price:
+        drift: {P1: 1.0}
+        noise: {w_2_1: s2}
+        delay: 0.0
+      order_book:
+        drift: {o0: 1.0}
+        noise: {w_2_2: s3}
+        delay: 0.0
+      upstream_order:
+        drift: {o1: 1.0}
+        noise: {w_2_3: s4}
+        delay: 0.0
+      own_prod:
+        drift: {}
+        noise: {w_a2: 1.0}
+        delay: 0.0
+    loss:
+    - [1.0, dev2, dev2]
+    - [-2*kappa, d2]
+    - [-2*kappa, yH2]
+    - [m, mis2, mis2]
+    - [r, o2, o2]
+    - [rP, quote_gap2, quote_gap2]
+    - [2*c, o2, bill2]
+    myopic: false
+ties:
+- [firm0, firm1, firm2]
+horizon: {kind: stationary, discount: 0.0, window: 10.0}
+numerics: {nodes: 8, unit: 0.5, unit_range: 4.0}
+`,
+    sliders: [
+      { key: "theta", label: "θ price elasticity of demand", min: 1.5, max: 8, step: 0.1 },
+      { key: "kappa", label: "κ weight on revenue", min: 0, max: 1, step: 0.05 },
+      { key: "m", label: "m inventory-mismatch cost", min: 0.2, max: 5, log: true },
+      { key: "s1", label: "s₁ sales-signal noise", min: 0.3, max: 8, log: true },
+      { key: "s4", label: "s₄ upstream-order noise", min: 0.3, max: 8, log: true },
+    ],
+    grid: { key: "window", label: "Lag window", options: [[10, "10: quick, a few seconds"], [24, "24: the dissertation's, about 30 s"]],
+      apply: (d, v) => { d.horizon.window = v; d.numerics.unit_range = v >= 16 ? 8 : 4; } },
+    defaultVar: "P0", defaultCtl: "P0",
+    channelNames: {"w_q": "aggregate demand shock", "w_a0": "cost shock, firm 0", "w_eta0": "demand shock, firm 0", "w_0_0": "sales-signal noise, firm 0", "w_0_1": "price-signal noise, firm 0", "w_0_2": "order-book noise, firm 0", "w_0_3": "upstream-order noise, firm 0", "w_a1": "cost shock, firm 1", "w_eta1": "demand shock, firm 1", "w_1_0": "sales-signal noise, firm 1", "w_1_1": "price-signal noise, firm 1", "w_1_2": "order-book noise, firm 1", "w_1_3": "upstream-order noise, firm 1", "w_a2": "cost shock, firm 2", "w_eta2": "demand shock, firm 2", "w_2_0": "sales-signal noise, firm 2", "w_2_1": "price-signal noise, firm 2", "w_2_2": "order-book noise, firm 2", "w_2_3": "upstream-order noise, firm 2"},
+  },
   tr: {
     tab: "Regime change",
     title: "A change of regime in the tracking game",
@@ -443,7 +621,7 @@ numerics: {nodes: 10}
 
 const NAME_LABEL = { X: "state X", V: "value V", P: "price P" };
 const CHANNEL_LABEL = { w0: "common shock W⁰", w1: "signal noise W¹", w2: "signal noise W²", w3: "signal noise W³" };
-const AGENT_LABEL = { player1: "Player 1", player2: "Player 2", market_maker: "Market maker", trader1: "Informed trader" };
+const AGENT_LABEL = { player1: "Player 1", player2: "Player 2", market_maker: "Market maker", trader1: "Informed trader", firm0: "Firm 0", firm1: "Firm 1", firm2: "Firm 2" };
 
 // ---------------------------------------------------------------------------------------------
 // State
@@ -473,7 +651,8 @@ function sliderParams(d, s) {
   if (where !== "now" && d.horizon.past && d.horizon.past.model) out.push(d.horizon.past.model.params);
   return out;
 }
-function label(name) { return NAME_LABEL[name] || (name.match(/^[A-Z]\d*$/) ? `control ${name}` : name); }
+function isControl(name) { return !!(lastResult && lastResult.agents && lastResult.agents.some((a) => a.controls.includes(name))); }
+function label(name) { return NAME_LABEL[name] || (isControl(name) || name.match(/^[A-Z]\d*$/) ? `control ${name}` : name); }
 function chLabel(res, c) { return (PRESETS[game] && PRESETS[game].channelNames && PRESETS[game].channelNames[c]) || CHANNEL_LABEL[c] || c; }
 
 // ---------------------------------------------------------------------------------------------
@@ -487,6 +666,7 @@ function readHash() {
     if (!PRESETS[g].sliders) continue;
     const m = presetModel(g);
     values[g] = { nodes: m.numerics.nodes };
+    if (PRESETS[g].grid) values[g][PRESETS[g].grid.key] = PRESETS[g].grid.options[0][0];
     for (const s of PRESETS[g].sliders) values[g][s.key] = sliderParams(m, s)[0][s.param || s.key];
   }
   opts.refine = h.get("refine") === "1"; opts.stability = h.get("stability") === "1";
@@ -501,6 +681,8 @@ function readHash() {
     }
     const n = parseInt(h.get("nodes"));
     if (PRESETS[game].nodes && PRESETS[game].nodes.options.some((o) => o[0] === n)) values[game].nodes = n;
+    const G = PRESETS[game].grid;
+    if (G) { const w = parseFloat(h.get(G.key)); if (G.options.some((o) => o[0] === w)) values[game][G.key] = w; }
   }
 }
 function writeHash() {
@@ -511,6 +693,7 @@ function writeHash() {
   } else {
     const v = {}; for (const s of PRESETS[game].sliders) v[s.key] = values[game][s.key];
     if (PRESETS[game].nodes) v.nodes = values[game].nodes;
+    if (PRESETS[game].grid) v[PRESETS[game].grid.key] = values[game][PRESETS[game].grid.key];
     h = new URLSearchParams({ game, ...v });
   }
   if (opts.refine) h.set("refine", "1");
@@ -567,6 +750,14 @@ function renderControls() {
       values[game][p.key] = v; out.textContent = showVal(p, v);
       writeHash(); requestSolve(500);
     });
+  }
+  if (def.grid) {
+    const G = def.grid, wrap = document.createElement("div"); wrap.className = "ctl";
+    wrap.innerHTML = `<label for="ctl-grid"><span>${G.label}</span></label><select id="ctl-grid">${G.options.map((o) => `<option value="${o[0]}">${o[1]}</option>`).join("")}</select>
+      <div class="hint">A longer window resolves the slow-decaying responses; it costs time.</div>`;
+    box.appendChild(wrap);
+    const sel = wrap.querySelector("select"); sel.value = values[game][G.key];
+    sel.addEventListener("change", () => { values[game][G.key] = +sel.value; writeHash(); requestSolve(0); });
   }
   if (def.nodes) {
     const wrap = document.createElement("div"); wrap.className = "ctl";
@@ -705,6 +896,7 @@ function currentModel() {
   const def = PRESETS[game], d = presetModel(game);
   for (const s of def.sliders) for (const P of sliderParams(d, s)) P[s.param || s.key] = values[game][s.key];
   if (def.nodes) d.numerics.nodes = values[game].nodes;
+  if (def.grid) def.grid.apply(d, values[game][def.grid.key]);
   if (game === "ch1" && opts.engine === "cells") { d.numerics.engine = "cells"; d.numerics.nodes = 2 * values[game].nodes; }
   if (def.march && opts.march) { delete d.horizon.T; delete d.params.T; d.horizon.settle = 0.02; }
   return d;
@@ -926,11 +1118,15 @@ function simulatePaths(res, draws, seed) {
   return out;
 }
 function renderPaths(res, out) {
-  const names = Object.keys(res.paths.kernels).filter((nm) => Object.keys(res.paths.kernels[nm]).length || Object.keys((res.paths.initial || {})[nm] || {}).length);
-  if (!names.length) return;
+  const all = Object.keys(res.paths.kernels).filter((nm) => Object.keys(res.paths.kernels[nm]).length || Object.keys((res.paths.initial || {})[nm] || {}).length);
+  if (!all.length) return;
   const stat = res.paths.kind === "stationary";
+  const ctl = all.filter((nm) => isControl(nm)), sts = all.filter((nm) => !isControl(nm));
+  const many = all.length > 6;
+  let names = many ? ctl : sts.concat(ctl);
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Sample paths</h2>
-    <div class="row"><button class="secondary" id="redraw">Draw new shocks</button><span class="small muted" id="seedlab"></span></div>
+    <div class="row"><button class="secondary" id="redraw">Draw new shocks</button><span class="small muted" id="seedlab"></span>
+      ${many ? `<label for="pshow" class="small muted" style="margin-left:12px">Show</label><select id="pshow"><option value="c">controls</option><option value="s">states</option><option value="a">all</option></select>` : ""}</div>
     <div class="grid3" id="pgrid"></div>
     <p class="caption">Three draws of the shocks pushed through the equilibrium${stat ? ", over two lag windows of the stationary game" : res.kind === "transition" ? ", old shocks before time 0 included" : ""}. The band is the mean plus and minus two standard deviations. The shocks are drawn in your browser, so a new draw is instant.</p></section>`);
   const draw = () => {
@@ -950,8 +1146,10 @@ function renderPaths(res, out) {
     }
   };
   out.querySelector("#redraw").onclick = () => { pathSeed++; draw(); };
+  const ps = out.querySelector("#pshow");
+  if (ps) ps.onchange = () => { names = ps.value === "c" ? ctl : ps.value === "s" ? sts : sts.concat(ctl); draw(); };
   draw();
-  if (!stat) renderSurface(res, out, names);
+  if (!stat) renderSurface(res, out, all);
 }
 
 // the whole kernel K(t, s) of a finite or transition game as a heat map: a row per date, a column per shock time
