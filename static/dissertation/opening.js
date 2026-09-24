@@ -1,7 +1,7 @@
 // /dissertation: the cover and the scroll-told opening. Everything is drawn here, in SVG, with a pencil that
 // wobbles a little: the cover's faint lines are Brownian paths, the primitive shocks; the story's drawing
-// changes with each paragraph (a pencil, a network of prices, the loop; then, after the detour map of detour.js,
-// the noise-state and the wedge),
+// changes with each paragraph (a corner, a pencil, Smith's exchange, Hayek's prices, a used car, the loop; then,
+// after the detour map of detour.js, a surface, the noise-state, the wedge and the pencil again),
 // and each drawing builds as its paragraph scrolls past.
 (function () {
   "use strict";
@@ -175,6 +175,102 @@
   if (document.querySelector('.story .step[data-scene="finale"]')) scenes.finale = makePencil("finale", true);
 
 
+
+  // -- a person, drawn small: a head and shoulders
+  function person(g, x, y, sc, cls) {
+    const p = el("g", { transform: `translate(${x},${y}) scale(${sc || 1})` }, g);
+    el("path", { d: "M-15,22 Q-15,6 0,6 Q15,6 15,22", class: "box pencil " + (cls || ""), "stroke-width": 1.6 }, p);
+    el("circle", { cx: 0, cy: -6, r: 9, class: "box pencil " + (cls || ""), "stroke-width": 1.6 }, p);
+    return p;
+  }
+
+  // -- each of us sees a corner, and watches the others
+  scenes.corner = (() => {
+    const g = group("corner"), r = mulberry32(3), folk = [];
+    const spots = [[150, 150], [300, 110], [455, 160], [110, 300], [300, 300], [490, 305], [160, 455], [320, 480], [465, 440]];
+    spots.forEach(([x, y], i) => {
+      const j = [x + (r() - 0.5) * 24, y + (r() - 0.5) * 24];
+      const ring = el("circle", { cx: j[0], cy: j[1] + 6, r: 44, class: "pencil soft", "stroke-dasharray": "2 5" }, g);
+      const lit = el("circle", { cx: j[0], cy: j[1] + 6, r: 44, class: i === 4 ? "fillacc" : "" }, g);
+      lit.style.fill = i === 4 ? "" : "currentColor";
+      folk.push({ x: j[0], y: j[1], ring, lit, p: person(g, j[0], j[1], 1, i === 4 ? "accent" : "") });
+    });
+    const me = folk[4], looks = [0, 2, 3, 5, 7].map((k, n) => {
+      const o = folk[k], dx = o.x - me.x, dy = o.y - me.y, L = Math.hypot(dx, dy);
+      return stroke(g, pencil([[me.x + dx / L * 30, me.y + dy / L * 30], [o.x - dx / L * 30, o.y - dy / L * 30]], 30 + n, 1), "accent", 1.2);
+    });
+    looks.forEach((l) => { l.a.style.strokeDasharray = "4 5"; l.b.style.display = "none"; });
+    const lab = text(g, 300, 580, "each sees a corner, and watches what the others do", "mono");
+    return {
+      g,
+      update(t) {
+        folk.forEach((f, i) => { fade(f.p, seg(t, 0.02 + i * 0.025, 0.12 + i * 0.025)); fade(f.ring, seg(t, 0.2, 0.35) * 0.9);
+          fade(f.lit, seg(t, 0.22, 0.4) * (f === me ? 0.14 : 0.05)); });
+        looks.forEach((l, k) => { l.a.style.strokeDashoffset = 0; fade(l.a, seg(t, 0.45 + k * 0.06, 0.55 + k * 0.06)); });
+        fade(lab, seg(t, 0.6, 0.8));
+      },
+    };
+  })();
+
+  // -- Smith: exchange around a price that no one sets
+  scenes.smith = (() => {
+    const g = group("smith"), n = 6, folk = [], arcs = [];
+    for (let i = 0; i < n; ++i) {
+      const a = -Math.PI / 2 + i * 2 * Math.PI / n;
+      folk.push(person(g, 300 + 185 * Math.cos(a), 300 + 185 * Math.sin(a), 1.25));
+      const a0 = a + 0.36, a1 = a + 2 * Math.PI / n - 0.36;
+      const pts = circlePts(300, 300, 198, a0, a1, 10);
+      const s = stroke(g, pencil(pts, 60 + i, 1), "", 1.5);
+      const [ex, ey] = pts[pts.length - 1], [px, py] = pts[pts.length - 3], ang = Math.atan2(ey - py, ex - px);
+      const head = el("path", { d: `M${ex - 9 * Math.cos(ang - 0.45)},${ey - 9 * Math.sin(ang - 0.45)} L${ex},${ey} L${ex - 9 * Math.cos(ang + 0.45)},${ey - 9 * Math.sin(ang + 0.45)}`, class: "pencil", "stroke-width": 1.5 }, g);
+      arcs.push({ s, head });
+    }
+    const tag = el("g", {}, g);
+    stroke(tag, pencil([[300, 238], [300, 262]], 70, 0.4), "soft", 1).set(1);
+    el("circle", { cx: 300, cy: 236, r: 3.5, class: "fillacc" }, tag);
+    el("path", { d: "M252,262 L348,262 L348,330 L252,330 Z", class: "box pencil", "stroke-width": 1.6 }, tag);
+    text(tag, 300, 304, "price");
+    const lab = text(g, 300, 368, "set by no one", "mono");
+    return {
+      g,
+      update(t, now) {
+        folk.forEach((f, i) => fade(f, seg(t, 0.02 + i * 0.04, 0.14 + i * 0.04)));
+        arcs.forEach((a, i) => { a.s.set(seg(t, 0.25 + i * 0.05, 0.4 + i * 0.05)); fade(a.head, seg(t, 0.38 + i * 0.05, 0.42 + i * 0.05)); });
+        fade(tag, seg(t, 0.55, 0.7)); tag.setAttribute("transform", `rotate(${Math.sin(now / 800) * 4} 300 236)`);
+        fade(lab, seg(t, 0.7, 0.85));
+      },
+    };
+  })();
+
+  // -- the used car: the seller knows more, and shapes what you learn
+  scenes.car = (() => {
+    const g = group("car");
+    const body = stroke(g, pencil([[150, 430], [150, 392], [205, 388], [245, 345], [365, 345], [405, 388], [455, 395], [455, 430], [150, 430]], 80, 1.2), "", 2);
+    const win = stroke(g, pencil([[255, 385], [285, 355], [345, 355], [375, 385], [255, 385]], 81, 0.8), "soft", 1.3);
+    const wheels = [210, 395].map((x) => el("circle", { cx: x, cy: 432, r: 22, class: "box pencil", "stroke-width": 2 }, g));
+    const seller = person(g, 95, 330, 1.5), buyer = person(g, 510, 330, 1.5);
+    text(seller, 0, 48, "seller", "label"); text(buyer, 0, 48, "you", "label");
+    const bub = el("g", {}, g);
+    el("path", { d: "M60,250 Q60,215 125,215 Q195,215 195,250 Q195,282 125,282 L112,300 L108,282 Q60,282 60,250 Z", class: "box pencil", "stroke-width": 1.5 }, bub);
+    text(bub, 127, 256, "runs great", "label");
+    const bell = (m) => { const p = []; for (let i = 0; i <= 40; ++i) { const x = 400 + 190 * i / 40; p.push([x, 250 - 90 * Math.exp(-((x - m) ** 2) / (2 * 26 ** 2))]); } return p; };
+    const axis = el("line", { x1: 395, y1: 250, x2: 595, y2: 250, class: "pencil soft", "stroke-width": 1 }, g);
+    const old = el("path", { d: pencil(bell(470), 82, 0.2), class: "pencil soft", "stroke-width": 1.4, "stroke-dasharray": "4 4" }, g);
+    const now_ = el("path", { class: "pencil accent", "stroke-width": 2 }, g);
+    const bl = text(g, 495, 130, "what you believe it’s worth", "mono");
+    const lab = text(g, 300, 540, "you pay what you believe; the seller shapes what you learn", "mono");
+    return {
+      g,
+      update(t) {
+        body.set(seg(t, 0.02, 0.25)); win.set(seg(t, 0.15, 0.3)); wheels.forEach((w) => fade(w, seg(t, 0.2, 0.3)));
+        fade(seller, seg(t, 0.25, 0.35)); fade(buyer, seg(t, 0.3, 0.4));
+        fade(axis, seg(t, 0.35, 0.45)); fade(old, seg(t, 0.35, 0.45)); fade(bl, seg(t, 0.38, 0.5));
+        fade(bub, seg(t, 0.5, 0.6));
+        now_.setAttribute("d", pencil(bell(470 + 55 * seg(t, 0.58, 0.85)), 83, 0.2)); fade(now_, seg(t, 0.55, 0.62));
+        fade(lab, seg(t, 0.75, 0.9));
+      },
+    };
+  })();
   // -- prices: pulses crossing a network of people who each see their own corner
   scenes.prices = (() => {
     const g = group("prices"), r = mulberry32(5), nodes = [], edges = [];
@@ -279,6 +375,25 @@
     const g = group("loop"), d = loopDrawing(g, 40), tok = token(g);
     let ang = Math.PI;
     return { g, update(t, now, dt) { d.set(t); fade(tok, seg(t, 0.62, 0.7)); ang += dt * 1.1; tokenAt(tok, ang); } };
+  })();
+
+  // -- Art Moore's point: a PDE is harder because it can describe so much more
+  scenes.moore = (() => {
+    const g = group("moore"), N = 13, curves = [];
+    const f = (x, k) => 60 * Math.sin(x / 55 + k * 0.45) * Math.exp(-((x - 200) ** 2) / 26000) + 18 * Math.sin(x / 23 - k * 0.8);
+    for (let k = 0; k < N; ++k) {
+      const pts = []; for (let x = 60; x <= 380; x += 8) pts.push([x + k * 11, 300 - f(x, k) - k * 9 + 60]);
+      curves.push(stroke(g, pencil(pts, 90 + k, 0.5), k === 0 ? "accent" : "", k === 0 ? 2.2 : 1.1));
+    }
+    const l1 = text(g, 150, 470, "one equation, one path", "mono"), l2 = text(g, 420, 170, "a whole surface", "mono");
+    return {
+      g,
+      update(t) {
+        curves[0].set(seg(t, 0.02, 0.3)); fade(l1, seg(t, 0.2, 0.35));
+        for (let k = 1; k < N; ++k) curves[k].set(seg(t, 0.3 + k * 0.03, 0.45 + k * 0.03));
+        fade(l2, seg(t, 0.65, 0.8));
+      },
+    };
   })();
 
   // -- the noise-state: the shocks, and each player's estimate of them
