@@ -90,3 +90,17 @@ main {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* project cards with a picture: the picture on the right on wide screens, on top on phones; one per theme */
+.project-card.has-image { flex-direction: column; }
+.project-card .project-image { display: block; border-radius: 0.5rem; overflow: hidden; margin: 0.25rem 0 0.75rem; aspect-ratio: 2 / 1; background: rgba(127,127,127,0.06); }
+.project-card .project-image img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+.project-card .project-image:hover img { transform: scale(1.03); }
+.project-card .img-dark { display: none !important; }
+.dark .project-card .img-dark { display: block !important; }
+.dark .project-card .img-light { display: none !important; }
+@media (min-width: 640px) {
+  .project-card.has-image { flex-direction: row-reverse; align-items: center; gap: 1.25rem; }
+  .project-card.has-image .project-image { flex: 0 0 200px; margin: 0; }
+  .project-card.has-image .project-body { flex: 1 1 auto; min-width: 0; }
+}

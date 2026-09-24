@@ -2,6 +2,7 @@
 name = "Forecasting and Manipulating the Forecasts of Others"
 desc = "First exact equilibrium characterization of finite-player continuous-time LQG games with endogenous signals"
 tags = ["research", "game theory"]
+image = "images/card-lqg"
 links = [
     { name = "arxiv", url = "https://arxiv.org/abs/2603.12140" },
     { name = "try the explorer", url = "/lqg/", primary = true },
@@ -12,6 +13,7 @@ links = [
 name = "Decision Mesh"
 desc = "A hierarchical mesh based decision tree that yields continuity with minimal drawbacks"
 tags = ["personal", "data science"]
+image = "images/card-mesh"
 links = [
     { name = "watch it grow", url = "/mesh/", primary = true },
     { name = "github", url = "https://github.com/sbabichenko/Decision-Mesh" }

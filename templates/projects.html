@@ -6,7 +6,15 @@
 
 <h1 class="mb-8">Projects</h1>
 {% for project in data.project %}
-<div class="project-card not-prose block-bg my-5 flex w-full flex-col rounded-lg px-6 py-4">
+<div class="project-card not-prose block-bg my-5 flex w-full flex-col rounded-lg px-6 py-4{% if project.image %} has-image{% endif %}">
+  {%- if project.image %}
+  {%- set demo = project.links | filter(attribute="primary", value=true) | first %}
+  <a class="project-image" href="{{ demo.url | default(value='#') | safe }}" aria-label="{{ demo.name | default(value=project.name) }}">
+    <img class="img-light" src="{{ get_url(path=project.image ~ '-light.webp') }}" alt="" width="480" height="240" loading="lazy" />
+    <img class="img-dark" src="{{ get_url(path=project.image ~ '-dark.webp') }}" alt="" width="480" height="240" loading="lazy" />
+  </a>
+  {%- endif %}
+  <div class="project-body">
   <h3 class="mt-1 mb-2 text-xl font-bold text-black dark:text-white">{{ project.name }}</h3>
   <p class="text-sm leading-relaxed opacity-80 mb-3">{{ project.desc }}</p>
   <div class="flex flex-wrap items-center justify-between gap-2">
@@ -26,6 +34,7 @@
       >
       {% endfor %}
     </div>
+  </div>
   </div>
 </div>
 {% endfor %}<!---->
