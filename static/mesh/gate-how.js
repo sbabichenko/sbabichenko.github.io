@@ -117,6 +117,21 @@
     const byRound = (r) => cands.filter((c) => c.round === r);
     const r0 = byRound(0), cal = D.calib, cal0 = cal.find((c) => c.round === 0) || cal[0];
     const zmax = Math.max(4, ...r0.map((c) => Math.abs(c.z)));
+    // the fitted log-odds at any point: the baseline plus the surface, bilinear between the dump's grid centres
+    const SG = D.surface, SN = Math.round(Math.sqrt(SG.f.length));
+    const fitLogit = (x, y) => {
+      const gx = clamp(x * SN - 0.5, 0, SN - 1.001), gy = clamp(y * SN - 0.5, 0, SN - 1.001), i = Math.floor(gx), j = Math.floor(gy), u = gx - i, v = gy - j;
+      const F = (a, b) => SG.f[a * SN + b];   // gx slowest
+      return fit.baseline + (F(i, j) * (1 - u) + F(i + 1, j) * u) * (1 - v) + (F(i, j + 1) * (1 - u) + F(i + 1, j + 1) * u) * v;
+    };
+    // standardized residuals: a binomial's spread is fixed by its mean, so (k − n p) / √(n p (1 − p)) has sd 1 if
+    // the coins are binomial at odds p, whatever p and n are
+    const resid = (logit) => Array.from(data.x, (_, i) => { const p = expit(logit(data.x[i], data.y[i])), n = data.n[i]; return (data.k[i] - n * p) / Math.sqrt(n * p * (1 - p)); });
+    const zFit = resid(fitLogit), zFlat = resid(() => fit.baseline);
+    const disp = (z) => z.reduce((a, b) => a + b * b, 0) / z.length;
+    const outside = zFit.filter((z) => Math.abs(z) > 1.96).length / zFit.length;
+    // what a pool variance v alone predicts for that mean square: 1 + (n − 1) p (1 − p) v per site, to first order
+    const predicted = Array.from(data.x, (_, i) => { const p = expit(fitLogit(data.x[i], data.y[i])); return 1 + (data.n[i] - 1) * p * (1 - p) * fit.poolVariance; }).reduce((a, b) => a + b, 0) / data.x.length;
 
     // 1. the sites ----------------------------------------------------------------------------------------------
     scenes.sites = (() => {
@@ -135,6 +150,55 @@
       const leg = el("g", {}, g);
       [["more heads than usual", "pos"], ["fewer", "neg"]].forEach(([s, cls], i) => { el("circle", { cx: SQ.x + 6 + i * 170, cy: SQ.y + SQ.s + 22, r: 5, class: cls }, leg); text(leg, SQ.x + 16 + i * 170, SQ.y + SQ.s + 26, s, "tiny", "start"); });
       return { g, update(t) { fade(img, seg(t, 0, 0.15)); truth.style.opacity = 0.9 * seg(t, 0.55, 0.8); fade(tl, seg(t, 0.6, 0.8)); fade(leg, seg(t, 0.1, 0.25) * (1 - seg(t, 0.55, 0.7))); } };
+    })();
+
+    // 1b. the funnel: how far a binomial may stray is known from its mean ---------------------------------------
+    scenes.funnel = (() => {
+      const g = group("funnel");
+      const B = { x: 80, y: 110, w: 440, h: 360 }, nmax = Math.max(...data.n), ymax = 1.1;
+      const X = (n) => B.x + ((n - 0.5 * FLIPS) / (nmax - 0.5 * FLIPS + 1)) * B.w, Y = (v) => B.y + B.h / 2 - (v / ymax) * (B.h / 2);
+      text(g, B.x, B.y - 30, "share of heads minus the fitted odds, per unit of a coin's spread", "mono", "start");
+      line(g, B.x, B.y + B.h, B.x + B.w, B.y + B.h, "", 1); line(g, B.x, Y(0), B.x + B.w, Y(0), "soft", 1);
+      const c = document.createElement("canvas"); c.width = 2 * B.w; c.height = 2 * B.h;
+      const ctx = c.getContext("2d"), r = mulberry32(9);
+      zFit.forEach((z, i) => {
+        const n = data.n[i], v = z / Math.sqrt(n), o = Math.abs(z) > 1.96;
+        const col = o ? (z > 0 ? INK.acc : INK.warm) : [128, 128, 128];
+        ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${o ? 0.75 : 0.25})`;
+        ctx.beginPath(); ctx.arc(2 * (X(n + (r() - 0.5) * 0.8) - B.x), 2 * (Y(clamp(v, -ymax, ymax)) - B.y), 2.4, 0, 2 * Math.PI); ctx.fill();
+      });
+      const img = el("image", { x: B.x, y: B.y, width: B.w, height: B.h, href: c.toDataURL() }, g);
+      const band = [], lo = [];
+      for (let n = Math.ceil(0.5 * FLIPS); n <= nmax; ++n) { band.push([X(n), Y(1.96 / Math.sqrt(n))]); lo.push([X(n), Y(-1.96 / Math.sqrt(n))]); }
+      const up = stroke(g, "M" + band.map((q) => q.join(",")).join(" L"), "warm", 2), dn = stroke(g, "M" + lo.map((q) => q.join(",")).join(" L"), "warm", 2);
+      text(g, B.x, B.y + B.h + 18, `${Math.ceil(0.5 * FLIPS)} flips`, "tiny", "start"); text(g, B.x + B.w, B.y + B.h + 18, `${nmax} flips`, "tiny", "end");
+      const lab = text(g, B.x + 6, B.y + B.h - 10, "a binomial stays between the lines 95% of the time", "label warmt halo", "start");
+      const cap = text(g, 300, B.y + B.h + 50, `outside: ${pct(outside)} of sites, not 5%; mean squared residual ${disp(zFit).toFixed(2)}, not 1`, "mono");
+      return { g, update(t) { fade(img, seg(t, 0, 0.2)); up.set(seg(t, 0.25, 0.5)); dn.set(seg(t, 0.25, 0.5)); fade(lab, seg(t, 0.45, 0.6)); fade(cap, seg(t, 0.6, 0.75)); } };
+    })();
+
+    // 1c. two kinds of excess: shared by neighbours, or each site's own ------------------------------------------
+    scenes.coherent = (() => {
+      const g = group("coherent");
+      const w = 250, gap = 20, x0 = 300 - w - gap / 2, x1 = 300 + gap / 2, y0 = 150;
+      const map = (z) => {
+        const c = document.createElement("canvas"), N = 2 * w; c.width = c.height = N;
+        const ctx = c.getContext("2d");
+        z.forEach((v, i) => { const [r, gg, b] = ramp(clamp(v, -3, 3) * (2.2 / 3)); ctx.fillStyle = `rgb(${r},${gg},${b})`; ctx.beginPath(); ctx.arc(data.x[i] * N, (1 - data.y[i]) * N, 3.4, 0, 2 * Math.PI); ctx.fill(); });
+        return c.toDataURL();
+      };
+      const A = el("g", {}, g), Bg = el("g", {}, g);
+      el("image", { x: x0, y: y0, width: w, height: w, href: map(zFlat) }, A); el("rect", { x: x0, y: y0, width: w, height: w, class: "frame" }, A);
+      text(A, x0, y0 - 12, "against a flat surface", "mono", "start");
+      text(A, x0 + w / 2, y0 + w + 24, "coherent: neighbours share it", "label");
+      text(A, x0 + w / 2, y0 + w + 42, `mean squared residual ${disp(zFlat).toFixed(2)}`, "tiny");
+      el("image", { x: x1, y: y0, width: w, height: w, href: map(zFit) }, Bg); el("rect", { x: x1, y: y0, width: w, height: w, class: "frame" }, Bg);
+      text(Bg, x1, y0 - 12, "against the final fit", "mono", "start");
+      text(Bg, x1 + w / 2, y0 + w + 24, "incoherent: each site's own", "label");
+      text(Bg, x1 + w / 2, y0 + w + 42, `mean squared residual ${disp(zFit).toFixed(2)}`, "tiny");
+      text(Bg, x1 + w / 2, y0 + w + 56, `the pool variance alone predicts ${predicted.toFixed(2)}`, "tiny");
+      const cap = text(g, 300, y0 + w + 96, "each dot: (heads − n p) / √(n p (1 − p)), blue above, orange below", "tiny");
+      return { g, update(t) { fade(A, seg(t, 0, 0.2)); fade(Bg, seg(t, 0.35, 0.55)); fade(cap, seg(t, 0.55, 0.7)); } };
     })();
 
     // 2. the coarse mesh: round 0's candidate segments are the edges the fit starts with ---------------------------
@@ -387,10 +451,7 @@
     // 11. the fit, against the odds -------------------------------------------------------------------------------
     scenes.done = (() => {
       const g = group("done");
-      const S = D.surface, n = Math.round(Math.sqrt(S.f.length)), grid = new Float64Array(n * n);
-      // run_surface.csv lists gx slowest: row i of x, column j of y
-      for (let i = 0; i < n; ++i) for (let j = 0; j < n; ++j) grid[i * n + j] = S.f[i * n + j];
-      const surf = (x, y) => { const i = clamp(Math.floor(x * n), 0, n - 1), j = clamp(Math.floor(y * n), 0, n - 1); return fit.baseline + grid[i * n + j] - BASE; };
+      const surf = (x, y) => fitLogit(x, y) - BASE;
       const w = 250, gap = 20, x0 = 300 - w - gap / 2, x1 = 300 + gap / 2, y0 = 150;
       el("image", { x: x0, y: y0, width: w, height: w, href: raster((x, y) => TRUTHS[data.truth](x, y) - BASE, 100) }, g);
       el("rect", { x: x0, y: y0, width: w, height: w, class: "frame" }, g);
