@@ -70,6 +70,17 @@
 
       <div id="results"></div>
 
+      <section class="panel" id="sweeppanel" hidden>
+        <h2>Sweep a parameter</h2>
+        <div class="row">
+          <label for="sweepkey" class="small muted">Vary</label><select id="sweepkey"></select>
+          <button class="secondary" id="sweepbtn">Sweep</button>
+          <span class="small muted" id="sweepnote">Eleven solves across the slider's range, the others held where they are.</span>
+        </div>
+        <div class="plot tall" id="psweep"></div>
+        <p class="caption" id="sweepcap"></p>
+      </section>
+
       <div class="notes">
         <p>The solver is a C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a> 1.0.1 (MIT licence)
           with the same equations and algorithms: the stationary, spectral and cell engines, transitions with their past,
