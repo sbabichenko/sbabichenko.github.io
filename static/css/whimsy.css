@@ -72,3 +72,15 @@ p a:hover, li a:hover, .lede a:hover, figcaption a:hover {
 .whimsy-forecast.gone { opacity: 0; transform: translateY(8px); }
 .dark .whimsy-forecast { background: #2a2c30; border-color: #3a3d42; color: #e8e8e8; }
 @media print { .whimsy-forecast { display: none !important; } }
+
+/* the way past a scroll-told section (static/js/skip.js) */
+.skip-pill { position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 80; transform: translate(-50%, 12px);
+  opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s;
+  font: 600 0.82rem ui-sans-serif, system-ui, sans-serif; padding: 0.5rem 0.95rem; border-radius: 999px; text-decoration: none;
+  color: var(--ink, #222); background: color-mix(in srgb, var(--sheet, #fff) 88%, transparent); border: 1px solid var(--rule, #ddd);
+  backdrop-filter: blur(6px); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); white-space: nowrap; }
+.skip-pill::after { content: " ↓"; }
+.skip-pill.on { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.skip-pill:hover { color: var(--accent, #1f3fd0); border-color: currentColor; }
+.dark .skip-pill { color: #e8e8e8; background: rgba(42, 44, 48, 0.9); border-color: #3a3d42; }
+@media print { .skip-pill { display: none !important; } }
