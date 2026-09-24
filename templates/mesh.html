@@ -12,24 +12,30 @@
     <main class="explorer mesh">
       <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; Decision Mesh</div>
       <h1>Decision Mesh</h1>
-      <p class="sub">A decision tree cuts the plane into boxes and predicts a constant in each, so its fit is a staircase.
-        A decision mesh cuts it into triangles and predicts linearly across each, with heights shared at the corners, so
-        its fit is continuous. Press play and watch both grow on the same noisy data, piece for piece.</p>
+      <p class="sub">A regression tree cuts the plane into boxes and predicts a constant in each, so its fit is a
+        staircase. A decision mesh cuts the plane into pieces that share their corners and predicts across each piece
+        from those corner heights, so its fit is continuous. Press play: three fits grow on the same noisy data, each
+        given the same number of free parameters.</p>
       <ul class="facts">
         <li>runs in your browser</li>
-        <li>JavaScript port of <a href="https://github.com/sbabichenko/Decision-Mesh">DecisionMesh.py</a>, matching it to 1e-12</li>
+        <li>triangles: a port of <a href="https://github.com/sbabichenko/Decision-Mesh">DecisionMesh.py</a>, matching it to 1e-12</li>
+        <li>rectangles: the same rule on the geometry of <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a></li>
         <li id="speedfact">a few milliseconds a step</li>
       </ul>
 
       <details class="howto">
         <summary>How it grows, in four sentences</summary>
-        <p>Every edge of the mesh carries a candidate vertex at its midpoint; activating it splits the one or two triangles on
-          that edge through their opposite corners, and every active vertex can also have its height refitted. Each candidate
-          knows the least-squares height it would take with every other height held fixed, and how much squared error that
-          would save. Each step takes the candidate with the largest saving, unless the split would make a triangle more
-          than the aspect-ratio limit times longer than it is wide; with probability &epsilon; it instead splits the longest
-          edge of a triangle drawn with weight area &times; points, which lets it get past places where no single split helps.
-          The tree beside it is ordinary best-first CART, grown to as many leaves as the mesh has triangles.</p>
+<p><b>Triangles.</b> Every edge carries a candidate vertex at its midpoint; activating it splits the one or two
+          triangles on that edge through their opposite corners, and every active vertex can also have its height
+          refitted. <b>Rectangles.</b> Every cell offers both of its cuts, so the refinement can follow the data's
+          anisotropy instead of the diagonal a triangle happened to be born with; inside a cell the fit is bilinear,
+          which carries the interaction of the two coordinates that a linear triangle cannot. A vertex left hanging in
+          the middle of a coarser cell's edge takes that edge's endpoints as its parents, which makes the surface
+          continuous with no constraints to store.</p>
+        <p>In both, each candidate knows the least-squares height it would take with every other height held fixed, and
+          how much squared error that would save; each step takes the largest saving. The tree beside them is ordinary
+          best-first CART. All three are grown until they have the same number of free parameters: one height per mesh
+          vertex, one mean per tree leaf.</p>
       </details>
 
       <section class="panel">
@@ -40,8 +46,8 @@
           <div class="ctl"><label for="noise"><span>Noise &sigma;</span><span class="val" id="noiseval"></span></label><input type="range" id="noise" min="0" max="1.5" step="0.05" value="0.5" /></div>
           <div class="ctl"><label for="eps"><span>Explore &epsilon;</span><span class="val" id="epsval"></span></label><input type="range" id="eps" min="0" max="0.5" step="0.01" value="0.1" /></div>
           <div class="ctl"><label for="aspect"><span>Aspect limit</span><span class="val" id="aspectval"></span></label><input type="range" id="aspect" min="2" max="12" step="0.5" value="5" /></div>
-          <div class="ctl"><label for="minpts" title="0 is the algorithm as published; 3 stops vertices from being fitted to one or two points"><span>Min points</span><span class="val" id="minptsval"></span></label><input type="range" id="minpts" min="0" max="10" step="1" value="0" /></div>
-          <div class="ctl"><label for="refresh" title="Refit the candidate splits around a vertex whose height was refitted (off is the algorithm as published)"><span>Refresh fits</span><input type="checkbox" id="refresh" class="box" /></label><div class="hint">after each refit</div></div>
+          <div class="ctl"><label for="minpts" title="the fewest points a new piece may hold; 0 is the published triangular algorithm, 3 stops a vertex being fitted to one or two points"><span>Min points</span><span class="val" id="minptsval"></span></label><input type="range" id="minpts" min="0" max="10" step="1" value="3" /></div>
+          <div class="ctl"><label for="refresh" title="Refit the candidate splits around a vertex whose height was refitted (off is the algorithm as published)"><span>Refresh fits<sup>&#9651;</sup></span><input type="checkbox" id="refresh" class="box" /></label><div class="hint">after each refit</div></div>
         </div>
       </section>
 
@@ -58,7 +64,9 @@
       <section class="panel">
         <div class="stage">
           <figure><div class="cv"><canvas id="cvmesh" width="320" height="320"></canvas></div>
-            <figcaption><b>Decision mesh</b> <span id="capmesh"></span></figcaption></figure>
+            <figcaption><b>Triangles</b> <span id="capmesh"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvrect" width="320" height="320"></canvas></div>
+            <figcaption><b>Rectangles</b> <span id="caprect"></span></figcaption></figure>
           <figure><div class="cv"><canvas id="cvtree" width="320" height="320"></canvas></div>
             <figcaption><b>Regression tree</b> <span id="captree"></span></figcaption></figure>
           <figure><div class="cv"><canvas id="cvtruth" width="320" height="320"></canvas></div>
@@ -67,6 +75,7 @@
         <div class="row" style="margin-top:12px">
           <label class="check"><input type="checkbox" id="showedges" checked /> Mesh and tree lines</label>
           <label class="check"><input type="checkbox" id="showpts" /> Data points</label>
+          <span class="scopenote"><sup>&#9651;</sup> triangles only</span>
           <label class="check speedctl" for="speed">Speed <input type="range" id="speed" min="1" max="40" step="1" value="1" /> <span class="val" id="speedval"></span> a frame</label>
           <span class="scale" id="scale"></span>
         </div>
@@ -75,27 +84,31 @@
       <section class="panel">
         <h2>Error against the truth</h2>
         <div class="cv wide"><canvas id="cvcurve" width="900" height="220"></canvas></div>
-        <p class="caption">Root-mean-square distance from the true surface over the square, as the pieces grow; the dashed
-          line is the noise &sigma;. On smooth surfaces (the saddle, the hills, the cliff) the mesh pulls ahead once it has a
-          couple of hundred pieces. The tree does better on the disk, whose edge is a jump, on the ripples, whose peaks line up
-          with the axes, and at the very start, when a few boxes beat a few triangles. Late in a run a thin triangle holding a
-          handful of points can take an extreme height: those are the jumps in the mesh's curve. Setting a minimum of 3 points per
-          triangle (0 is the algorithm as published) removes them and leaves the best error about where it was. "Refresh fits"
-          refits the candidate splits around a vertex whose height has just been refitted, which the published algorithm
-          leaves stale. With both on, on the default data, the best error is 2 to 17% below the published algorithm's on five
-          of the six surfaces; the ripples come out 3% worse.</p>
+        <p class="caption">Root-mean-square distance from the true surface over the square, against the number of free
+          parameters; the dashed line is the noise &sigma;. Both meshes beat the staircase wherever the truth is smooth,
+          and the tree takes its revenge where the truth jumps or its edges run along the axes. Between the two
+          geometries it is usually close, and which one leads changes with the surface and with the draw. Late in a run
+          a thin piece holding a handful of points can take an extreme height: those are the jumps in the curves.
+          A minimum of 3 points per piece (0 is the published algorithm) removes them, and "refresh fits" refits the
+          candidates around a vertex whose height has just moved, which the published triangular algorithm leaves
+          stale.</p>
       </section>
 
       <div class="notes">
-        <p>The algorithm is my <a href="https://github.com/sbabichenko/Decision-Mesh">Decision Mesh</a>; this
-          page runs a line-for-line JavaScript port whose squared error matches the Python's to 1e-12 over the first 400 steps
-          (with &epsilon; = 0). Data, splits and pictures are all computed on this page.</p>
+<p>The triangular engine is a line-for-line JavaScript port of my
+          <a href="https://github.com/sbabichenko/Decision-Mesh">Decision Mesh</a>, matching the Python's squared error
+          to 1e-12 over the first 400 steps. The rectangular one is written for this page: it is the geometry of
+          <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a> (dyadic
+          bisection, two parents per vertex, bilinear cells) grown by the same greedy rule as the triangles, so the two
+          panels differ only in their geometry. It is not that repository's estimator, which selects its cuts with an
+          empirical-null FDR gate. Data, cuts and pictures are all computed on this page.</p>
         <p>Also on this site: the <a href="{{ get_url(path='lqg/') }}">noise-state game explorer</a>, which solves the games of my dissertation in your browser.</p>
       </div>
     </main>
 
     {% include "partials/footer.html" %}
     <script src="{{ get_url(path='mesh/decision-mesh.js') }}"></script>
+    <script src="{{ get_url(path='mesh/rect-mesh.js') }}"></script>
     <script src="{{ get_url(path='mesh/mesh-demo.js') }}"></script>
   </body>
 </html>
