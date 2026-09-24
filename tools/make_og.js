@@ -21,10 +21,10 @@ const CARDS = [
   { out: "og-mesh.png", art: "mesh", surface: "cliff", seed: 77,
     eyebrow: "sbabichenko.com/mesh",
     title: "Decision Mesh",
-    sub: "A regression that keeps cutting itself where the data says a cut is worth it." },
+    sub: "Freeform triangles, right triangles, rectangles and a regression tree fit the same noisy surface." },
   { out: "og-gate.png", art: "image", src: "/images/card-gate-light.webp",
     eyebrow: "sbabichenko.com/gate",
-    title: "A mesh that knows when to stop",
+    title: "The gated decision mesh",
     sub: "Coin flips fitted in your browser by an estimator that cuts only where a false-discovery gate allows." },
 ];
 

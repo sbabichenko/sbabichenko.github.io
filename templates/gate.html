@@ -11,11 +11,10 @@
 
     <main class="explorer mesh gate" id="gate" data-worker="{{ get_url(path='mesh/fit-worker.js') }}">
       <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; <a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &nbsp;/&nbsp; The gate</div>
-      <h1>A mesh that knows when to stop</h1>
+      <h1>The gated decision mesh</h1>
       <p class="sub">Somewhere on this square the odds of a coin change. A few thousand sites each flip their own coin a
         handful of times. The estimator cuts a mesh, of right triangles or of rectangles, only where a false-discovery
-        gate says the flips justify a cut, and it stops by itself when no candidate passes. Nobody tells it how many
-        pieces to use.</p>
+        gate says the flips justify a cut, and it stops when no candidate passes.</p>
       <ul class="facts">
         <li>my two C++ estimators, compiled to WebAssembly</li>
         <li>same meshes as the native builds, to 1e-11</li>
@@ -77,7 +76,7 @@
       </div>
 
       <div class="notes">
-        <p>Things to try: give the two hills more flips and watch the mesh fill in around them; pick
+        <p>Try giving the two hills more flips and watch the mesh fill in around them; pick
           &ldquo;nothing at all&rdquo;, which it leaves uncut at any number of flips; pick &ldquo;your drawing&rdquo;
           and paint on the odds (drag to raise them, tick &ldquo;lower&rdquo; or hold shift to lower them).</p>
         <p>The estimators are <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a>
@@ -88,7 +87,7 @@
           flat fit in each; rectangles cut across either axis, with a bilinear fit in each. Half the sites are held out:
           the mesh never sees them, and the deviance card scores the fit on them. The coins are drawn on this page from
           the odds you pick, with a random nudge per site (standard deviation 0.25 on the log-odds).</p>
-        <p>The <a href="{{ get_url(path='mesh/') }}">growing-mesh page</a> is the geometry without the statistics: freeform
+        <p>The <a href="{{ get_url(path='mesh/') }}">growing-mesh page</a> grows the same geometries by a simple greedy rule with no gate: freeform
           triangles, right triangles, rectangles and a tree, grown greedily side by side. The right triangles there are
           this estimator's geometry.</p>
       </div>
