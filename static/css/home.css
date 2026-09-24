@@ -155,3 +155,4 @@
 .home .back { color: var(--accent); font-weight: 600; }
 .home .back:hover { text-decoration: underline; }
 .home .demo.slim .body { padding: 20px; }
+.home .demo.wide { grid-column: 1 / -1; }
