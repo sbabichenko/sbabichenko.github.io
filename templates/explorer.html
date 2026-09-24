@@ -8,6 +8,8 @@
     {#- cross-origin isolation for the threaded solver (GitHub Pages cannot send the headers); scope: /lqg/ only -#}
     <script src="{{ get_url(path='lqg/coi-serviceworker.js') }}"></script>
     <link rel="stylesheet" href="{{ get_url(path='lqg/explorer.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/katex/katex.min.css') }}" />
+    <script defer src="{{ get_url(path='dissertation/katex/katex.min.js') }}"></script>
     {% include "partials/header.html" %}
 
     <main class="explorer">
