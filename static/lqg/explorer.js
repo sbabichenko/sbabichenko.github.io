@@ -1,185 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Noise-state game explorer</title>
-<meta name="description" content="Solve linear-quadratic-Gaussian games with private information in the browser, with a C++ port of the noisestate solver compiled to WebAssembly.">
-<!-- coi-serviceworker (MIT, Guido Zuidhof): cross-origin isolation for the threaded solver; it reloads the page once on the
-     first visit.  Its scope is this folder only. -->
-<script src="coi-serviceworker.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js" crossorigin="anonymous"></script>
-<script src="js-yaml.min.js"></script>
-<style>
-:root {
-  --bg: #f6f3ee; --panel: #ffffff; --panel-2: #faf8f4; --border: #e3ddd3;
-  --text: #1c1c28; --muted: #5a5a6e; --faint: #8b8b9c;
-  --accent: #1f5f8b; --accent-soft: #e4eef6;
-  --ok: #2d7a46; --ok-soft: #e3f1e7; --warn: #9a5b00; --warn-soft: #fbf0dc; --bad: #a3322a; --bad-soft: #f8e4e2;
-  --c1: #1f77b4; --c2: #d62728; --c3: #2a2a2a; --c4: #7b5ea7; --c5: #2ca02c; --c6: #e08a00;
-  --grid: #ebe6dd; --track: #dcd5c9;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #15161b; --panel: #1d1f26; --panel-2: #22252d; --border: #30333d;
-    --text: #e7e6ea; --muted: #a8a8b8; --faint: #7c7c8c;
-    --accent: #7fb4dc; --accent-soft: #1f2d3a;
-    --ok: #74c28e; --ok-soft: #1c2d22; --warn: #e2b060; --warn-soft: #33291a; --bad: #e88a82; --bad-soft: #3a2220;
-    --c1: #5aa6e0; --c2: #ef6b61; --c3: #d9d9df; --c4: #b69ae0; --c5: #6cc46c; --c6: #f0a940;
-    --grid: #2b2e37; --track: #3a3d48;
-    color-scheme: dark;
-  }
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text);
-  font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; }
-main { max-width: 1120px; margin: 0 auto; padding: 24px 16px 64px; }
-a { color: var(--accent); }
-h1 { font-size: 1.6rem; margin: 0 0 4px; letter-spacing: -0.01em; }
-h2 { font-size: 1.1rem; margin: 0 0 10px; }
-.sub { color: var(--muted); margin: 0 0 18px; max-width: 780px; }
-.panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
-.muted { color: var(--muted); }
-.small { font-size: 0.85rem; }
-code, pre, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.85rem; }
-
-.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
-.tab { border: 1px solid var(--border); background: var(--panel); color: var(--muted); padding: 8px 14px; border-radius: 999px; cursor: pointer; font: inherit; }
-.tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
-@media (prefers-color-scheme: dark) { .tab[aria-selected="true"] { color: #0f1720; } }
-
-.eq { font-family: "Cambria Math", "STIX Two Math", Georgia, serif; font-size: 1rem; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin: 8px 0; overflow-x: auto; white-space: nowrap; }
-.eq div { padding: 1px 0; }
-@media (max-width: 600px) { .eq { white-space: normal; } }
-.controls { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px 20px; margin-top: 12px; }
-.ctl label { display: flex; justify-content: space-between; gap: 8px; font-size: 0.88rem; color: var(--muted); }
-.ctl label .val { color: var(--text); font-family: ui-monospace, Menlo, monospace; }
-.ctl input[type=range] { width: 100%; accent-color: var(--accent); margin: 4px 0 0; }
-.ctl select, .ctl input[type=number] { width: 100%; font: inherit; padding: 5px 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); margin-top: 4px; }
-.ctl .checks { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: 0.88rem; color: var(--muted); }
-.ctl .checks label { display: inline-flex; gap: 6px; align-items: center; }
-.ctl.opts > label + select { margin-bottom: 6px; }
-.hint { font-size: 0.8rem; color: var(--faint); margin-top: 2px; }
-textarea#yaml { width: 100%; min-height: 320px; font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px; resize: vertical; tab-size: 2; }
-.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
-.row select { font: inherit; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); }
-button.primary, button.secondary { font: inherit; font-size: 0.88rem; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
-button.primary { border: 1px solid var(--accent); background: var(--accent); color: #fff; }
-button.secondary { border: 1px solid var(--border); background: var(--panel-2); color: var(--text); }
-button:disabled { opacity: 0.5; cursor: default; }
-@media (prefers-color-scheme: dark) { button.primary { color: #0f1720; } }
-.error { color: var(--bad); white-space: pre-wrap; }
-
-#statusbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; position: sticky; top: 0; z-index: 5;
-  background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; }
-.chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 2px 10px; font-size: 0.82rem; font-weight: 600; white-space: nowrap; }
-.chip.idle { background: var(--panel-2); color: var(--muted); }
-.chip.busy { background: var(--accent-soft); color: var(--accent); }
-.chip.ok { background: var(--ok-soft); color: var(--ok); }
-.chip.warn { background: var(--warn-soft); color: var(--warn); }
-.chip.bad { background: var(--bad-soft); color: var(--bad); }
-#statustext { color: var(--muted); font-size: 0.88rem; flex: 1 1 260px; }
-#statusbar .buttons { display: flex; gap: 8px; margin-left: auto; }
-
-#results { transition: opacity 0.2s; }
-#results.stale { opacity: 0.55; }
-.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-.card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
-.card .k { font-size: 0.8rem; color: var(--muted); }
-.card .v { font-size: 1.35rem; font-family: ui-monospace, Menlo, monospace; }
-.card .d { font-size: 0.78rem; color: var(--faint); }
-.delta { font-size: 0.8rem; font-family: inherit; margin-left: 4px; }
-.delta.up { color: var(--bad); } .delta.down { color: var(--ok); }
-.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-@media (max-width: 820px) { .grid3 { grid-template-columns: 1fr; } }
-.plot { width: 100%; height: 300px; }
-.plot.tall { height: 360px; }
-.caption { font-size: 0.85rem; color: var(--muted); margin: 8px 0 0; max-width: 820px; }
-table.diag { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
-table.diag th, table.diag td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
-table.diag th { color: var(--muted); font-weight: 600; }
-table.diag td.mono { white-space: nowrap; }
-.tablewrap { overflow-x: auto; }
-details summary { cursor: pointer; color: var(--muted); }
-details.howto { margin: -6px 0 16px; max-width: 820px; }
-details.howto p { font-size: 0.9rem; color: var(--muted); margin: 8px 0 0; }
-footer { color: var(--faint); font-size: 0.82rem; margin-top: 28px; }
-</style>
-</head>
-<body>
-<main>
-  <h1>Noise-state game explorer</h1>
-  <p class="sub">Linear-quadratic-Gaussian games in which each player sees the state only through a private noisy signal.
-    Every result on this page is computed in your browser, when you ask for it, by a C++ port of
-    <a href="https://github.com/sbabichenko/noisestate">noisestate</a> (the solver of the dissertation
-    <em>Noise-State Calculus for Dynamic Games with Strategic Information</em>, Babichenko 2026) compiled to WebAssembly.
-    Nothing is precomputed. Small games solve in well under a second; larger grids, delays and many agents can take
-    from several seconds to a few minutes, and the status bar shows how long the current solve has been running.</p>
-
-  <details class="howto">
-    <summary>How the solver works, in four sentences</summary>
-    <p>Every quantity in these games is written as its response to the shocks that have hit so far:
-      X(t) = &Sigma;<sub>k</sub> &int; K<sub>k</sub>(t, s) dW<sup>k</sup>(s), plus a deterministic mean.
-      A player's strategy maps the signals it has seen to an action, so it is a kernel of the same kind, and its best
-      response to the others' kernels is the solution of one linear first-order condition. The solver iterates best
-      responses (with Anderson acceleration) until the kernels stop moving, on piecewise Chebyshev nodes in shock age,
-      or on a triangle of dates and shock times for a finite horizon. The information wedge in the plots is the part of
-      a player's first-order condition that exists only because the other players read its actions in their signals.</p>
-  </details>
-
-  <div class="tabs" role="tablist" id="tabs"></div>
-
-  <section class="panel" id="modelpanel">
-    <h2 id="gametitle"></h2>
-    <div id="gamedesc"></div>
-    <div class="controls" id="controls"></div>
-    <div id="editor" hidden>
-      <div class="row">
-        <label for="example" class="small muted">Start from</label>
-        <select id="example"></select>
-        <button class="secondary" id="loadexample">Load</button>
-      </div>
-      <textarea id="yaml" spellcheck="false" aria-label="Model file (YAML)"></textarea>
-      <p class="hint">The model file format of noisestate: channels, states, agents with controls, signal rows and losses, a
-        horizon (<code>stationary</code> with a <code>window</code>, or <code>finite</code> with <code>T</code>) and numerics.
-        Transitions (a past and a continuation) and the cell engine run in the Python package only.</p>
-      <div class="controls" id="paramcontrols"></div>
-      <div class="controls" id="paramopts"></div>
-      <div class="row" style="margin-top:12px"><button class="primary" id="solvecustom">Solve this model</button>
-        <span class="small error" id="yamlerror"></span></div>
-    </div>
-  </section>
-
-  <div id="statusbar">
-    <span class="chip idle" id="chip">Loading</span>
-    <span id="statustext">Loading the solver.</span>
-    <span class="buttons">
-      <button class="secondary" id="sharebtn" title="Copy a link that reproduces this solve">Copy link</button>
-      <button class="secondary" id="stopbtn" disabled>Stop</button>
-      <button class="primary" id="solvebtn" disabled>Solve again</button>
-    </span>
-  </div>
-
-  <div id="results"></div>
-
-  <footer>
-    The solver is a C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a> 1.0.1 (MIT licence) with
-    the same equations and algorithms: the stationary, spectral and cells engines, transitions with their past, band, buffer
-    and march in T, and the refinement and stability checks. On a test grid of 42 solves its costs, kernels, loss paths and
-    first-order-condition terms agree with the Python package to 1e-10 or better. Plots by Plotly, YAML by js-yaml. Where the browser allows it (the page reloads
-    once on a first visit to turn it on), the solver runs each agent's best response on its own thread; a solve after a
-    parameter change starts from the last equilibrium. This page replaces an earlier explorer built on a pre-release solver. The page address keeps the game and its parameters, so a link reproduces a solve.
-  </footer>
-</main>
-
-<script>
 "use strict";
 // ---------------------------------------------------------------------------------------------
 // Presets: a model file each, with sliders on some of its parameters.
 const PRESETS = {
   ch1: {
     tab: "Tracking game",
+    ch: "Ch. 1",
     title: "Two-player tracking game on a finite horizon",
     desc: `<p class="small muted" style="margin:0">Chapter 1. Two players push one shared state toward their own targets.
       Each sees the state only through its own noisy signal, so each must forecast what the other knows.
@@ -221,6 +46,7 @@ numerics: {nodes: 12}
   },
   ch3: {
     tab: "Stationary tracking",
+    ch: "Ch. 3",
     title: "Stationary two-player tracking game",
     desc: `<p class="small muted" style="margin:0">Chapter 3. The same tracking problem run forever, scored by average cost per unit time.
       Responses are kernels in shock age: how a unit shock of a given age still moves the state or a control.</p>
@@ -253,6 +79,7 @@ numerics: {nodes: 32}
   },
   ch4: {
     tab: "Kyle–Back market",
+    ch: "Ch. 4",
     title: "Stationary Kyle–Back market",
     desc: `<p class="small muted" style="margin:0">Chapter 4. An informed trader watches a noisy signal of a drifting value V and trades against
       noise flow. A competitive market maker sets the price from the order flow alone.</p>
@@ -295,6 +122,7 @@ numerics: {nodes: 16}
   },
   ch5: {
     tab: "Supply-chain cycle",
+    ch: "Ch. 5",
     title: "Three firms in a supply-chain cycle",
     desc: `<p class="small muted" style="margin:0">Chapter 5. Firm i buys from firm i - 1 and sells to firm i + 1 and to consumers, around a cycle of three.
       Each firm sets a price P<sub>i</sub> and an order o<sub>i</sub>, which take effect after a delay &tau;, and sees only noisy signals:
@@ -471,8 +299,53 @@ numerics: {nodes: 8, unit: 0.5, unit_range: 4.0}
     defaultVar: "P0", defaultCtl: "P0",
     channelNames: {"w_q": "aggregate demand shock", "w_a0": "cost shock, firm 0", "w_eta0": "demand shock, firm 0", "w_0_0": "sales-signal noise, firm 0", "w_0_1": "price-signal noise, firm 0", "w_0_2": "order-book noise, firm 0", "w_0_3": "upstream-order noise, firm 0", "w_a1": "cost shock, firm 1", "w_eta1": "demand shock, firm 1", "w_1_0": "sales-signal noise, firm 1", "w_1_1": "price-signal noise, firm 1", "w_1_2": "order-book noise, firm 1", "w_1_3": "upstream-order noise, firm 1", "w_a2": "cost shock, firm 2", "w_eta2": "demand shock, firm 2", "w_2_0": "sales-signal noise, firm 2", "w_2_1": "price-signal noise, firm 2", "w_2_2": "order-book noise, firm 2", "w_2_3": "upstream-order noise, firm 2"},
   },
+  ch6: {
+    tab: "Naive or privy",
+    ch: "Ch. 6",
+    title: "Naive distortions and privy responses",
+    desc: `<p class="small muted" style="margin:0">Chapter 6. The Kyle–Back market of Chapter 4, solved twice. In the privy equilibrium the
+      trader's best response accounts for how the market maker's price reacts to its orders, as it does in Chapter 4. In the naive one
+      the trader treats the market maker as naive to its deviations: in its first-order condition the price does not move when it trades
+      more, so it trades as if it had no price impact, while the market maker still prices the trader's actual strategy.</p>
+      <div class="eq"><div>privy: the trader's deviation moves the flow, the market maker's forecast and the price, and the trader pays for it</div>
+      <div>naive: the same deviation, with the market maker's strategy switched off in the trader's calculation</div></div>
+      <p class="small muted" style="margin:0">Both are solved on every change (the naive one starts from the privy equilibrium). The comparison below
+      shows what the naive belief costs the trader: it trades harder on its information, the price becomes more informative
+      faster, and its profit turns into a loss.</p>`,
+    yaml: `name: ch6_naive_kyle_back
+params: {eps: 0.2, rho: 0.5, gamma1: 1.0, sigma_V: 1.0, sigma_Z: 1.0}
+channels: [wV, wZ, w1]
+states:
+  V: {drift: {}, noise: {wV: sigma_V}}
+agents:
+  market_maker:
+    controls: [P]
+    myopic: true
+    signals:
+      flow: {drift: {D1: 1.0}, noise: {wZ: sigma_Z}}
+    loss: [[1.0, P, P], [-2.0, P, V]]
+  trader1:
+    controls: [D1]
+    signals:
+      y1: {drift: {V: gamma1, P: "-gamma1"}, noise: {w1: 1.0}}
+      flow: {drift: {}, noise: {wZ: sigma_Z}}
+    loss: [[-1.0, D1, V], [1.0, D1, P], [eps, D1, D1]]
+horizon: {kind: stationary, discount: rho, window: 8.0}
+numerics: {nodes: 16}
+`,
+    naive: { trader1: ["market_maker"] },
+    sliders: [
+      { key: "eps", label: "ε trading cost", min: 0.05, max: 2, log: true },
+      { key: "gamma1", label: "γ₁ signal loading", min: 0.1, max: 4, log: true },
+      { key: "sigma_Z", label: "σ_Z noise-flow volatility", min: 0.2, max: 3, step: 0.05 },
+      { key: "rho", label: "ρ discount rate", min: 0.1, max: 2, step: 0.05 },
+    ],
+    defaultVar: "D1", defaultCtl: "D1",
+    channelNames: { wV: "value shock", wZ: "noise-trader flow shock", w1: "trader's signal noise" },
+  },
   tr: {
     tab: "Regime change",
+    ch: "Ch. 3",
     title: "A change of regime in the tracking game",
     desc: `<p class="small muted" style="margin:0">Chapter 3's tracking game, with mean reversion, has run in a stationary equilibrium for ever.
       At time 0 player 1's signal precision jumps. The shocks born before 0 still drive the state and both players' forecasts,
@@ -623,6 +496,26 @@ horizon:
       - {name: v0, loads: {V: "sqrt(Sigma0)"}, rows: {trader1.flow: 1.0}}
   continuation: end
 `,
+  "tracking with naive observers (Ch. 6)": `# Each player's best response ignores the other's reaction to its deviations
+# (naive_observers: agent -> the observers treated as naive). Compare with the stationary tracking example.
+name: ch6_naive_tracking
+params: {p1: 3.0, p2: 10.0, r1: 1.0, r2: 1.0}
+channels: [w0, w1, w2]
+states:
+  X: {drift: {D1: 1.0, D2: 1.0}, noise: {w0: 1.0}}
+agents:
+  player1:
+    controls: [D1]
+    signals: {y1: {drift: {X: "sqrt(p1)"}, noise: {w1: 1.0}}}
+    loss: [[0.5, X, X], ["0.5*r1", D1, D1]]
+  player2:
+    controls: [D2]
+    signals: {y2: {drift: {X: "sqrt(p2)"}, noise: {w2: 1.0}}}
+    loss: [[0.5, X, X], ["0.5*r2", D2, D2]]
+naive_observers: {player1: [player2], player2: [player1]}
+horizon: {kind: stationary, discount: 0.0, window: 8.0}
+numerics: {nodes: 32}
+`,
   "tracking game on the cells engine (Ch. 1)": PRESETS.ch1.yaml.replace("numerics: {nodes: 12}", "numerics: {engine: cells, nodes: 24}"),
   "delayed control and observation (Ch. 1), a few seconds": `# Finite-horizon two-player game with a control delay and a delayed observation.
 name: ch1_delayed_finite
@@ -682,7 +575,9 @@ let solveStart = 0, timerHandle = null, progress = null;
 const $ = (id) => document.getElementById(id);
 const fmt = (x, d = 4) => (x === null || x === undefined || !isFinite(x)) ? "–" : Number(x).toFixed(d);
 const fmtE = (x) => (x === null || x === undefined || !isFinite(x)) ? "–" : Number(x).toExponential(1);
-const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+// the explorer's colours live on its root element (they follow the site's light and dark themes)
+const css = (v) => getComputedStyle(document.querySelector(".explorer") || document.documentElement).getPropertyValue(v).trim();
+const isDark = () => document.documentElement.classList.contains("dark");
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 function presetModel(g) { return jsyaml.load(PRESETS[g].yaml); }
@@ -758,9 +653,13 @@ function showVal(p, v) { const d = Math.abs(v) >= 10 ? 1 : Math.abs(v) >= 1 ? 2 
 
 function renderTabs() {
   const tabs = $("tabs"); tabs.innerHTML = "";
-  for (const [g, def] of Object.entries(PRESETS)) {
+  const order = ["ch1", "ch3", "tr", "ch4", "ch5", "ch6", "custom"];
+  const keys = [...order.filter((g) => PRESETS[g]), ...Object.keys(PRESETS).filter((g) => !order.includes(g))];
+  for (const g of keys) {
+    const def = PRESETS[g];
     const b = document.createElement("button");
-    b.className = "tab"; b.setAttribute("role", "tab"); b.textContent = def.tab;
+    b.className = "tab"; b.setAttribute("role", "tab");
+    b.innerHTML = `${esc(def.tab)}${def.ch ? `<span class="ch">${esc(def.ch)}</span>` : ""}`;
     b.setAttribute("aria-selected", g === game ? "true" : "false");
     b.onclick = () => {
       if (g === game) return;
@@ -769,6 +668,9 @@ function renderTabs() {
     };
     tabs.appendChild(b);
   }
+  // keep the selected game in view when the row scrolls sideways (phones)
+  const sel = tabs.querySelector('[aria-selected="true"]');
+  if (sel && tabs.scrollWidth > tabs.clientWidth) tabs.scrollLeft = Math.max(0, sel.offsetLeft - tabs.offsetLeft - 24);
 }
 
 function renderControls() {
@@ -817,13 +719,13 @@ function renderOptions(box) {
   const def = PRESETS[game];
   const wrap = document.createElement("div"); wrap.className = "ctl opts";
   let html = "";
-  if (def.march) html += `<label for="opt-march"><span>End of the transition</span></label><select id="opt-march">
-      <option value="0">Fixed T (the slider)</option><option value="1">Until settled (the march in T)</option></select>`;
-  if (game === "ch1") html += `<label for="opt-engine"><span>Engine</span></label><select id="opt-engine">
-      <option value="spectral">Spectral (triangle grid)</option><option value="cells">Cells (forward march, twice the nodes)</option></select>`;
-  html += `<div class="checks"><label><input type="checkbox" id="opt-refine"> Refinement check</label>
-      <label><input type="checkbox" id="opt-stability"> Stability</label></div>
-      <div class="hint">Refinement re-solves on a grid 1.5 times finer and reports how much costs and kernels move; stability is the spectral radius of the best-response map. Each adds time.</div>`;
+  if (def.march) html += `<label class="pick"><span>End of the transition</span><select id="opt-march">
+      <option value="0">Fixed T (the slider)</option><option value="1">Until settled (march in T)</option></select></label>`;
+  if (game === "ch1") html += `<label class="pick"><span>Engine</span><select id="opt-engine">
+      <option value="spectral">Spectral (triangle grid)</option><option value="cells">Cells (forward march)</option></select></label>`;
+  html += `<label class="check" title="Re-solve on a grid 1.5 times finer and report how much costs and kernels move"><input type="checkbox" id="opt-refine"> Refinement check</label>
+      <label class="check" title="The spectral radius of the best-response map"><input type="checkbox" id="opt-stability"> Stability</label>
+      <span class="hint">Checks run after the solve and add time.</span>`;
   wrap.innerHTML = html; box.appendChild(wrap);
   const on = (id, f) => { const e = wrap.querySelector("#" + id); if (e) e.addEventListener("change", () => { f(e); writeHash(); requestSolve(0); }); return e; };
   const m = on("opt-march", (e) => { opts.march = e.value === "1"; renderControls(); });
@@ -913,6 +815,8 @@ function startWorker() {
     const m = ev.data;
     if (m.type === "ready") {
       workerReady = true; solverThreads = m.threads || 1;
+      const tf = document.getElementById("threadfact");
+      if (tf) tf.textContent = solverThreads > 1 ? `${solverThreads} threads in this browser` : "single-threaded in this browser";
       if (game === "custom" && !inFlight && !lastResult) setStatus("idle", "Ready", "Edit the model and press Solve.");
       else requestSolve(0);
     } else if (m.type === "progress") {
@@ -966,6 +870,7 @@ function sendSolve() {
   // a warm start: the last equilibrium of this tab, which the solver uses when the shapes match (a parameter moved)
   // and ignores otherwise (a new grid or a new model)
   const request = { ...currentRequest(), return_start: true };
+  if (game !== "custom" && PRESETS[game].naive) request.naive_compare = PRESETS[game].naive;
   const hk = model.horizon && model.horizon.kind;
   if (!(model.numerics && model.numerics.engine === "cells")) request.path_grid = hk === "stationary" ? 150 : hk === "transition" ? 48 : 60;
   if (lastStart[game]) request.start = lastStart[game];
@@ -1000,7 +905,9 @@ function onSolved(m) {
   const failed = res.checks.filter((d) => d.ok === false && d.name !== "converged");
   const t = m.wall.toFixed(1), how = res.warm_start ? " from the last equilibrium" : "";
   if (!res.converged) setStatus("bad", "Not converged", `The fixed point did not converge (residual ${fmtE(res.residual)} after ${res.evaluations} rounds). Try a finer grid or less extreme parameters.`);
-  else if (failed.length) setStatus("warn", "Converged, with warnings", `Solved in ${t} s${how}. ${failed.length} check${failed.length > 1 ? "s" : ""} failed; see Diagnostics below.`);
+  else if (failed.length && failed.every((d) => d.name === "resolution"))
+    setStatus("warn", "Solved, coarse grid", `Solved in ${t} s${how}. The grid is coarse for these parameters (representation error ${fmtE(failed[0].value)}): costs are good to a few digits; more nodes give more.`);
+  else if (failed.length) setStatus("warn", "Converged, with warnings", `Solved in ${t} s${how}. Failed: ${failed.map((d) => d.name).join(", ")}; the Diagnostics table says what to raise.`);
   else setStatus("ok", "Solved", `Solved in ${t} s${how}, ${res.evaluations} best-response rounds, residual ${fmtE(res.residual)}. All checks passed.`);
 }
 
@@ -1022,7 +929,7 @@ const plotCfg = { responsive: true, displaylogo: false, modeBarButtonsToRemove: 
 const titleOf = (s) => ({ text: s, font: { size: 13 }, x: 0, xanchor: "left", xref: "paper" });
 const palette = () => ["--c3", "--c1", "--c2", "--c4", "--c5", "--c6"].map(css);
 function ramp(i, n) {
-  const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+  const dark = isDark();
   const a = n > 1 ? i / (n - 1) : 1;
   const from = dark ? [60, 90, 120] : [170, 200, 225], to = dark ? [140, 200, 245] : [20, 70, 120];
   return `rgb(${from.map((f, k) => Math.round(f + (to[k] - f) * a)).join(",")})`;
@@ -1051,6 +958,7 @@ function renderResults(res) {
     <p class="caption">Expected losses at the equilibrium (${esc(res.cost_kind)}); smaller is better.${prevResult ? " Arrows: the change from the previous solve." : ""}</p>
     ${res.warnings && res.warnings.length ? `<p class="caption" style="color:var(--warn)">${res.warnings.map(esc).join("<br>")}</p>` : ""}</section>`);
   if (res.kind === "transition") renderTransition(res, out);
+  if (res.naive) renderNaive(res, out);
   if (res.paths) renderPaths(res, out);
   if (res.kind.startsWith("finite") || res.kind === "transition") renderFinite(res, out, keepVar, keepCtl);
   else renderStationary(res, out, keepVar, keepCtl);
@@ -1094,6 +1002,42 @@ function renderFinite(res, out, keepVar, keepCtl) {
   };
   const ksel = out.querySelector("#kvar"); ksel.value = kv; ksel.onchange = () => drawK(ksel.value); drawK(kv);
   renderFoc(res, out, keepCtl, `Split at t = ${fmt(T / 2, 2)} across shock times s${res.kind === "transition" ? ", old shocks included" : ""}. The physical part is what the first-order condition would be if nobody reacted to the player's deviation; the information wedge is the rest, which comes from the other agents revising their forecasts.`, "shock time s");
+}
+
+// ---------------------------------------------------------------------------------------------
+// Chapter 6: the privy equilibrium (the result) against the same game with naive observers (res.naive)
+function renderNaive(res, out) {
+  const N = res.naive, agents = Object.keys(res.costs), pal = palette();
+  const who = Object.entries(N.naive_observers).map(([a, obs]) => `${AGENT_LABEL[a] || a} treats ${obs.map((o) => AGENT_LABEL[o] || o).join(" and ")} as naive`).join("; ");
+  const card = (a, v, cmp) => {
+    const d = cmp === undefined ? "" : (() => { const dv = v - cmp; return Math.abs(dv) > 5e-5 ? `<span class="delta ${dv > 0 ? "up" : "down"}">${dv > 0 ? "▲" : "▼"} ${fmt(Math.abs(dv), 4)}</span>` : ""; })();
+    return `<div class="card"><div class="k">${esc(AGENT_LABEL[a] || a)}</div><div class="v">${fmt(v, 4)} ${d}</div></div>`;
+  };
+  out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Privy or naive</h2>
+    <div class="versus">
+      <div class="side"><h3><span class="swatch" style="background:${pal[1]}"></span>Privy (the equilibrium of Chapter 4)</h3><div class="cards">${agents.map((a) => card(a, res.costs[a])).join("")}</div></div>
+      <div class="side"><h3><span class="swatch" style="background:${pal[2]}"></span>Naive: ${esc(who)}</h3><div class="cards">${agents.map((a) => card(a, N.costs[a], res.costs[a])).join("")}</div></div>
+    </div>
+    <div class="row" style="margin-top:12px"><label for="nvar" class="small muted">Response of</label><select id="nvar"></select></div>
+    <div class="plot tall" id="pnaive"></div>
+    <p class="caption">Costs are flow losses (a trader's profit is negative). The arrows compare the naive equilibrium with the privy one.
+      The plot overlays the two equilibria's responses to each shock (solid privy, dashed naive).${N.converged ? "" : " The naive solve did not converge; its numbers are its last iterate."}</p></section>`);
+  const S = res.samples, T = N.samples;
+  const vars = res.names.concat(res.definitions || []).filter((v) => T.kernels[v]);
+  const sel = out.querySelector("#nvar");
+  sel.innerHTML = vars.map((v) => `<option value="${esc(v)}">${esc(label(v))}</option>`).join("");
+  const def = PRESETS[game] || {};
+  sel.value = def.defaultVar && vars.includes(def.defaultVar) ? def.defaultVar : vars[0];
+  const draw = () => {
+    const v = sel.value, tr = [];
+    res.channels.forEach((c, i) => {
+      const col = pal[(i + 1) % pal.length];
+      if (nonzero(S.kernels[v][c])) tr.push(line(S.age, S.kernels[v][c], chLabel(res, c) + ", privy", col));
+      if (T.kernels[v] && nonzero(T.kernels[v][c])) tr.push(line(T.age, T.kernels[v][c], chLabel(res, c) + ", naive", col, { line: { color: col, width: 2, dash: "dash" } }));
+    });
+    Plotly.react("pnaive", tr, baseLayout({ title: titleOf("Response of " + label(v)), xaxis: { ...baseLayout().xaxis, title: { text: "shock age" } } }), plotCfg);
+  };
+  sel.onchange = draw; draw();
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -1348,8 +1292,12 @@ $("solvecustom").onclick = () => { customYaml = $("yaml").value; renderParamCont
 $("loadexample").onclick = () => { customYaml = EXAMPLES[$("example").value]; $("yaml").value = customYaml; renderParamControls(); writeHash(); };
 $("yaml").addEventListener("input", () => { customYaml = $("yaml").value; });
 $("yaml").addEventListener("change", () => { renderParamControls(); writeHash(); });
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (lastResult) renderResults(lastResult); });
+// the site's theme switch (and the system's) redraws the plots in the new colours
+document.body.addEventListener("set-theme", () => setTimeout(() => { if (lastResult) renderResults(lastResult); }, 30));
 readHash(); renderAll(); writeHash(); startWorker();
-</script>
-</body>
-</html>
+// a link or the back button that changes the hash (writeHash replaces it without firing this) opens that game
+window.addEventListener("hashchange", () => {
+  readHash(); renderAll(); lastResult = null; $("results").innerHTML = "";
+  if (game !== "custom") requestSolve(0); else setStatus("idle", "Ready", "Edit the model and press Solve.");
+  $("tabs").scrollIntoView({ block: "nearest" });
+});

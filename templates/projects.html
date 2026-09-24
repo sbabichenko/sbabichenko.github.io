@@ -17,12 +17,12 @@
     </div>
     <div class="flex flex-wrap gap-3">
       {% for link in project.links %}
+      {%- set external = link.url is starting_with("http") -%}
       <a
-        class="project-link"
+        class="project-link{% if link.primary %} project-link-primary{% endif %}"
         href="{{ link.url | replace(from=`$BASE_URL`, to=config.base_url) | safe  }}"
-        rel="noopener"
-        target="_blank"
-        >{{ link.name }}</a
+        {% if external %}rel="noopener" target="_blank"{% endif %}
+        >{{ link.name }}{% if link.primary %} &rarr;{% endif %}</a
       >
       {% endfor %}
     </div>

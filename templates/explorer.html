@@ -1,0 +1,90 @@
+{#- The game explorer (/lqg): the site's head, header and footer around the explorer, whose assets live in static/lqg.
+    The page is a Zola page so that it shares the site's navigation, fonts and light and dark themes. -#}
+{% import "macros.html" as macros %}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    {#- cross-origin isolation for the threaded solver (GitHub Pages cannot send the headers); scope: /lqg/ only -#}
+    <script src="{{ get_url(path='lqg/coi-serviceworker.js') }}"></script>
+    <link rel="stylesheet" href="{{ get_url(path='lqg/explorer.css') }}" />
+    {% include "partials/header.html" %}
+
+    <main class="explorer">
+      <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; Forecasting and manipulating the forecasts of others</div>
+      <h1>Noise-state game explorer</h1>
+      <p class="sub">Linear-quadratic-Gaussian games in which each player sees the state only through a private noisy signal,
+        and must forecast what the others forecast. Pick a game, move a slider, and the equilibrium is solved again
+        in your browser by the solver of my dissertation.</p>
+      <ul class="facts">
+        <li>computed live, nothing precomputed</li>
+        <li>C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a>, compiled to WebAssembly</li>
+        <li>most games solve in under a second</li>
+        <li id="threadfact">loading the solver</li>
+      </ul>
+
+      <details class="howto">
+        <summary>How the solver works, in four sentences</summary>
+        <p>Every quantity in these games is written as its response to the shocks that have hit so far:
+          X(t) = &Sigma;<sub>k</sub> &int; K<sub>k</sub>(t, s) dW<sup>k</sup>(s), plus a deterministic mean.
+          A player's strategy maps the signals it has seen to an action, so it is a kernel of the same kind, and its best
+          response to the others' kernels is the solution of one linear first-order condition. The solver iterates best
+          responses (with Anderson acceleration) until the kernels stop moving, on piecewise Chebyshev nodes in shock age,
+          or on a triangle of dates and shock times for a finite horizon. The information wedge in the plots is the part of
+          a player's first-order condition that exists only because the other players read its actions in their signals.</p>
+      </details>
+
+      <div class="tabs" role="tablist" id="tabs"></div>
+
+      <section class="panel" id="modelpanel">
+        <h2 id="gametitle"></h2>
+        <div id="gamedesc"></div>
+        <div class="controls" id="controls"></div>
+        <div id="editor" hidden>
+          <div class="row">
+            <label for="example" class="small muted">Start from</label>
+            <select id="example"></select>
+            <button class="secondary" id="loadexample">Load</button>
+          </div>
+          <textarea id="yaml" spellcheck="false" aria-label="Model file (YAML)"></textarea>
+          <p class="hint">The model file format of noisestate: channels, states, agents with controls, signal rows and losses, a
+            horizon (<code>stationary</code> with a <code>window</code>, <code>finite</code> with <code>T</code>, or
+            <code>transition</code> with a past) and numerics. A top-level <code>naive_observers</code> makes some agents'
+            strategies ignore another agent's deviations (Chapter 6).</p>
+          <div class="controls" id="paramcontrols"></div>
+          <div class="controls" id="paramopts"></div>
+          <div class="row" style="margin-top:12px"><button class="primary" id="solvecustom">Solve this model</button>
+            <span class="small error" id="yamlerror"></span></div>
+        </div>
+      </section>
+
+      <div id="statusbar">
+        <span class="chip idle" id="chip">Loading</span>
+        <span id="statustext">Loading the solver.</span>
+        <span class="buttons">
+          <button class="secondary" id="sharebtn" title="Copy a link that reproduces this solve">Copy link</button>
+          <button class="secondary" id="stopbtn" disabled>Stop</button>
+          <button class="primary" id="solvebtn" disabled>Solve again</button>
+        </span>
+      </div>
+
+      <div id="results"></div>
+
+      <div class="notes">
+        <p>The solver is a C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a> 1.0.1 (MIT licence)
+          with the same equations and algorithms: the stationary, spectral and cell engines, transitions with their past,
+          band, buffer and march in T, naive observers, and the refinement and stability checks. On its test grid its costs,
+          kernels, loss paths and first-order-condition terms agree with the Python package to 1e-10 or better.</p>
+        <p>Where the browser allows it (the page reloads once on a first visit to turn it on), the solver runs agents' best
+          responses on their own threads; a solve after a parameter change starts from the last equilibrium, and the page
+          address keeps the game and its parameters, so a link reproduces a solve. Plots by Plotly, YAML by js-yaml.</p>
+      </div>
+    </main>
+
+    {% include "partials/footer.html" %}
+
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js" crossorigin="anonymous"></script>
+    <script src="{{ get_url(path='lqg/js-yaml.min.js') }}"></script>
+    <script src="{{ get_url(path='lqg/explorer.js') }}"></script>
+  </body>
+</html>

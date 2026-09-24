@@ -114,6 +114,10 @@ url = "$BASE_URL/cv"
 name = "Projects"
 url = "$BASE_URL"
 
+[[extra.menu]]
+name = "Explorer"
+url = "$BASE_URL/lqg/"
+
 
 # The page footer options.
 [extra.footer]

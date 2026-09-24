@@ -23,6 +23,9 @@
 
 /* Project card improvements */
 .project-card {
+  padding: 1rem 1.5rem;
+  margin: 1.25rem 0;
+  gap: 0.25rem;
   transition: transform 0.15s, box-shadow 0.15s;
   border: 1px solid transparent;
 }
@@ -43,7 +46,18 @@
 }
 .project-card .project-link:hover {
   background: var(--accent);
-  color: #fff;
+  color: #fff !important;
+  text-decoration: none;
+}
+
+.project-card a.project-link.project-link-primary {
+  background: var(--accent);
+  color: #fff !important;
+  padding: 3px 12px;
+  border-radius: 9999px;
+}
+.project-card a.project-link.project-link-primary:hover {
+  filter: brightness(1.1);
 }
 
 .project-card .project-tag {
