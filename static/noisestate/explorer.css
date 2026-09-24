@@ -173,6 +173,7 @@
 
 /* the pip line among the facts: press it to copy the command */
 .explorer .facts li.pip { display: inline-flex; align-items: center; gap: 6px; }
+.explorer .facts li.plain { border: 0; padding-left: 2px; align-self: center; }   /* the PyPI link beside the command, outside its box */
 .explorer .facts .copy { font: inherit; background: none; border: 0; padding: 0; cursor: copy; color: inherit; }
 .explorer .facts .copy code { font-size: 0.95em; }
 .explorer .facts .copy.done code::after { content: "  copied"; color: var(--accent); font-family: inherit; }
