@@ -1,5 +1,5 @@
 +++
-title = "Curriculum Vitae"
+title = "Curriculum vitae"
 path = "cv"
 +++
 
@@ -12,60 +12,57 @@ path = "cv"
 
 ## Education
 
-**PhD in Statistics and Applied Probability, UC Santa Barbara** &mdash; Sep 2021 &ndash; Jun 2026\
-Advisor: Tomoyuki Ichiba. Thesis: [*Noise-State Calculus for Dynamic Games with Strategic Information*](/dissertation/).\
-Passed all qualifying exams prior to the first term of the PhD.\
-Graduate Teaching Assistant. Mentored 10+ undergraduates, majority of whom are now in PhD programs. Presented at UCSD Stochastic Systems Seminar.
+**PhD in Statistics and Applied Probability, UC Santa Barbara** &middot; Sep 2021 &ndash; Jun 2026\
+Advisor: Tomoyuki Ichiba.\
+Teaching assistant for PSTAT 176/276. Mentored 10+ undergraduate researchers.
 
-**BS in Mathematics, UC San Diego** &mdash; Sep 2019 &ndash; Jun 2021\
+**BS in Mathematics, UC San Diego** &middot; Sep 2019 &ndash; Jun 2021\
 Dean's Undergraduate Excellence Award (top 0.5%, Physical Sciences).
 
 ---
 
 ## Research
 
-**Forecasting and Manipulating the Forecasts of Others** &mdash; [arXiv: 2603.12140](https://arxiv.org/abs/2603.12140)\
-Solo-authored. Submitted March 2026.
+**Noise-State Calculus for Dynamic Games with Strategic Information** &middot; PhD dissertation, 2026 &middot; [sbabichenko.com/dissertation](/dissertation/)\
+Continuous-time linear-quadratic-Gaussian games in which players learn from each other's actions. Each player keeps estimates of the primitive shocks instead of belief hierarchies, so beliefs, prices and policies are impulse responses and equilibrium is a fixed point in them, checked against arbitrary deviations. The information wedge, the shadow price of changing an opponent's beliefs, explains where these games depart from their full-information versions. Applications to Kyle&ndash;Back markets with several informed traders, networks of local markets, delayed public signals, and deviations that only some players can detect.
 
-First exact solution to a class of multi-agent games with private signals open since Townsend (1983). Solves for equilibrium strategies, price impact, and welfare costs in markets where agents learn from each other's actions. Works in the exact model class behind Kyle-type market microstructure, optimal execution, and multi-agent control, with no approximation or large-population limit.
+**Forecasting and Manipulating the Forecasts of Others** &middot; [arXiv: 2603.12140](https://arxiv.org/abs/2603.12140)\
+Solo-authored, submitted March 2026. The two-player core of the dissertation: an exact solution, with no large-population limit, to a class of games with private signals open since Townsend (1983). Splits the cost of dispersed information into an estimation part and a strategic part, and finds cases where more precise private information raises total cost.
 
-Quantifies how information asymmetry distorts prices and behavior: not just added noise, but systematic bias in mean prices, excess volatility, and wasted effort from strategic belief manipulation. Decomposes the total cost into an estimation component and a strategic component, showing the strategic channel dominates by an order of magnitude. Identifies welfare reversals where more precise private information raises total cost&mdash;a non-monotone equilibrium effect absent from cooperative or single-agent models.
+**Software.** The noisestate solver in C++, about 10 ms per equilibrium, also compiled to WebAssembly for the browser explorer at [sbabichenko.com/noisestate](/noisestate/). Python package: [pip install noisestate](https://pypi.org/project/noisestate/).
 
-C++ solver computes equilibria in ~10ms. Compiled to WebAssembly for a browser-side interactive explorer at ~60ms. [Live demo: sbabichenko.com/noisestate](/noisestate/). Python package: [`pip install noisestate`](https://pypi.org/project/noisestate/).
-
+**Talk.** UCSD Stochastic Systems Seminar.
 
 ---
 
 ## Experience
 
-**Wells Fargo**, Charlotte, NC &mdash; *Quantitative Researcher* &mdash; Jul 2026 &ndash; present
+**Wells Fargo**, Charlotte, NC &middot; *Quantitative Researcher* &middot; Jul 2026 &ndash; present
 
-**Wells Fargo**, Charlotte, NC &mdash; *Quantitative Researcher Intern, Mortgage Model Development* &mdash; Jun &ndash; Aug 2025
+**Wells Fargo**, Charlotte, NC &middot; *Quantitative Researcher Intern, Mortgage Model Development* &middot; Jun &ndash; Aug 2025
 
-- Completed assigned mortgage pool segmentation project in two days; independently built an improved tree-based alternative with diagnostic tools in one week. Work led the buy-side trading desk to pull me onto a harder open-ended problem.
-- With no prior MBS background, identified a structural flaw in the team's prepayment models: normal approximations miss the binomial structure of discrete loan-level prepayment. Built a binomial model correcting for effective loan count, partitioned pools to isolate systemic errors, and found them highly persistent (R&sup2; &asymp; 0.8 at 5-month horizon), converting model misspecification into a tradeable signal for a $200B portfolio.
+- Delivered the assigned mortgage pool segmentation early, then built a tree-based alternative with diagnostic tools. The buy-side trading desk then brought me onto an open-ended problem.
+- Found that the team's prepayment models used normal approximations that miss the binomial structure of loan-level prepayment. Built a binomial model that corrects for effective loan count and partitioned pools to isolate systematic errors. The errors were persistent (R&sup2; &asymp; 0.8 at a 5-month horizon), which makes them usable as a trading signal.
 
 ---
 
-## Selected Projects
+## Selected projects
 
-**Multi-Agent Traffic Simulation** (Waymo Open Motion Dataset)\
-Reimplemented BehaviorGPT for multi-agent traffic simulation: decoder-only transformer with agent&ndash;agent attention, relative spacetime embeddings, and next-patch prediction generating closed-loop 10 Hz trajectories on the Waymo Open Motion Dataset.
+**Decision Mesh** &middot; [sbabichenko.com/gate](/gate/) &middot; [github.com/sbabichenko/Decision-Mesh](https://github.com/sbabichenko/Decision-Mesh)\
+Mesh regression that fits continuous surfaces where trees fit steps. A right-triangle or rectangular mesh is refined only where a false-discovery gate says the data justify a cut, and stops on its own. Built for the discontinuities that tree models showed in the prepayment work.
 
-Extending to a two-stage architecture: the transformer predicts only at branch points where agent behavior becomes multimodal (lane changes, yielding decisions, intersection entries), then a conditional diffusion model interpolates realistic trajectories between branch points with guided sampling.
-
-**Adaptive Triangle-Mesh Regression**\
-Continuous surface model on an adaptive right-triangle bisection mesh with hierarchical partial pooling and wavelet shrinkage, addressing the discontinuity problem of tree-based models observed in the Wells Fargo prepayment project. [Runs in the browser: sbabichenko.com/gate](/gate).
+**Multi-agent traffic simulation** (Waymo Open Motion Dataset)\
+Reimplemented BehaviorGPT, a decoder-only transformer with agent&ndash;agent attention, for closed-loop 10 Hz trajectory generation. Extending it so the transformer predicts only at branch points where behavior becomes multimodal and a conditional diffusion model fills in between.
 
 ---
 
 ## Skills
 
-**Programming:** C++23, Python, CUDA, Triton, Linux, bash, SQL, computer architecture
+**Programming:** C++23, Python, CUDA, SQL, WebAssembly, Linux
 
-**ML & Data:** Transformer architectures, diffusion models, neural networks for control, PyTorch, NumPy, Polars, Pandas, LightGBM, XGBoost
+**ML and data:** PyTorch, transformers, diffusion models, LightGBM, XGBoost, Polars, NumPy
 
-**Methods:** Stochastic calculus, stochastic control, Kalman filtering, Monte Carlo, PDE methods, time series, derivatives pricing, Bayesian inference, causal inference, experimental design
+**Methods:** stochastic calculus and control, Kalman filtering, Monte Carlo, PDE methods, hierarchical Bayesian models, time series, derivatives pricing
 
 ---
 
