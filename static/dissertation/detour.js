@@ -60,17 +60,17 @@
   // The lines of work, each with the way it went around. From the dissertation's introduction.
   const Y0 = 1936, Y1 = 2026;
   const ROADS = [   // side 0 above the band, 1 below; row and anchor place the label clear of the other roads
-    { y: 1962, who: "Radner", what: "one shared goal", side: 0, row: 1, an: "middle" },
-    { y: 1972, who: "Lucas", what: "price takers", side: 0, row: 0, an: "middle" },
-    { y: 1980, who: "Grossman–Stiglitz", what: "competitive traders", side: 1, row: 0, an: "end" },
-    { y: 1983, who: "Townsend", what: "a lag reveals all", side: 0, row: 1, an: "middle" },
-    { y: 1985, who: "Kyle", what: "one insider", side: 1, row: 2, an: "middle", kyle: true },
-    { y: 1996, who: "Foster–Viswanathan", what: "identical insiders", side: 0, row: 2, an: "middle" },
-    { y: 2000, who: "Kasa", what: "negligible agents", side: 1, row: 1, an: "end" },
-    { y: 2002, who: "Morris–Shin", what: "one round", side: 0, row: 1, an: "start" },
-    { y: 2007, who: "Lasry–Lions", what: "continuum of players", side: 1, row: 2, an: "middle" },
-    { y: 2011, who: "Kamenica–Gentzkow", what: "static information", side: 0, row: 0, an: "start" },
-    { y: 2013, who: "Nayyar et al.", what: "a shared record", side: 1, row: 0, an: "start" },
+    { y: 1962, idea: "one shared goal", sub: "team theory", side: 0, row: 1, an: "middle" },
+    { y: 1972, idea: "price takers", sub: "Lucas’s islands", side: 0, row: 0, an: "middle" },
+    { y: 1980, idea: "competitive traders", sub: "rational expectations", side: 1, row: 0, an: "end" },
+    { y: 1983, idea: "a lag reveals all", sub: "Townsend", side: 0, row: 1, an: "middle" },
+    { y: 1985, idea: "one insider", sub: "Kyle", side: 1, row: 2, an: "middle", kyle: true },
+    { y: 1996, idea: "identical insiders", sub: "symmetric markets", side: 0, row: 2, an: "middle" },
+    { y: 2000, idea: "negligible agents", sub: "frequency domain", side: 1, row: 1, an: "end" },
+    { y: 2002, idea: "one round", sub: "beauty contests", side: 0, row: 1, an: "start" },
+    { y: 2007, idea: "a continuum of players", sub: "mean-field games", side: 1, row: 2, an: "middle" },
+    { y: 2011, idea: "static information", sub: "information design", side: 0, row: 0, an: "start" },
+    { y: 2013, idea: "a shared record", sub: "common information", side: 1, row: 0, an: "start" },
   ];
   const BAND = [0.44, 0.56];
 
@@ -148,8 +148,7 @@
           if (rd.row) stroke(lab, pencil([[x, s === 0 ? ty + 20 : ty - 16], [x, y + (s === 0 ? -3 : 3)]], 40 + i, 0.3), "soft2 dash", 0.7).set(1);
         }
         const t = el("text", { x: tx, y: ty, class: "lab", "text-anchor": anchor }, lab);
-        t.innerHTML = vertical ? `<tspan class="who">${rd.who}</tspan><tspan x="${tx}" dy="14">${rd.y} · ${rd.what}</tspan>`
-          : `<tspan class="who">${rd.who} ${rd.y}</tspan><tspan x="${tx}" dy="14">${rd.what}</tspan>`;
+        t.innerHTML = `<tspan class="who">${rd.idea}</tspan><tspan x="${tx}" dy="14">${rd.y} · ${rd.sub}</tspan>`;
         parts.push({ set: (q) => { lab.style.opacity = q; }, w: [t0, t0 + 0.04] });
       }
     });
