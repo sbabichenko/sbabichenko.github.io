@@ -1,0 +1,90 @@
+{#- /dissertation/wedge: the information wedge, told in steps. The first four drawings are diagrams; the last three are
+    solved live by the explorer's solver (static/lqg/worker.js, noisestate compiled to WebAssembly) on the Chapter 1
+    tracking game, from static/dissertation/wedge.js. -#}
+{%- set fx = load_data(path="data/formula.json") -%}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css') }}" />
+    {% include "partials/header.html" %}
+    <div class="progress" id="progress" aria-hidden="true"></div>
+
+    <main class="opening idea" data-worker="{{ get_url(path='lqg/worker.js') }}" id="wedgepage">
+      <section class="ideahead">
+        <p class="eyebrow"><a href="{{ get_url(path='dissertation/') }}">Dissertation</a> &middot; the wedge, in pictures</p>
+        <h1>The price of changing someone&rsquo;s mind</h1>
+        <p class="lede">What the information wedge is, and why it matters. The last three drawings are solved as you read,
+          by the same solver as the <a href="{{ get_url(path='lqg/') }}">explorer</a>, on the two-player tracking game of
+          Chapter 1. <span class="solvestate" id="solvestate">Loading the solver&hellip;</span></p>
+      </section>
+
+      <section class="story" id="story">
+        <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
+        <div class="steps">
+          <div class="step" data-scene="alone">
+            <p>One controller, one hidden state. Estimate the state, then act on the estimate exactly as you would on the
+              state itself. How you learn and how you act are separate problems.</p>
+            <div class="fx">{{ fx.sep.svg | safe }}</div>
+            <p class="small">The separation principle. Simple, and its intuition has held back the multi-player version
+              for decades.</p>
+          </div>
+          <div class="step" data-scene="signal">
+            <p>Add a second player who watches the same state through a signal of their own. Now every push you give the
+              state also shows up in what they see. Your action does something and says something at once.</p>
+            <p class="small">They revise their forecast, change what they do, and that moves the state again.</p>
+          </div>
+          <div class="step" data-scene="stateprice">
+            <p>Optimal control prices a move of the state with a shadow price: how much better the future looks if the
+              state is a little higher now. The best action sets the cost of effort against that price.</p>
+            <div class="fx">{{ fx.control.svg | safe }}</div>
+          </div>
+          <div class="step" data-scene="wedge">
+            <p>In a game there is a second thing a push moves: the other player&rsquo;s noise-state. The information wedge
+              is its price, the value of changing an opponent&rsquo;s beliefs. It is one more term in the backward
+              equation for the shadow price.</p>
+            <p class="small">All the strategic complexity sits in deterministic kernels, solved once at equilibrium.</p>
+          </div>
+          <div class="step" data-scene="split">
+            <p>Here it is, computed. Player 1&rsquo;s first-order condition at mid-horizon, split into its physical part
+              and the wedge, for each shock it responds to.</p>
+            <p class="small">The physical part is what the condition would be if nobody reacted to player 1&rsquo;s
+              deviation. The wedge is the rest: player 2 revising their forecast.</p>
+          </div>
+          <div class="step" data-scene="cut">
+            <p>Now cut the loop. Blur player 2&rsquo;s signal until they see nothing. Player 1&rsquo;s pushes teach them
+              nothing, and the wedge vanishes. Separation comes back.</p>
+            <p class="small">The wedge breaks separation, and vanishes when the loop is cut.</p>
+          </div>
+          <div class="step" data-scene="starve">
+            <p>What the wedge buys. A planner has a fixed budget of signal precision to split between the two players,
+              and player 2 finds effort costlier. It looks like a tradeoff: favor the productive player, or balance the
+              precision to keep both restrained.</p>
+            <p class="small">It is not. Give it all to player 1 and player 2, starved of information to manipulate with,
+              stops pulling against them. The total cost falls the whole way.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="ideafoot">
+        <p>The formal statement is <a href="{{ get_url(path='dissertation/chapter-1/') }}#thm:wedge-adjoints">Theorem 1.8</a>,
+          and the starvation example is in <a href="{{ get_url(path='dissertation/chapter-1/') }}#information-starvation.">Chapter 1</a>.</p>
+        <div class="cta">
+          <a class="primary" href="{{ get_url(path='lqg/') }}#game=ch1">Move the sliders yourself</a>
+          <a href="{{ get_url(path='dissertation/idea/') }}">The noise-state, in pictures</a>
+          <a href="{{ get_url(path='dissertation/') }}">The dissertation</a>
+        </div>
+        <p class="note">The game: <i>dX</i> = (<i>D</i>&sup1; + <i>D</i>&sup2;) <i>dt</i> + <i>dW</i>&#8304;, player <i>i</i>
+          sees <i>dY</i><sup><i>i</i></sup> = &radic;<i>p</i><sub><i>i</i></sub> <i>X dt</i> + <i>dW</i><sup><i>i</i></sup> and
+          minimises <i>E</i>&int;<sub>0</sub><sup>1</sup>[(<i>X</i> &minus; <i>b</i><sub><i>i</i></sub>)&sup2; + <i>r</i><sub><i>i</i></sub>(<i>D</i><sup><i>i</i></sup>)&sup2;]<i>dt</i>,
+          with targets <i>b</i> = &plusmn;1. Defaults: <i>p</i><sub>1</sub> = <i>p</i><sub>2</sub> = 9, <i>r</i><sub>1</sub> = <i>r</i><sub>2</sub> = 0.1.
+          The starvation drawing splits a total precision of 10 with <i>r</i><sub>1</sub> = 0.1, <i>r</i><sub>2</sub> = 0.5 and reports the
+          players&rsquo; summed cost. Every number is solved in your browser when the page opens.</p>
+      </section>
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script>window.WEDGE_FX = { backward1: {{ fx.backward1.svg | json_encode | safe }}, backward2: {{ fx.backward2.svg | json_encode | safe }} };</script>
+    <script src="{{ get_url(path='dissertation/wedge.js') }}"></script>
+  </body>
+</html>
