@@ -6,7 +6,7 @@ theme = "kita"
 
 # The site title and description; used in feeds by default.
 title = "Samuel Babichenko"
-description = "Sam's website and blog"
+description = "Game theory, stochastic control and quantitative finance, with solvers you can run in your browser."
 
 # The default site author.
 author = ""

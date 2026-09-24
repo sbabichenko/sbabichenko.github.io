@@ -1,0 +1,45 @@
+{#- Not found. The mesh refines where there is something to find; here there is nothing, so it has
+    left the page blank and points you at the two things worth running. -#}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='css/home.css') }}" />
+    {% include "partials/header.html" %}
+
+    <main class="home">
+      <section class="hero lost">
+        <canvas id="heroink" aria-hidden="true"></canvas>
+        <p class="eyebrow">404</p>
+        <h1>Nothing here</h1>
+        <p class="lede">No page at this address. The mesh only refines where there is something to
+          find, and it found nothing.</p>
+        <p class="lede"><a class="back" href="{{ get_url(path='') }}">Back to the front &rarr;</a></p>
+      </section>
+
+      <section>
+        <h2>Or run something</h2>
+        <div class="demos">
+          <a class="demo slim" href="{{ get_url(path='lqg/') }}">
+            <div class="body">
+              <h3>Games played through noise</h3>
+              <p>Solve a linear-quadratic-Gaussian game in your browser.</p>
+              <span class="go">Open the explorer <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+          <a class="demo slim" href="{{ get_url(path='mesh/') }}">
+            <div class="body">
+              <h3>A regression that decides where to look</h3>
+              <p>Watch two geometries and a tree grow on the same noisy data.</p>
+              <span class="go">Watch it grow <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='mesh/decision-mesh.js') }}"></script>
+    <script src="{{ get_url(path='js/heroink.js') }}"></script>
+  </body>
+</html>

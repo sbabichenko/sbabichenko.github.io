@@ -5,4 +5,6 @@ path = "lqg"
 template = "explorer.html"
 [extra]
 math = false
+[extra.cover]
+image = "images/og-lqg.png"
 +++
