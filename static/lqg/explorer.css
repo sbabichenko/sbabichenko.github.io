@@ -147,3 +147,8 @@
 }
 .explorer .plot.stale-plot { opacity: 0.5; transition: opacity 0.2s; }
 .explorer #sweeppanel .row select { max-width: 100%; }
+.explorer #statusbar .buttons { flex-wrap: wrap; justify-content: flex-end; }
+.explorer #statusbar .buttons button { white-space: nowrap; }
+@media (max-width: 600px) { .explorer #statusbar .buttons { display: grid; grid-template-columns: 1fr 1fr; width: 100%; margin-left: 0; } }
+/* on a phone the status bar is too tall to keep on screen: it scrolls with the page */
+@media (max-width: 600px) { .explorer #statusbar { position: static; } }
