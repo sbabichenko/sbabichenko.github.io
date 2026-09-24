@@ -31,8 +31,21 @@
           <div class="step" data-scene="sites">
             <p>Somewhere on this square the odds of a coin change. Six thousand sites each flip their own coin about twenty
               times, and each dot is one site&rsquo;s share of heads.</p>
-            <p class="small">Every site&rsquo;s coin also carries a nudge of its own, so neighbours disagree by more than
-              the flips explain. Half the sites are held out: the estimator never sees them, and they score the fit at the end.</p>
+            <p class="small">Every site&rsquo;s coin also carries a nudge of its own. Half the sites are held out: the estimator never sees them, and they score the fit at the end.</p>
+          </div>
+          <div class="step" data-scene="funnel">
+            <p>A binomial&rsquo;s variance is fixed by its mean. Know a coin&rsquo;s odds and you know how far its share
+              of heads may stray, so every excess over that spread is visible. Nearly everything below leans on this.</p>
+            <p class="small">And there is excess. The surface only knows two coordinates, and real pools differ in ways
+              no coordinate here records, so even the true surface cannot explain every site. Here the per-site nudge
+              stands in for those missing coordinates.</p>
+          </div>
+          <div class="step" data-scene="coherent">
+            <p>Overdispersion comes in two kinds. <em>Coherent</em>: neighbours share the excess, and the surface should
+              bend there. <em>Incoherent</em>: each site has its own, and no surface can follow it.</p>
+            <p class="small">The gate cuts only for the first. The second goes into the pool variance, which in turn
+              tells the gate how much disagreement to expect before it believes a pattern. Against a flat surface the
+              excess clusters; against the final fit what is left is scattered.</p>
           </div>
           <div class="step" data-scene="coarse">
             <p data-engine="tri">The fit starts from a coarse mesh of right triangles with two things free: a level and a
@@ -90,8 +103,9 @@
               <span data-v="nrounds">&hellip;</span> rounds.</p>
           </div>
           <div class="step" data-scene="variance">
-            <p>Two variances are refitted between rounds. The pool variance is the coins&rsquo; spread around the surface:
-              as the mesh explains more, it falls toward the spread the coins really have.</p>
+            <p>Two variances are refitted between rounds. The pool variance is the incoherent excess, the spread around the
+              surface that no surface can follow: as the mesh takes up the coherent part, it falls toward the spread the
+              coins really have.</p>
             <p class="small">The depth variance sets how far a surplus at each depth may stray. It is estimated by EM from
               the admitted surpluses: their squares plus their posterior variances, averaged by depth. Adding the posterior
               variance back is what keeps a depth from freezing at its floor.</p>
