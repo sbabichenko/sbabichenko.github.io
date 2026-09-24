@@ -62,3 +62,13 @@ p a:hover, li a:hover, .lede a:hover, figcaption a:hover {
 /* keyboard focus, everywhere: a clear accent ring, only for keyboard users */
 :focus-visible { outline: 2px solid var(--accent, #1f3fd0); outline-offset: 2px; border-radius: 3px; }
 .step :focus-visible, .cards a:focus-visible, .demo:focus-visible { outline-offset: 4px; }
+
+/* the forecaster */
+.whimsy-forecast { position: fixed; left: 22px; bottom: 22px; z-index: 90; max-width: 300px; padding: 0.55rem 0.85rem; border-radius: 12px;
+  background: var(--sheet, #fff); border: 1px solid var(--rule, #ddd); font: 0.82rem ui-sans-serif, system-ui, sans-serif; color: var(--ink, #222);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06); transition: opacity 0.5s, transform 0.5s; }
+.whimsy-forecast p { margin: 0; }
+.whimsy-forecast .s { margin-top: 0.2rem; color: var(--ink-3, #888); font-variant-numeric: tabular-nums; }
+.whimsy-forecast.gone { opacity: 0; transform: translateY(8px); }
+.dark .whimsy-forecast { background: #2a2c30; border-color: #3a3d42; color: #e8e8e8; }
+@media print { .whimsy-forecast { display: none !important; } }

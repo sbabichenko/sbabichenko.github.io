@@ -54,7 +54,7 @@
     hits = search(q); pick = hits.length ? 0 : -1;
     panel.innerHTML = hits.length ? hits.map((e, i) => `<a class="hit${i === pick ? " on" : ""}" role="option" href="${hrefOf(e)}" data-i="${i}">
         <span class="where">${esc(index.pages[e.s] || e.s)}${e.l ? " · " + esc(e.l) : ""}</span>${e.x ? `<span class="what">${snippet(e.x, words)}</span>` : ""}</a>`).join("")
-      : `<p class="none">Nothing matches every word of that.</p>`;
+      : `<p class="none">Nothing matches every word of that. No one knows much.</p>`;
     panel.hidden = false; place();
   }
   function go(e) { try { sessionStorage.setItem("dsearch", input.value.trim()); } catch (x) {} location.href = hrefOf(e); if (panel) panel.hidden = true; }
