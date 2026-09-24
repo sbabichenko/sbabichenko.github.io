@@ -137,9 +137,8 @@
 
     {% include "partials/footer.html" %}
 
-    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js" crossorigin="anonymous"></script>
-    {#- the same Plotly from the site itself, if the CDN is blocked or down -#}
-    <script>window.Plotly || document.write('<script src="{{ get_url(path='noisestate/vendor/plotly-2.35.2.min.js') }}"><\/script>');</script>
+    {#- Plotly's cartesian build (line, scatter and heatmap are all the explorer draws), served from the site -#}
+    <script src="{{ get_url(path='noisestate/vendor/plotly-cartesian-2.35.2.min.js') }}"></script>
     <script src="{{ get_url(path='noisestate/js-yaml.min.js') }}"></script>
     <script src="{{ get_url(path='noisestate/explorer.js') }}"></script>
   </body>

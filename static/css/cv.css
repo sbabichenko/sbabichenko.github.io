@@ -1,0 +1,25 @@
+/* The CV: a header that only appears on paper, and the page as a one-column resume when printed
+   (tools/make_cv_pdf.js prints it to static/Resume_Samuel_Babichenko.pdf). */
+.cv-print-head { display: none; }
+@media print {
+  @page { size: letter; margin: 0.5in 0.6in; }
+  html, body { background: #fff !important; color: #111 !important; }
+  body > header, .site-foot, .cvwalk, .cv-download, .whimsy-coin, .whimsy-doodle, .progress, article > header { display: none !important; }
+  main, .prose, article, article section { padding: 0 !important; max-width: none !important; min-height: 0 !important; width: auto !important; }
+  article, .prose article { font-family: Newsreader, Georgia, serif; font-size: 10pt !important; line-height: 1.3 !important; }
+  .cv-print-head { display: block; margin: 0 0 6pt; }
+  .cv-print-head p { margin: 0 !important; }
+  .cv-print-head .n { font-size: 20pt; line-height: 1.1; letter-spacing: -0.01em; }
+  .cv-print-head .c { font: 9pt ui-sans-serif, system-ui, sans-serif; color: #444; margin-top: 3pt !important; }
+  article h2 { font-size: 14pt !important; font-weight: 500 !important; font-variant: normal !important; text-transform: none !important; letter-spacing: 0 !important; margin: 9pt 0 3pt !important; padding-bottom: 1.5pt; border-bottom: 0.6pt solid #bbb; break-after: avoid; }
+  article section, article h2 + p { break-before: auto !important; page-break-before: auto !important; }
+  article hr { display: none; }
+  article p, article li { margin: 0 0 3.5pt !important; orphans: 2; widows: 2; }
+  article li p { margin: 0 !important; }
+  article ul { margin: 0 0 4pt !important; padding-left: 14pt !important; }
+  article a, .prose article a { color: inherit !important; text-decoration: none !important; font-weight: inherit !important; }
+  article code { font: inherit !important; color: inherit !important; }
+  article code::before, article code::after { content: none !important; }
+  article section > p:last-child { display: none; }
+  p a:hover, li a:hover { text-decoration: none; }
+}
