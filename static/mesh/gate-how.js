@@ -49,17 +49,18 @@
   const expit = (t) => 1 / (1 + Math.exp(-t));
   function makeData(truth, seed) {
     const r = mulberry32(seed * 7919 + 17), f = TRUTHS[truth];
-    const x = new Float64Array(SITES), y = new Float64Array(SITES), n = new Int32Array(SITES), k = new Int32Array(SITES);
+    const x = new Float64Array(SITES), y = new Float64Array(SITES), n = new Int32Array(SITES), k = new Int32Array(SITES), u = new Float64Array(SITES);
     const rows = ["wala,wac,n,k"];
     for (let i = 0; i < SITES; ++i) {
       x[i] = r(); y[i] = r();
       n[i] = Math.max(1, Math.round(FLIPS * (0.5 + r())));
-      const p = expit(f(x[i], y[i]) + POOL_SD * gauss(r));
+      u[i] = POOL_SD * gauss(r);                         // the site's nudge: what the two axes don't describe
+      const p = expit(f(x[i], y[i]) + u[i]);
       let kk = 0; for (let j = 0; j < n[i]; ++j) if (r() < p) ++kk;
       k[i] = kk;
       rows.push(x[i].toFixed(5) + "," + y[i].toFixed(5) + "," + n[i] + "," + k[i]);
     }
-    return { x, y, n, k, csv: rows.join("\n") + "\n" };
+    return { x, y, n, k, u, csv: rows.join("\n") + "\n" };
   }
 
   // ------------------------------------------------------------------ colour: log-odds against the background
@@ -177,56 +178,68 @@
       return { g, update(t) { fade(img, seg(t, 0, 0.2)); up.set(seg(t, 0.25, 0.5)); dn.set(seg(t, 0.25, 0.5)); fade(lab, seg(t, 0.45, 0.6)); fade(cap, seg(t, 0.6, 0.75)); } };
     })();
 
-    // 1b'. a wrong mean shows up as variance: mean square of the residuals against the size of the miss ------------
+    // 1b'. a wrong mean shows up as variance, whichever way the mean is missed ----------------------------------
+    // A site's miss is its true log-odds less the fitted: the fitted surface missing the true surface, plus the
+    // site's nudge, the part of its odds the two axes don't describe. Both are known here, since the page drew them.
     scenes.wrongmean = (() => {
       const g = group("wrongmean");
-      const tf = TRUTHS[data.truth], v = POOL_SD * POOL_SD;
-      // per site: the miss (true log-odds less fitted, the nudge aside), its squared residual, and what the miss and
-      // the nudge together predict: 1 + p(1 − p)[(n − 1) v + n miss²], to first order
+      const tf = TRUTHS[data.truth];
+      const zTrue = resid(tf);
+      // per site: the whole miss, the squared residual, and what the miss predicts: 1 + n p(1 − p) miss², to first order
       const sites = (logit, z) => Array.from(data.x, (_, i) => {
-        const L = logit(data.x[i], data.y[i]), p = expit(L), m = tf(data.x[i], data.y[i]) - L, n = data.n[i];
-        return { m: Math.abs(m), z2: z[i] * z[i], pred: 1 + p * (1 - p) * ((n - 1) * v + n * m * m) };
+        const L = logit(data.x[i], data.y[i]), p = expit(L), m = tf(data.x[i], data.y[i]) + data.u[i] - L;
+        return { m: Math.abs(m), z2: z[i] * z[i], pred: 1 + data.n[i] * p * (1 - p) * m * m };
       });
-      // equal-width bins of the miss, up to where 99.5% of the flat surface's sites lie; bins of fewer than 25 sites dropped
-      const S0 = sites(() => fit.baseline, zFlat), S1 = sites(fitLogit, zFit);
+      const S0 = sites(() => fit.baseline, zFlat), S1 = sites(fitLogit, zFit), S2 = sites(tf, zTrue);
       const top = [...S0].map((q) => q.m).sort((a, b) => a - b)[Math.floor(0.995 * S0.length)], K = 14, bw = top / K;
       const bin = (arr) => {
         const out = [];
         for (let b = 0; b < K; ++b) {
-          const s = arr.filter((q) => q.m >= b * bw && (q.m < (b + 1) * bw || b === K - 1 && q.m <= top));
+          const s = arr.filter((q) => q.m >= b * bw && (q.m < (b + 1) * bw || (b === K - 1 && q.m <= top)));
           if (s.length < 25) continue;
           const mean = (f) => s.reduce((t, q) => t + f(q), 0) / s.length;
           out.push({ m: mean((q) => q.m), z2: mean((q) => q.z2), pred: mean((q) => q.pred), n: s.length });
         }
         return out;
       };
-      const flat = bin(S0), fin = bin(S1);
-      const B = { x: 90, y: 110, w: 430, h: 360 }, mmax = Math.max(...flat.map((q) => q.m)) * 1.05, ymax = Math.max(2, ...flat.map((q) => Math.max(q.z2, q.pred))) * 1.08;
+      const flat = bin(S0), fin = bin(S1), tru = bin(S2);
+
+      // one site, its miss taken apart
+      const pick = (() => { let best = 0, bs = -1; data.x.forEach((_, i) => { const sm = tf(data.x[i], data.y[i]) - fit.baseline, am = data.u[i]; const sc = Math.min(Math.abs(sm), 1.2) + 2 * Math.min(Math.abs(am), 0.4) - (Math.sign(sm) !== Math.sign(am) ? 9 : 0); if (sc > bs) { bs = sc; best = i; } }); return best; })();
+      const L0 = fit.baseline, L1 = tf(data.x[pick], data.y[pick]), L2 = L1 + data.u[pick];
+      const lo = Math.min(L0, L1, L2) - 0.15, hi = Math.max(L0, L1, L2) + 0.15, AX = (v) => 110 + ((v - lo) / (hi - lo)) * 380, ay = 150;
+      const top1 = el("g", {}, g);
+      text(top1, 70, 82, "one site, taken apart (log-odds)", "mono", "start");
+      line(top1, 90, ay, 510, ay, "soft", 1);
+      const tick = (v, lab, cls, dy) => { line(top1, AX(v), ay - 8, AX(v), ay + 8, cls, 2); text(top1, AX(v), ay + dy, lab, "tiny", "middle"); };
+      tick(L0, "fitted (flat)", "", 26); tick(L1, "the true surface", "warm", -16); tick(L2, "this coin", "accent", 26);
+      const brace = (a, b, y, lab, cls) => { const q = el("g", {}, top1); line(q, AX(a), y, AX(b), y, cls, 2.4); text(q, (AX(a) + AX(b)) / 2, y + 16, lab, "tiny " + (cls === "accent" ? "acc" : cls === "warm" ? "warmt" : ""), "middle"); return q; };
+      const b1 = brace(L0, L1, ay + 44, "missed surface", "warm"), b2 = brace(L1, L2, ay + 44, "missed axes", "accent"), b3 = brace(L0, L2, ay + 80, "the miss", "");
+
+      // the chart
+      const B = { x: 90, y: 318, w: 430, h: 210 }, mmax = top * 1.05, ymax = Math.max(2, ...flat.map((q) => Math.max(q.z2, q.pred))) * 1.08;
       const X = (m) => B.x + (m / mmax) * B.w, Y = (y) => B.y + B.h - ((y - 0.5) / (ymax - 0.5)) * B.h;
-      text(g, B.x - 10, B.y - 30, "mean squared residual, by how far the fitted odds miss", "mono", "start");
-      line(g, B.x, B.y + B.h, B.x + B.w, B.y + B.h, "", 1); line(g, B.x, B.y, B.x, B.y + B.h, "", 1);
-      text(g, B.x, B.y + B.h + 18, "0", "tiny", "start"); text(g, B.x + B.w, B.y + B.h + 18, `miss ${fmt(mmax, 1)} log-odds`, "tiny", "end");
-      for (const y of [1, 2, 3, 4, 5, 6].filter((y) => y < ymax)) text(g, B.x - 8, Y(y) + 4, String(y), "tiny", "end");
-      const one = el("g", {}, g);
-      line(one, B.x, Y(1), B.x + B.w, Y(1), "soft", 1.2).setAttribute("stroke-dasharray", "4 4");
-      text(one, B.x + B.w, Y(1) + 16, "1: a binomial at the right odds", "tiny", "end");
-      const floorV = S1.reduce((t, q) => t + q.pred, 0) / S1.length;
-      const flo = el("g", {}, g);
-      line(flo, B.x, Y(floorV), B.x + B.w, Y(floorV), "accent", 1.4).setAttribute("stroke-dasharray", "6 4");
-      text(flo, B.x + B.w, Y(floorV) - 8, "the floor: what the two axes leave out", "tiny acc", "end");
-      const theory = stroke(g, "M" + flat.map((q) => `${X(q.m).toFixed(1)},${Y(q.pred).toFixed(1)}`).join(" L"), "warm soft", 1.6);
-      const rad = (q) => 2.5 + Math.sqrt(q.n) / 6;
-      const fd = flat.map((q) => el("circle", { cx: X(q.m), cy: Y(q.z2), r: rad(q), class: "neg", "fill-opacity": 0.8 }, g));
-      const nd = fin.map((q) => el("circle", { cx: X(q.m), cy: Y(q.z2), r: rad(q), class: "pos", "fill-opacity": 0.8 }, g));
-      const leg = el("g", {}, g);
-      el("circle", { cx: B.x + 14, cy: B.y + 6, r: 5, class: "neg" }, leg); text(leg, B.x + 26, B.y + 10, "against a flat surface", "tiny", "start");
-      el("circle", { cx: B.x + 14, cy: B.y + 24, r: 5, class: "pos" }, leg); text(leg, B.x + 26, B.y + 28, "against the final fit", "tiny", "start");
-      line(leg, B.x + 6, B.y + 44, B.x + 22, B.y + 44, "warm", 1.6); text(leg, B.x + 26, B.y + 48, "1 + p(1 − p)[(n − 1)v + n·miss²]", "tiny", "start");
-      const cap = text(g, 300, B.y + B.h + 50, "each dot: the sites whose miss falls in one band, sized by how many", "tiny");
+      const ch = el("g", {}, g);
+      text(ch, B.x - 10, B.y - 16, "mean squared residual, by the size of the whole miss", "mono", "start");
+      line(ch, B.x, B.y + B.h, B.x + B.w, B.y + B.h, "", 1); line(ch, B.x, B.y, B.x, B.y + B.h, "", 1);
+      text(ch, B.x, B.y + B.h + 16, "0", "tiny", "start"); text(ch, B.x + B.w, B.y + B.h + 16, `miss ${fmt(mmax, 1)}`, "tiny", "end");
+      for (const y of [1, 2, 3, 4, 5, 6, 8].filter((y) => y < ymax)) text(ch, B.x - 8, Y(y) + 4, String(y), "tiny", "end");
+      line(ch, B.x, Y(1), B.x + B.w, Y(1), "soft", 1.2).setAttribute("stroke-dasharray", "4 4");
+      text(ch, B.x + B.w, Y(1) - 6, "1: no miss at all", "tiny", "end");
+      const theory = stroke(ch, "M" + [...flat].sort((a, b) => a.m - b.m).map((q) => `${X(q.m).toFixed(1)},${Y(q.pred).toFixed(1)}`).join(" L"), "soft", 1.6);
+      const rad = (q) => 2 + Math.sqrt(q.n) / 7;
+      const dots = (arr, cls) => arr.map((q) => el("circle", { cx: X(q.m), cy: Y(q.z2), r: rad(q), class: cls, "fill-opacity": 0.8 }, ch));
+      const d0 = dots(flat, "neg"), dF = dots(fin, "pos");
+      const dT = tru.map((q) => el("circle", { cx: X(q.m), cy: Y(q.z2), r: rad(q) + 1.5, class: "pencil", "stroke-width": 1.6, fill: "none" }, ch));
+      const leg = el("g", {}, ch);
+      [["against a flat surface", "neg"], ["against the final fit", "pos"], ["against the true surface", "ring"]].forEach(([s2, c], i) => { el("circle", c === "ring" ? { cx: B.x + 14, cy: B.y + 6 + i * 17, r: 5, class: "pencil", "stroke-width": 1.6, fill: "none" } : { cx: B.x + 14, cy: B.y + 6 + i * 17, r: 5, class: c }, leg); text(leg, B.x + 26, B.y + 10 + i * 17, s2, "tiny", "start"); });
+      line(leg, B.x + 6, B.y + 57, B.x + 22, B.y + 57, "soft", 1.6); text(leg, B.x + 26, B.y + 61, "1 + n p(1 − p) · miss²", "tiny", "start");
+      const cap = text(g, 300, 586, "even the true surface misses: by what the axes leave out", "mono");
       return { g, update(t) {
-        fade(one, seg(t, 0, 0.1)); fade(leg, seg(t, 0.05, 0.15));
-        const n = Math.floor(seg(t, 0.1, 0.45) * fd.length); fd.forEach((d, i) => fade(d, i < n ? 1 : 0));
-        theory.set(seg(t, 0.4, 0.6)); nd.forEach((d) => fade(d, seg(t, 0.6, 0.7))); fade(flo, seg(t, 0.7, 0.8)); fade(cap, seg(t, 0.2, 0.3));
+        fade(top1, seg(t, 0, 0.08)); fade(b1, seg(t, 0.06, 0.14)); fade(b2, seg(t, 0.12, 0.2)); fade(b3, seg(t, 0.18, 0.26));
+        fade(ch, seg(t, 0.25, 0.32)); theory.set(seg(t, 0.3, 0.45));
+        const n = Math.floor(seg(t, 0.32, 0.55) * d0.length); d0.forEach((d, i) => fade(d, i < n ? 1 : 0));
+        dF.forEach((d) => fade(d, seg(t, 0.55, 0.65))); dT.forEach((d) => fade(d, seg(t, 0.68, 0.78))); fade(leg, seg(t, 0.3, 0.4)); fade(cap, seg(t, 0.75, 0.88));
       } };
     })();
 

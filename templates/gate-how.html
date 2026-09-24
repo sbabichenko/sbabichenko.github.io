@@ -40,18 +40,20 @@
               <span data-v="outside">&hellip;</span> fall outside the lines, where a binomial would put 5%.</p>
           </div>
           <div class="step" data-scene="wrongmean">
-            <p>But the odds are never known, only fitted. Get the mean wrong and the miss shows up as variance: every
-              residual it touches carries it, and the excess grows with the square of how much is missing.</p>
-            <p class="small">Here the true odds are known, so the miss can be measured. Against a flat surface the
-              excess climbs with the miss; against the final fit it stays level. Even there it doesn&rsquo;t fall to 1.
-              The two axes may not describe everything about a coin, and whatever they leave out is spread no surface on
-              them can remove. In this demo a nudge per site plays that part; in real pools it is everything the
+            <p>But the odds are never known, only fitted, and a wrong mean shows up as variance. A site&rsquo;s miss has
+              two sources: the fitted surface can miss the true one, and the two axes may not describe everything that
+              sets a coin&rsquo;s odds.</p>
+            <p class="small">Both count the same: the excess grows with the square of the whole miss, whatever its
+              source. The page drew the coins, so both parts are known here. Even the true surface leaves a miss, the part
+              the axes can&rsquo;t describe. In this demo that is a nudge per site; in real pools it is everything the
               coordinates don&rsquo;t record.</p>
           </div>
           <div class="step" data-scene="coherent">
             <p>Overdispersion comes in two kinds. <em>Coherent</em>: neighbours share the excess, and the surface should
               bend there. <em>Incoherent</em>: each site has its own, and no surface can follow it.</p>
-            <p class="small">A miss is shared by neighbours, because they sit under the same wrong piece of surface.
+            <p class="small">That is how the two misses come apart. A missed surface is shared by neighbours, since they
+              sit under the same wrong piece of it. What the axes miss is each site&rsquo;s own: any part of it that
+              varied along the axes would be part of the surface.
               Against a flat surface the mean square is <span data-v="dispFlat">&hellip;</span> and the excess clusters;
               against the final fit it is <span data-v="dispFit">&hellip;</span> and scattered. The gate cuts only for the
               coherent part. The rest goes into the pool variance, which tells the gate how much disagreement to expect
