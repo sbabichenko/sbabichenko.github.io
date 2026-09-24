@@ -1,0 +1,53 @@
+{#- The theme's page template (themes/kita/templates/page.html), with the writing pieces ending on the
+    dissertation's closing figure instead of a rule. -#}
+{% extends "index.html" %}<!---->
+{% block main %}
+<article>
+  <!-- Page Start inject -->
+  {% include "injects/page_start.html" ignore missing %}
+
+  <header class="mb-16">
+    <h1 class="my-0! pb-2.5">{{ page.title }}</h1>
+    {% include "partials/page_info.html" %}
+  </header>
+
+  {% if page.extra.cover.image %}<!---->
+  <figure class="mt-0 mb-12">
+    <img
+      class="h-auto w-full rounded-lg"
+      src="{{ get_url(path=page.extra.cover.image) }}"
+      alt="{{ page.extra.cover.alt | default(value='cover') }}"
+    />
+  </figure>
+  {% endif %}
+
+  <!-- TOC -->
+  {% include "partials/toc.html" %}<!---->
+
+  <!-- Content -->
+  <section>{{ page.content | safe }}</section>
+
+  {%- if page.components | first == "writing" %}
+  {#- a writing piece ends the way the dissertation's chapters do: an impulse response dying out -#}
+  <div class="fin" aria-hidden="true"><svg viewBox="-4 0 208 30"><path d="M0,15.0 L4,9.9 L8,6.9 L12,6.6 L16,8.5 L20,11.8 L24,15.4 L28,18.3 L32,19.9 L36,19.9 L40,18.7 L44,16.7 L48,14.6 L52,12.9 L56,12.1 L60,12.1 L64,12.9 L68,14.1 L72,15.4 L76,16.3 L80,16.8 L84,16.7 L88,16.2 L92,15.4 L96,14.7 L100,14.2 L104,13.9 L108,14.0 L112,14.4 L116,14.8 L120,15.2 L124,15.5 L128,15.6 L132,15.6 L136,15.4 L140,15.1 L144,14.8 L148,14.7 L152,14.6 L156,14.7 L160,14.8 L164,15.0 L168,15.1 L172,15.2 L176,15.2 L180,15.2 L184,15.1 L188,15.0 L192,14.9 L196,14.9 L200,14.9" /><circle cx="200" cy="15" r="2.2" /></svg></div>
+  <script>(function () { var f = document.querySelector(".fin"); if (!f || !("IntersectionObserver" in window)) return;
+    var o = new IntersectionObserver(function (es) { if (es.some(function (e) { return e.isIntersecting; })) { f.classList.add("drawn"); o.disconnect(); } }); o.observe(f); })();</script>
+  {%- else %}
+  <hr />
+  {%- endif %}
+
+  <!-- Post Taxonomies -->
+  {% include "partials/post_taxonomies.html" %}<!---->
+
+  <!-- Post Nav -->
+  {% include "partials/post_navigation.html" %}<!---->
+
+  <!-- Comment -->
+  {% if page.extra.comment | default(value=config.extra.comment) %}<!---->
+  {% include "partials/comment.html" %}<!---->
+  {% endif %}
+
+  <!-- Page End inject -->
+  {% include "injects/page_end.html" ignore missing %}
+</article>
+{% endblock main %}

@@ -232,3 +232,8 @@
   .fin.drawn path { transition: stroke-dashoffset 2.2s cubic-bezier(.3, .1, .3, 1); stroke-dashoffset: 0; }
   .fin.drawn circle { transition: opacity 0.4s 2s; opacity: 1; }
 }
+
+/* the bookmark ribbon (bookmark.js): hangs on the chapter where the reader stopped */
+.rail .toc > li > a.ribbon { position: relative; }
+.rail .toc > li > a.ribbon::after { content: ""; position: absolute; top: -3px; right: 10px; width: 9px; height: 20px;
+  background: #b8322a; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 74%, 0 100%); pointer-events: none; }

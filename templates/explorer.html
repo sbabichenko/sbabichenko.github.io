@@ -19,7 +19,7 @@
         needs forecasts of others' forecasts, without end. The regress comes from a loop: actions move the state, the
         state generates observations, observations update beliefs, and beliefs determine actions. <a href="{{ get_url(path='dissertation/') }}">My dissertation</a> builds
         a calculus that keeps the loop intact. Pick one of its games, move a slider, and the equilibrium is solved again
-        in your browser.</p>
+        in your browser. New here? Start with <a href="{{ get_url(path='dissertation/idea/') }}">the noise-state, explained</a>.</p>
       <ul class="facts">
         <li>computed live, nothing precomputed</li>
         <li>games from Chapters 1, 3, 4, 5 and 6</li>
@@ -97,6 +97,9 @@
 
       <div id="statusbar">
         <span class="chip idle" id="chip">Loading</span>
+        <svg class="rally" id="rally" viewBox="0 0 40 14" aria-hidden="true"><title>Best-response rounds</title>
+          <line class="bat" x1="3" y1="3" x2="3" y2="11" /><line class="bat" x1="37" y1="3" x2="37" y2="11" />
+          <circle class="ball" id="rallyball" cx="20" cy="7" r="2" /></svg>
         <span id="statustext">Loading the solver.</span>
         <span class="buttons">
           <button class="secondary" id="savebtn" title="Download the model file and the solver's output of this solve as JSON" disabled>Save JSON</button>

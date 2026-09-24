@@ -316,6 +316,8 @@
   $("flips").addEventListener("change", soon);
   const sdLabel = () => { $("coinsdval").textContent = coinSd().toFixed(2); };
   $("coinsd").addEventListener("input", sdLabel); $("coinsd").addEventListener("change", soon); sdLabel();
+  // a link on the page (or the back button) that changes the settings runs them
+  window.addEventListener("hashchange", () => { readHash(); syncTools(); sdLabel(); run(); });
   $("newdata").addEventListener("click", () => { $("seed").value = +$("seed").value + 1; run(); });
   $("showedges").addEventListener("change", drawFit);
   $("showadmit").addEventListener("change", drawFit);

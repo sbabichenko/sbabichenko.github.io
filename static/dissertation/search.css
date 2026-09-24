@@ -1,4 +1,9 @@
 /* the dissertation's search box and its results (search.js) */
+/* the chapter pages have no --sheet of their own: the box sits on their paper */
+.thesis { --sheet: var(--paper); }
+/* the results panel hangs off <body>, outside the pages' token scopes, so it carries its own */
+.dsearch-panel { --sheet: #fffdf6; --ink: #1b1b20; --ink-2: #4a4a55; --ink-3: #8a8a93; --rule: rgba(20, 20, 30, 0.1); --accent: #1f3fd0; color: var(--ink); }
+.dark .dsearch-panel { --sheet: #25262a; --ink: #ecedf1; --ink-2: #b0b1ba; --ink-3: #7c7d86; --rule: rgba(255, 255, 255, 0.12); --accent: #8fb0ff; }
 .dsearch { display: block; width: 100%; box-sizing: border-box; margin: 0 0 0.9rem; padding: 0.45rem 0.7rem; font: 0.85rem ui-sans-serif, system-ui, sans-serif;
   color: var(--ink); background: var(--sheet, #fff); border: 1px solid var(--rule); border-radius: 8px; }
 .dsearch:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
