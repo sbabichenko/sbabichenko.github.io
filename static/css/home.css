@@ -226,3 +226,15 @@
 /* the first stop, for a first visit */
 .home .hero .starthere { position: relative; z-index: 1; margin: 1.1rem 0 0; font-size: 0.95rem; color: var(--ink-2); }
 .home .hero .starthere a { color: var(--accent); }
+
+/* the dissertation's work entry carries a still of the detour map (static/dissertation/detour.js) */
+.home .item.with-still { display: grid; grid-template-columns: minmax(0, 1fr) 260px; column-gap: 28px; }
+.home .item.with-still > .foot { grid-column: 1 / -1; }
+.home .dstill { grid-column: 2; grid-row: 1; align-self: center; display: block; color: var(--ink-2); opacity: 0.85; transition: opacity 0.2s; }
+.home .dstill:hover { opacity: 1; }
+.home .dstill svg { width: 100%; height: auto; display: block; }
+.home .dstill .pn { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+.home .dstill .soft { opacity: 0.35; }
+.home .dstill .hatch { color: var(--ink-3); }
+.home .dstill .acc { stroke: var(--accent); }
+@media (max-width: 640px) { .home .item.with-still { grid-template-columns: 1fr; } .home .dstill { grid-column: 1; grid-row: auto; margin-top: 0.9rem; max-width: 300px; } }

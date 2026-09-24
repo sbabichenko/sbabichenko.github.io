@@ -175,3 +175,37 @@
 .dark .progress { background: #8fb0ff; }
 .idea .solvestate { display: block; margin-top: 0.8rem; font: 0.82rem ui-monospace, Menlo, monospace; color: var(--ink-3); }
 .idea .solvestate.ok { color: var(--accent); }
+
+/* ---------------------------------------------------------------- the detour map (detour.js) */
+.detour { position: relative; }
+.detour.js { height: 620vh; }
+.dt-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; display: flex; flex-direction: column; justify-content: center;
+  width: min(1180px, calc(100% - 24px)); margin: 0 auto; padding-top: 3.2rem; box-sizing: border-box; }
+.dt-map { width: 100%; flex: 1 1 auto; min-height: 0; color: var(--ink); font-family: Newsreader, Georgia, serif; overflow: visible; }
+.dt-caps { position: relative; flex: 0 0 auto; min-height: 7.2rem; max-width: 40rem; margin: 0 auto; width: 100%; }
+.dt-cap { font-family: Newsreader, Georgia, serif; font-size: clamp(1.25rem, 2.3vw, 1.75rem); line-height: 1.3; letter-spacing: -0.01em;
+  margin: 0; text-align: center; }
+.detour.js .dt-cap { position: absolute; inset: 0 0 auto 0; opacity: 0; transform: translateY(6px); transition: opacity 0.5s, transform 0.5s; }
+.detour.js .dt-cap.on { opacity: 1; transform: none; }
+.dt-map .pn { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+.dt-map .soft { opacity: 0.35; }
+.dt-map .soft2 { opacity: 0.4; }
+.dt-map .dash { stroke-dasharray: 3 5 !important; }
+.dt-map .hatch { color: var(--ink-3); opacity: 0; }
+.dt-map .road { color: var(--ink-2); }
+.dt-map .acc { stroke: var(--accent); }
+.dt-map .dot { fill: var(--warm); }
+.dt-map text { fill: var(--ink-2); }
+.dt-map .lab { font: 12.5px ui-sans-serif, system-ui, sans-serif; fill: var(--ink-3); }
+.dt-map .lab .who { font: 15px Newsreader, Georgia, serif; fill: var(--ink); }
+.dt-map .accl, .dt-map .accl .who { fill: var(--accent); }
+.dt-map .bandname { font-size: 19px; font-style: italic; fill: var(--ink); }
+.dt-map .mono { font: 11px ui-monospace, Menlo, monospace; letter-spacing: 0.2em; fill: var(--ink-3); }
+.dt-map .halo { paint-order: stroke; stroke: var(--paper); stroke-width: 7px; stroke-linejoin: round; }
+@media (max-width: 760px) {
+  .dt-sticky { width: 100%; padding: 3.6rem 12px 0; }
+  .dt-caps { min-height: 8.4rem; padding: 0 8px; }
+  .dt-cap { font-size: 1.15rem; }
+  .dt-map .lab { font-size: 11px; } .dt-map .lab .who { font-size: 15px; }
+  .dt-caps { min-height: 7rem; }
+}

@@ -1,7 +1,8 @@
 [[project]]
 name = "Noise-State Calculus for Dynamic Games with Strategic Information"
-desc = "My dissertation. Each player keeps estimates of the primitive shocks instead of belief hierarchies, so beliefs, prices and policies are impulse responses and equilibrium is a fixed point in them. The information wedge prices changing an opponent's beliefs."
+desc = "My dissertation. It solves forecasting the forecasts of others, which economics has worked around since Keynes. Each player keeps estimates of the primitive shocks instead of belief hierarchies, so beliefs, prices and policies are impulse responses and equilibrium is a fixed point in them. The information wedge prices changing an opponent's beliefs."
 tags = ["research", "dissertation"]
+detour = true
 image = "images/card-noisestate"
 links = [
     { name = "read it", url = "/dissertation/", primary = true },
