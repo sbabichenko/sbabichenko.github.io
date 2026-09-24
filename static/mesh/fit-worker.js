@@ -1,12 +1,21 @@
-// Runs the triangular decision-mesh estimator (triangular-decision-mesh/core, compiled to WebAssembly as
-// trimesh.js) off the page's thread. A message carries a design CSV and a seed; the engine reads the CSV
-// from its virtual filesystem, fits with the held-out split on, and the dumps it writes come back parsed.
+// Runs the decision-mesh estimators off the page's thread: triangular-decision-mesh/core (trimesh.js, right
+// triangles) and rectangular-decision-mesh/core (rectmesh.js, rectangles), each compiled to WebAssembly
+// unchanged. A message names the engine and carries a design CSV and a seed; the engine reads the CSV from
+// its virtual filesystem, fits with the held-out split on, and the dumps it writes come back parsed.
 "use strict";
-importScripts("trimesh.js");
-
-let engine = null, log = [];
-const ready = DecisionMeshEngine({ print: (s) => log.push(s), printErr: (s) => log.push(s) })
-  .then((m) => { engine = m; m.FS.mkdir("/w"); postMessage({ type: "ready" }); })
+let log = [];
+const engines = {};
+// both builds export the same factory name, so each is loaded in turn and its factory kept
+function load(name) {
+  if (engines[name]) return engines[name];
+  self.DecisionMeshEngine = undefined;
+  importScripts(name === "rect" ? "rectmesh.js" : "trimesh.js");
+  const factory = self.DecisionMeshEngine;
+  engines[name] = factory({ print: (s) => log.push(s), printErr: (s) => log.push(s) })
+    .then((m) => { m.FS.mkdir("/w"); return m; });
+  return engines[name];
+}
+load("tri").then(() => postMessage({ type: "ready" }))
   .catch((e) => postMessage({ type: "error", message: "engine failed to load: " + e }));
 
 function csv(text) {
@@ -23,9 +32,9 @@ function csv(text) {
 const num = (a) => Float64Array.from(a, Number);
 
 onmessage = async (ev) => {
-  await ready;
-  if (!engine) return;
-  const { id, design, seed } = ev.data;
+  const { id, design, seed } = ev.data, kind = ev.data.engine === "rect" ? "rect" : "tri";
+  let engine;
+  try { engine = await load(kind); } catch (e) { postMessage({ id, type: "error", message: "engine failed to load: " + e }); return; }
   log = [];
   const FS = engine.FS;
   for (const f of FS.readdir("/w")) if (f.startsWith("run")) FS.unlink("/w/" + f);
@@ -43,20 +52,21 @@ onmessage = async (ev) => {
   if (rc !== 0) { postMessage({ id, type: "error", message: "engine exited with " + rc, log }); return; }
   const read = (f) => FS.readFile("/w/" + f, { encoding: "utf8" });
 
+  // triangles: x0 y0 h0 x1 y1 h1 x2 y2 h2; rectangles: x0 y0 x1 y1 h00 h10 h01 h11 (corner heights)
   const m = csv(read("run_mesh.csv"));
-  const tri = new Float64Array(m.x0.length * 9);
-  const keys = ["x0", "y0", "h0", "x1", "y1", "h1", "x2", "y2", "h2"];
-  for (let i = 0; i < m.x0.length; ++i) for (let k = 0; k < 9; ++k) tri[9 * i + k] = +m[keys[k]][i];
+  const keys = kind === "rect" ? ["x0", "y0", "x1", "y1", "h00", "h10", "h01", "h11"] : ["x0", "y0", "h0", "x1", "y1", "h1", "x2", "y2", "h2"];
+  const K = keys.length, tri = new Float64Array(m.x0.length * K);
+  for (let i = 0; i < m.x0.length; ++i) for (let k = 0; k < K; ++k) tri[K * i + k] = +m[keys[k]][i];
 
   const v = csv(read("run_hier_vertices.csv"));
   const verts = [];
   for (let i = 0; i < v.id.length; ++i) {
-    if (v.active[i] !== "1") continue;
+    if (v.active && v.active[i] !== "1") continue;
     verts.push({ x: +v.x[i], y: +v.y[i], h: +v.height[i], admitted: v.gate_admitted[i] === "1", round: +v.admit_round[i] });
   }
 
   const rounds = JSON.parse(read("run_centered_rounds.json")).map((r) => ({
-    round: r.round, candidates: r.candidates, admitted: r.admitted, faces: r.faces_before,
+    round: r.round, candidates: r.candidates, admitted: r.admitted, faces: r.faces_before ?? r.cells_before,
     poolVariance: r.pool_variance, nullMean: r.null_mean, nullSd: r.null_sd, coefficients: r.coefficients,
   }));
   // the gate's own account of each round: [calibration] round R ... emp-null mean/sd/pi0 a/b/c method M ...
@@ -71,7 +81,7 @@ onmessage = async (ev) => {
   const held = log.map((s) => /^HELDOUT: mean deviance\/pool ([\d.]+) \| X2\/info ([\d.]+) \| (\d+) pools/.exec(s)).find(Boolean);
 
   postMessage({
-    id, type: "fit", ms, tri, verts, rounds,
+    id, type: "fit", engine: kind, ms, tri, stride: K, verts, rounds,
     baseline: model.baseline_logit, bounds: [model.wala_min, model.wala_max, model.wac_min, model.wac_max],
     poolVariance: fin.pool_variance, coefficients: fin.coefficients,
     heldout: held ? { deviance: +held[1], x2: +held[2], pools: +held[3] } : null,

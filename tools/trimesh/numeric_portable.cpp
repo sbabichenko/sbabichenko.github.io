@@ -79,6 +79,16 @@ void cho_solve(std::size_t p, const double* factor, double* b) {
     L.transpose().solveInPlace(x);
 }
 
+// The rectangular engine's pair: LAPACK wants the factor transposed once for many solves. Here
+// the factor is already in the form cho_solve reads, so the "transpose" is a copy and the solve is
+// cho_solve. Declared weak so the triangular engine, whose numeric.h lacks them, links unchanged.
+__attribute__((weak)) std::vector<double> transpose_factor(std::size_t p, const double* factor) {
+    return std::vector<double>(factor, factor + p * p);
+}
+__attribute__((weak)) void cho_solve_transposed(std::size_t p, const double* factor_t, double* b) {
+    cho_solve(p, factor_t, b);
+}
+
 void cho_inverse(std::size_t p, const double* factor, double* inverse) {
     const Eigen::Index n = static_cast<Eigen::Index>(p);
     RowMat X = RowMat::Identity(n, n);
