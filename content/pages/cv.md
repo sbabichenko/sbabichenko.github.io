@@ -8,7 +8,7 @@ path = "cv"
 ## Education
 
 **PhD in Statistics and Applied Probability, UC Santa Barbara** &mdash; Sep 2021 &ndash; Jun 2026
-Advisor: Tomoyuki Ichiba. Thesis: *Continuous-time LQG games with endogenous signals.*
+Advisor: Tomoyuki Ichiba. Thesis: *Noise-State Calculus for Dynamic Games with Strategic Information.*
 Passed all qualifying exams prior to the first term of the PhD.
 Graduate Teaching Assistant. Mentored 10+ undergraduates, majority of whom are now in PhD programs. Presented at UCSD Stochastic Systems Seminar.
 
