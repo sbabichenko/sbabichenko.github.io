@@ -7,5 +7,5 @@ weight = 0
 [extra]
 math = false
 [extra.cover]
-image = "images/og-dissertation.png"
+image = "images/og-idea.png"
 +++

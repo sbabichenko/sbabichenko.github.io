@@ -6,5 +6,5 @@ template = "gate-how.html"
 [extra]
 math = false
 [extra.cover]
-image = "images/og-gate.png"
+image = "images/og-gate-how.png"
 +++

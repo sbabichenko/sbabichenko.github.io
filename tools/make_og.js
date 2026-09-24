@@ -26,6 +26,18 @@ const CARDS = [
     eyebrow: "sbabichenko.com/gate",
     title: "A mesh that knows when to stop",
     sub: "Coin flips fitted in your browser by an estimator that cuts only where a false-discovery gate allows." },
+  { out: "og-idea.png", art: "image", fit: "contain", src: "/images/card-idea.webp",
+    eyebrow: "sbabichenko.com/dissertation/idea",
+    title: "From beliefs about beliefs to the noise-state",
+    sub: "Why every belief in these games is an impulse response, told with drawings computed as you read." },
+  { out: "og-wedge.png", art: "image", fit: "contain", src: "/images/card-wedge.webp",
+    eyebrow: "sbabichenko.com/dissertation/wedge",
+    title: "The price of changing someone's mind",
+    sub: "The information wedge, solved live: what moving an opponent's beliefs is worth." },
+  { out: "og-gate-how.png", art: "image", fit: "contain", src: "/images/card-gate-how.webp",
+    eyebrow: "sbabichenko.com/gate/how",
+    title: "How the gate decides",
+    sub: "Where the decision mesh cuts and when it stops, drawn from a live run of the estimator." },
   { out: "og-dissertation.png", art: "shocks", seed: 5,
     eyebrow: "sbabichenko.com/dissertation",
     title: "No one knows much.",
@@ -39,13 +51,16 @@ const page = (c) => `<!doctype html><html><head><meta charset="utf-8">
  body{background:#FFFFF0;position:relative;font-family:Newsreader,Georgia,serif;color:#17171b}
  canvas,img.art{position:absolute;inset:0;width:1200px;height:630px;object-fit:cover}
  img.art{opacity:.9;object-position:right center;-webkit-mask-image:linear-gradient(100deg,transparent 40%,#000 66%)}
+ img.art.contain{object-fit:contain;left:auto;right:28px;width:500px;opacity:1;-webkit-mask-image:none}
+ body.narrow h1{font-size:62px;max-width:600px}
+ body.narrow p{font-size:26px;max-width:580px}
  .e{position:absolute;left:78px;top:128px;font-size:19px;letter-spacing:.14em;text-transform:uppercase;color:#85858f;z-index:2;font-family:ui-sans-serif,system-ui,sans-serif}
  .t{position:absolute;left:78px;top:190px;z-index:2}
  h1{font-size:${c.title.length > 22 ? 72 : 88}px;font-weight:400;letter-spacing:-0.02em;margin:0 0 20px;max-width:760px;line-height:1.02}
  p{font-size:29px;color:#4a4a55;margin:0;max-width:660px;line-height:1.35}
  .u{position:absolute;left:78px;bottom:70px;font-size:24px;color:#1f3fd0;z-index:2;font-family:ui-sans-serif,system-ui,sans-serif}
-</style></head><body>
-${c.art === "mesh" || c.art === "shocks" ? '<canvas id="c" width="2400" height="1260"></canvas>' : `<img class="art" src="${BASE}${c.src}">`}
+</style></head><body class="${c.fit === "contain" ? "narrow" : ""}">
+${c.art === "mesh" || c.art === "shocks" ? '<canvas id="c" width="2400" height="1260"></canvas>' : `<img class="art${c.fit === "contain" ? " contain" : ""}" src="${BASE}${c.src}">`}
 <div class="e">${c.eyebrow}</div>
 <div class="t"><h1>${c.title}</h1><p>${c.sub}</p></div>
 <div class="u">sbabichenko.com</div>
