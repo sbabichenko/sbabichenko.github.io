@@ -903,7 +903,7 @@ function onSolved(m) {
   if (stale) { sendSolve(); return; }
   $("results").classList.remove("stale");
   const failed = res.checks.filter((d) => d.ok === false && d.name !== "converged");
-  const t = m.wall.toFixed(1), how = res.warm_start ? " from the last equilibrium" : "";
+  const t = m.wall < 0.1 ? "under 0.1" : m.wall.toFixed(1), how = res.warm_start ? " from the last equilibrium" : "";
   if (!res.converged) setStatus("bad", "Not converged", `The fixed point did not converge (residual ${fmtE(res.residual)} after ${res.evaluations} rounds). Try a finer grid or less extreme parameters.`);
   else if (failed.length && failed.every((d) => d.name === "resolution"))
     setStatus("warn", "Solved, coarse grid", `Solved in ${t} s${how}. The grid is coarse for these parameters (representation error ${fmtE(failed[0].value)}): costs are good to a few digits; more nodes give more.`);

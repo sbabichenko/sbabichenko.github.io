@@ -1,0 +1,94 @@
+{#- The Decision Mesh demo (/mesh): the site's head, header and footer around a canvas demo whose assets live in
+    static/mesh.  It shares the explorer's stylesheet, so the two project pages read as one site. -#}
+{% import "macros.html" as macros %}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='lqg/explorer.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='mesh/mesh.css') }}" />
+    {% include "partials/header.html" %}
+
+    <main class="explorer mesh">
+      <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; Decision Mesh</div>
+      <h1>Decision Mesh</h1>
+      <p class="sub">A decision tree cuts the plane into boxes and predicts a constant in each, so its fit is a staircase.
+        A decision mesh cuts it into triangles and predicts linearly across each, with heights shared at the corners, so
+        its fit is continuous. Press play and watch both grow on the same noisy data, piece for piece.</p>
+      <ul class="facts">
+        <li>runs in your browser</li>
+        <li>JavaScript port of <a href="https://github.com/sbabichenko/Decision-Mesh">DecisionMesh.py</a>, matching it to 1e-12</li>
+        <li id="speedfact">a few milliseconds a step</li>
+      </ul>
+
+      <details class="howto">
+        <summary>How it grows, in four sentences</summary>
+        <p>Every edge of the mesh carries a candidate vertex at its midpoint; activating it splits the one or two triangles on
+          that edge through their opposite corners, and every active vertex can also have its height refitted. Each candidate
+          knows the least-squares height it would take with every other height held fixed, and how much squared error that
+          would save. Each step takes the candidate with the largest saving, unless the split would make a triangle more
+          than the aspect-ratio limit times longer than it is wide; with probability &epsilon; it instead splits the longest
+          edge of a triangle drawn with weight area &times; points, which lets it get past places where no single split helps.
+          The tree beside it is ordinary best-first CART, grown to as many leaves as the mesh has triangles.</p>
+      </details>
+
+      <section class="panel">
+        <div class="meshbar">
+          <div class="ctl"><label for="surface"><span>Surface</span></label><select id="surface"></select></div>
+          <div class="ctl"><label for="npts"><span>Points</span></label><select id="npts">
+            <option value="2000">2,000</option><option value="5000" selected>5,000</option><option value="10000">10,000</option><option value="20000">20,000</option></select></div>
+          <div class="ctl"><label for="noise"><span>Noise &sigma;</span><span class="val" id="noiseval"></span></label><input type="range" id="noise" min="0" max="1.5" step="0.05" value="0.5" /></div>
+          <div class="ctl"><label for="eps"><span>Exploration &epsilon;</span><span class="val" id="epsval"></span></label><input type="range" id="eps" min="0" max="0.5" step="0.01" value="0.1" /></div>
+          <div class="ctl"><label for="aspect"><span>Aspect-ratio limit</span><span class="val" id="aspectval"></span></label><input type="range" id="aspect" min="2" max="12" step="0.5" value="5" /></div>
+          <div class="ctl"><label for="speed"><span>Steps per frame</span><span class="val" id="speedval"></span></label><input type="range" id="speed" min="1" max="40" step="1" value="2" /></div>
+        </div>
+      </section>
+
+      <div id="statusbar">
+        <span class="chip idle" id="chip">Ready</span>
+        <span id="statustext">Press play.</span>
+        <span class="buttons">
+          <button class="secondary" id="resetbtn" title="New data and a fresh mesh">New data</button>
+          <button class="secondary" id="stepbtn" title="One step">Step</button>
+          <button class="primary" id="playbtn">Play</button>
+        </span>
+      </div>
+
+      <section class="panel">
+        <div class="stage">
+          <figure><div class="cv"><canvas id="cvmesh" width="320" height="320"></canvas></div>
+            <figcaption><b>Decision mesh</b> <span id="capmesh"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvtree" width="320" height="320"></canvas></div>
+            <figcaption><b>Regression tree</b> <span id="captree"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvtruth" width="320" height="320"></canvas></div>
+            <figcaption><b>Truth</b> <span class="muted">the surface under the noise</span></figcaption></figure>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <label class="check"><input type="checkbox" id="showedges" checked /> Mesh and tree lines</label>
+          <label class="check"><input type="checkbox" id="showpts" /> Data points</label>
+          <span class="scale" id="scale"></span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Error against the truth</h2>
+        <div class="cv wide"><canvas id="cvcurve" width="900" height="220"></canvas></div>
+        <p class="caption">Root-mean-square distance from the true surface over the square, as the pieces grow; the dashed
+          line is the noise &sigma;. On smooth surfaces (the saddle, the hills, the cliff) the mesh pulls ahead once it has a
+          couple of hundred pieces. The tree does better on the disk, whose edge is a jump, on the ripples, whose peaks line up
+          with the axes, and at the very start, when a few boxes beat a few triangles. Late in a run a thin triangle holding a
+          handful of points can take an extreme height: those are the jumps in the mesh's curve.</p>
+      </section>
+
+      <div class="notes">
+        <p>The algorithm is my <a href="https://github.com/sbabichenko/Decision-Mesh">Decision Mesh</a>; this
+          page runs a line-for-line JavaScript port whose squared error matches the Python's to 1e-12 over the first 400 steps
+          (with &epsilon; = 0). Data, splits and pictures are all computed on this page.</p>
+      </div>
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='mesh/decision-mesh.js') }}"></script>
+    <script src="{{ get_url(path='mesh/mesh-demo.js') }}"></script>
+  </body>
+</html>
