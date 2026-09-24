@@ -969,7 +969,7 @@ function sendSolve() {
   const hk = model.horizon && model.horizon.kind;
   if (!(model.numerics && model.numerics.engine === "cells")) request.path_grid = hk === "stationary" ? 150 : hk === "transition" ? 48 : 60;
   if (lastStart[game]) request.start = lastStart[game];
-  else request.start_policy = "coarse";          // a cold solve starts from the same model on a coarser grid
+  else if (!(model.numerics && model.numerics.engine === "cells")) request.start_policy = "coarse";   // a cold solve starts from the same model on a coarser grid (the cell engine has none)
   worker.postMessage({ type: "solve", id: inFlight.id, model, request });
 }
 function onSolved(m) {
