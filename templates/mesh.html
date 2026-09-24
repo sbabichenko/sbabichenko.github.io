@@ -14,7 +14,7 @@
       <h1>Decision Mesh</h1>
       <p class="sub">A regression tree cuts the plane into boxes and predicts a constant in each, so its fit is a
         staircase. A decision mesh cuts the plane into pieces that share their corners and predicts across each piece
-        from those corner heights, so its fit is continuous. There is more than one way to cut. Press play: four fits
+        from those corner heights, so its fit is continuous. Press play: four fits
         grow on the same noisy data, each given the same number of free parameters.</p>
       <ul class="facts">
         <li>runs in your browser</li>
@@ -25,7 +25,7 @@
       </ul>
 
       <details class="howto">
-        <summary>The three ways to cut, in a paragraph each</summary>
+        <summary>How each mesh cuts</summary>
         <p><b>Freeform triangles.</b> Every edge carries a candidate vertex at its midpoint; activating it splits the
           one or two triangles on that edge through their opposite corners. Any edge can be cut, so the mesh can turn
           to follow a feature in any direction, at the price of thin triangles, which the aspect limit keeps in check.</p>
@@ -99,7 +99,7 @@
           truth. Best RMSE over a run (freeform / right / rectangles / tree): cliff 0.161 / <b>0.130</b> / 0.170 / 0.217,
           hills 0.127 / <b>0.091</b> / 0.123 / 0.152, saddle 0.099 / <b>0.075</b> / 0.120 / 0.229, disk 0.329 /
           <b>0.277</b> / 0.284 / 0.303, ripples 0.578 / <b>0.464</b> / 0.485 / 0.495, waves 0.206 / <b>0.162</b> / 0.164 /
-          0.232. Their lead is largest early, at fifty parameters. My reading: their pieces cannot go thin, and a cut
+          0.232. Their lead is largest early, at fifty parameters. Probably because their pieces cannot go thin, and a cut
           costs no parameter until the rule frees its surplus, so resolution goes where the error is without paying
           for completion. Late in a run every mesh starts fitting noise and the curves turn up. A minimum of 3 points per
           piece is the default (0 is the published freeform algorithm), and "refresh fits" refits the freeform
@@ -115,7 +115,7 @@
           <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a> (dyadic
           bisection, two parents per vertex, bilinear cells), grown by the same greedy rule as the freeform triangles, so
           the panels differ only in their geometry. Data, cuts and pictures are all computed on this page.</p>
-        <p>None of these four knows when to stop: they grow until the page runs out of budget. The estimator I actually
+        <p>None of these four has a stopping rule: they grow until the page runs out of budget. The estimator I actually
           use chooses its cuts with an empirical-null false-discovery gate and stops by itself;
           <a href="{{ get_url(path='gate/') }}">it runs here too</a>, compiled from its C++.</p>
         <p>Also on this site: the <a href="{{ get_url(path='lqg/') }}">noise-state game explorer</a>, which solves the games of my dissertation in your browser.</p>
