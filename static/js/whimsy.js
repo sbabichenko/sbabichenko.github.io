@@ -29,6 +29,13 @@
     c.classList.remove("spin"); void c.offsetWidth; c.classList.add("spin");
   });
 
+  // ---- buttons that copy a command
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest && e.target.closest("[data-copy]");
+    if (!b || !navigator.clipboard) return;
+    navigator.clipboard.writeText(b.dataset.copy).then(() => { b.classList.add("done"); setTimeout(() => b.classList.remove("done"), 1600); }, () => {});
+  });
+
   // ---- words typed at the page
   let typed = "";
   const tail = (w) => typed.endsWith(w);
