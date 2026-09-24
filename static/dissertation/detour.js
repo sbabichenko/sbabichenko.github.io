@@ -97,7 +97,7 @@
     const edgeA = [], edgeB = [];
     for (let i = 0; i <= 60; ++i) { const u = i / 60; edgeA.push(P(u, BAND[0] + (r() - 0.5) * 0.004)); edgeB.push(P(u, BAND[1] + (r() - 0.5) * 0.004)); }
     const ew = still ? 6 : 1.3, eA = stroke(band, pencil(edgeA, 3, 1), "", ew), eB = stroke(band, pencil(edgeB, 4, 1), "", ew);
-    parts.push({ set: (t) => { eA.set(t); eB.set(t); hatch.style.opacity = 0.9 * t; }, w: [0.0, 0.12] });
+    parts.push({ set: (t) => { eA.set(t); eB.set(t); hatch.style.opacity = 0.9 * t; }, w: [0.0, 0.07] });
 
     let bandLabel = null, unmapped = null;
     if (!still) {
@@ -111,7 +111,7 @@
       const kt = el("text", { x: vertical ? kx + 34 : kx - 4, y: vertical ? ky - 26 : ky - 34, class: "lab", "text-anchor": vertical ? "start" : "start" }, flag);
       kt.innerHTML = `<tspan class="who">Keynes 1936</tspan><tspan x="${vertical ? kx + 34 : kx - 4}" dy="15">the beauty contest</tspan>`;
       stroke(flag, pencil([[kx, ky], vertical ? [kx + 30, ky - 30] : [kx + 2, ky - 30]], 9, 0.6), "soft2", 0.8).set(1);
-      parts.push({ set: (t) => { flag.style.opacity = t; bandLabel.style.opacity = t; }, w: [0.02, 0.1] });
+      parts.push({ set: (t) => { flag.style.opacity = t; bandLabel.style.opacity = t; }, w: [0.01, 0.06] });
       unmapped = el("text", { x: P(vertical ? 0.55 : 0.28, 0.5)[0], y: P(vertical ? 0.55 : 0.28, 0.5)[1] + 4, class: "mono halo", "text-anchor": "middle",
         transform: vertical ? `rotate(90 ${P(0.55, 0.5)[0]} ${P(0.55, 0.5)[1]})` : "" }, g);
       unmapped.textContent = "unmapped";
@@ -133,7 +133,8 @@
       } else cp = [[u0, vStart], [u0, vRun + sgn * 0.05], [u0 + bend * 0.6, vRun + sgn * 0.004], [u0 + bend * 1.6, vRun], [0.97, vRun]];
       const pts = smooth(cp.map(([u, v]) => P(u, v)), 8);
       const line = stroke(g, pencil(pts, 20 + i, still ? 0.6 : 1.2), "road", still ? 7 : 1.4);
-      const t0 = 0.1 + 0.44 * (i / ROADS.length), t1 = t0 + 0.09;
+      // each road is drawn while its caption is up: one each through Kyle, then the rest together
+      const t0 = i < 5 ? [0.08, 0.17, 0.26, 0.34, 0.42][i] : 0.5 + 0.022 * (i - 5), t1 = t0 + (i < 5 ? 0.06 : 0.04);
       parts.push({ set: line.set, w: [t0, t1] });
       doors.push({ from: P(u0 + bend * 1.6, vRun), to: P(u0 + bend * 1.6, 0.5), i });
       if (!still) {
@@ -156,13 +157,13 @@
     // 2026: straight through
     const uT = 0.985;
     const thru = stroke(g, pencil(smooth([P(uT, still ? 0.04 : vEdge - 0.02), P(uT, 0.5), P(uT, still ? 0.96 : 1 - vEdge + 0.02)], 12), 99, 0.8), "acc", still ? 11 : 2.4);
-    parts.push({ set: thru.set, w: [0.66, 0.8] });
+    parts.push({ set: thru.set, w: [0.8, 0.88] });
     if (!still) {
       const [x, y] = vertical ? P(uT, vEdge - 0.02) : P(uT, 1 - vEdge + 0.02);
       const tx = vertical ? x - 8 : x + 6;
       const t = el("text", { x: tx, y: vertical ? y - 4 : y + 56, class: "lab accl", "text-anchor": "end" }, g);
       t.innerHTML = `<tspan class="who">2026</tspan><tspan x="${tx}" dy="14">this dissertation</tspan>`;
-      parts.push({ set: (q) => { t.style.opacity = q; }, w: [0.66, 0.7] });
+      parts.push({ set: (q) => { t.style.opacity = q; }, w: [0.8, 0.83] });
     }
     // and then each line's own way in
     doors.forEach((d) => {
@@ -172,10 +173,10 @@
         const e = el("path", { d: pencil([L(a), L(b)], 60 + d.i * 9 + k, 0.4), class: "pn acc", "stroke-width": 1.2 }, dg);
         e.style.opacity = 0; bits.push(e);
       }
-      const t0 = 0.82 + 0.012 * d.i;
-      parts.push({ set: (t) => bits.forEach((e, k) => { e.style.opacity = t * n > k ? 0.85 : 0; }), w: [t0, t0 + 0.06] });
+      const t0 = 0.9 + 0.007 * d.i;
+      parts.push({ set: (t) => bits.forEach((e, k) => { e.style.opacity = t * n > k ? 0.85 : 0; }), w: [t0, t0 + 0.03] });
     });
-    parts.push({ set: (t) => { hatch.style.opacity = 0.9 - 0.55 * t; if (unmapped) unmapped.style.opacity = 1 - t; }, w: [0.84, 0.98] });
+    parts.push({ set: (t) => { hatch.style.opacity = 0.9 - 0.55 * t; if (unmapped) unmapped.style.opacity = 1 - t; }, w: [0.9, 0.99] });
 
     return function (p) { for (const q of parts) q.set(seg(p, q.w[0], q.w[1])); };
   }
