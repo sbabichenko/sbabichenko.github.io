@@ -19,3 +19,6 @@
 .explorer.mesh .legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
 .explorer.mesh .meshbar .ctl { display: flex; flex-direction: column; justify-content: space-between; }
 @media (min-width: 700px) { .explorer.mesh .meshbar .ctl label { white-space: nowrap; } }
+.explorer.mesh .ctl input.box { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+.explorer.mesh .speedctl input[type=range] { width: 110px; accent-color: var(--accent); }
+.explorer.mesh .speedctl .val { font-family: ui-monospace, Menlo, monospace; color: var(--text); min-width: 1.5em; text-align: right; }

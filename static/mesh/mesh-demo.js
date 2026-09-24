@@ -191,7 +191,7 @@
       X[2 * i] = x; X[2 * i + 1] = y; Y[i] = f(x, y) + sigma * gauss(rng);
     }
     DM.reset();
-    mesh = new DM.DecisionMesh(X, Y, { maxAspectRatio: +$("aspect").value, minPoints: +$("minpts").value, rng: mulberry32(seed + 1) });
+    mesh = new DM.DecisionMesh(X, Y, { maxAspectRatio: +$("aspect").value, minPoints: +$("minpts").value, refresh: $("refresh").checked, rng: mulberry32(seed + 1) });
     tree = new Tree(X, Y);
     truth = truthGrid(f);
     vmax = 0; for (const v of truth) vmax = Math.max(vmax, Math.abs(v)); vmax = vmax || 1;
@@ -327,7 +327,7 @@
     $("noiseval").textContent = (+$("noise").value).toFixed(2);
     $("epsval").textContent = (+$("eps").value).toFixed(2);
     $("aspectval").textContent = (+$("aspect").value).toFixed(1);
-    $("speedval").textContent = $("speed").value;
+    $("speedval").textContent = $("speed").value + ($("speed").value === "1" ? " step" : " steps");
     $("minptsval").textContent = $("minpts").value;
   };
   show();
@@ -341,6 +341,7 @@
     if (S.done) reset(false);
     S.running = true; $("playbtn").textContent = "Pause"; setStatus("busy", "Growing"); requestAnimationFrame(loop);
   };
+  $("refresh").onchange = () => reset(false);
   $("showedges").onchange = draw; $("showpts").onchange = () => { drawTruth(); draw(); };
   window.addEventListener("hashchange", () => { readHash(); reset(false); });
   let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { drawTruth(); draw(); }, 100); });
