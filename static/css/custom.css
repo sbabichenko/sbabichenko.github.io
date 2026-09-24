@@ -117,3 +117,16 @@ main {
   .project-card.has-image .project-image { flex: 0 0 200px; margin: 0; }
   .project-card.has-image .project-body { flex: 1 1 auto; min-width: 0; }
 }
+
+/* Long-form pages read as a page of type: serif body at a comfortable measure, which also sits
+   better beside KaTeX's own faces. Code, tables and the UI stay in the sans. */
+.prose :is(p, li, blockquote, dd, figcaption) {
+  font-family: Newsreader, "Iowan Old Style", Georgia, serif;
+  font-size: 1.12rem;
+  line-height: 1.68;
+}
+.prose blockquote { font-style: italic; }
+.prose :is(code, pre, kbd, samp) { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92rem; font-style: normal; }
+.prose :is(h1, h2, h3, h4) { letter-spacing: -0.015em; }
+.prose h2 { font-size: 1.75rem; margin-top: 2.2em; }
+.prose h3 { font-size: 1.35rem; }
