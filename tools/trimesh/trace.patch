@@ -1,0 +1,35 @@
+diff -ru a/fit/refine.cpp b/fit/refine.cpp
+--- a/fit/refine.cpp	2026-09-24 12:56:02.673997568 +0000
++++ b/fit/refine.cpp	2026-09-24 12:57:25.256970079 +0000
+@@ -22,6 +22,7 @@
+ #include <chrono>
+ #include <cmath>
+ #include <cstdio>
++#include <cstdlib>
+ #include <memory>
+ #include <stdexcept>
+ #include <string>
+@@ -479,6 +480,23 @@
+             }
+         }
+         report_calibration(rnd, scored, lfdr_result, lindsey_fallback, kk, engine);
++        // [web trace] With DMESH_TRACE set, one row per scored candidate of this round: where it sits, the
++        // gate's coordinate and scale, its displacement, its lfdr, and whether the round selected it (the
++        // vertex table says which selections survived admission). Written for the site's illustrated gate;
++        // the fit never reads it.
++        if (const char* trace_path = std::getenv("DMESH_TRACE")) {
++            std::vector<char> selected(scored.size(), 0);
++            for (int i = 0; i < kk; ++i) selected[order[i]] = 1;
++            if (std::FILE* f = std::fopen(trace_path, rnd == 0 ? "w" : "a")) {
++                if (rnd == 0) std::fprintf(f, "round,x,y,depth,z,sd,beta,lfdr,selected\n");
++                for (std::size_t i = 0; i < scored.size(); ++i) {
++                    const Vertex* v = scored.vertices[i];
++                    std::fprintf(f, "%d,%.6g,%.6g,%d,%.6g,%.6g,%.6g,%.6g,%d\n", rnd, v->x, v->y, v->depth, scored.z[i],
++                                 scored.z_sd[i], v->cand_beta, i < lf.size() ? lf[i] : 1.0, selected[i]);
++                }
++                std::fclose(f);
++            }
++        }
+         if (kk == 0) {
+             stalls++;
+             if (stalls >= kStallLimit) break;

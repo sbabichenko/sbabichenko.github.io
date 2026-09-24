@@ -1,0 +1,171 @@
+{#- /dissertation: an opening told in the dissertation's own sentences, one idea per screen, beside a drawing that
+    builds as you scroll (static/dissertation/opening.js), then the contents as a stack of cards. -#}
+{%- set manifest = load_data(path="data/dissertation/manifest.json") -%}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/search.css') }}" />
+    {% include "partials/header.html" %}
+
+    <main class="opening" id="opening">
+      <section class="cover">
+        <svg class="shocks" id="shocks" aria-hidden="true"></svg>
+        <div class="cover-text">
+          <p class="eyebrow">A dissertation &middot; UC Santa Barbara &middot; 2026</p>
+          <h1 class="big" aria-label="No one knows much."><span>No</span> <span>one</span> <span>knows</span> <span>much.</span></h1>
+          <p class="title">Noise-State Calculus for Dynamic Games with Strategic Information</p>
+          <p class="by">Samuel Babichenko</p>
+          <div class="cta">
+            <a class="primary" href="{{ get_url(path='dissertation/introduction/') }}">Start reading</a>
+            <a href="{{ get_url(path='dissertation/idea/') }}">The noise-state explained</a>
+            <a href="{{ get_url(path='dissertation/wedge/') }}">The information wedge explained</a>
+            <a href="#contents">Contents</a>
+            <a href="{{ get_url(path='dissertation/babichenko-dissertation.pdf') }}">PDF, 250 pages</a>
+          </div>
+        </div>
+        <p class="scrollhint" aria-hidden="true">scroll</p>
+      </section>
+
+      <section class="story" id="story">
+        <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
+        <div class="steps">
+          <div class="step" data-scene="corner">
+            <p>No one knows much. In life, we only see a corner of the world, and we see beyond it by watching what others say or do.</p>
+            <p class="small">With each of us knowing so little, it is surprising that an economy can function at all.</p>
+          </div>
+          <div class="step" data-scene="pencil">
+            <p>No one person knows everything needed to make a pencil, yet pencils manage to exist, costing almost nothing.</p>
+            <p class="small">Leonard Read traced the paths of cedar, graphite, lacquer, and rubber across the world to loggers, miners,
+              and chemists who know nothing of each other&rsquo;s work. Why would any of these strangers bother? How would any of
+              them know what to make, and how much?</p>
+            <p class="src">Leonard Read, &ldquo;I, Pencil&rdquo;</p>
+          </div>
+          <div class="step" data-scene="smith">
+            <p>Adam Smith answered the first question with decentralized exchange: people pursuing their own interests could
+              coordinate without anyone directing the whole.</p>
+            <p class="small">In competitive markets where many people can offer the same thing, no one has much power over the price.
+              Prices emerged from the exchange itself, set by no one.</p>
+          </div>
+          <div class="step" data-scene="prices">
+            <p>Friedrich Hayek answered the second. Prices, for Hayek, were a telecommunications system. The logger never sees
+              beyond their own corner; the prices that reach them carry what the rest of the world needs them to know.</p>
+            <p class="small">The relevant knowledge, of the particular circumstances of time and place, exists only in dispersed
+              fragments in countless minds, and no planning board could collect it.</p>
+          </div>
+          <div class="step" data-scene="car">
+            <p>Prices may be useful for communication, but they must come from somewhere. Consider buying a car from a used-car
+              salesman. The seller knows more about the car than you do. But why should their knowing more cost you anything?</p>
+            <p class="small">You pay what you believe the car is worth, but the seller shapes what you learn.</p>
+          </div>
+          <div class="step" data-scene="loop">
+            <p>The same problem appears whenever actions both do things and signal, and formalizing that is hard.</p>
+            <p class="small">Actions move the state of the system, the state generates observations, observations update beliefs.
+              Beliefs complete the cycle by determining the actions that started it. A loop. There is also a chord, where an action
+              can set what others observe directly.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="detour" id="detour" aria-label="Ninety years of economics going around one problem">
+        <div class="dt-sticky">
+          <svg class="dt-map" aria-hidden="true"></svg>
+          <div class="dt-caps">
+            <p class="dt-cap" data-at="0">Keynes described the recursion in 1936 with his beauty contest. Winning meant anticipating not which faces were prettiest, but which faces everyone else expected everyone else to choose.</p>
+            <p class="dt-cap" data-at="0.08">The first obstacle was defining equilibrium under private information at all, which Harsanyi solved through priors over player types. Muth proposed that players hold rational expectations consistent with the beliefs the model implies.</p>
+            <p class="dt-cap" data-at="0.17">Lucas explained the shifting Phillips curve with Phelps&rsquo;s economy of islands, and the idea rebuilt the field. But the lesson was applied mainly to the government. Private agents remained price takers whose actions move nothing observed by others.</p>
+            <p class="dt-cap" data-at="0.26">Grossman and Stiglitz asked if prices could reveal everything traders know. They cannot. If the price revealed everything, gathering information would earn nothing.</p>
+            <p class="dt-cap" data-at="0.34">Townsend&rsquo;s firms had to predict what other firms believed, and beliefs about those beliefs, and so on. To get a solvable model, he revealed all private information after a fixed number of periods.</p>
+            <p class="dt-cap" data-at="0.42">Kyle kept the core of the problem, but in a special case where it could all be solved, with one insider, informed once at the start of trading. When the finance community saw the whole problem in a solvable model, it pounced.</p>
+            <p class="dt-cap" data-at="0.5">Extensions stayed solvable only under heavy symmetry, and interest spilled into nearby approaches. After a generation, students learn dispersed information through these ideas.</p>
+            <p class="dt-cap" data-at="0.64">Each approach removes a defining feature of dispersed information. A model where information and incentives can be treated separately has removed the interaction it set out to study, akin to a method that lets people study correlations between variables only when those correlations are zero.</p>
+            <p class="dt-cap" data-at="0.72">An outside modeler sees decades of work and assumes the problem has been studied. What looks like an exhausted subject is one whose most expressive models have remained out of reach.</p>
+            <p class="dt-cap" data-at="0.8">This dissertation goes through.</p>
+            <p class="dt-cap" data-at="0.9">Each line of work can now go where it was headed.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="story" id="story2">
+        <div class="stage" aria-hidden="true"><svg id="stage2" viewBox="0 0 600 600"></svg></div>
+        <div class="steps">
+          <div class="step" data-scene="moore">
+            <p>Art Moore, my linear algebra professor in community college, once explained that PDEs are so much harder to analyze
+              because they can describe so much more.</p>
+            <p class="small">A language capable of describing complex phenomena necessarily carries some of that complexity in its own
+              structure. The resulting mathematics may be complex, but it is the simplest machinery I know that keeps the loop intact.</p>
+          </div>
+          <div class="step" data-scene="noise">
+            <p>The way through is the noise-state. Each player keeps estimates of the primitive shocks instead of belief hierarchies about the endogenous state.
+              Under perfect information, these estimates are the shocks themselves.</p>
+          </div>
+          <div class="step" data-scene="wedge">
+            <p>The information wedge is the shadow price of changing an opponent&rsquo;s beliefs. It breaks the separation
+              principle and vanishes when the loop is cut.</p>
+            <p class="small">Every manipulation channel passes through it.</p>
+          </div>
+          <div class="step" data-scene="finale">
+            <p>This dissertation is my attempt to allow the field to build the models it set out to build.</p>
+            <p class="small">I hope that the stories told through Hayek&rsquo;s &ldquo;The Use of Knowledge in Society&rdquo; and Leonard
+              Read&rsquo;s &ldquo;I, Pencil&rdquo; can be put to paper more fully, and that I can someday enjoy reading the papers of a
+              field that has kept its heart.</p>
+          </div>
+        </div>
+      </section>
+
+      <a class="skip-pill" href="#contents" data-from="#story" data-until="#story2">Skip to the contents</a>
+      <section class="contents" id="contents">
+        <h2>Contents</h2>
+        <input class="dsearch" id="dsearch" type="search" placeholder="Search all 250 pages: a word, a phrase, &ldquo;Theorem 3.2&rdquo;" aria-label="Search the dissertation" autocomplete="off" data-base="{{ get_url(path='dissertation/') }}" />
+        <p class="lede">New to the idea? <a href="{{ get_url(path='dissertation/idea/') }}">From beliefs about beliefs to the
+          noise-state</a> explains it with drawings computed live, and <a href="{{ get_url(path='dissertation/wedge/') }}">The price of
+          changing someone&rsquo;s mind</a> does the same for the information wedge. Every page below is the dissertation itself, with its numbering, cross-references and citations
+          intact. Hover a reference to see what it points to.
+          The games of Chapters 1, 3, 4, 5 and 6 also <a href="{{ get_url(path='noisestate/') }}">run in your browser</a>,
+          and the solver is a Python package: <a href="https://pypi.org/project/noisestate/"><code>pip install noisestate</code></a>.</p>
+        {%- set blurbs = [
+          "The acknowledgements, a vita, the abstract, and the notation used throughout.",
+          "No one knows much. Pencils, prices, Lucas's islands, Townsend's regress, and the loop every tractable model cuts.",
+          "The calculus in the finite-horizon LQG game: the noise-state linear class, the belief prices, the information wedge, and a finite-deviation identity that verifies a computed equilibrium against every admissible deviation.",
+          "News arrives late. Until it arrives a player can move what others believe; once it arrives, it explains the movement away.",
+          "A game run long enough to become stationary: kernels become functions of ages rather than dates, and it is the easiest to compute.",
+          "Kyle–Back trading on an infinite horizon, where order flow is both an action and a signal, and price impact becomes trader-specific.",
+          "Many small local markets on a symmetric network: the shocks average out, the incentives do not.",
+          "A deviation seen by some players and not others: naive players filter it as a shock, privy players respond to it directly.",
+          "The information wedge across all of it, and the directions beyond: closure, computation, sources, networks, markets.",
+          "Optical illusions, I, Pencil, and two simple questions. Illustrated, like the opening.",
+          "Additional finite-horizon extensions.",
+          "One hundred and nineteen of them."
+        ] -%}
+        <ol class="cards">
+          {%- for m in manifest %}
+          <li class="card{% if m.label is starting_with('Chapter') %} chapter{% endif %}">
+            <a href="{{ get_url(path='dissertation/' ~ m.slug ~ '/') }}">
+              <span class="num">{% if m.label %}{{ m.label | replace(from="Chapter ", to="") | replace(from="Appendix ", to="") }}{% else %}&middot;{% endif %}</span>
+              <span class="what">{% if m.label %}{{ m.label }}{% else %}&nbsp;{% endif %}</span>
+              <span class="t">{{ m.title }}</span>
+              <span class="d">{{ blurbs | nth(n=loop.index0) }}</span>
+            </a>
+          </li>
+          {%- endfor %}
+        </ol>
+        <details class="cite">
+          <summary>Cite it</summary>
+<pre>@phdthesis{Babichenko2026Dissertation,
+  author = {Babichenko, Samuel},
+  title  = {Noise-State Calculus for Dynamic Games with Strategic Information},
+  school = {University of California, Santa Barbara},
+  year   = {2026},
+  url    = {https://sbabichenko.com/dissertation/}
+}</pre>
+        </details>
+      </section>
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='dissertation/opening.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/detour.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/search.js') }}"></script>
+  </body>
+</html>

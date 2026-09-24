@@ -4,6 +4,8 @@ date = "2025-11-08"
 description = "Partial Pooling for Estimating Interaction Effects in Factor Models" 
 [taxonomies] 
 "writing/tags" = ["methods"] 
+[extra]
+math = true
 +++
 
 # Introduction to the Problem  
