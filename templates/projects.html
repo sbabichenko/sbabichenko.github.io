@@ -32,7 +32,7 @@
         </ul>
         {% endif %}
         {%- set formula = load_data(path="data/formula.json") %}
-        <a class="motif" href="{{ get_url(path='dissertation/introduction/') }}#the-noise-state"
+        <a class="motif" href="{{ get_url(path='dissertation/idea/') }}"
            aria-label="The noise-state: player i's estimate, at time t, of the primitive shock W at an earlier time u, given everything player i knows">
           <span class="def">{{ formula.def.svg | safe }}</span>
           <span class="bp">{{ formula.blueprint.svg | safe }}</span>
