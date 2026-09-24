@@ -119,6 +119,10 @@
     }
     return g;
   }
+  function rectGrid(rm, g) {
+    for (let i = 0; i < D; ++i) { const y = cellY(i); for (let j = 0; j < D; ++j) g[i * D + j] = rm.at(cellX(j), y); }
+    return g;
+  }
   function treeGrid(tree, g) {
     for (const L of tree.leaves) {
       const j0 = Math.max(0, Math.round(px(L.x0))), j1 = Math.min(D, Math.round(px(L.x1)));
@@ -170,7 +174,8 @@
   // ------------------------------------------------------------------ state
   const S = { running: false, done: false, history: [] };
   window.meshDemo = S;
-  let mesh, tree, truth, gMesh = new Float32Array(D * D), gTree = new Float32Array(D * D), vmax = 1;
+  let mesh, rect, tree, truth, vmax = 1;
+  let gMesh = new Float32Array(D * D), gRect = new Float32Array(D * D), gTree = new Float32Array(D * D);
   let X, Y, sigma;
 
   function readHash() {
@@ -192,19 +197,30 @@
     }
     DM.reset();
     mesh = new DM.DecisionMesh(X, Y, { maxAspectRatio: +$("aspect").value, minPoints: +$("minpts").value, refresh: $("refresh").checked, rng: mulberry32(seed + 1) });
+    RM.reset();
+    rect = new RM.RectMesh(X, Y, { grid: 4, minPoints: +$("minpts").value, maxAspect: +$("aspect").value, rng: mulberry32(seed + 2) });
     tree = new Tree(X, Y);
     truth = truthGrid(f);
     vmax = 0; for (const v of truth) vmax = Math.max(vmax, Math.abs(v)); vmax = vmax || 1;
     S.history = []; S.done = false;
-    syncTree(); record();
+    sync(); record();
     drawTruth(); draw();
     setStatus(S.running ? "busy" : "idle", S.running ? "Growing" : "Ready", S.running ? "" : "Press play, or step once.");
   }
 
-  function syncTree() { while (tree.leaves.length < mesh.activeFaces.size && tree.grow()); }
+  // the three fits are matched on free parameters, not on pieces: a tree leaf carries one mean, a
+  // mesh vertex one height. The triangular mesh leads; the other two are grown up to its count.
+  const df = () => mesh.activeVertices();
+  function sync() {
+    while (tree.leaves.length < df() && tree.grow());
+    let guard = 0;
+    while (rect.freeCount() < df() && guard++ < 40) if (rect.step() === "none") break;
+  }
   function record() {
-    meshGrid(mesh, gMesh); treeGrid(tree, gTree);
-    S.history.push({ pieces: mesh.activeFaces.size, leaves: tree.leaves.length, m: rmse(gMesh, truth), t: rmse(gTree, truth) });
+    meshGrid(mesh, gMesh); rectGrid(rect, gRect); treeGrid(tree, gTree);
+    S.history.push({ df: df(), pieces: mesh.activeFaces.size, cells: rect.cells, rdf: rect.freeCount(),
+                     leaves: tree.leaves.length,
+                     m: rmse(gMesh, truth), r: rmse(gRect, truth), t: rmse(gTree, truth) });
   }
 
   // ------------------------------------------------------------------ drawing
@@ -225,12 +241,25 @@
     paint(c, truth, vmax, true, (ctx, s) => dots(ctx, s));
   }
   function draw() {
-    const cm = $("cvmesh"), ct = $("cvtree"); fitCanvas(cm); fitCanvas(ct);
+    const cm = $("cvmesh"), cr = $("cvrect"), ct = $("cvtree");
+    fitCanvas(cm); fitCanvas(cr); fitCanvas(ct);
     const edges = $("showedges").checked;
     paint(cm, gMesh, vmax, true, (ctx, s) => {
       if (edges) {
         ctx.strokeStyle = lineColor(); ctx.lineWidth = Math.max(0.5, s * 0.5); ctx.beginPath();
         for (const e of mesh.activeEdges) { ctx.moveTo(px(e.v0.x) * s, py(e.v0.y) * s); ctx.lineTo(px(e.v1.x) * s, py(e.v1.y) * s); }
+        ctx.stroke();
+      }
+      dots(ctx, s);
+    });
+    const RS = RM.S;
+    paint(cr, gRect, vmax, true, (ctx, s) => {
+      if (edges) {
+        ctx.strokeStyle = lineColor(); ctx.lineWidth = Math.max(0.5, s * 0.5); ctx.beginPath();
+        for (const [x0, y0, x1, y1] of rect.edges()) {
+          ctx.moveTo((x0 / RS) * D * s, (1 - y0 / RS) * D * s);
+          ctx.lineTo((x1 / RS) * D * s, (1 - y1 / RS) * D * s);
+        }
         ctx.stroke();
       }
       dots(ctx, s);
@@ -245,6 +274,7 @@
     });
     const h = S.history[S.history.length - 1];
     $("capmesh").textContent = `${h.pieces.toLocaleString()} triangles · RMSE ${h.m.toFixed(3)}`;
+    $("caprect").textContent = `${h.cells.toLocaleString()} cells · RMSE ${h.r.toFixed(3)}`;
     $("captree").textContent = `${h.leaves.toLocaleString()} boxes · RMSE ${h.t.toFixed(3)}`;
     drawCurve();
     drawScale();
@@ -258,8 +288,8 @@
     const ctx = c.getContext("2d"), W = c.width, H = c.height, dpr = W / c.getBoundingClientRect().width || 1;
     ctx.clearRect(0, 0, W, H);
     const L = 44 * dpr, R = 12 * dpr, T = 12 * dpr, B = 26 * dpr;
-    const hist = S.history, maxP = Math.max(20, ...hist.map((h) => h.pieces));
-    let maxY = sigma * 1.05; for (const h of hist) maxY = Math.max(maxY, h.m, h.t); maxY = maxY * 1.05 || 1;
+    const hist = S.history, maxP = Math.max(20, ...hist.map((h) => h.df));
+    let maxY = sigma * 1.05; for (const h of hist) maxY = Math.max(maxY, h.m, h.r, h.t); maxY = maxY * 1.05 || 1;
     const X_ = (p) => L + ((W - L - R) * Math.log(p)) / Math.log(maxP);
     const Y_ = (v) => T + (H - T - B) * (1 - v / maxY);
     ctx.font = `${11 * dpr}px ui-monospace, Menlo, monospace`; ctx.fillStyle = css("--faint"); ctx.strokeStyle = css("--grid"); ctx.lineWidth = dpr;
@@ -270,21 +300,25 @@
     }
     ctx.textAlign = "center";
     for (const p of [2, 10, 100, 1000, 10000]) if (p <= maxP) ctx.fillText(p.toLocaleString(), X_(p), H - 8 * dpr);
-    ctx.textAlign = "left"; ctx.fillText("pieces (log)", L + 4 * dpr, H - 8 * dpr - 12 * dpr);
+    ctx.textAlign = "left"; ctx.fillText("free parameters (log)", L + 4 * dpr, H - 8 * dpr - 12 * dpr);
     if (sigma > 0) {
       ctx.setLineDash([5 * dpr, 4 * dpr]); ctx.strokeStyle = css("--faint");
       ctx.beginPath(); ctx.moveTo(L, Y_(sigma)); ctx.lineTo(W - R, Y_(sigma)); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillText("noise σ", W - R - 60 * dpr, Y_(sigma) - 5 * dpr);
     }
-    const line = (key, col, pk) => {
+    const line = (key, col) => {
       ctx.strokeStyle = col; ctx.lineWidth = 2 * dpr; ctx.beginPath();
-      hist.forEach((h, i) => { const x = X_(Math.max(1, h[pk])), y = Y_(h[key]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+      hist.forEach((h, i) => { const x = X_(Math.max(1, h.df)), y = Y_(h[key]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
       ctx.stroke();
     };
-    line("t", css("--c4"), "leaves");
-    line("m", css("--accent"), "pieces");
-    ctx.fillStyle = css("--accent"); ctx.fillText("mesh", L + 8 * dpr, T + 12 * dpr);
-    ctx.fillStyle = css("--c4"); ctx.fillText("tree", L + 56 * dpr, T + 12 * dpr);
+    line("t", css("--c4"));
+    line("r", css("--c6"));
+    line("m", css("--accent"));
+    let lx = L + 8 * dpr;                              // the key, laid out by measured width
+    for (const [label, col] of [["triangles", css("--accent")], ["rectangles", css("--c6")], ["tree", css("--c4")]]) {
+      ctx.fillStyle = col; ctx.fillText(label, lx, T + 12 * dpr);
+      lx += ctx.measureText(label).width + 14 * dpr;
+    }
   }
 
   // ------------------------------------------------------------------ loop
@@ -306,10 +340,13 @@
       if (performance.now() - t0 > budget) break;
     }
     if (did) stepMs = 0.8 * stepMs + 0.2 * ((performance.now() - t0) / did);
-    syncTree(); record(); draw();
+    sync(); record(); draw();
     const h = S.history[S.history.length - 1];
-    const lead = h.m < h.t ? `the mesh is ${(100 * (1 - h.m / h.t)).toFixed(0)}% closer to the truth` : `the tree is ${(100 * (1 - h.t / h.m)).toFixed(0)}% closer to the truth`;
-    const txt = `Step ${mesh.steps.toLocaleString()}: ${h.pieces.toLocaleString()} triangles on ${mesh.activeVertices().toLocaleString()} vertices; at the same number of pieces ${lead}.`;
+    const names = ["triangles", "rectangles", "the tree"], errs = [h.m, h.r, h.t];
+    let w = 0; for (let i = 1; i < 3; ++i) if (errs[i] < errs[w]) w = i;
+    const rest = errs.filter((_, i) => i !== w).sort((a, b) => a - b)[0];
+    const txt = `${h.df.toLocaleString()} free parameters each: ${names[w]} closest to the truth `
+      + `(RMSE ${errs[w].toFixed(3)}), ${(100 * (rest / errs[w] - 1)).toFixed(0)}% ahead of the next.`;
     $("speedfact").textContent = `about ${stepMs < 1 ? stepMs.toFixed(2) : stepMs.toFixed(1)} ms a step here`;
     if (S.done) { S.running = false; $("playbtn").textContent = "Play"; setStatus("ok", "Done", txt + " Stopped at ten points per triangle, on average."); }
     else setStatus(S.running ? "busy" : "idle", S.running ? "Growing" : "Paused", txt);
