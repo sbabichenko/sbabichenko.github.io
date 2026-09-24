@@ -1,5 +1,5 @@
 +++
-title = "Colophon & Acknowledgements"
+title = "Colophon & acknowledgements"
 path = "colophon"
 +++
 
@@ -14,7 +14,10 @@ Unless otherwise stated, all my original work on this website is licensed under 
 - Click anywhere on the home page's mesh. It drops a bump where you clicked and grows again around it.
 - Visit a page that doesn't exist. The mesh there looks for something and keeps finding nothing.
 - The footer counts what your machine has computed during this visit.
-- Type "flip" on any page. Type "noise" too.
+- Type "flip" on any page. Type "noise" too, and "forecast" if you want to be predicted.
+- On a phone: shake it, or tap three times on a blank spot.
+- Switch to another tab and look at this one's title. Then come back.
+- Search the dissertation for something it doesn't contain.
 - Switch between light and dark.
 - Read the CV slowly, and look in the left margin. The walk is different every visit.
 - On the gate page, pick "Your drawing" and paint on the odds. Shift lowers them.

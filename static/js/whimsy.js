@@ -2,6 +2,9 @@
 // - the theme toggle spreads the new theme from the button like ink, where the browser can (View Transitions);
 // - type "flip" anywhere (outside a form field) and a coin is tossed in the corner, with this visit's running count;
 // - type "noise" and every heading on the page takes a short random walk, then settles back;
+// - type "forecast" and the page tries to guess each next key before you press it, and keeps score;
+// - on a phone: shake it to toss the coin, and tap three times on a blank spot for the random walk;
+// - leave the tab and its title notes that no new observations are coming in;
 // - leave the page alone for a while and something gets doodled in an empty margin (three at most);
 // - a hello in the console, for anyone who opens it.
 // The colophon lists these, along with the ones on other pages.
@@ -45,9 +48,12 @@
     const t = e.target;
     if (e.metaKey || e.ctrlKey || e.altKey || !e.key || e.key.length !== 1) return;
     if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
-    typed = (typed + e.key.toLowerCase()).slice(-12);
+    const k = e.key.toLowerCase();
+    if (fc) { e.preventDefault(); forecastKey(k); return; }
+    typed = (typed + k).slice(-12);
     if (tail("flip")) { typed = ""; flip(); }
     else if (tail("noise")) { typed = ""; jiggle(); }
+    else if (tail("forecast")) { typed = ""; forecast(); }
   });
 
   // ---- a coin, tossed
@@ -69,6 +75,75 @@
     coin.querySelector("p").textContent = `${up ? "Heads" : "Tails"}. ${heads} of ${n} this visit` + (n >= 5 ? `, ${(heads / n).toFixed(2)}` : "") + ".";
     clearTimeout(coin._t); coin._t = setTimeout(() => coin.classList.add("gone"), 4200);
   }
+
+  // ---- the page forecasts your next key: an order-two Markov chain on what you type, falling back to order
+  // one, then to letter frequencies of English. It says its guess only after you press the key.
+  let fc = null;
+  const EN = "etaoinshrdlcumwfgypbvkjxqz";
+  function forecast() {
+    if (fc) return;
+    fc = { box: document.createElement("div"), hist: " ", n: 0, hit: 0, c2: {}, c1: {}, guess: "e", timer: 0 };
+    fc.box.className = "whimsy-forecast"; fc.box.setAttribute("aria-live", "polite");
+    fc.box.innerHTML = "<p class=\"q\">I have a guess for your next key. Type anything.</p><p class=\"s\"></p>";
+    document.body.appendChild(fc.box);
+    fc.timer = setTimeout(endForecast, 15000);
+  }
+  function best(o) { let b = null, m = 0; for (const c in o) if (o[c] > m) { m = o[c]; b = c; } return b; }
+  function forecastKey(k) {
+    clearTimeout(fc.timer);
+    const hit = k === fc.guess; fc.n++; if (hit) fc.hit++;
+    const two = fc.hist.slice(-2), one = fc.hist.slice(-1);
+    (fc.c2[two] = fc.c2[two] || {})[k] = (fc.c2[two][k] || 0) + 1;
+    (fc.c1[one] = fc.c1[one] || {})[k] = (fc.c1[one][k] || 0) + 1;
+    fc.hist += k;
+    const show = (c) => c === " " ? "space" : c;
+    fc.box.querySelector(".q").textContent = hit ? `Called it: ${show(k)}.` : `I guessed ${show(fc.guess)}. You typed ${show(k)}.`;
+    fc.box.querySelector(".s").textContent = `${fc.hit} of ${fc.n}`;
+    const t2 = fc.hist.slice(-2), t1 = fc.hist.slice(-1);
+    fc.guess = best(fc.c2[t2] || {}) || best(fc.c1[t1] || {}) || (t1 === " " ? "t" : EN[fc.n % 5]);
+    if (fc.n >= 40) endForecast(); else fc.timer = setTimeout(endForecast, 8000);
+  }
+  function endForecast() {
+    if (!fc) return;
+    const { box, hit, n } = fc; fc = null;
+    box.querySelector(".q").textContent = n ? `${hit} of ${n} keys forecast. Forecasting the forecasts of others is harder: that took a dissertation.` : "No keys, no forecasts.";
+    box.querySelector(".s").textContent = "";
+    setTimeout(() => { box.classList.add("gone"); setTimeout(() => box.remove(), 600); }, 4000);
+  }
+
+  // ---- on a phone: shake to toss the coin, tap three times on a blank spot for the random walk
+  if (window.DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission !== "function") {
+    let last = 0, jolts = [];
+    addEventListener("devicemotion", (e) => {
+      const a = e.acceleration && e.acceleration.x != null ? e.acceleration : null;
+      if (!a) return;
+      const m = Math.hypot(a.x || 0, a.y || 0, a.z || 0), now = performance.now();
+      if (m < 14) return;
+      jolts = jolts.filter((t) => now - t < 700); jolts.push(now);
+      if (jolts.length >= 3 && now - last > 2000) { last = now; jolts = []; flip(); }
+    });
+  }
+  let taps = [];
+  document.addEventListener("pointerup", (e) => {
+    if (e.pointerType !== "touch") return;
+    if (e.target.closest && e.target.closest("a, button, input, select, textarea, label, canvas, svg, [role=button], .katex, summary")) { taps = []; return; }
+    const now = performance.now();
+    taps = taps.filter((t) => now - t.t < 650 && Math.hypot(t.x - e.clientX, t.y - e.clientY) < 60);
+    taps.push({ t: now, x: e.clientX, y: e.clientY });
+    if (taps.length >= 3) { taps = []; jiggle(); }
+  }, { passive: true });
+
+  // ---- leave the tab and it notices
+  let away = 0, title = document.title;
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { title = document.title; away = performance.now(); document.title = "No new observations"; }
+    else {
+      if (document.title !== "No new observations") return;
+      if (performance.now() - away < 4000) { document.title = title; return; }
+      document.title = "Updating beliefs";
+      setTimeout(() => { if (document.title === "Updating beliefs") document.title = title; }, 1400);
+    }
+  });
 
   // ---- every heading takes a short random walk
   function jiggle() {
