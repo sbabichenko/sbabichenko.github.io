@@ -70,7 +70,7 @@ header_blur = true
 [extra.profile]
 name = "Samuel Babichenko"
 bio = """
-Quantitative researcher at Wells Fargo in Charlotte. My PhD at UCSB solved forecasting the forecasts of others, a problem economics has worked around since Keynes. Here I share projects and writing about what’s been on my mind. Feel free to reach out!
+Quantitative researcher at Wells Fargo in Charlotte. I work on game theory, nonparametric and empirical Bayes statistics, and quantitative finance, and my PhD work at UCSB solved the problem of forecasting the forecasts of others, which economics has had to work around since Keynes. Here I share projects and writing about what’s been on my mind. Feel free to reach out!
 """
 # The URL of avatar.
 avatar_url = "images/profile.jpeg"
