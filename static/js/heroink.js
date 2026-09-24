@@ -100,25 +100,29 @@
     return;
   }
 
-  let last = 0, acc = 0;
+  let acc = 0, settled = 0;
   function frame(now) {
-    if (!document.hidden && cv.getBoundingClientRect().bottom > 0) {
-      const dt = Math.min(64, now - last || 16);
+    // about thirty frames a second, only while the figure is on screen and something is moving
+    if (!document.hidden && now - settled > 30 && cv.getBoundingClientRect().bottom > 0) {
+      const dt = Math.min(120, settled ? now - settled : 32);
+      settled = now;
       if (phase === "grow") {
         acc += dt;
-        while (acc > 150) {                               // about nine cuts a second
-          acc -= 110;
+        while (acc > 120) {                               // about eight cuts a second
+          acc -= 120;
           if (mesh.activeFaces.size >= TARGET || mesh.step(0.08) === "none") { phase = "hold"; acc = 0; break; }
         }
       } else if (phase === "hold") {
-        acc += dt; if (acc > 6000) { phase = "out"; acc = 0; }
+        acc += dt;
+        if (acc > 6500) { phase = "out"; acc = 0; }
       } else {
-        acc += dt; fade = Math.max(0, 1 - acc / 1600);
-        if (fade <= 0) { start(); }
+        acc += dt;
+        fade = Math.max(0, 1 - acc / 1600);
+        if (fade <= 0) start();
       }
-      draw(now);
+      // once the last cut's glow has faded there is nothing new to draw until the figure moves again
+      if (phase !== "hold" || acc < 1600) draw(now);
     }
-    last = now;
     requestAnimationFrame(frame);
   }
   start();
