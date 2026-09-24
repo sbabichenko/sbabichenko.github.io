@@ -121,6 +121,84 @@
     el("path", { d: "M-11,12 Q-11,-3 0,-3 Q11,-3 11,12 Z", class: cls }, p);
     return p;
   }
+  // a head in profile, facing right (or left with flip), with a circle where its model of the world lives
+  const HEAD = "M-24,60 C-24,48 -30,40 -38,30 C-50,14 -52,-12 -44,-32 C-34,-56 -8,-66 16,-60 C38,-54 50,-36 48,-12 L47,-4 L57,12 C59,15 56,17 52,17 L51,23 L47,26 L50,30 C50,34 47,36 45,37 C46,45 40,49 30,47 L22,46 L22,60";
+  function head(g, x, y, s, flip, name) {
+    const h = el("g", { transform: `translate(${x} ${y}) scale(${flip ? -s : s} ${s})` }, g);
+    el("path", { d: HEAD + " Z", class: "headfill" }, h);
+    el("path", { d: HEAD, class: "pencil", "stroke-width": 1.8 / s, fill: "none" }, h);
+    const brain = el("circle", { cx: 2, cy: -18, r: 30, class: "pencil soft", "stroke-width": 1.2 / s, fill: "none" }, h);
+    if (name) { const t = text(g, x, y + 60 * s + 24, name, "label"); return { h, t, brain }; }
+    return { h, brain };
+  }
+
+  // ------------------------------------------------------------------ 00. one person knows: the world goes on
+  scenes.doctor = (() => {
+    const g = group("doctor");
+    const crowd = [];
+    for (let i = 0; i < 8; ++i) for (let j = 0; j < 4; ++j) {
+      const x = 85 + i * 62, y = 280 + j * 74, k = i === 3 && j === 0;
+      const p = person(g, x, y, "fillacc"); p.style.fill = k ? "var(--accent)" : "currentColor";
+      crowd.push({ p, x, y, k, ph: (i * 7 + j * 3) % 5 });
+    }
+    // the one who knows: a calendar over their head, the months crossed off
+    const me = crowd.find((c) => c.k);
+    const cal = el("g", { transform: `translate(${me.x} ${me.y - 100})` }, g);
+    el("rect", { x: -54, y: -30, width: 108, height: 62, rx: 6, class: "box pencil", "stroke-width": 1.4 }, cal);
+    el("path", { d: `M${me.x - 6 - me.x},32 L0,62 L8,32`, class: "box pencil", "stroke-width": 1.4 }, cal);
+    const months = [];
+    for (let m = 0; m < 6; ++m) {
+      const cx = -36 + m * 14.4;
+      el("rect", { x: cx - 5, y: -6, width: 10, height: 12, class: "pencil soft", "stroke-width": 1, fill: "none" }, cal);
+      months.push(el("path", { d: `M${cx - 6},-7 L${cx + 6},7`, class: "pencil accent", "stroke-width": 1.8 }, cal));
+    }
+    text(cal, 0, -12, "six months", "mono");
+    const cap = text(g, 300, 585, "one person knows; the world goes on", "mono");
+    return { g, update(t, now) {
+      crowd.forEach((c) => {
+        fade(c.p, seg(t, 0, 0.12) * (c.k ? 1 : 0.4));
+        // everyone else keeps walking about their business
+        const dx = c.k ? 0 : Math.sin(now / 1100 + c.ph) * 6, dy = c.k ? 0 : Math.abs(Math.sin(now / 280 + c.ph)) * -2;
+        c.p.setAttribute("transform", `translate(${c.x + dx} ${c.y + dy})`);
+      });
+      fade(cal, seg(t, 0.15, 0.3));
+      months.forEach((m, i) => fade(m, seg(t, 0.3 + i * 0.07, 0.36 + i * 0.07)));
+      fade(cap, seg(t, 0.7, 0.85));
+    } };
+  })();
+
+  // ------------------------------------------------------------------ 00b. everyone knows: pandemonium
+  scenes.sun = (() => {
+    const g = group("sun");
+    const sun = el("g", { transform: "translate(300 150)" }, g);
+    const halo = el("circle", { r: 118, class: "pencil warm", "stroke-width": 1, fill: "none", opacity: 0.35 }, sun);
+    const star = (n, r0, r1) => { let d = ""; for (let k = 0; k < 2 * n; ++k) { const a = (k * Math.PI) / n, r = k % 2 ? r0 : r1; d += (k ? "L" : "M") + (r * Math.cos(a)).toFixed(1) + "," + (r * Math.sin(a)).toFixed(1); } return d + "Z"; };
+    const outer = el("path", { d: star(15, 52, 88), class: "fillwarm pencil warm", "stroke-width": 1.4 }, sun);
+    const inner = el("path", { d: star(12, 36, 60), class: "sunmid" }, sun);
+    el("circle", { r: 26, class: "suncore" }, sun);
+    const r = mulberry32(11), crowd = [];
+    for (let i = 0; i < 9; ++i) for (let j = 0; j < 4; ++j) {
+      const x = 70 + i * 57, y = 330 + j * 60;
+      const p = person(g, x, y, "fillacc"); p.style.fill = "var(--accent)";
+      crowd.push({ p, x, y, jx: (r() - 0.5) * 40, jy: (r() - 0.5) * 30, ja: (r() - 0.5) * 70, ph: r() * 6 });
+    }
+    const cap = text(g, 300, 585, "everyone knows; everyone's plans change at once", "mono");
+    return { g, update(t, now) {
+      fade(sun, seg(t, 0, 0.15));
+      const pulse = 1 + 0.05 * Math.sin(now / 160) + 0.25 * seg(t, 0.3, 0.7);
+      outer.setAttribute("transform", `rotate(${now / 90 % 360}) scale(${pulse})`);
+      inner.setAttribute("transform", `rotate(${-now / 60 % 360}) scale(${pulse})`);
+      halo.setAttribute("r", 118 * pulse);
+      const chaos = seg(t, 0.25, 0.75);
+      crowd.forEach((c) => {
+        fade(c.p, seg(t, 0.05, 0.2));
+        const wob = Math.sin(now / 200 + c.ph);
+        c.p.setAttribute("transform", `translate(${c.x + chaos * (c.jx + wob * 6)} ${c.y + chaos * c.jy}) rotate(${chaos * (c.ja + wob * 12)})`);
+      });
+      fade(cap, seg(t, 0.7, 0.85));
+    } };
+  })();
+
   scenes.telescope = (() => {
     const g = group("telescope");
     const sun = el("g", { transform: "translate(470 110)" }, g);
@@ -173,14 +251,13 @@
   scenes.tower = (() => {
     const g = group("tower");
     const p1 = el("g", {}, g), p2 = el("g", {}, g);
-    el("circle", { cx: 150, cy: 520, r: 26, class: "box pencil", "stroke-width": 1.8 }, p1); text(p1, 150, 527, "1");
-    el("circle", { cx: 450, cy: 520, r: 26, class: "box pencil", "stroke-width": 1.8 }, p2); text(p2, 450, 527, "2");
+    head(p1, 110, 500, 0.62, false, "Alice (1)"); head(p2, 490, 500, 0.62, true, "Bob (2)");
     const levels = ["t1", "t2", "t3", "t4"].map((k, i) => {
       const lg = el("g", {}, g), y = 430 - i * 92, w = 150 + i * 62, x = 300 + (i % 2 ? 30 : -30);
       el("rect", { x: x - w / 2 - 18, y: y - 32, width: w + 36, height: 64, rx: 30, class: "box pencil", "stroke-width": 1.4 }, lg);
       formula(k, x, y, w, lg, "middle");
       // the thought dots from player 1
-      for (let d = 0; d < 3; ++d) el("circle", { cx: 150 + (x - w / 2 - 150) * (0.25 + d * 0.22), cy: 490 - (490 - y - 32) * (0.25 + d * 0.22), r: 3 + d, class: "pencil soft", "stroke-width": 1.2 }, lg);
+      for (let d = 0; d < 3; ++d) el("circle", { cx: 120 + (x - w / 2 - 120) * (0.25 + d * 0.22), cy: 455 - (455 - y - 32) * (0.25 + d * 0.22), r: 3 + d, class: "pencil soft", "stroke-width": 1.2 }, lg);
       return lg;
     });
     const counts = ["1", "n", "n²", "n³"].map((c, i) => text(g, 28, 436 - i * 92, c, "label acc", "start"));
@@ -197,11 +274,22 @@
   // ------------------------------------------------------------------ 1b. beliefs about randomness
   scenes.randomness = (() => {
     const g = group("randomness");
-    const heads = [[150, 210, "1"], [450, 210, "2"]].map(([x, y, l]) => { const h = el("g", {}, g); el("circle", { cx: x, cy: y, r: 40, class: "box pencil", "stroke-width": 1.8 }, h); text(h, x, y + 7, l); return { h, x, y }; });
+    const heads = [[160, 215, "Alice", false], [440, 215, "Bob", true]].map(([x, y, l, f], i) => {
+      const h = el("g", {}, g); head(h, x, y, 1, f, l);
+      // inside each head, a small model of the other one, which the noise-state lets them throw away
+      const bx = x + (f ? -2 : 2), by = y - 18, mini = el("g", {}, g);
+      head(mini, bx, by + 2, 0.3, !f);
+      const cross = [stroke(g, pencil([[bx - 18, by - 18], [bx + 18, by + 18]], 90 + i, 0.8), "warm", 2.2), stroke(g, pencil([[bx + 18, by - 18], [bx - 18, by + 18]], 94 + i, 0.8), "warm", 2.2)];
+      return { h, x, y, mini, cross };
+    });
+    // the interface between them: all either can see of the other
+    const iface = el("g", {}, g);
+    el("line", { x1: 300, y1: 130, x2: 300, y2: 300, class: "pencil soft", "stroke-width": 1.2, "stroke-dasharray": "4 5" }, iface);
+    text(iface, 300, 120, "interface", "mono");
     // the nested models, each struck out
-    const models = [["1's model of 2", 150, 110], ["2's model of 1", 450, 110], ["1's model of 2's model of 1", 150, 60], ["2's model of 1's model of 2", 450, 60]].map(([s2, x, y], i) => {
+    const models = [["Alice's model of Bob", 150, 110], ["Bob's model of Alice", 450, 110], ["Alice's model of Bob's model of Alice", 150, 60], ["Bob's model of Alice's model of Bob", 450, 60]].map(([s2, x, y], i) => {
       const m = el("g", {}, g); const tt = text(m, x, y, s2, "label"); tt.style.fontSize = "14px";
-      const w2 = s2.length * 6.4;
+      const w2 = Math.min(270, s2.length * 6.4);
       const strike = stroke(m, pencil([[x - w2 / 2 - 4, y - 3], [x + w2 / 2 + 4, y - 7]], 70 + i, 1), "warm", 2);
       return { m, strike };
     });
@@ -212,10 +300,11 @@
     // a few shocks jiggling inside it
     const r = mulberry32(3), kicks = [];
     for (let k = 0; k < 18; ++k) kicks.push({ x: 160 + k * 16.5, h: gauss(r) * 16, el: el("line", { x1: 160 + k * 16.5, x2: 160 + k * 16.5, y1: 470, y2: 470, class: "pencil warm", "stroke-width": 2 }, oval) });
-    const arrows = heads.map((h, i) => stroke(g, pencil([[300 + (i ? 60 : -60), 392], [h.x + (i ? -8 : 8), 330 - 40 - 10 + 60], [h.x, h.y + 44]], 80 + i, 2), "warm", 1.8));
+    const arrows = heads.map((h, i) => stroke(g, pencil([[300 + (i ? 60 : -60), 392], [h.x + (i ? -8 : 8), 330 - 40 - 10 + 60], [h.x + (i ? -2 : 2), h.y + 12]], 80 + i, 2), "warm", 1.8));
     const cap = text(g, 300, 560, "both estimate the same thing: the shocks", "mono");
     return { g, update(t, now) {
-      heads.forEach((h) => fade(h.h, seg(t, 0, 0.1)));
+      heads.forEach((h) => fade(h.h, seg(t, 0, 0.1))); fade(iface, seg(t, 0.02, 0.12) * (1 - 0.6 * seg(t, 0.45, 0.6)));
+      heads.forEach((h, i) => { fade(h.mini, seg(t, 0.04, 0.14) * (1 - 0.6 * seg(t, 0.4, 0.55))); h.cross.forEach((c) => c.set(seg(t, 0.3 + i * 0.05, 0.4 + i * 0.05))); });
       models.forEach((m, i) => { fade(m.m, seg(t, 0.02 + i * 0.04, 0.12 + i * 0.04) * (1 - 0.55 * seg(t, 0.45, 0.6))); m.strike.set(seg(t, 0.25 + i * 0.05, 0.35 + i * 0.05)); });
       fade(oval, seg(t, 0.45, 0.6));
       kicks.forEach((k, i) => { const hh = k.h * (0.6 + 0.4 * Math.sin(now / 300 + i)); k.el.setAttribute("y2", 470 - Math.abs(hh)); k.el.setAttribute("y1", 470); });
