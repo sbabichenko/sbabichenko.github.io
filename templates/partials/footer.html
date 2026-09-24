@@ -5,6 +5,7 @@
   <span>&copy; {% if config.extra.footer.since and config.extra.footer.since != current_year %}{{ config.extra.footer.since }}&ndash;{% endif %}{{ current_year }} Samuel Babichenko</span>
   {% if config.extra.footer.license %}<a href="{{ config.extra.footer.license_url }}" rel="noopener" target="_blank">{{ config.extra.footer.license }}</a>{% endif %}
   <a href="{{ get_url(path='colophon') }}">Colophon</a>
+  <a href="{{ get_url(path='atom.xml') }}" title="New writing, in any feed reader">Feed</a>
   <span class="tally" id="tally" aria-live="polite"></span>
 </footer>
 <script src="{{ get_url(path='js/tally.js') }}"></script>
