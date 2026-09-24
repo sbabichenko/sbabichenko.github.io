@@ -183,3 +183,25 @@
 .home .hero:hover .poke { opacity: 0.85; }
 @media (hover: none) { .home .hero .poke { opacity: 0.7; } .home .hero .poke::before { content: "tap"; } .home .hero .poke { font-size: 0; } .home .hero .poke::after { content: " the mesh to poke it"; font-size: 0.74rem; } .home .hero .poke::before { font-size: 0.74rem; } }
 @media (max-width: 480px) { .home .eyebrow { letter-spacing: 0.07em; font-size: 0.68rem; } }
+
+/* the noise-state, set in the hero as a motif; static/js/formula.js writes it on */
+.home .hero .motif { position: absolute; right: 0; bottom: 2.6rem; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem;
+  color: var(--ink); text-decoration: none; cursor: pointer; }
+.home .hero .motif svg { display: block; height: auto; overflow: visible; filter: drop-shadow(0 0 5px var(--paper)) drop-shadow(0 0 2px var(--paper)); }
+.home .hero .motif .def svg { width: clamp(15rem, 30vw, 24rem); }
+.home .hero .motif .bp svg { width: clamp(14rem, 27vw, 21.5rem); }
+.home .hero .motif .def { opacity: 0.78; transition: opacity 0.3s, color 0.3s; }
+.home .hero .motif .bp { opacity: 0.4; transition: opacity 0.3s, color 0.3s; }
+.home .hero .motif .cap { font: 0.74rem ui-monospace, Menlo, monospace; color: var(--ink-3); letter-spacing: 0.02em; opacity: 0; transform: translateY(-3px);
+  transition: opacity 0.3s, transform 0.3s; max-width: 24rem; text-align: right; }
+.home .hero .motif .cap i { font-style: italic; }
+.home .hero .motif:hover .def, .home .hero .motif:focus-visible .def { opacity: 1; color: var(--accent); }
+.home .hero .motif:hover .bp, .home .hero .motif:focus-visible .bp { opacity: 0.7; }
+.home .hero .motif:hover .cap, .home .hero .motif:focus-visible .cap { opacity: 1; transform: none; }
+.home .hero .motif path { transition: fill-opacity 0.8s; }
+@media (max-width: 900px) {
+  .home .hero .motif { position: relative; right: auto; bottom: auto; align-items: flex-start; margin-top: 2rem; }
+  .home .hero .motif .def svg { width: min(20rem, 82vw); }
+  .home .hero .motif .bp svg { width: min(18rem, 76vw); }
+  .home .hero .motif .cap { opacity: 0.9; transform: none; text-align: left; }
+}

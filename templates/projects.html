@@ -31,6 +31,13 @@
           {% endfor %}
         </ul>
         {% endif %}
+        {%- set formula = load_data(path="data/formula.json") %}
+        <a class="motif" href="{{ get_url(path='dissertation/introduction/') }}#the-noise-state"
+           aria-label="The noise-state: player i's estimate, at time t, of the primitive shock W at an earlier time u, given everything player i knows">
+          <span class="def">{{ formula.def.svg | safe }}</span>
+          <span class="bp">{{ formula.blueprint.svg | safe }}</span>
+          <span class="cap">the noise-state: what player <i>i</i> believes, at time <i>t</i>, about the shock at <i>u</i></span>
+        </a>
         <p class="poke" aria-hidden="true">click the mesh to poke it</p>
       </section>
 
@@ -123,5 +130,6 @@
     {% include "partials/footer.html" %}
     <script src="{{ get_url(path='mesh/decision-mesh.js') }}"></script>
     <script src="{{ get_url(path='js/heroink.js') }}"></script>
+    <script src="{{ get_url(path='js/formula.js') }}"></script>
   </body>
 </html>
