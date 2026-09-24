@@ -16,7 +16,7 @@
   article hr { display: none; }
   article p, article li { margin: 0 0 3.5pt !important; orphans: 2; widows: 2; }
   article li p { margin: 0 !important; }
-  article ul { margin: 0 0 4pt !important; padding-left: 14pt !important; break-before: avoid; }
+  article ul { margin: 0 0 4pt !important; padding-left: 14pt !important; break-before: avoid; break-inside: avoid; }
   article p:has(+ ul) { break-after: avoid; }
   article a, .prose article a { color: inherit !important; text-decoration: none !important; font-weight: inherit !important; }
   article code { font: inherit !important; color: inherit !important; }
