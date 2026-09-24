@@ -37,7 +37,10 @@ Solo-authored, submitted March 2026. The two-player core of the dissertation: an
 
 ## Experience
 
-**Wells Fargo**, Charlotte, NC &middot; *Quantitative Researcher* &middot; Jul 2026 &ndash; present
+**Wells Fargo**, Charlotte, NC &middot; *Quantitative Researcher, rotational program* &middot; Jul 2026 &ndash; present
+
+- Unifying the team's backtesting workflow.
+- Refining the prepayment trading signal from my internship with the gated Decision Mesh.
 
 **Wells Fargo**, Charlotte, NC &middot; *Quantitative Researcher Intern, Mortgage Model Development* &middot; Jun &ndash; Aug 2025
 
