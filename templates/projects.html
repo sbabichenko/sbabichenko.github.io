@@ -33,7 +33,7 @@
         {% endif %}
         <p class="starthere">New here? Start with <a href="{{ get_url(path='dissertation/idea/') }}">the noise-state, explained</a>,
           or <a href="{{ get_url(path='noisestate/') }}">solve a game</a> in your browser.</p>
-        <p class="poke" aria-hidden="true">click the mesh to poke it</p>
+        <p class="poke" aria-hidden="true">click the mesh in the background to poke it</p>
         {%- set formula = load_data(path="data/formula.json") %}
         <a class="motif" href="{{ get_url(path='dissertation/idea/') }}"
            aria-label="The noise-state: player i's estimate, at time t, of the primitive shock W at an earlier time u, given everything player i knows">
@@ -55,7 +55,7 @@
               <h3>Games played through noise</h3>
               <p>Actions move the state, the state sets what others observe, and what they observe sets
                 their next actions. My dissertation keeps that loop intact by tracking beliefs about the
-                primitive shocks. Move a slider and the equilibrium is solved again, here, in about a second.</p>
+                primitive shocks. Move a slider and the equilibrium is solved again in about a second.</p>
               <ul><li>six games</li><li>shock responses</li><li>sample paths</li><li>parameter sweeps</li></ul>
               <span class="go">Open the explorer <span class="arrow">&rarr;</span></span>
             </div>
@@ -78,8 +78,7 @@
             <div class="body">
               <h3>Two kinds of triangle, rectangles and a tree</h3>
               <p>Freeform triangles, right triangles, rectangles and a regression tree, grown on the same noisy surface
-                one greedy cut at a time, with the same number of free parameters each. No gate here: they stop when
-                the page runs out of patience.</p>
+                one greedy cut at a time, with the same number of free parameters each. No gate here.</p>
               <span class="go">Open the page <span class="arrow">&rarr;</span></span>
             </div>
           </a>

@@ -34,7 +34,7 @@
           <path class="ln faint" d="M198,52 L304,51 M198,66 L304,65 M198,80 L304,79 M198,94 L304,93 M198,108 L304,107" />
           <g transform="translate(236 118) rotate(-28)"><rect x="0" y="-5" width="86" height="10" rx="1.5" class="wood" /><path d="M0,-5 L-16,0 L0,5 Z" class="tip" /><path d="M-11,-1.6 L-16,0 L-11,1.6 Z" class="lead" /><rect x="86" y="-5" width="7" height="10" class="band" /><rect x="93" y="-5" width="9" height="10" rx="3" class="eraser" /></g>
         </svg>
-        <figcaption>{% if paginator.pages | length == 1 %}One piece so far. The next one is on the right-hand page.{% else %}More are on the right-hand page.{% endif %}</figcaption>
+        <figcaption>{% if paginator.pages | length == 1 %}One piece so far.{% endif %}</figcaption>
       </figure>
       {%- endif %}
       {% if paginator.number_pagers > 1 %}
