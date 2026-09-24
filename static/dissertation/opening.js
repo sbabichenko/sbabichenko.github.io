@@ -1,6 +1,7 @@
 // /dissertation: the cover and the scroll-told opening. Everything is drawn here, in SVG, with a pencil that
 // wobbles a little: the cover's faint lines are Brownian paths, the primitive shocks; the story's drawing
-// changes with each paragraph (a pencil, a network of prices, the loop, its cuts, the noise-state, the wedge),
+// changes with each paragraph (a pencil, a network of prices, the loop; then, after the detour map of detour.js,
+// the noise-state and the wedge),
 // and each drawing builds as its paragraph scrolls past.
 (function () {
   "use strict";
@@ -98,11 +99,13 @@
 
   // ------------------------------------------------------------------ the story
   const svg = document.getElementById("stage");
-  const steps = [...document.querySelectorAll(".step")];
+  const steps = [...document.querySelectorAll(".story .step")];
   if (!svg || !steps.length) return;
+  // the story comes in two parts around the detour map, each with its own drawing
+  const svgFor = (name) => { const st = document.querySelector(`.story .step[data-scene="${name}"]`); return (st && st.closest(".story").querySelector(".stage svg")) || svg; };
 
   const scenes = {};
-  const group = (name) => { const g = el("g", { class: "scene", "data-scene": name }, svg); g.style.opacity = 0; g.style.transition = "opacity 0.6s"; return g; };
+  const group = (name) => { const g = el("g", { class: "scene", "data-scene": name }, svgFor(name)); g.style.opacity = 0; g.style.transition = "opacity 0.6s"; return g; };
 
   // -- a pencil, made of parts from four corners of the world
   scenes.pencil = (() => {
@@ -212,7 +215,7 @@
     };
   })();
 
-  // -- the loop, drawn once and reused by the next three scenes
+  // -- the loop
   const C = [300, 300], R = 178;
   const POS = { actions: Math.PI, state: -Math.PI / 2, observations: 0, beliefs: Math.PI / 2 };
   const at = (a, r = R) => [C[0] + r * Math.cos(a), C[1] + r * Math.sin(a)];
@@ -253,61 +256,6 @@
     const g = group("loop"), d = loopDrawing(g, 40), tok = token(g);
     let ang = Math.PI;
     return { g, update(t, now, dt) { d.set(t); fade(tok, seg(t, 0.62, 0.7)); ang += dt * 1.1; tokenAt(tok, ang); } };
-  })();
-
-  scenes.cuts = (() => {
-    const g = group("cuts"), d = loopDrawing(g, 40), tok = token(g);
-    d.set(1);
-    const cuts = [
-      { a: POS.beliefs, r: R, label: "the privacy of beliefs", lx: 300, ly: 548 },
-      { chord: true, label: "what actions can teach", lx: 300, ly: 330 },
-      { a: POS.actions, r: R, label: "the weight of one player", lx: 92, ly: 244 },
-      { a: Math.PI / 4, r: R, label: "observations → beliefs", lx: 486, ly: 468 },
-      { a: -3 * Math.PI / 4, r: R, label: "time itself", lx: 118, ly: 118 },
-    ].map((c, k) => {
-      const [x, y] = c.chord ? [300, 300] : at(c.a, c.r);
-      const m = el("g", {}, g);
-      el("path", { d: `M${x - 10},${y - 10} L${x + 10},${y + 10} M${x + 10},${y - 10} L${x - 10},${y + 10}`, class: "pencil warm", "stroke-width": 3 }, m);
-      text(m, c.lx, c.ly, c.label, "label warmt");
-      return m;
-    });
-    let ang = Math.PI;
-    return {
-      g,
-      update(t, now, dt) {
-        cuts.forEach((m, i) => fade(m, seg(t, 0.08 + i * 0.13, 0.2 + i * 0.13)));
-        // the token runs until the first cut, then stops at it and shivers
-        if (t < 0.1) ang += dt * 1.1;
-        const stop = POS.actions + Math.PI * 2 * Math.ceil((ang - POS.actions) / (Math.PI * 2)) - 0.18;
-        if (t >= 0.1) ang += Math.min(dt * 1.1, Math.max(0, stop - ang));
-        tokenAt(tok, ang + (t >= 0.1 ? Math.sin(now / 45) * 0.006 : 0));
-      },
-    };
-  })();
-
-  scenes.intact = (() => {
-    const g = group("intact"), d = loopDrawing(g, 40);
-    d.set(1);
-    const glow = el("circle", { cx: C[0], cy: C[1], r: R, class: "pencil accent", "stroke-width": 7 }, g);
-    const trail = [];
-    for (let i = 0; i < 9; ++i) trail.push(el("circle", { r: 7 - i * 0.6, class: "fillacc" }, g));
-    const stitches = [POS.beliefs, POS.actions, Math.PI / 4, -3 * Math.PI / 4].map((a) => {
-      const [x, y] = at(a); const s = el("g", {}, g);
-      for (const o of [-5, 5]) el("line", { x1: x + o - 3, y1: y - 9, x2: x + o + 3, y2: y + 9, class: "pencil accent", "stroke-width": 1.6 }, s);
-      return s;
-    });
-    const lab = text(g, 300, 590, "intact: a belief can be a price, and a price can be moved", "mono");
-    let ang = 0;
-    return {
-      g,
-      update(t, now, dt) {
-        fade(glow, seg(t, 0.35, 0.7) * (0.14 + 0.06 * Math.sin(now / 500)));
-        stitches.forEach((s, i) => fade(s, seg(t, 0.05 + i * 0.05, 0.2 + i * 0.05) * (1 - seg(t, 0.6, 0.85))));
-        ang += dt * (1.1 + 1.6 * seg(t, 0.3, 0.8));
-        trail.forEach((c, i) => { tokenAt(c, ang - i * 0.07); fade(c, (1 - i / 9) * seg(t, 0.2, 0.35)); });
-        fade(lab, seg(t, 0.5, 0.7));
-      },
-    };
   })();
 
   // -- the noise-state: the shocks, and each player's estimate of them
@@ -396,7 +344,7 @@
   let last = performance.now();
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
-    const story = document.getElementById("story").getBoundingClientRect();
+    const story = active && active.closest(".story").getBoundingClientRect();
     if (active && story.top < window.innerHeight && story.bottom > 0) {
       const sc = scenes[active.dataset.scene];
       if (sc) sc.update(reduced ? 1 : prog, now, reduced ? 0 : dt);
