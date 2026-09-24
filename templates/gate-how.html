@@ -43,9 +43,12 @@
           <div class="step" data-scene="coherent">
             <p>Overdispersion comes in two kinds. <em>Coherent</em>: neighbours share the excess, and the surface should
               bend there. <em>Incoherent</em>: each site has its own, and no surface can follow it.</p>
-            <p class="small">The gate cuts only for the first. The second goes into the pool variance, which in turn
-              tells the gate how much disagreement to expect before it believes a pattern. Against a flat surface the
-              excess clusters; against the final fit what is left is scattered.</p>
+            <p class="small">The odds are never known, only fitted, and a wrong mean shows up as variance: wherever the
+              surface misses, every residual there carries the miss, and the excess grows with how much is missing.
+              Against a flat surface the mean square is <span data-v="dispFlat">&hellip;</span> and the excess clusters;
+              against the final fit it is <span data-v="dispFit">&hellip;</span> and scattered. The gate cuts only for the
+              coherent part. The rest goes into the pool variance, which tells the gate how much disagreement to expect
+              before it believes a pattern.</p>
           </div>
           <div class="step" data-scene="coarse">
             <p data-engine="tri">The fit starts from a coarse mesh of right triangles with two things free: a level and a
