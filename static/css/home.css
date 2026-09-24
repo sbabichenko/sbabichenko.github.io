@@ -205,3 +205,5 @@
   .home .hero .motif .bp svg { width: min(18rem, 76vw); }
   .home .hero .motif .cap { opacity: 0.9; transform: none; text-align: left; }
 }
+.home .demos.stories .demo h3 { font-size: 1.3rem; }
+.home .demos.stories .demo.wide h3 { font-style: italic; }
