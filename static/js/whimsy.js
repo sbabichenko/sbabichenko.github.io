@@ -7,7 +7,6 @@
 // - leave the tab and its title notes that no new observations are coming in;
 // - leave the page alone for a while and something gets doodled in an empty margin (three at most);
 // - a hello in the console, for anyone who opens it.
-// The colophon lists these, along with the ones on other pages.
 (function () {
   "use strict";
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

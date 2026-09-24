@@ -42,7 +42,7 @@ numerics: {nodes: 12}
     ],
     nodes: { def: 12, options: [[8, "8: fastest, rough"], [10, "10: quick"], [12, "12: converged at defaults"], [16, "16: fine, slowest"]] },
     constCost: (p) => ({ player1: p.b1 * p.b1 * p.T, player2: p.b2 * p.b2 * p.T }),
-    meansCaption: "Expected controls and state over time. With opposite targets the players pull in opposite directions; as precision falls the mean controls approach the open-loop solution, and as it rises they approach the full-information one.",
+    meansCaption: "Expected controls and state over time. With opposite targets the players pull in opposite directions; as [precision falls](#game=ch1&p1=0.1&p2=0.1) the mean controls approach the open-loop solution, and as [it rises](#game=ch1&p1=100&p2=100) they approach the full-information one.",
   },
   ch3: {
     tab: "Stationary tracking",
@@ -579,6 +579,8 @@ const fmtE = (x) => (x === null || x === undefined || !isFinite(x)) ? "–" : Nu
 const css = (v) => getComputedStyle(document.querySelector(".explorer") || document.documentElement).getPropertyValue(v).trim();
 const isDark = () => document.documentElement.classList.contains("dark");
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+// a caption may carry [text](#hash) links that set the explorer's own state
+const links = (s) => esc(s).replace(/\[([^\]]+)\]\((#[^)\s]+)\)/g, '<a href="$2">$1</a>');
 
 function presetModel(g) { return jsyaml.load(PRESETS[g].yaml); }
 // a slider's parameter lives in the model's params ("now"), the past model's ("past"), or both
@@ -791,7 +793,7 @@ function setStatus(kind, chipText, text) {
   $("statustext").textContent = text;
 }
 function startTimer(reset = true) {
-  if (reset || !timerHandle) { solveStart = performance.now(); progress = null; }
+  if (reset || !timerHandle) { solveStart = performance.now(); progress = null; rallyStart(); }
   clearInterval(timerHandle);
   const tick = () => {
     const s = (performance.now() - solveStart) / 1000;
@@ -805,6 +807,34 @@ function startTimer(reset = true) {
   tick(); timerHandle = setInterval(tick, 200);
 }
 function stopTimer() { clearInterval(timerHandle); timerHandle = null; }
+
+// the rally beside the chip: one hit for each best-response round the solve reports (at most a dozen), then the
+// ball settles in the middle: the fixed point. A solve that runs past a second starts the rally while it works,
+// a hit per progress report, and tops it up to the count when it ends.
+const rally = { hits: 0, played: 0, side: 1, busy: false, done: false, live: false, timer: 0 };
+function rallyStart() {
+  clearTimeout(rally.timer);
+  Object.assign(rally, { hits: 0, played: 0, done: false, live: false });
+  rally.timer = setTimeout(() => { rally.live = true; }, 1000);
+}
+function rallyProgress() { if (rally.live && rally.hits - rally.played < 2) { rally.hits++; rallyPlay(); } }
+function rallyEnd(n) {
+  clearTimeout(rally.timer);
+  rally.hits = Math.max(rally.hits, Math.min(n, 12));
+  rally.done = true; rallyPlay();
+}
+function rallyPlay() {
+  const ball = document.getElementById("rallyball");
+  if (!ball || rally.busy || !ball.animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const from = +ball.getAttribute("cx");
+  let to, ms;
+  if (rally.played < rally.hits) { rally.side = -rally.side; to = rally.side > 0 ? 34 : 6; ms = 150; rally.played++; }
+  else if (rally.done && from !== 20) { to = 20; ms = 260; }
+  else return;
+  rally.busy = true;
+  const a = ball.animate([{ transform: "translateX(0)" }, { transform: `translateX(${to - from}px)` }], { duration: ms, easing: to === 20 ? "ease-out" : "linear" });
+  a.onfinish = () => { ball.setAttribute("cx", to); rally.busy = false; rallyPlay(); };
+}
 
 // ---------------------------------------------------------------------------------------------
 // Worker
@@ -821,7 +851,7 @@ function startWorker() {
       if (game === "custom" && !inFlight && !lastResult) setStatus("idle", "Ready", "Edit the model and press Solve.");
       else requestSolve(0);
     } else if (m.type === "progress") {
-      if (inFlight && m.id === inFlight.id) progress = m;
+      if (inFlight && m.id === inFlight.id) { progress = m; rallyProgress(); }
     } else if (m.type === "result") {
       onSolved(m);
     } else if (m.type === "fatal") {
@@ -900,6 +930,7 @@ function onSolved(m) {
   try { key = JSON.stringify([currentModel(), currentRequest()]); } catch (e) { /* the editor holds an unfinished edit */ }
   const stale = pending || !req || req.game !== game || (key !== null && key !== req.key);
   const res = JSON.parse(m.result);
+  rallyEnd(res.ok ? res.evaluations || 0 : 0);
   if (res.ok && window.siteTally) window.siteTally("solve", res.naive ? 2 : 1);
   if (!res.ok) {
     if (req && req.game === game) {
@@ -915,7 +946,7 @@ function onSolved(m) {
     prevResult = lastResult && lastResult.name === res.name && lastResult.kind === res.kind ? lastResult : null;
     lastResult = res;
     $("savebtn").disabled = false;
-    try { renderResults(res); updateSweepPanel(); drawSweep(); }
+    try { renderResults(res); plotSnapshot = null; updateSweepPanel(); drawSweep(); }
     catch (e) { console.error(e); setStatus("warn", "Solved, drawing failed", "The solve finished but a plot could not be drawn: " + e.message); $("results").classList.remove("stale"); return; }
   }
   if (stale) { sendSolve(); return; }
@@ -945,6 +976,48 @@ function baseLayout(extra) {
 }
 // on a phone a plot is short and its legend long: the x-axis title moves into the plot's title, so the legend under
 // the axis has the room the title took
+// The previous solve's curves, by plot, so a re-solve of the same game glides from the old equilibrium to the new
+// one instead of redrawing: curves are matched by name and length, the axes hold both ranges meanwhile, and anything
+// unmatched (the dotted "before" lines, heatmaps) simply appears. Off under reduced motion.
+let plotSnapshot = null;
+const plotKey = (el) => el.id || (el.parentElement && el.parentElement.id ? el.parentElement.id + ":" + [...el.parentElement.children].indexOf(el) : null);
+function snapshotPlots(root) {
+  const snap = {};
+  for (const gd of root.querySelectorAll(".js-plotly-plot")) {
+    const key = plotKey(gd), fl = gd._fullLayout;
+    if (!key || !gd.data || !fl || !fl.xaxis || !fl.yaxis) continue;
+    snap[key] = { x: fl.xaxis.range.slice(), y: fl.yaxis.range.slice(),
+                  traces: gd.data.map((t) => ({ name: t.name, type: t.type || "scatter", x: t.x ? Array.from(t.x) : null, y: t.y ? Array.from(t.y) : null })) };
+  }
+  return snap;
+}
+function glide(el, data, layout, cfg) {
+  const old = plotSnapshot && plotSnapshot[plotKey(el)];
+  const oneAxis = layout && !Object.keys(layout).some((k) => /^[xy]axis\d/.test(k));
+  if (!old || !oneAxis) return null;
+  const used = new Set(), idx = [], finals = [];
+  const start = data.map((t, i) => {
+    if ((t.type || "scatter") !== "scatter" || !t.y || !t.x) return t;
+    const j = old.traces.findIndex((o, k) => !used.has(k) && o.name === t.name && o.type === "scatter" && o.y && o.x && o.y.length === t.y.length && o.x.length === t.x.length);
+    if (j < 0) return t;
+    used.add(j); idx.push(i); finals.push({ x: t.x, y: t.y });
+    return { ...t, x: old.traces[j].x, y: old.traces[j].y };
+  });
+  if (!idx.length) return null;
+  el.style.visibility = "hidden";
+  return Plotly.newPlot(el, data, layout, cfg).then(() => {
+    // the axes hold the union of the old and new ranges while the curves move (this Plotly does not
+    // interpolate a range change inside a transition), then settle on the new equilibrium's own
+    const nx = el._fullLayout.xaxis.range, ny = el._fullLayout.yaxis.range;
+    const union = (a, b) => [Math.min(a[0], b[0]), Math.max(a[1], b[1])];
+    const fixed = { ...layout, xaxis: { ...(layout.xaxis || {}), range: union(old.x, nx), autorange: false }, yaxis: { ...(layout.yaxis || {}), range: union(old.y, ny), autorange: false } };
+    return Plotly.react(el, start, fixed, cfg).then(() => {
+      el.style.visibility = "";
+      return Plotly.animate(el, { data: finals, traces: idx }, { transition: { duration: 650, easing: "cubic-in-out" }, frame: { duration: 650, redraw: false } });
+    }).then(() => Plotly.relayout(el, { "xaxis.autorange": true, "yaxis.autorange": true }));
+  }).catch(() => { el.style.visibility = ""; return Plotly.newPlot(el, data, layout, cfg); });
+}
+
 function plotly(method, id, data, layout, cfg) {
   const el = typeof id === "string" ? document.getElementById(id) : id;
   if (el && el.clientWidth && el.clientWidth < 520 && layout) {
@@ -956,6 +1029,7 @@ function plotly(method, id, data, layout, cfg) {
     }
     layout.legend = { ...(layout.legend || {}), y: -0.12 };
   }
+  if (method === "newPlot" && el) { const g = glide(el, data, layout, cfg); if (g) return g; }
   return Plotly[method](id, data, layout, cfg);
 }
 const plotCfg = { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"] };
@@ -973,6 +1047,7 @@ const nonzero = (arr) => arr.some((v) => v !== null && Math.abs(v) > 1e-12);
 function renderResults(res) {
   const out = $("results");
   const keepVar = out.querySelector("#kvar")?.value, keepCtl = out.querySelector("#fctl")?.value;
+  plotSnapshot = prevResult && !window.matchMedia("(prefers-reduced-motion: reduce)").matches ? snapshotPlots(out) : null;
   out.innerHTML = "";
   const def = PRESETS[game];
   const params = res.params_used || (game !== "custom" ? values[game] : {});
@@ -1003,7 +1078,7 @@ function renderFinite(res, out, keepVar, keepCtl) {
   const pathNames = res.names.filter((n) => nonzero(S.means[n] || []));
   if (res.has_means && pathNames.length) {
     out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Mean paths</h2><div class="plot" id="p-means"></div>
-      <p class="caption">${esc((PRESETS[game] && PRESETS[game].meansCaption) || "The expected states and controls over time: the deterministic part that targets, constant drifts and initial states move.")}</p></section>`);
+      <p class="caption">${links((PRESETS[game] && PRESETS[game].meansCaption) || "The expected states and controls over time: the deterministic part that targets, constant drifts and initial states move.")}</p></section>`);
     const pal = palette();
     const PS = prevResult && prevResult.samples && prevResult.samples.means;
     plotly("newPlot", "p-means", pathNames.map((n, i) => line(S.mean_t, S.means[n], "mean " + n, pal[(i + 1) % pal.length],
@@ -1344,13 +1419,15 @@ $("loadexample").onclick = () => { customYaml = EXAMPLES[$("example").value]; $(
 $("yaml").addEventListener("input", () => { customYaml = $("yaml").value; });
 $("yaml").addEventListener("change", () => { renderParamControls(); writeHash(); });
 // the site's theme switch (and the system's) redraws the plots in the new colours
-document.body.addEventListener("set-theme", () => setTimeout(() => { if (lastResult) renderResults(lastResult); }, 30));
+document.body.addEventListener("set-theme", () => setTimeout(() => { if (lastResult) { renderResults(lastResult); plotSnapshot = null; } }, 30));
 readHash(); renderAll(); writeHash(); startWorker();
 // a link or the back button that changes the hash (writeHash replaces it without firing this) opens that game
 window.addEventListener("hashchange", () => {
-  readHash(); renderAll(); lastResult = null; $("results").innerHTML = ""; $("savebtn").disabled = true;
+  const before = game;
+  readHash(); renderAll();
+  // a new game starts from a clean page; new settings for the same game (a link in a caption) re-solve in place
+  if (game !== before) { lastResult = null; $("results").innerHTML = ""; $("savebtn").disabled = true; $("tabs").scrollIntoView({ block: "nearest" }); }
   if (game !== "custom") requestSolve(0); else setStatus("idle", "Ready", "Edit the model and press Solve.");
-  $("tabs").scrollIntoView({ block: "nearest" });
 });
 
 // ---------------------------------------------------------------------------------------------

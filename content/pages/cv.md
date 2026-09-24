@@ -24,7 +24,7 @@ Dean's Undergraduate Excellence Award (top 0.5%, Physical Sciences).
 ## Research
 
 **Noise-State Calculus for Dynamic Games with Strategic Information** &middot; PhD dissertation, 2026 &middot; [sbabichenko.com/dissertation](/dissertation/)\
-Solves forecasting the forecasts of others, a problem economics has worked around since Keynes (1936) and Townsend (1983), for continuous-time linear-quadratic-Gaussian games with any finite number of players. Each player keeps estimates of the primitive shocks instead of belief hierarchies, so beliefs, prices and policies are impulse responses and equilibrium is a fixed point in them, checked against arbitrary deviations. The information wedge, the shadow price of changing an opponent's beliefs, explains where these games depart from their full-information versions. Applications to Kyle&ndash;Back markets with several informed traders, networks of local markets, delayed public signals, and deviations that only some players can detect.
+Forecasting the forecasts of others in continuous-time linear-quadratic-Gaussian games with any finite number of players. Each player keeps estimates of the primitive shocks instead of belief hierarchies, so beliefs, prices and policies are impulse responses and equilibrium is a fixed point in them, checked against arbitrary deviations. The information wedge, the shadow price of changing an opponent's beliefs, explains where these games depart from their full-information versions. Applications to Kyle&ndash;Back markets with several informed traders, networks of local markets, delayed public signals, and deviations that only some players can detect.
 
 **Forecasting and Manipulating the Forecasts of Others** &middot; [arXiv: 2603.12140](https://arxiv.org/abs/2603.12140)\
 Solo-authored, submitted March 2026. The two-player core of the dissertation. Splits the cost of dispersed information into an estimation part and a strategic part, and finds cases where more precise private information raises total cost.
@@ -51,7 +51,7 @@ Solo-authored, submitted March 2026. The two-player core of the dissertation. Sp
 
 ## Selected projects
 
-**Decision Mesh** &middot; [sbabichenko.com/gate](/gate/) &middot; [github.com/sbabichenko/Decision-Mesh](https://github.com/sbabichenko/Decision-Mesh)\
+**Decision Mesh** &middot; [sbabichenko.com/gate](/gate/) &middot; [github.com/sbabichenko/triangular-decision-mesh](https://github.com/sbabichenko/triangular-decision-mesh)\
 Mesh regression that fits continuous surfaces where trees fit steps. A right-triangle or rectangular mesh is refined only where a false-discovery gate says the data justify a cut, and stops on its own. Built for the discontinuities that tree models showed in the prepayment work.
 
 **Multi-agent traffic simulation** (Waymo Open Motion Dataset)\
