@@ -871,6 +871,12 @@ function sendSolve() {
   // and ignores otherwise (a new grid or a new model)
   const request = { ...currentRequest(), return_start: true };
   if (game !== "custom" && PRESETS[game].naive) request.naive_compare = PRESETS[game].naive;
+  // a model file with naive observers: solve it both ways, the privy equilibrium as the main result and the naive one
+  // beside it (the same comparison as the Chapter 6 tab)
+  if (game === "custom" && model.naive_observers && Object.keys(model.naive_observers).length && model.horizon && model.horizon.kind === "stationary") {
+    request.naive_compare = model.naive_observers;
+    model = { ...model }; delete model.naive_observers;
+  }
   const hk = model.horizon && model.horizon.kind;
   if (!(model.numerics && model.numerics.engine === "cells")) request.path_grid = hk === "stationary" ? 150 : hk === "transition" ? 48 : 60;
   if (lastStart[game]) request.start = lastStart[game];
@@ -955,7 +961,7 @@ function renderResults(res) {
     return `<div class="card"><div class="k">${esc(AGENT_LABEL[a] || a)}</div><div class="v">${fmt(shown, 4)} ${delta}</div><div class="d">${split || note}</div></div>`;
   }).join("");
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Equilibrium costs</h2><div class="cards">${cards}</div>
-    <p class="caption">Expected losses at the equilibrium (${esc(res.cost_kind)}); smaller is better.${prevResult ? " Arrows: the change from the previous solve." : ""}</p>
+    <p class="caption">Expected losses at the equilibrium (${esc(res.cost_kind)}); smaller is better.${prevResult ? " Arrows: the change from the previous solve." : ""}${res.naive && game === "custom" ? " These are the privy equilibrium's; the equilibrium with the model file's naive observers is in the next panel." : ""}</p>
     ${res.warnings && res.warnings.length ? `<p class="caption" style="color:var(--warn)">${res.warnings.map(esc).join("<br>")}</p>` : ""}</section>`);
   if (res.kind === "transition") renderTransition(res, out);
   if (res.naive) renderNaive(res, out);
@@ -1015,12 +1021,12 @@ function renderNaive(res, out) {
   };
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Privy or naive</h2>
     <div class="versus">
-      <div class="side"><h3><span class="swatch" style="background:${pal[1]}"></span>Privy (the equilibrium of Chapter 4)</h3><div class="cards">${agents.map((a) => card(a, res.costs[a])).join("")}</div></div>
+      <div class="side"><h3><span class="swatch" style="background:${pal[1]}"></span>${game === "ch6" ? "Privy (the equilibrium of Chapter 4)" : "Privy: every observer reacts"}</h3><div class="cards">${agents.map((a) => card(a, res.costs[a])).join("")}</div></div>
       <div class="side"><h3><span class="swatch" style="background:${pal[2]}"></span>Naive: ${esc(who)}</h3><div class="cards">${agents.map((a) => card(a, N.costs[a], res.costs[a])).join("")}</div></div>
     </div>
     <div class="row" style="margin-top:12px"><label for="nvar" class="small muted">Response of</label><select id="nvar"></select></div>
     <div class="plot tall" id="pnaive"></div>
-    <p class="caption">Costs are flow losses (a trader's profit is negative). The arrows compare the naive equilibrium with the privy one.
+    <p class="caption">Costs are flow losses${game === "ch6" ? " (a trader's profit is negative)" : ""}. The arrows compare the naive equilibrium with the privy one.
       The plot overlays the two equilibria's responses to each shock (solid privy, dashed naive).${N.converged ? "" : " The naive solve did not converge; its numbers are its last iterate."}</p></section>`);
   const S = res.samples, T = N.samples;
   const vars = res.names.concat(res.definitions || []).filter((v) => T.kernels[v]);
