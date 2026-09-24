@@ -26,7 +26,7 @@ First exact solution to a class of multi-agent games with private signals open s
 
 Quantifies how information asymmetry distorts prices and behavior: not just added noise, but systematic bias in mean prices, excess volatility, and wasted effort from strategic belief manipulation. Decomposes the total cost into an estimation component and a strategic component, showing the strategic channel dominates by an order of magnitude. Identifies welfare reversals where more precise private information raises total cost&mdash;a non-monotone equilibrium effect absent from cooperative or single-agent models.
 
-C++ solver computes equilibria in ~10ms. Compiled to WebAssembly for a browser-side interactive explorer at ~60ms. [Live demo: sbabichenko.com/lqg](/lqg).
+C++ solver computes equilibria in ~10ms. Compiled to WebAssembly for a browser-side interactive explorer at ~60ms. [Live demo: sbabichenko.com/noisestate](/noisestate/).
 
 **Asymmetric Competition Among Endogenously Informed Traders** &mdash; *In preparation*
 

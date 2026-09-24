@@ -1,4 +1,4 @@
-/* the Decision Mesh demo: on top of the explorer's tokens and components (lqg/explorer.css) */
+/* the Decision Mesh demo: on top of the explorer's tokens and components (noisestate/explorer.css) */
 .explorer.mesh .meshbar { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 12px 16px; }
 .explorer.mesh .meshbar select { width: 100%; }
 .explorer.mesh .stage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px 12px; }

@@ -1,5 +1,5 @@
 // /dissertation/wedge: the information wedge, in steps. Four diagrams, then three drawings solved live by the
-// explorer's solver (static/lqg/worker.js) on the Chapter 1 tracking game: player 1's first-order condition split into
+// explorer's solver (static/noisestate/worker.js) on the Chapter 1 tracking game: player 1's first-order condition split into
 // its physical part and the wedge; the wedge shrinking as player 2's signal is blurred; and information starvation.
 (function () {
   "use strict";
