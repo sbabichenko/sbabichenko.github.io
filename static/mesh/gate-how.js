@@ -177,6 +177,59 @@
       return { g, update(t) { fade(img, seg(t, 0, 0.2)); up.set(seg(t, 0.25, 0.5)); dn.set(seg(t, 0.25, 0.5)); fade(lab, seg(t, 0.45, 0.6)); fade(cap, seg(t, 0.6, 0.75)); } };
     })();
 
+    // 1b'. a wrong mean shows up as variance: mean square of the residuals against the size of the miss ------------
+    scenes.wrongmean = (() => {
+      const g = group("wrongmean");
+      const tf = TRUTHS[data.truth], v = POOL_SD * POOL_SD;
+      // per site: the miss (true log-odds less fitted, the nudge aside), its squared residual, and what the miss and
+      // the nudge together predict: 1 + p(1 − p)[(n − 1) v + n miss²], to first order
+      const sites = (logit, z) => Array.from(data.x, (_, i) => {
+        const L = logit(data.x[i], data.y[i]), p = expit(L), m = tf(data.x[i], data.y[i]) - L, n = data.n[i];
+        return { m: Math.abs(m), z2: z[i] * z[i], pred: 1 + p * (1 - p) * ((n - 1) * v + n * m * m) };
+      });
+      // equal-width bins of the miss, up to where 99.5% of the flat surface's sites lie; bins of fewer than 25 sites dropped
+      const S0 = sites(() => fit.baseline, zFlat), S1 = sites(fitLogit, zFit);
+      const top = [...S0].map((q) => q.m).sort((a, b) => a - b)[Math.floor(0.995 * S0.length)], K = 14, bw = top / K;
+      const bin = (arr) => {
+        const out = [];
+        for (let b = 0; b < K; ++b) {
+          const s = arr.filter((q) => q.m >= b * bw && (q.m < (b + 1) * bw || b === K - 1 && q.m <= top));
+          if (s.length < 25) continue;
+          const mean = (f) => s.reduce((t, q) => t + f(q), 0) / s.length;
+          out.push({ m: mean((q) => q.m), z2: mean((q) => q.z2), pred: mean((q) => q.pred), n: s.length });
+        }
+        return out;
+      };
+      const flat = bin(S0), fin = bin(S1);
+      const B = { x: 90, y: 110, w: 430, h: 360 }, mmax = Math.max(...flat.map((q) => q.m)) * 1.05, ymax = Math.max(2, ...flat.map((q) => Math.max(q.z2, q.pred))) * 1.08;
+      const X = (m) => B.x + (m / mmax) * B.w, Y = (y) => B.y + B.h - ((y - 0.5) / (ymax - 0.5)) * B.h;
+      text(g, B.x - 10, B.y - 30, "mean squared residual, by how far the fitted odds miss", "mono", "start");
+      line(g, B.x, B.y + B.h, B.x + B.w, B.y + B.h, "", 1); line(g, B.x, B.y, B.x, B.y + B.h, "", 1);
+      text(g, B.x, B.y + B.h + 18, "0", "tiny", "start"); text(g, B.x + B.w, B.y + B.h + 18, `miss ${fmt(mmax, 1)} log-odds`, "tiny", "end");
+      for (const y of [1, 2, 3, 4, 5, 6].filter((y) => y < ymax)) text(g, B.x - 8, Y(y) + 4, String(y), "tiny", "end");
+      const one = el("g", {}, g);
+      line(one, B.x, Y(1), B.x + B.w, Y(1), "soft", 1.2).setAttribute("stroke-dasharray", "4 4");
+      text(one, B.x + B.w, Y(1) + 16, "1: a binomial at the right odds", "tiny", "end");
+      const floorV = S1.reduce((t, q) => t + q.pred, 0) / S1.length;
+      const flo = el("g", {}, g);
+      line(flo, B.x, Y(floorV), B.x + B.w, Y(floorV), "accent", 1.4).setAttribute("stroke-dasharray", "6 4");
+      text(flo, B.x + B.w, Y(floorV) - 8, "the floor: what the two axes leave out", "tiny acc", "end");
+      const theory = stroke(g, "M" + flat.map((q) => `${X(q.m).toFixed(1)},${Y(q.pred).toFixed(1)}`).join(" L"), "warm soft", 1.6);
+      const rad = (q) => 2.5 + Math.sqrt(q.n) / 6;
+      const fd = flat.map((q) => el("circle", { cx: X(q.m), cy: Y(q.z2), r: rad(q), class: "neg", "fill-opacity": 0.8 }, g));
+      const nd = fin.map((q) => el("circle", { cx: X(q.m), cy: Y(q.z2), r: rad(q), class: "pos", "fill-opacity": 0.8 }, g));
+      const leg = el("g", {}, g);
+      el("circle", { cx: B.x + 14, cy: B.y + 6, r: 5, class: "neg" }, leg); text(leg, B.x + 26, B.y + 10, "against a flat surface", "tiny", "start");
+      el("circle", { cx: B.x + 14, cy: B.y + 24, r: 5, class: "pos" }, leg); text(leg, B.x + 26, B.y + 28, "against the final fit", "tiny", "start");
+      line(leg, B.x + 6, B.y + 44, B.x + 22, B.y + 44, "warm", 1.6); text(leg, B.x + 26, B.y + 48, "1 + p(1 − p)[(n − 1)v + n·miss²]", "tiny", "start");
+      const cap = text(g, 300, B.y + B.h + 50, "each dot: the sites whose miss falls in one band, sized by how many", "tiny");
+      return { g, update(t) {
+        fade(one, seg(t, 0, 0.1)); fade(leg, seg(t, 0.05, 0.15));
+        const n = Math.floor(seg(t, 0.1, 0.45) * fd.length); fd.forEach((d, i) => fade(d, i < n ? 1 : 0));
+        theory.set(seg(t, 0.4, 0.6)); nd.forEach((d) => fade(d, seg(t, 0.6, 0.7))); fade(flo, seg(t, 0.7, 0.8)); fade(cap, seg(t, 0.2, 0.3));
+      } };
+    })();
+
     // 1c. two kinds of excess: shared by neighbours, or each site's own ------------------------------------------
     scenes.coherent = (() => {
       const g = group("coherent");
@@ -469,6 +522,7 @@
     // the numbers in the text
     const setV = (k, s) => document.querySelectorAll(`[data-v="${k}"]`).forEach((n) => { n.textContent = s; });
     setV("M0", String(r0.length));
+    setV("outside", pct(outside));
     setV("dispFlat", disp(zFlat).toFixed(2)); setV("dispFit", disp(zFit).toFixed(2));
     setV("unscoreable", D.census ? String(D.census.unscoreable) : "some");
     setV("nullMean", fmt(cal0.nullMean)); setV("nullSd", fmt(cal0.nullSd)); setV("pi0", pct(cal0.pi0));
