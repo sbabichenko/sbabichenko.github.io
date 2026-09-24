@@ -149,3 +149,9 @@
   .home h2 .note { margin-left: 0; }
   .home .demo .shot { aspect-ratio: 16 / 7; }
 }
+
+/* not found */
+.home .hero.lost { min-height: 20rem; padding-bottom: 0; }
+.home .back { color: var(--accent); font-weight: 600; }
+.home .back:hover { text-decoration: underline; }
+.home .demo.slim .body { padding: 20px; }

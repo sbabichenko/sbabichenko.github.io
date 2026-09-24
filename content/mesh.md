@@ -5,4 +5,6 @@ path = "mesh"
 template = "mesh.html"
 [extra]
 math = false
+[extra.cover]
+image = "images/og-mesh.png"
 +++
