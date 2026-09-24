@@ -107,9 +107,10 @@
   const scenes = {};
   const group = (name) => { const g = el("g", { class: "scene", "data-scene": name }, svgFor(name)); g.style.opacity = 0; g.style.transition = "opacity 0.6s"; return g; };
 
-  // -- a pencil, made of parts from four corners of the world
-  scenes.pencil = (() => {
-    const g = group("pencil");
+  // -- a pencil, made of parts from four corners of the world. It comes back at the end of the story, whole,
+  // writing: the stories of Hayek and I, Pencil put to paper.
+  function makePencil(name, finale) {
+    const g = group(name);
     const parts = [
       { name: "cedar", from: [-170, -160], lx: 150, ly: 150, build(pg) {
           return [stroke(pg, pencil([[170, 283], [440, 283]], 1), "", 2), stroke(pg, pencil([[170, 327], [440, 327]], 2), "", 2),
@@ -134,6 +135,25 @@
     stroke(tag, pencil([[300, 327], [310, 370]], 11), "soft", 1).set(1);
     el("rect", { x: 250, y: 370, width: 124, height: 34, rx: 4, class: "box pencil", "stroke-width": 1.4 }, tag);
     text(tag, 312, 392, "almost nothing", "mono");
+    if (finale) {
+      // whole from the start, labels and tag put away; the pencil rides the end of a line it draws
+      const body = el("g", {}, g);
+      parts.forEach((p) => { body.appendChild(p.g); p.lines.forEach((l) => l.set(1)); p.label.remove(); p.lead.remove(); });
+      tag.remove();
+      const r = mulberry32(77), pts = [];
+      let y = 430;
+      for (let x = 60; x <= 430; x += 5) { pts.push([x, y]); y += gauss(r) * 5; y = clamp(y, 380, 480); }
+      const line = stroke(g, pencil(pts, 78, 0.6), "accent", 1.8);
+      return {
+        g,
+        update(t) {
+          const q = seg(t, 0.05, 0.85);
+          line.set(q);
+          const L = line.a.getTotalLength(), pt = line.a.getPointAtLength(L * q);
+          body.setAttribute("transform", `translate(${pt.x},${pt.y}) scale(0.42) rotate(140) translate(-500,-305)`);
+        },
+      };
+    }
     return {
       g,
       update(t) {
@@ -150,7 +170,10 @@
         fade(tag, seg(t, 0.72, 0.9));
       },
     };
-  })();
+  }
+  scenes.pencil = makePencil("pencil");
+  if (document.querySelector('.story .step[data-scene="finale"]')) scenes.finale = makePencil("finale", true);
+
 
   // -- prices: pulses crossing a network of people who each see their own corner
   scenes.prices = (() => {
