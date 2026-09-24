@@ -15,6 +15,13 @@
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 
+  // ---- the end of the page draws itself when it comes into view
+  const fin = document.querySelector(".fin");
+  if (fin && "IntersectionObserver" in window) {
+    const fo = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { fin.classList.add("drawn"); fo.disconnect(); } });
+    fo.observe(fin);
+  }
+
   // ---- the rail: the section on screen is marked; on narrow screens the contents fold under the title
   const links = [...document.querySelectorAll(".rail .secs a[data-sec]")];
   const targets = links.map((a) => document.getElementById(a.dataset.sec)).filter(Boolean);
