@@ -265,6 +265,7 @@
       if (m.id !== S.id) { S.busy = false; if (S.queued) run(); return; }
       S.busy = false;
       S.fit = m; S.fitG = fitGrid(m);
+      if (window.siteTally) window.siteTally("fit");
       $("results").classList.remove("stale");
       setChip("ok", "Fitted"); report(); drawFit();
       if (S.queued) run();

@@ -156,3 +156,30 @@
 .home .back:hover { text-decoration: underline; }
 .home .demo.slim .body { padding: 20px; }
 .home .demo.wide { grid-column: 1 / -1; }
+
+/* ---------------------------------------------------------------- the writing index */
+.home.listing { padding-top: 7.5rem; min-height: calc(100vh - 10rem); }
+.home.listing .listhead h1 { font-family: Newsreader, "Iowan Old Style", Georgia, serif; font-weight: 400; font-size: clamp(2.2rem, 5vw, 3.2rem); letter-spacing: -0.02em; line-height: 1.05; margin: 0.35rem 0 0.9rem; }
+.home.listing .listhead .lede { max-width: 38rem; color: var(--ink-2); font-size: 1.05rem; }
+.home.listing .listhead .lede a { color: var(--accent); }
+.home.listing .listhead + section { margin-top: 2.5rem; }
+.home .entries { border-top: 1px solid var(--rule); }
+.home .entry { display: flex; gap: 20px; align-items: baseline; padding: 1.1rem 0; border-bottom: 1px solid var(--rule-2); }
+.home .entry time { font-size: 0.8rem; color: var(--ink-3); font-variant-numeric: tabular-nums; flex: 0 0 5.5rem; }
+.home .entry .body { display: flex; flex-direction: column; gap: 0.2rem; }
+.home .entry .t { font-family: Newsreader, "Iowan Old Style", Georgia, serif; font-size: 1.35rem; line-height: 1.25; }
+.home .entry .d { color: var(--ink-2); font-size: 0.95rem; }
+.home .entry .meta { color: var(--ink-3); font-size: 0.8rem; }
+.home .entry:hover .t { color: var(--accent); }
+.home .pager { display: flex; gap: 18px; justify-content: space-between; margin-top: 1.2rem; font-size: 0.9rem; color: var(--ink-3); }
+.home .pager a { color: var(--accent); }
+@media (max-width: 640px) { .home .entry { flex-direction: column; gap: 4px; } .home.listing { padding-top: 5.5rem; } }
+
+/* the hero's toy: the mesh gathers its cuts wherever it is clicked (static/js/heroink.js) */
+.home .hero:not(.lost) { cursor: crosshair; }
+.home .hero :is(a, .lede, h1) { cursor: auto; }
+.home .hero .poke { position: absolute; right: 0; bottom: 0.6rem; margin: 0; font: 0.74rem ui-monospace, Menlo, monospace;
+  color: var(--ink-3); letter-spacing: 0.02em; opacity: 0; transition: opacity 0.6s; pointer-events: none; }
+.home .hero:hover .poke { opacity: 0.85; }
+@media (hover: none) { .home .hero .poke { opacity: 0.7; } .home .hero .poke::before { content: "tap"; } .home .hero .poke { font-size: 0; } .home .hero .poke::after { content: " the mesh to poke it"; font-size: 0.74rem; } .home .hero .poke::before { font-size: 0.74rem; } }
+@media (max-width: 480px) { .home .eyebrow { letter-spacing: 0.07em; font-size: 0.68rem; } }

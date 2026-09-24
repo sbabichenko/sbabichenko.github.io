@@ -9,10 +9,10 @@
 
     <main class="home">
       <section class="hero lost">
-        <canvas id="heroink" aria-hidden="true"></canvas>
+        <canvas id="heroink" data-mode="nothing" aria-hidden="true"></canvas>
         <p class="eyebrow">404</p>
         <h1>Nothing here</h1>
-        <p class="lede">No page at this address.</p>
+        <p class="lede">No page at this address. The gate checked every candidate and admitted none of them.</p>
         <p class="lede"><a class="back" href="{{ get_url(path='') }}">Back to the front &rarr;</a></p>
       </section>
 
@@ -28,7 +28,7 @@
           </a>
           <a class="demo slim" href="{{ get_url(path='gate/') }}">
             <div class="body">
-              <h3>The gated decision mesh</h3>
+              <h3>A mesh that knows when to stop</h3>
               <p>Draw the odds of a coin and watch a false-discovery gate decide where to cut.</p>
               <span class="go">Fit some coins <span class="arrow">&rarr;</span></span>
             </div>

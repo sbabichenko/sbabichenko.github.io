@@ -1,24 +1,10 @@
-<footer class="mx-auto flex max-w-3xl flex-wrap items-center px-8 py-4 text-sm opacity-60">
-  <div class="mr-auto basis-full lg:basis-1/2">
-    {% set current_year = now() | date(format="%Y") | int %}<!---->
-    {% if config.extra.footer.since and config.extra.footer.since != current_year %}<!---->
-    &copy; {{ config.extra.footer.since }} - {{ current_year }}<!---->
-    {% else %}<!---->
-    &copy; {{ current_year }}<!---->
-    {% endif %}
-    <a class="link" href="{{ get_url(path=``) }}">
-      {{ config.author | default(value=config.title) }}
-    </a>
-    {% if config.extra.footer.license %} |<!---->
-    {% if config.extra.footer.license_url %}<!---->
-    <a class="link" href="{{ config.extra.footer.license_url }}" rel="noopener" target="_blank">
-      {{ config.extra.footer.license }}
-    </a>
-    {% else %}<!---->
-    {{ config.extra.footer.license }}<!---->
-    {% endif %}<!---->
-    {% endif %}
-  </div>
-  <!-- Footer inject -->
-  {% include "injects/footer.html" ignore missing %}
+{#- One line: who, the licence, the colophon, and a running tally of what this visit has computed
+    (static/js/tally.js; each demo adds to it, and it resets when the tab closes). -#}
+<footer class="site-foot">
+  {% set current_year = now() | date(format="%Y") | int %}
+  <span>&copy; {% if config.extra.footer.since and config.extra.footer.since != current_year %}{{ config.extra.footer.since }}&ndash;{% endif %}{{ current_year }} Samuel Babichenko</span>
+  {% if config.extra.footer.license %}<a href="{{ config.extra.footer.license_url }}" rel="noopener" target="_blank">{{ config.extra.footer.license }}</a>{% endif %}
+  <a href="{{ get_url(path='colophon') }}">Colophon</a>
+  <span class="tally" id="tally" aria-live="polite"></span>
 </footer>
+<script src="{{ get_url(path='js/tally.js') }}"></script>

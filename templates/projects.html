@@ -31,6 +31,7 @@
           {% endfor %}
         </ul>
         {% endif %}
+        <p class="poke" aria-hidden="true">click the mesh to poke it</p>
       </section>
 
       <section>
@@ -56,7 +57,7 @@
               <img class="img-dark" src="{{ get_url(path='images/card-gate-dark.webp') }}" alt="" width="480" height="240" />
             </div>
             <div class="body">
-              <h3>The gated decision mesh</h3>
+              <h3>A mesh that knows when to stop</h3>
               <p>Thousands of coins, each flipped a few times, and odds that change somewhere on the square.
                 The estimator cuts a mesh only where a false-discovery gate says the flips justify it, then
                 stops on its own. Draw the odds yourself and see what it can find.</p>
@@ -67,9 +68,9 @@
           <a class="demo slim wide" href="{{ get_url(path='mesh/') }}">
             <div class="body">
               <h3>Two kinds of triangle, rectangles and a tree</h3>
-              <p>The same geometries grown by a simple greedy rule, with no gate: freeform triangles, right triangles, rectangles and a regression
-                tree, grown greedily on the same noisy surface one cut at a time, with the same number of free
-                parameters each.</p>
+              <p>Freeform triangles, right triangles, rectangles and a regression tree, grown on the same noisy surface
+                one greedy cut at a time, with the same number of free parameters each. No gate here: they stop when
+                the page runs out of patience.</p>
               <span class="go">Watch them grow <span class="arrow">&rarr;</span></span>
             </div>
           </a>
@@ -117,11 +118,6 @@
       </section>
       {% endif %}
 
-      <p class="colophon">
-        Built with <a href="https://www.getzola.org/" target="_blank" rel="noopener">Zola</a>; the
-        solvers on this site are compiled to WebAssembly and run on your machine.
-        <a href="{{ get_url(path='colophon') }}">Colophon</a>.
-      </p>
     </main>
 
     {% include "partials/footer.html" %}

@@ -890,6 +890,7 @@ function onSolved(m) {
   try { key = JSON.stringify([currentModel(), currentRequest()]); } catch (e) { /* the editor holds an unfinished edit */ }
   const stale = pending || !req || req.game !== game || (key !== null && key !== req.key);
   const res = JSON.parse(m.result);
+  if (res.ok && window.siteTally) window.siteTally("solve", res.naive ? 2 : 1);
   if (!res.ok) {
     if (req && req.game === game) {
       setStatus("bad", "Error", res.error);
@@ -1401,6 +1402,7 @@ function onSweepResult(m) {
   const S = sweep;
   if (!S || !S.running || m.id !== S.id + S.i) return;
   const res = JSON.parse(m.result), x = S.xs[S.i], def = PRESETS[S.game];
+  if (res.ok && window.siteTally) window.siteTally("solve");
   const extra = def.constCost ? def.constCost({ ...values[S.game], [S.key]: x }) : {};
   if (res.ok && res.converged) {
     for (const [a, v] of Object.entries(res.costs)) (S.costs[a] = S.costs[a] || []).push([x, v + (extra[a] || 0)]);

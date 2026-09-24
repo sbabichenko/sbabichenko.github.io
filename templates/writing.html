@@ -1,34 +1,38 @@
-{% import "macros.html" as macros %}
-
+{#- The writing index: the home page's list, with room for each piece's description and tags. -#}
 <!doctype html>
 <html class="not-ready lg:text-base" lang="{{ lang }}">
 {% include "partials/head.html" %}
-
 <body class="text-black duration-200 ease-out dark:text-white">
+  <link rel="stylesheet" href="{{ get_url(path='css/home.css') }}" />
   {% include "partials/header.html" %}
-
-  <!-- Body Start inject -->
-  {% include "injects/body_start.html" ignore missing %}
-
-  <div class="relative mx-auto min-h-[calc(100vh-9rem)] pt-24 pb-16 lg:pt-32 flex flex-col gap-8 max-w-4xl px-4">
-    <!-- Shared container for sidebar and main content -->
-    <div class="w-full">
-      {% include "partials/sidebar.html" %}
-      <main>
-        <div
-          class="prose prose-neutral dark:prose-invert prose-pre:rounded-lg prose-img:rounded-lg break-words max-w-3xl">
-          {% block main %}
-          {% include "partials/page_list.html" %}
-          {% endblock main %}
-        </div>
-      </main>
-    </div>
-  </div>
-
+  <main class="home listing">
+    <section class="listhead">
+      <h1>Writing</h1>
+      <p class="lede">Longer pieces on statistics and markets. Browse by <a href="{{ get_url(path='writing/tags') }}">tag</a> or the
+        <a href="{{ get_url(path='writing/archive') }}">archive</a>.</p>
+    </section>
+    <section>
+      <div class="entries">
+        {% for page in paginator.pages %}
+        <a class="entry" href="{{ page.permalink }}">
+          <time datetime="{{ page.date }}">{{ page.date | date(format="%b %Y") }}</time>
+          <span class="body">
+            <span class="t">{{ page.title }}</span>
+            {% if page.description and page.description != page.title %}<span class="d">{{ page.description }}</span>{% endif %}
+            <span class="meta">{{ page.reading_time }} min read{% if page.taxonomies["writing/tags"] %} &middot; {{ page.taxonomies["writing/tags"] | join(sep=", ") }}{% endif %}</span>
+          </span>
+        </a>
+        {% endfor %}
+      </div>
+      {% if paginator.number_pagers > 1 %}
+      <nav class="pager">
+        {% if paginator.previous %}<a href="{{ paginator.previous }}">&larr; Newer</a>{% endif %}
+        <span>Page {{ paginator.current_index }} of {{ paginator.number_pagers }}</span>
+        {% if paginator.next %}<a href="{{ paginator.next }}">Older &rarr;</a>{% endif %}
+      </nav>
+      {% endif %}
+    </section>
+  </main>
   {% include "partials/footer.html" %}
-
-  <!-- Body End inject -->
-  {% include "injects/body_end.html" ignore missing %}
 </body>
-
 </html>
