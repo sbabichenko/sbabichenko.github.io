@@ -37,9 +37,9 @@ whenever actions both do things and signal, and formalizing that is
 hard.</p>
 <p>The first obstacle was defining equilibrium under private information
 at all, which Harsanyi solved through priors over player types [<a href="/dissertation/references/#ref-Harsanyi1967">52</a>]. Muth proposed
-players hold rational expectations consistent with the beliefs the model
-implies [<a href="/dissertation/references/#ref-Muth1961">87</a>]. In
-macroeconomics, the reasons to do so became visible in the Phillips
+that players hold rational expectations consistent with the beliefs the
+model implies [<a href="/dissertation/references/#ref-Muth1961">87</a>].
+In macroeconomics, the reasons to do so became visible in the Phillips
 curve. Inflation and unemployment had been stably related [<a href="/dissertation/references/#ref-Phillips1958">96</a>] for long
 enough that the relationship was treated as a policy lever [<a href="/dissertation/references/#ref-SamuelsonSolow1960">102</a>], and
 that relationship changed once it was used. Lucas explained the change
@@ -87,14 +87,14 @@ the mid-1980s. Kyle modeled an insider who learned something about a
 stock’s future value and a market maker who sets the price after seeing
 only order flow muddied by uninformed participants [<a href="/dissertation/references/#ref-kyle1985continuous">71</a>]. Every
 trade the insider makes moves the price and shows the market maker part
-of what they know. Like the islanders, the market maker cannot tell the
-two sources apart, so the insider stays under the radar by trading
-slowly, and the information only enters the price over time. Kyle kept
-the core of the problem, but in a special case where it could all be
-solved, with one insider, informed once at the start of trading, and a
-competitive market maker whose belief is public through the price. When
-the finance community saw the whole problem in a solvable model, it
-pounced, and a generation of extensions followed [<a href="/dissertation/references/#ref-back1992insider">11</a>, <a href="/dissertation/references/#ref-BackCaoWillard2000">13</a>, <a href="/dissertation/references/#ref-FosterViswanathan1996">38</a>, <a href="/dissertation/references/#ref-HoldenSubrahmanyam1992">56</a>].
+of what the insider knows. Like the islanders, the market maker cannot
+tell informed and uninformed orders apart, so the insider stays under
+the radar by trading slowly, and the information only enters the price
+over time. Kyle kept the core of the problem, but in a special case
+where it could all be solved, with one insider, informed once at the
+start of trading, and a competitive market maker whose belief is public
+through the price. When the finance community saw the whole problem in a
+solvable model, it pounced, and a generation of extensions followed [<a href="/dissertation/references/#ref-back1992insider">11</a>, <a href="/dissertation/references/#ref-BackCaoWillard2000">13</a>, <a href="/dissertation/references/#ref-FosterViswanathan1996">38</a>, <a href="/dissertation/references/#ref-HoldenSubrahmanyam1992">56</a>].
 Extensions with several informed traders stayed solvable only under
 heavy symmetry, with every trader drawing a signal from the same
 distribution [<a href="/dissertation/references/#ref-Brunnermeier1999">23</a>]. The
@@ -110,7 +110,7 @@ the state generates observations, observations update beliefs. Beliefs
 complete the cycle by determining the actions that started it. A loop
 (Figure <a class="xref" href="#fig:loop">1</a>). There is also a chord, where an action
 can set what others observe directly. Every tractable approach beyond
-the Kyle line severs it somewhere, so a modeler’s options can be
+the Kyle line severs the loop somewhere, so a modeler’s options can be
 organized by the cut each makes. The cuts fall on the privacy of
 beliefs, on what actions can teach, on the weight of one player, on the
 flow from observations to beliefs, or on time itself.</p>
@@ -129,8 +129,8 @@ Hambly et al. [<a href="/dissertation/references/#ref-HamblyXuYang2023">49</a>]
 instance, make actions completely observable and restrict to linear
 strategies, so that each action reveals the beliefs behind it and past
 beliefs become common knowledge after a single step.</p>
-<p>One option is to fix the information structure independently of play,
-as in Bayes correlated equilibrium [<a href="/dissertation/references/#ref-BergemannMorrisBCE">18</a>], where
+<p>Another option is to fix the information structure independently of
+play, as in Bayes correlated equilibrium [<a href="/dissertation/references/#ref-BergemannMorrisBCE">18</a>], where
 actions respond to signals, but actions cannot change what other players
 learn. Another option is to take a mean-field limit [<a href="/dissertation/references/#ref-HuangMalhameCaines">58</a>, <a href="/dissertation/references/#ref-LasryLions2007">73</a>], so an
 individual player is too small to move the others’ states. Another
@@ -173,7 +173,7 @@ phenomena the model can produce. Approaches searching for tractability
 are often tempted by an elegant property of linear-quadratic-Gaussian
 (LQG) control known as the separation principle. A single controller can
 treat learning about the world and choosing its actions separately. When
-others are listening in on their behavior, actions become signals, and
+others are listening in on its behavior, actions become signals, and
 Townsend’s hierarchy applies. Separation fails unless something else is
 imposed.</p>
 <p>Ask any model that claims to study the interaction between
@@ -212,9 +212,9 @@ actions from what they observe, so a player cannot manipulate
 themselves, only others. These two properties are both the sources of
 noise-state tractability and the limitations to what it can model.
 Economists already linearize to get tractable approximations to
-realistic models, but this had not been enough to handle decentralized
+realistic models, but this has not been enough to handle decentralized
 information.</p>
-<p>Art Moore, my linear algebra professor in community college who
+<p>Art Moore, my linear algebra professor in community college, who
 inspired me to do this PhD, once explained the difference between
 ordinary and partial differential equations by saying that PDEs are so
 much harder to analyze because they can describe so much more. A
@@ -255,10 +255,10 @@ coordinates directly, and the kernels are the model’s ordinary impulse
 responses. Since each player observes those shocks through their own
 signals, the relevant statistic is the player’s belief about them: the
 noise-state. It changes what a belief is a belief about. Unlike
-higher-order beliefs about endogenous states that are hard to close and
-unnatural to approximate, beliefs about primitive shocks are neither. By
-linearity everything can be written in terms of primitive shocks,
-including beliefs about them.</p>
+higher-order beliefs about endogenous states, which are hard to close
+and unnatural to approximate, beliefs about primitive shocks are
+neither. By linearity everything can be written in terms of primitive
+shocks, including beliefs about them.</p>
 <p>Common-information methods, introduced above, remove the tower the
 other way, by anchoring beliefs in information all players share. The
 loop can still survive, but the method buys tractability when what
@@ -334,10 +334,10 @@ linear class, proves that filtering and best responses stay inside the
 class, and derives the adjoint system in which the information wedge
 prices what an action teaches the other players. A finite-deviation
 identity then verifies a computed equilibrium against every admissible
-deviation, including those outside the linear class. The deliberately
-small two-player example separates the statistical value of information
-from its strategic value and shows how a planner can deliberately starve
-an inefficient player by how it allocates signal precision. An
+deviation, including those outside the linear class. The small
+two-player example separates the statistical value of information from
+its strategic value and shows how a planner can deliberately starve an
+inefficient player by how it allocates signal precision. An
 identical-interest variant closes the chapter. Interactive versions of
 the dissertation’s computations are collected at <a href="https://sbabichenko.com/noisestate">sbabichenko.com/noisestate</a>.</p>
 <p><strong>Delay.</strong> Chapter <a class="xref" href="/dissertation/chapter-2/#ch:delayed-public">2</a> lets
@@ -384,7 +384,7 @@ as a conjecture.</p>
 <p><strong>Monitoring.</strong> Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a> makes the
 chord player-dependent. A deviation may be monitored by some players and
 not others. A privy player sees the deviation labeled with who made it
-and does not filter it, while a naive player keeps filtering it as
+and does not filter it, while a naive player keeps filtering it as more
 primitive shock. The feedback splits into a naive channel, which is the
 wedge, and a privy channel, in which the privy player responds to the
 deviation directly, and the adjoint becomes a rectangular gain between
