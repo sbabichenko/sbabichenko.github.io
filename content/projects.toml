@@ -4,7 +4,8 @@ desc = "My dissertation. Each player keeps estimates of the primitive shocks ins
 tags = ["research", "dissertation"]
 image = "images/card-lqg"
 links = [
-    { name = "try the games", url = "/lqg/", primary = true },
+    { name = "read it", url = "/dissertation/", primary = true },
+    { name = "try the games", url = "/lqg/" },
     { name = "pypi", url = "https://pypi.org/project/noisestate/" }
 ]
 

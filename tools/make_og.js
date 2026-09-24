@@ -26,6 +26,10 @@ const CARDS = [
     eyebrow: "sbabichenko.com/gate",
     title: "A mesh that knows when to stop",
     sub: "Coin flips fitted in your browser by an estimator that cuts only where a false-discovery gate allows." },
+  { out: "og-dissertation.png", art: "shocks", seed: 5,
+    eyebrow: "sbabichenko.com/dissertation",
+    title: "No one knows much.",
+    sub: "Noise-State Calculus for Dynamic Games with Strategic Information. The whole dissertation, to read in the browser." },
 ];
 
 const page = (c) => `<!doctype html><html><head><meta charset="utf-8">
@@ -41,7 +45,7 @@ const page = (c) => `<!doctype html><html><head><meta charset="utf-8">
  p{font-size:29px;color:#4a4a55;margin:0;max-width:660px;line-height:1.35}
  .u{position:absolute;left:78px;bottom:70px;font-size:24px;color:#1f3fd0;z-index:2;font-family:ui-sans-serif,system-ui,sans-serif}
 </style></head><body>
-${c.art === "mesh" ? '<canvas id="c" width="2400" height="1260"></canvas>' : `<img class="art" src="${BASE}${c.src}">`}
+${c.art === "mesh" || c.art === "shocks" ? '<canvas id="c" width="2400" height="1260"></canvas>' : `<img class="art" src="${BASE}${c.src}">`}
 <div class="e">${c.eyebrow}</div>
 <div class="t"><h1>${c.title}</h1><p>${c.sub}</p></div>
 <div class="u">sbabichenko.com</div>
@@ -54,7 +58,16 @@ const SURFACES = {
 function mul(a){return function(){a|=0;a=(a+0x6d2b79f5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};}
 function gs(r){let u=0;while(u===0)u=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*r());}
 const c = document.getElementById('c');
-if (c) {
+if (c && ${JSON.stringify(c.art)} === "shocks") {
+  const g = c.getContext('2d'), W = c.width, H = c.height, r = mul(${c.seed || 1});
+  g.lineCap = 'round';
+  for (let k = 0; k < 9; ++k) {
+    let y = k === 3 ? H * 0.8 : H * (0.15 + 0.7 * r());
+    g.beginPath(); g.moveTo(0, y);
+    for (let i = 1; i <= 220; ++i) { y += gs(r) * H * 0.01; y = Math.max(H * 0.05, Math.min(H * 0.95, y)); g.lineTo(W * i / 220, y); }
+    g.strokeStyle = k === 3 ? 'rgba(31,63,208,0.55)' : 'rgba(20,22,40,0.11)'; g.lineWidth = k === 3 ? 4 : 2.4; g.stroke();
+  }
+} else if (c) {
   const f = SURFACES[${JSON.stringify(c.surface || "hills")}];
   const N=6000, X=new Float64Array(2*N), Y=new Float64Array(N), r=mul(${c.seed || 1});
   for(let i=0;i<N;i++){const x=-4+8*r(),y=-4+8*r();X[2*i]=x;X[2*i+1]=y;Y[i]=f(x,y)+0.45*gs(r);}

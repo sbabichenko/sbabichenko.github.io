@@ -1,0 +1,6 @@
+{
+  "name": "dissertation-web",
+  "private": true,
+  "description": "KaTeX for tools/dissertation/prerender.js",
+  "dependencies": { "katex": "0.16.11" }
+}
