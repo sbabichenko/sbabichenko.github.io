@@ -469,6 +469,7 @@
     // the numbers in the text
     const setV = (k, s) => document.querySelectorAll(`[data-v="${k}"]`).forEach((n) => { n.textContent = s; });
     setV("M0", String(r0.length));
+    setV("dispFlat", disp(zFlat).toFixed(2)); setV("dispFit", disp(zFit).toFixed(2));
     setV("unscoreable", D.census ? String(D.census.unscoreable) : "some");
     setV("nullMean", fmt(cal0.nullMean)); setV("nullSd", fmt(cal0.nullSd)); setV("pi0", pct(cal0.pi0));
     setV("capnote", fit.engine === "rect" && cal0.nullSd >= 2.999 ? " The spread hit its cap of 3: without one, a round in which nearly every candidate carries signal can mistake the signal for a wide null and admit nothing." : fit.engine === "tri" && cal0.nullSd >= 5.999 ? " The spread hit its cap of 6." : "");
