@@ -7,7 +7,7 @@
 <html class="not-ready lg:text-base" lang="{{ lang }}">
   {% include "partials/head.html" %}
   <body class="text-black duration-200 ease-out dark:text-white">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/katex/katex.min.css') }}" />
     <link rel="stylesheet" href="{{ get_url(path='dissertation/thesis.css') }}" />
     {% include "partials/header.html" %}
     <div class="progress" id="progress" aria-hidden="true"></div>
@@ -36,6 +36,12 @@
 
       <main class="paper" id="paper">
         <div class="kicker"><a href="{{ get_url(path='dissertation/') }}">Noise-state calculus &middot; dissertation</a></div>
+        {%- if slug == "introduction" or slug == "chapter-1" %}
+        <nav class="pictures" aria-label="The ideas in pictures">
+          <a href="{{ get_url(path='dissertation/idea/') }}"><span>In pictures</span><b>From beliefs about beliefs to the noise-state</b></a>
+          <a href="{{ get_url(path='dissertation/wedge/') }}"><span>In pictures</span><b>The price of changing someone&rsquo;s mind</b></a>
+        </nav>
+        {%- endif %}
         <article class="body">
           {{ load_data(path="data/dissertation/" ~ slug ~ ".html", format="plain") | safe }}
         </article>
@@ -55,5 +61,6 @@
 
     {% include "partials/footer.html" %}
     <script src="{{ get_url(path='dissertation/thesis.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/vignettes.js') }}"></script>
   </body>
 </html>
