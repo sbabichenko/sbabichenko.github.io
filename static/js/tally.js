@@ -12,7 +12,7 @@
     if (!el) return;
     const t = read(), parts = [];
     for (const k of ["solve", "fit", "grow"]) if (t[k]) parts.push(`<b>${t[k].toLocaleString()}</b> ${words[k][t[k] === 1 ? 0 : 1]}`);
-    el.innerHTML = parts.length ? `This visit, on your machine: ${parts.join(", ")}.` : "Nothing computed yet this visit. Your machine is idle, for now.";
+    el.innerHTML = parts.length ? `This visit, on your machine: ${parts.join(", ")}.` : "Nothing computed yet this visit.";
   }
   window.siteTally = function (kind, n) {
     const t = read(); t[kind] = (t[kind] || 0) + (n || 1); write(t); render();
