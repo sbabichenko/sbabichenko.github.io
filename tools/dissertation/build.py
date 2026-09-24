@@ -419,7 +419,7 @@ def fix_headings(soup, toc, stats):
 # can be split before a given sentence so that it gets two drawings
 STORIES = {
     "afterword": [("illusion", None), ("selection", "Natural selection is a statistical tool"), ("anchor", None),
-                  ("barrier", None), ("orbit", "Mathematics, the tool that let Isaac Newton"), ("noise", None),
+                  ("barrier", None), ("orbit", "Mathematics became my answer"), ("noise", None),
                   ("questions", None)],
 }
 
