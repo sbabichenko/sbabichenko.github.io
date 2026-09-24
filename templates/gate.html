@@ -71,7 +71,8 @@
             estimates the share &pi;<sub>0</sub> that are noise, and admits the candidates that stand out from that null
             at a controlled false-discovery rate. When the scores have no central peak to read a null from, it falls
             back to the textbook one. The pool variance is the spread of the coins around the surface, fitted
-            alongside it: as the mesh learns the odds, what it cannot explain shrinks toward the coins' true spread.</p>
+            alongside it: as the mesh learns the odds, what it cannot explain shrinks toward the coins' true spread.
+            <a href="{{ get_url(path='gate/how/') }}">How the gate decides</a> draws each of these steps from a live run.</p>
         </section>
       </div>
 
@@ -81,8 +82,9 @@
           and paint on the odds (drag to raise them, tick &ldquo;lower&rdquo; or hold shift to lower them).</p>
         <p>The estimators are <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a>
           and <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a>, compiled from
-          their C++ with Emscripten. Their dense linear algebra, which natively calls LAPACK, runs on Eigen here; nothing
-          else is changed, and on my test designs the browser builds reproduce the native meshes to 1e-11. The two share
+          their C++ with Emscripten. Their dense linear algebra, which natively calls LAPACK, runs on Eigen here, and the
+          builds can write a trace of each round's candidates for the illustrated page; nothing else is changed, and on my
+          test designs the browser builds reproduce the native meshes to 1e-11. The two share
           the gate and the pool model and differ in geometry: right triangles cut only through their hypotenuse, with a
           flat fit in each; rectangles cut across either axis, with a bilinear fit in each. Half the sites are held out:
           the mesh never sees them, and the deviance card scores the fit on them. The coins are drawn on this page from

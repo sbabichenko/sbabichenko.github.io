@@ -1,0 +1,128 @@
+{#- /gate/how: the decision-mesh gate, one step per screen beside a drawing (static/mesh/gate-how.js). Every drawing
+    is read off one run of the estimator in the page's worker (static/mesh/fit-worker.js with its candidate trace),
+    on coin flips drawn here from the odds picked above the story. The one-dimensional sketch in the fifth step is
+    the only drawing not taken from the run, and it says so. -#}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='mesh/gate-how.css') }}" />
+    {% include "partials/header.html" %}
+    <div class="progress" id="progress" aria-hidden="true"></div>
+
+    <main class="opening idea gatehow" id="gatehow" data-engine="tri" data-worker="{{ get_url(path='mesh/fit-worker.js') }}">
+      <section class="ideahead">
+        <p class="eyebrow"><a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &middot; <a href="{{ get_url(path='gate/') }}">The gate</a> &middot; illustrated</p>
+        <h1>How the gate decides</h1>
+        <p class="lede">The decision mesh only cuts where the data justify a cut. This is how it decides. Every drawing
+          below comes from one run of the estimator, in your browser, on coin flips drawn on this page.</p>
+        <div class="howbar">
+          <label>Estimator <select id="engine"><option value="tri" selected>Right triangles</option><option value="rect">Rectangles</option></select></label>
+          <label>The odds <select id="truth"><option value="peaks" selected>Three peaks</option><option value="hills">Two hills</option><option value="ring">A ring</option></select></label>
+          <button id="again" type="button">Flip again</button>
+          <span class="howstatus" id="howstatus">Fitting&hellip;</span>
+        </div>
+      </section>
+
+      <section class="story" id="story">
+        <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
+        <div class="steps">
+          <div class="step" data-scene="sites">
+            <p>Somewhere on this square the odds of a coin change. Six thousand sites each flip their own coin about twenty
+              times, and each dot is one site&rsquo;s share of heads.</p>
+            <p class="small">Every site&rsquo;s coin also carries a nudge of its own, so neighbours disagree by more than
+              the flips explain. Half the sites are held out: the estimator never sees them, and they score the fit at the end.</p>
+          </div>
+          <div class="step" data-scene="coarse">
+            <p data-engine="tri">The fit starts from a coarse mesh of right triangles with two things free: a level and a
+              tilt. A triangle can only split through the midpoint of its longest edge, and a split that would leave a
+              vertex hanging on a neighbour&rsquo;s edge splits the neighbour too.</p>
+            <p data-engine="rect">The fit starts from an 8 &times; 8 grid of rectangles with the corners and the two
+              midlines free. A rectangle can be cut through either midline, so every cell offers both directions and the
+              gate chooses. A vertex left hanging on a longer edge takes its height from that edge, and the surface stays continuous.</p>
+            <p class="small">Every segment drawn here has a candidate vertex at its middle.</p>
+          </div>
+          <div class="step" data-scene="surplus">
+            <p>A vertex that isn&rsquo;t free sits exactly at the average of its two parents, the ends of the segment it
+              splits. A free vertex may depart from that average by its <em>surplus</em>.</p>
+            <p class="small">Admitting a candidate means letting its surplus be something other than zero. A prior keeps
+              each surplus near zero, more tightly the deeper the vertex: coarse corrections may be large, fine ones must be
+              small unless the data insist.</p>
+          </div>
+          <div class="step" data-scene="score">
+            <p>A round offers every candidate at once and scores each against the current fit: would a surplus here
+              help? The score adds up the residuals of the sites under the candidate&rsquo;s tent.</p>
+            <p class="small">Blue: the data want the surface higher there. Orange: lower. Bigger dots, stronger scores.
+              Round 0 scored <span data-v="M0">&hellip;</span> candidates. Over the whole run, <span data-v="unscoreable">some</span>
+              more had too little data under them to be scored at all.</p>
+          </div>
+          <div class="step" data-scene="corrections">
+            <p>A raw score flatters. Three corrections make it honest. Each site&rsquo;s residual is <em>centred</em>:
+              shrinkage and the coarseness of counts give it a nonzero mean even where the surface is right.</p>
+            <p class="small">The part of the tent that the existing coefficients could absorb is taken out, a first-order
+              refit, so a candidate gets no credit for a slope its parents could make. The bias the prior&rsquo;s shrinkage
+              induces comes out too. What is left, divided by its standard deviation, is the candidate&rsquo;s <i>z</i>.</p>
+          </div>
+          <div class="step" data-scene="family">
+            <p>One <i>z</i> means little alone, so the gate reads the whole round at once. If no candidate mattered, the
+              scores would pile up in one bell curve: the null.</p>
+            <p class="small">Lindsey&rsquo;s method fits the density of the scores and reads the null off its middle, so a
+              round that is shifted or spread out as a whole is judged against itself, not the textbook bell. Here the null
+              is centred at <span data-v="nullMean">&hellip;</span> with spread <span data-v="nullSd">&hellip;</span> (the
+              textbook: 0 and 1), and it puts <span data-v="pi0">&hellip;</span> of the candidates down as noise.<span data-v="capnote"></span></p>
+          </div>
+          <div class="step" data-scene="lfdr">
+            <p>The null gives each candidate a local false discovery rate: how likely it is to be noise, given its score.
+              Best first, the gate takes the longest run whose average stays at or below 10%.</p>
+            <p class="small">In round 0 that run is <span data-v="prefix0">&hellip;</span> long. A textbook cutoff,
+              |<i>z</i>| &gt; 1.96, would have taken <span data-v="naive0">&hellip;</span>.</p>
+          </div>
+          <div class="step" data-scene="admit">
+            <p>Admission is careful. The selected candidates go in one at a time, best first, each re-profiled against a
+              surface the earlier admissions may already have moved, and each admitted only if it still improves the fit.</p>
+            <p class="small"><span data-v="admit0">&hellip;</span></p>
+          </div>
+          <div class="step" data-scene="rounds">
+            <p>Then the next round, against the new fit. As the signal is used up, each round&rsquo;s scores look more like
+              noise, and its null closes in on the textbook one.</p>
+            <p class="small">Three rounds in a row that admit nothing and the gate stops. This run took
+              <span data-v="nrounds">&hellip;</span> rounds.</p>
+          </div>
+          <div class="step" data-scene="variance">
+            <p>Two variances are refitted between rounds. The pool variance is the coins&rsquo; spread around the surface:
+              as the mesh explains more, it falls toward the spread the coins really have.</p>
+            <p class="small">The depth variance sets how far a surplus at each depth may stray. It is estimated by EM from
+              the admitted surpluses: their squares plus their posterior variances, averaged by depth. Adding the posterior
+              variance back is what keeps a depth from freezing at its floor.</p>
+          </div>
+          <div class="step" data-scene="done">
+            <p>What is left is a surface that is flat wherever the flips were silent, and cut finely only where they
+              insisted.</p>
+            <p class="small">On the held-out half: <span data-v="heldout">&hellip;</span>. Change the odds or the
+              estimator above and the whole story redraws from a new run.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="ideafoot">
+        <p>The same estimators, with every setting in reach, run on the <a href="{{ get_url(path='gate/') }}">gate page</a>.</p>
+        <div class="cta">
+          <a class="primary" href="{{ get_url(path='gate/') }}">Fit your own drawing</a>
+          <a href="{{ get_url(path='mesh/') }}">Watch meshes grow</a>
+        </div>
+        <p class="note">The run: 6,000 sites on the unit square, each flipping a coin about 20 times (between 10 and 30),
+          with odds from the picture chosen above plus a nudge per site (standard deviation 0.25 on the log-odds), fitted by
+          <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a> or
+          <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a> compiled to
+          WebAssembly. The scores, nulls, false discovery rates, admissions and variances drawn here are the
+          engine&rsquo;s own, from a trace of each round&rsquo;s candidates; the trace is the builds&rsquo; one addition,
+          and it changes nothing the fit computes. The fifth drawing is a one-dimensional sketch of the corrections, not
+          the run.</p>
+      </section>
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='mesh/gate-how.js') }}"></script>
+  </body>
+</html>

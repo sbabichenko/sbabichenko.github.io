@@ -1,0 +1,27 @@
+/* /gate/how: the illustrated gate. Layout and inks come from dissertation/opening.css; this adds the controls,
+   the engine-specific paragraphs and the colours the run is drawn in. */
+.gatehow[data-engine="tri"] [data-engine="rect"],
+.gatehow[data-engine="rect"] [data-engine="tri"] { display: none; }
+.gatehow .howbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: 2rem 0 0; font: 0.9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); }
+.gatehow .howbar label { display: inline-flex; align-items: center; gap: 8px; }
+.gatehow .howbar select, .gatehow .howbar button { font: inherit; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px; padding: 0.35rem 0.8rem; }
+.gatehow .howbar button { cursor: pointer; }
+.gatehow .howbar button:hover { border-color: var(--accent); }
+.gatehow .howstatus { font: 0.78rem ui-monospace, Menlo, monospace; letter-spacing: 0.06em; color: var(--ink-3); }
+.gatehow .howstatus.busy::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 7px; animation: howpulse 1s infinite ease-in-out; }
+@keyframes howpulse { 50% { opacity: 0.2; } }
+.gatehow [data-v] { font-variant-numeric: tabular-nums; }
+.gatehow .step em { font-style: italic; }
+#stage .pos { fill: var(--accent); }
+#stage .neg { fill: var(--warm); }
+#stage .posS { stroke: var(--accent); }
+#stage .negS { stroke: var(--warm); }
+#stage .ink { fill: currentColor; }
+#stage .sheet { fill: var(--sheet); }
+#stage .frame { fill: none; stroke: var(--rule); stroke-width: 1; }
+#stage .meshline { fill: none; stroke: currentColor; stroke-width: 0.6; stroke-opacity: 0.3; }
+#stage .shade { fill: var(--accent); fill-opacity: 0.13; }
+#stage .shadew { fill: var(--warm); fill-opacity: 0.13; }
+#stage text.small { font-size: 12px; }
+#stage text.tiny { font: 10px ui-monospace, Menlo, monospace; fill: var(--ink-3); }
+#stage .stagebusy { font: 12px ui-monospace, Menlo, monospace; letter-spacing: 0.08em; fill: var(--ink-3); }

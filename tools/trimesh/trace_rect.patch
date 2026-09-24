@@ -1,0 +1,41 @@
+diff -ru a/fit/dumps.cpp b/fit/dumps.cpp
+--- a/fit/dumps.cpp	2026-09-24 12:59:10.022193119 +0000
++++ b/fit/dumps.cpp	2026-09-24 12:59:10.040575209 +0000
+@@ -69,13 +69,13 @@
+     if (!output.prefix) return;
+     auto file = open_output(*output.prefix + "_candidates.csv");
+     // z is the gate's coordinate; a three-dimensional mesh's third position is x3
+-    file << (dim == 3 ? "round,x,y,x3," : "round,x,y,") << "vertex,axis,depth,parent0,parent1,z,sd,beta,gain,selected,admitted\n";
++    file << (dim == 3 ? "round,x,y,x3," : "round,x,y,") << "vertex,axis,depth,parent0,parent1,z,sd,beta,gain,selected,admitted,lfdr\n";
+     for (const CandidateRow& r : rows) {
+         file << r.round << ',' << r.x << ',' << r.y << ',';
+         if (dim == 3) file << r.x3 << ',';
+         file << r.vertex << ',' << r.axis << ',' << r.depth << ','
+              << r.parent0 << ',' << r.parent1 << ',' << r.z << ',' << r.sd << ',' << r.beta << ',' << r.gain << ','
+-             << r.selected << ',' << r.admitted << '\n';
++             << r.selected << ',' << r.admitted << ',' << r.lfdr << '\n';
+     }
+ }
+ 
+diff -ru a/fit/dumps.h b/fit/dumps.h
+--- a/fit/dumps.h	2026-09-24 12:59:10.022212928 +0000
++++ b/fit/dumps.h	2026-09-24 12:59:10.040366787 +0000
+@@ -38,6 +38,7 @@
+     int vertex = -1, axis = -1, depth = 0, parent0 = -1, parent1 = -1;
+     double z = 0.0, sd = 0.0, beta = 0.0, gain = 0.0;
+     int selected = 0, admitted = 0;
++    double lfdr = 1.0;   // [web trace] the round's local false discovery rate for this candidate
+ };
+ void write_candidates(const OutputConfig& output, const std::vector<CandidateRow>& rows, int dim = 2);
+ 
+diff -ru a/fit/refine.cpp b/fit/refine.cpp
+--- a/fit/refine.cpp	2026-09-24 12:59:10.022287134 +0000
++++ b/fit/refine.cpp	2026-09-24 12:59:10.040787780 +0000
+@@ -263,6 +263,7 @@
+                 row.z = scored.z[q]; row.sd = scored.z_sd[q];
+                 row.beta = scored.exact[q].optimum_units - scored.exact[q].null_units; row.gain = scored.exact[q].gain_nats;
+                 row.selected = selected[q]; row.admitted = admitted_flags[q];
++                row.lfdr = q < lf.size() ? lf[q] : 1.0;
+                 records.push_back(row);
+             }
+         }

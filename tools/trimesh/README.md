@@ -2,10 +2,16 @@
 
 `build_wasm.sh` compiles either engine's `core/` to one self-contained script (the wasm is inlined):
 
-    EIGEN_DIR=/path/holding/Eigen tools/trimesh/build_wasm.sh ../triangular-decision-mesh/core static/mesh trimesh
-    EIGEN_DIR=/path/holding/Eigen tools/trimesh/build_wasm.sh ../rectangular-decision-mesh/core static/mesh rectmesh
+    EIGEN_DIR=/path/holding/Eigen tools/trimesh/build_wasm.sh ../triangular-decision-mesh/core static/mesh trimesh $PWD/tools/trimesh/trace.patch
+    EIGEN_DIR=/path/holding/Eigen tools/trimesh/build_wasm.sh ../rectangular-decision-mesh/core static/mesh rectmesh $PWD/tools/trimesh/trace_rect.patch
 
-Needs Emscripten (3.1 works) and Eigen 3.4. The engines' sources are used unchanged; what is added:
+Needs Emscripten (3.1 works) and Eigen 3.4. The engines' sources are used unchanged apart from the trace
+patches, which only write diagnostics; what is added:
+
+- `trace.patch` (triangular): with `DMESH_TRACE` set, each gate round's scored candidates (position, depth,
+  z, its scale, displacement, lfdr, selected) go to a CSV. `trace_rect.patch` (rectangular): an `lfdr`
+  column on the `run_candidates.csv` the engine already writes. `/gate/how/` draws from these; the fit
+  itself never reads them, and the meshes are byte-identical with and without the patches.
 
 - `numeric_portable.cpp`: the functions of `estimator/numeric.cpp` on Eigen instead of LAPACKE/OpenBLAS
   (the rectangular engine's `transpose_factor` / `cho_solve_transposed` included).
