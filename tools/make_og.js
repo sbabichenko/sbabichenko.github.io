@@ -11,7 +11,7 @@ const OUT = path.join(__dirname, "..", "static", "images");
 
 const CARDS = [
   { out: "og.png", art: "mesh", surface: "hills", seed: 20260924,
-    eyebrow: "Statistics &amp; Applied Probability &middot; UC Santa Barbara",
+    eyebrow: "Quantitative research &middot; PhD, UC Santa Barbara",
     title: "Samuel Babichenko",
     sub: "Games played through noise, and regressions that decide where to look." },
   { out: "og-noisestate.png", art: "image", src: "/images/card-noisestate-light.webp",

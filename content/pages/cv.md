@@ -36,6 +36,8 @@ Models markets where traders choose how much to invest in private information, t
 
 ## Experience
 
+**Wells Fargo**, Charlotte, NC &mdash; *Quantitative Researcher* &mdash; Jul 2026 &ndash; present
+
 **Wells Fargo**, Charlotte, NC &mdash; *Quantitative Researcher Intern, Mortgage Model Development* &mdash; Jun &ndash; Aug 2025
 
 - Completed assigned mortgage pool segmentation project in two days; independently built an improved tree-based alternative with diagnostic tools in one week. Work led the buy-side trading desk to pull me onto a harder open-ended problem.
