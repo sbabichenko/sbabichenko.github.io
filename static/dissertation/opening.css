@@ -170,3 +170,5 @@
 }
 .idea ~ .progress, .progress { position: fixed; top: 0; left: 0; height: 2px; width: 0; background: #1f3fd0; z-index: 60; }
 .dark .progress { background: #8fb0ff; }
+.idea .solvestate { display: block; margin-top: 0.8rem; font: 0.82rem ui-monospace, Menlo, monospace; color: var(--ink-3); }
+.idea .solvestate.ok { color: var(--accent); }
