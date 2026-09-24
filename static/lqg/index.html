@@ -102,6 +102,8 @@ table.diag th { color: var(--muted); font-weight: 600; }
 table.diag td.mono { white-space: nowrap; }
 .tablewrap { overflow-x: auto; }
 details summary { cursor: pointer; color: var(--muted); }
+details.howto { margin: -6px 0 16px; max-width: 820px; }
+details.howto p { font-size: 0.9rem; color: var(--muted); margin: 8px 0 0; }
 footer { color: var(--faint); font-size: 0.82rem; margin-top: 28px; }
 </style>
 </head>
@@ -114,6 +116,17 @@ footer { color: var(--faint); font-size: 0.82rem; margin-top: 28px; }
     <em>Noise-State Calculus for Dynamic Games with Strategic Information</em>, Babichenko 2026) compiled to WebAssembly.
     Nothing is precomputed. Small games solve in well under a second; larger grids, delays and many agents can take
     from several seconds to a few minutes, and the status bar shows how long the current solve has been running.</p>
+
+  <details class="howto">
+    <summary>How the solver works, in four sentences</summary>
+    <p>Every quantity in these games is written as its response to the shocks that have hit so far:
+      X(t) = &Sigma;<sub>k</sub> &int; K<sub>k</sub>(t, s) dW<sup>k</sup>(s), plus a deterministic mean.
+      A player's strategy maps the signals it has seen to an action, so it is a kernel of the same kind, and its best
+      response to the others' kernels is the solution of one linear first-order condition. The solver iterates best
+      responses (with Anderson acceleration) until the kernels stop moving, on piecewise Chebyshev nodes in shock age,
+      or on a triangle of dates and shock times for a finite horizon. The information wedge in the plots is the part of
+      a player's first-order condition that exists only because the other players read its actions in their signals.</p>
+  </details>
 
   <div class="tabs" role="tablist" id="tabs"></div>
 
