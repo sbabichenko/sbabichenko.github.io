@@ -45,3 +45,16 @@ p a:hover, li a:hover, .lede a:hover, figcaption a:hover {
   background: radial-gradient(circle at 35% 30%, #fbe7a6, #d9a93c 70%, #b98a22); box-shadow: inset 0 0 0 1px rgba(120, 85, 10, 0.4); }
 .mini-coin.spin { animation: mini-toss 0.7s cubic-bezier(.2, .7, .3, 1); }
 @keyframes mini-toss { 0% { transform: translateY(0) rotateY(0); } 45% { transform: translateY(-9px) rotateY(540deg); } 100% { transform: translateY(0) rotateY(1080deg); } }
+
+/* idle doodles */
+.whimsy-doodle { position: absolute; width: 90px; height: 90px; pointer-events: none; z-index: 1; color: var(--ink-3, #999); opacity: 0.55; }
+.whimsy-doodle path { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 600; stroke-dashoffset: 600; animation: doodle-in 4s ease-out forwards; }
+.whimsy-doodle path + path { animation-delay: 1.2s; } .whimsy-doodle path + path + path { animation-delay: 2.2s; }
+@keyframes doodle-in { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .whimsy-doodle path { animation: none; stroke-dashoffset: 0; } }
+
+/* on paper */
+@media print {
+  .whimsy-coin, .whimsy-doodle, .progress { display: none !important; }
+  .site-foot::after { content: "Printed from sbabichenko.com, where the drawings move."; display: block; width: 100%; margin-top: 0.4rem; font-style: italic; }
+}

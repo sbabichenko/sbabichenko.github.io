@@ -1,7 +1,9 @@
 // Small things, on every page:
 // - the theme toggle spreads the new theme from the button like ink, where the browser can (View Transitions);
 // - type "flip" anywhere (outside a form field) and a coin is tossed in the corner, with this visit's running count;
-// - type "noise" and every heading on the page takes a short random walk, then settles back.
+// - type "noise" and every heading on the page takes a short random walk, then settles back;
+// - leave the page alone for a while and something gets doodled in an empty margin (three at most);
+// - a hello in the console, for anyone who opens it.
 // The colophon lists these, along with the ones on other pages.
 (function () {
   "use strict";
@@ -83,4 +85,52 @@
       if (s < 1) requestAnimationFrame(step); else walks.forEach((w) => { w.h.style.transform = w.prev; });
     })(t0);
   }
+
+  // ---- idle doodles in an empty margin
+  const NS = "http://www.w3.org/2000/svg";
+  let idle = 0, doodles = 0;
+  const poke = () => { clearTimeout(idle); if (doodles < 3) idle = setTimeout(doodle, 50000); };
+  ["pointermove", "keydown", "scroll", "touchstart"].forEach((ev) => window.addEventListener(ev, poke, { passive: true }));
+  poke();
+  function blank(x, y) {   // nothing but page under a 90 × 90 square at (x, y), in viewport coordinates
+    for (let i = 0; i <= 2; ++i) for (let j = 0; j <= 2; ++j) {
+      const e = document.elementFromPoint(x + i * 45, y + j * 45);
+      if (!e || !/^(HTML|BODY|MAIN|SECTION|DIV)$/.test(e.tagName) || (e.textContent || "").trim().length && e.children.length === 0) return false;
+      if (e.closest("a, button, canvas, svg, img, p, h1, h2, h3, li, pre, table, figure, input, select, textarea")) return false;
+    }
+    return true;
+  }
+  function doodle() {
+    if (document.hidden || innerWidth < 1100) return;
+    let spot = null;
+    for (let k = 0; k < 40 && !spot; ++k) {
+      const x = Math.random() < 0.5 ? 10 + Math.random() * 90 : innerWidth - 100 - Math.random() * 90, y = 80 + Math.random() * (innerHeight - 200);
+      if (blank(x, y)) spot = [x, y];
+    }
+    if (!spot) { poke(); return; }
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 90 90"); svg.setAttribute("class", "whimsy-doodle"); svg.setAttribute("aria-hidden", "true");
+    Object.assign(svg.style, { left: spot[0] + scrollX + "px", top: spot[1] + scrollY + "px" });
+    const path = (d, w = 1.2) => { const p = document.createElementNS(NS, "path"); p.setAttribute("d", d); p.setAttribute("stroke-width", w); svg.appendChild(p); return p; };
+    const kind = doodles % 4;
+    if (kind === 0) {        // a random walk
+      let x = 45, y = 45, d = `M${x},${y}`;
+      for (let i = 0; i < 70; ++i) { x = Math.max(5, Math.min(85, x + (Math.random() - 0.5) * 16)); y = Math.max(5, Math.min(85, y + (Math.random() - 0.5) * 16)); d += ` L${x.toFixed(1)},${y.toFixed(1)}`; }
+      path(d);
+    } else if (kind === 1) { // a bell curve, and a tail shaded by hand
+      let d = "M5,75"; for (let x = 5; x <= 85; x += 2) d += ` L${x},${(75 - 55 * Math.exp(-((x - 45) ** 2) / 250)).toFixed(1)}`;
+      path("M5,75 L85,75", 0.8); path(d);
+      let h = ""; for (let x = 66; x <= 84; x += 3) h += `M${x},75 L${x},${(75 - 55 * Math.exp(-((x - 45) ** 2) / 250)).toFixed(1)} `; path(h, 0.7);
+    } else if (kind === 2) { // a triangle, bisected a few times
+      path("M10,80 L80,80 L10,10 Z M45,45 L10,80 M45,45 L45,80 M27.5,62.5 L45,80 M27.5,27.5 L10,45 M27.5,62.5 L10,45");
+    } else {                 // a coin, mid-air
+      path("M45,20 m-14,0 a14,14 0 1,0 28,0 a14,14 0 1,0 -28,0"); path("M40,15 L40,25 M50,15 L50,25 M40,20 L50,20", 1.4);
+      path("M36,42 Q45,47 54,42 M38,50 Q45,54 52,50", 0.8); path("M20,82 L70,82", 0.8);
+    }
+    document.body.appendChild(svg);
+    ++doodles; poke();
+  }
+
+  // ---- hello, console
+  try { console.log("%cHello. Everything on this site is computed in your browser.\nThe game solver is also a Python package: pip install noisestate", "font: 13px Georgia, serif; color: #1f3fd0"); } catch (e) {}
 })();

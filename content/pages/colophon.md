@@ -19,3 +19,7 @@ Unless otherwise stated, all my original work on this website is licensed under 
 - Read the CV slowly, and look in the left margin. The walk is different every visit.
 - On the gate page, pick "Your drawing" and paint on the odds. Shift lowers them.
 - Every drawing in the dissertation's stories is computed while you read, not stored.
+- Finish a chapter of the dissertation.
+- Leave a page alone for a minute, on a wide screen.
+- Print something.
+- Open your browser's console.
