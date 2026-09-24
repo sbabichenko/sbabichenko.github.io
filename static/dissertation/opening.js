@@ -378,7 +378,7 @@
     let best = null, bestD = Infinity;
     for (const s of steps) {
       const r = s.getBoundingClientRect();
-      const mid = r.top + r.height / 2, d = Math.abs(mid - vh * 0.55);
+      const mid = r.top + r.height / 2, d = Math.abs(mid - (window.readLine ? window.readLine() : vh * 0.55));
       if (d < bestD) { bestD = d; best = s; }
     }
     if (!best) return;

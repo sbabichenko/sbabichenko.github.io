@@ -23,3 +23,4 @@ Unless otherwise stated, all my original work on this website is licensed under 
 - Leave a page alone for a minute, on a wide screen.
 - Print something.
 - Open your browser's console.
+- On a folding phone, unfold it. Or half-open it like a book on one of the story pages.

@@ -485,7 +485,7 @@
   function measure() {
     const vh = window.innerHeight;
     let best = null, bestD = Infinity;
-    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - vh * 0.55); if (d < bestD) { bestD = d; best = s; } }
+    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - (window.readLine ? window.readLine() : vh * 0.55)); if (d < bestD) { bestD = d; best = s; } }
     if (bar) { const h = document.documentElement.scrollHeight - vh; bar.style.width = (h > 0 ? (100 * window.scrollY) / h : 0) + "%"; }
     if (!best) return;
     const r = best.getBoundingClientRect();

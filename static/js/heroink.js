@@ -183,6 +183,16 @@
     start(true);
   });
 
+  // unfolding the phone draws a ridge down the middle of the field, where the fold was, for the mesh to find
+  if (!nothing) window.addEventListener("sitefold", (ev) => {
+    if (ev.detail.kind !== "unfold") return;
+    const G = geometry(), r = cv.getBoundingClientRect(), dpr = cv.width / Math.max(1, r.width), cx = G.ux((innerWidth / 2 - r.left) * dpr);
+    if (!(cx > LO && cx < HI)) return;
+    pokes.length = 0;
+    for (const y of [-2.4, -0.8, 0.8, 2.4]) pokes.push({ x: cx, y, h: 3 });
+    start(true);
+  });
+
   let acc = 0, settled = 0;
   function frame(now) {
     // about thirty frames a second, only while the figure is on screen and something is moving

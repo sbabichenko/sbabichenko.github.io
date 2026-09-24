@@ -131,6 +131,9 @@
     ++doodles; poke();
   }
 
+  // folding or unfolding moves the margins, so the doodles go
+  window.addEventListener("sitefold", () => { document.querySelectorAll(".whimsy-doodle").forEach((d) => d.remove()); doodles = 0; poke(); });
+
   // ---- hello, console
   try { console.log("%cHello. Everything on this site is computed in your browser.\nThe game solver is also a Python package: pip install noisestate", "font: 13px Georgia, serif; color: #1f3fd0"); } catch (e) {}
 })();

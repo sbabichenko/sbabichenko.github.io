@@ -109,7 +109,7 @@
 .home .item .foot { display: flex; align-items: center; gap: 8px 18px; flex-wrap: wrap; margin-top: 0.8rem; }
 .home .item .tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .home .item .tags span { font-size: 0.72rem; color: var(--ink-3); border: 1px solid var(--rule); border-radius: 999px; padding: 1px 8px; }
-.home .item .out { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.home .item .out { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; margin-left: auto; }
 .home .item .out a { font-size: 0.85rem; color: var(--accent); white-space: nowrap; border-bottom: 1px solid transparent; }
 .home .item .out a:hover { border-bottom-color: currentColor; }
 .home .item .out a.strong { font-weight: 600; }
