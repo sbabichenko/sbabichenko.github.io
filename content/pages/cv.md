@@ -28,9 +28,6 @@ Quantifies how information asymmetry distorts prices and behavior: not just adde
 
 C++ solver computes equilibria in ~10ms. Compiled to WebAssembly for a browser-side interactive explorer at ~60ms. [Live demo: sbabichenko.com/noisestate](/noisestate/). Python package: [`pip install noisestate`](https://pypi.org/project/noisestate/).
 
-**Asymmetric Competition Among Endogenously Informed Traders** &mdash; *In preparation*
-
-Models markets where traders choose how much to invest in private information, then compete through order flow that reveals their knowledge to others. Shows that endogenous information acquisition systematically distorts prices and amplifies volatility, quantitatively resolving the Grossman&ndash;Stiglitz paradox.
 
 ---
 
@@ -42,7 +39,6 @@ Models markets where traders choose how much to invest in private information, t
 
 - Completed assigned mortgage pool segmentation project in two days; independently built an improved tree-based alternative with diagnostic tools in one week. Work led the buy-side trading desk to pull me onto a harder open-ended problem.
 - With no prior MBS background, identified a structural flaw in the team's prepayment models: normal approximations miss the binomial structure of discrete loan-level prepayment. Built a binomial model correcting for effective loan count, partitioned pools to isolate systemic errors, and found them highly persistent (R&sup2; &asymp; 0.8 at 5-month horizon), converting model misspecification into a tradeable signal for a $200B portfolio.
-- Delivered a model upgrade projected to generate $100M in additional annual profit. Bridged model development and validation teams by synthesizing ideas from cross-team talks that neither group had connected.
 
 ---
 
@@ -72,4 +68,4 @@ Continuous surface model on an adaptive right-triangle bisection mesh with hiera
 <a class="cv-download" href="/Resume_Samuel_Babichenko.docx" download>Download resume</a>
 </div>
 
-Last updated: **March 2026**
+Last updated: **September 2026**
