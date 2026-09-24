@@ -34,7 +34,7 @@
       </section>
 
       <section>
-        <h2>Run it here <span class="note">both compute in your browser, nothing precomputed</span></h2>
+        <h2>Run it here <span class="note">all computed in your browser, nothing precomputed</span></h2>
         <div class="demos">
           <a class="demo" href="{{ get_url(path='lqg/') }}">
             <div class="shot">
@@ -50,18 +50,26 @@
               <span class="go">Open the explorer <span class="arrow">&rarr;</span></span>
             </div>
           </a>
-          <a class="demo" href="{{ get_url(path='mesh/') }}">
+          <a class="demo" href="{{ get_url(path='gate/') }}">
             <div class="shot">
-              <img class="img-light" src="{{ get_url(path='images/card-mesh-light.webp') }}" alt="" width="480" height="240" />
-              <img class="img-dark" src="{{ get_url(path='images/card-mesh-dark.webp') }}" alt="" width="480" height="240" />
+              <img class="img-light" src="{{ get_url(path='images/card-gate-light.webp') }}" alt="" width="480" height="240" />
+              <img class="img-dark" src="{{ get_url(path='images/card-gate-dark.webp') }}" alt="" width="480" height="240" />
             </div>
             <div class="body">
-              <h3>A regression that decides where to look</h3>
-              <p>A mesh fits a noisy surface and keeps cutting itself wherever the data says a cut is worth
-                it. Two geometries race, triangles against rectangles, with a regression tree alongside and
-                the same number of free parameters each.</p>
-              <ul><li>six surfaces</li><li>two geometries</li><li>error curves</li></ul>
-              <span class="go">Watch it grow <span class="arrow">&rarr;</span></span>
+              <h3>A mesh that knows when to stop</h3>
+              <p>Thousands of coins, each flipped a few times, and odds that change somewhere on the square.
+                The estimator cuts a mesh only where a false-discovery gate says the flips justify it, then
+                stops on its own. Draw the odds yourself and see what it can find.</p>
+              <ul><li>the real estimator, in WebAssembly</li><li>the gate, round by round</li><li>draw your own</li></ul>
+              <span class="go">Fit some coins <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+          <a class="demo slim wide" href="{{ get_url(path='mesh/') }}">
+            <div class="body">
+              <h3>Triangles, rectangles and a tree</h3>
+              <p>The geometry without the statistics: three fits grown greedily on the same noisy surface, one cut
+                at a time, with the same number of free parameters each.</p>
+              <span class="go">Watch them grow <span class="arrow">&rarr;</span></span>
             </div>
           </a>
         </div>

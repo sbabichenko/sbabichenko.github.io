@@ -22,6 +22,10 @@ const CARDS = [
     eyebrow: "sbabichenko.com/mesh",
     title: "Decision Mesh",
     sub: "A regression that keeps cutting itself where the data says a cut is worth it." },
+  { out: "og-gate.png", art: "image", src: "/images/card-gate-light.webp",
+    eyebrow: "sbabichenko.com/gate",
+    title: "A mesh that knows when to stop",
+    sub: "Coin flips fitted in your browser by an estimator that cuts only where a false-discovery gate allows." },
 ];
 
 const page = (c) => `<!doctype html><html><head><meta charset="utf-8">
@@ -77,7 +81,9 @@ document.title='ready';
 
 (async () => {
   const b = await chromium.launch();
+  const only = process.argv[3];
   for (const c of CARDS) {
+    if (only && c.out !== only) continue;
     const file = "/tmp/og_card.html";
     fs.writeFileSync(file, page(c));
     const p = await b.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 2 });

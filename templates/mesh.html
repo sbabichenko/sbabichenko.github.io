@@ -103,8 +103,10 @@
           to 1e-12 over the first 400 steps. The rectangular one is written for this page: it is the geometry of
           <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a> (dyadic
           bisection, two parents per vertex, bilinear cells) grown by the same greedy rule as the triangles, so the two
-          panels differ only in their geometry. It is not that repository's estimator, which selects its cuts with an
-          empirical-null FDR gate. Data, cuts and pictures are all computed on this page.</p>
+          panels differ only in their geometry. Data, cuts and pictures are all computed on this page.</p>
+        <p>None of the three knows when to stop: they grow until the page runs out of budget. The estimator I actually
+          use chooses its cuts with an empirical-null false-discovery gate and stops by itself;
+          <a href="{{ get_url(path='gate/') }}">it runs here too</a>, compiled from its C++.</p>
         <p>Also on this site: the <a href="{{ get_url(path='lqg/') }}">noise-state game explorer</a>, which solves the games of my dissertation in your browser.</p>
       </div>
     </main>
