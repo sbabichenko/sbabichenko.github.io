@@ -1,5 +1,5 @@
 +++
-title = "Curriculum vitae"
+title = "Curriculum Vitae"
 path = "cv"
 +++
 
@@ -49,7 +49,7 @@ Solo-authored, submitted March 2026. The two-player core of the dissertation. Sp
 
 ---
 
-## Selected projects
+## Selected Projects
 
 **Decision Mesh** &middot; [sbabichenko.com/gate](/gate/) &middot; [github.com/sbabichenko/triangular-decision-mesh](https://github.com/sbabichenko/triangular-decision-mesh)\
 Mesh regression that fits continuous surfaces where trees fit steps. A right-triangle or rectangular mesh is refined only where a false-discovery gate says the data justify a cut, and stops on its own. Built for the discontinuities that tree models showed in the prepayment work.

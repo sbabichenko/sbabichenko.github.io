@@ -11,7 +11,7 @@
 
     <main class="explorer mesh gate" id="gate" data-worker="{{ get_url(path='mesh/fit-worker.js') }}">
       <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; <a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &nbsp;/&nbsp; The gate</div>
-      <h1>A mesh that knows when to stop</h1>
+      <h1>Gated Decision Mesh</h1>
       <p class="sub">The odds of a coin vary over this square. A few thousand sites each flip a coin a handful of
         times. The estimator refines a mesh of right triangles or rectangles only where a false-discovery gate finds
         support in the flips, and stops when no candidate passes.</p>
@@ -70,7 +70,7 @@
       <div id="results" class="stale">
         <section class="panel"><div class="cards" id="cards"></div></section>
         <section class="panel">
-          <h2>The gate, round by round</h2>
+          <h2>Round-by-Round Results</h2>
           <div class="tablewrap" id="rounds"></div>
           <p class="caption">Each round scores every candidate vertex (the midpoints of the mesh's edges) by how much
             it would improve the fit. If no candidate mattered, the scores would look like draws from one bell curve, the
@@ -80,7 +80,7 @@
             back to the textbook one. Each coin also has an effect of its own on the log-odds, and the coin variance is
             the estimator's estimate of their spread, fitted alongside the surface: as the mesh learns the odds, what it
             can't explain shrinks toward the spread the slider set.
-            <a href="{{ get_url(path='gate/how/') }}">How the gate decides</a> draws each of these steps from a live run.</p>
+            <a href="{{ get_url(path='gate/how/') }}">The False-Discovery Gate, Step by Step</a> draws each of these steps from a live run.</p>
         </section>
       </div>
 

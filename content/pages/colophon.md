@@ -1,5 +1,5 @@
 +++
-title = "Colophon & acknowledgements"
+title = "Colophon & Acknowledgements"
 path = "colophon"
 +++
 
