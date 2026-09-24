@@ -151,8 +151,9 @@ footer { color: var(--faint); font-size: 0.82rem; margin-top: 28px; }
     The solver is a C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a> 1.0.1 (MIT licence) with
     the same equations and algorithms: the stationary, spectral and cells engines, transitions with their past, band, buffer
     and march in T, and the refinement and stability checks. On a test grid of 42 solves its costs, kernels, loss paths and
-    first-order-condition terms agree with the Python package to 1e-10 or better. Plots by Plotly, YAML by js-yaml. This page replaces an earlier
-    explorer built on a pre-release solver. The page address keeps the game and its parameters, so a link reproduces a solve.
+    first-order-condition terms agree with the Python package to 1e-10 or better. Plots by Plotly, YAML by js-yaml. Where the browser allows it (the page reloads
+    once on a first visit to turn it on), the solver runs each agent's best response on its own thread; a solve after a
+    parameter change starts from the last equilibrium. This page replaces an earlier explorer built on a pre-release solver. The page address keeps the game and its parameters, so a link reproduces a solve.
   </footer>
 </main>
 
