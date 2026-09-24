@@ -25,6 +25,9 @@
       for (const t of targets) if (on.has(t) && (!best || t.getBoundingClientRect().top < best.getBoundingClientRect().top)) best = t;
       if (!best) return;
       for (const a of links) a.classList.toggle("on", a.dataset.sec === best.id);
+      // sections scrolled past get a pencil tick, and keep it
+      const at = links.findIndex((a) => a.dataset.sec === best.id);
+      links.forEach((a, i) => { if (i < at) a.classList.add("read"); });
     };
     const io = new IntersectionObserver((es) => { for (const e of es) (e.isIntersecting ? on.add(e.target) : on.delete(e.target)); mark(); },
       { rootMargin: "-80px 0px -55% 0px" });

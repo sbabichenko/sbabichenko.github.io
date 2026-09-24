@@ -1,0 +1,47 @@
+/* Small things on every page (static/js/whimsy.js): the ink for the theme toggle, the tossed coin, wavy
+   underlines on links in running text, a highlighter for selections, and a pencil riding the progress lines. */
+
+/* the new theme spreads from the toggle */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+.inking::view-transition-new(root) { animation: ink-spread 0.75s cubic-bezier(.3, .1, .2, 1) both; }
+@keyframes ink-spread { from { clip-path: circle(0 at var(--ink-x) var(--ink-y)); } to { clip-path: circle(150vmax at var(--ink-x) var(--ink-y)); } }
+
+/* selection: a highlighter */
+::selection { background: rgba(255, 214, 90, 0.55); color: inherit; }
+.dark ::selection { background: rgba(143, 176, 255, 0.35); }
+
+/* links in running text wobble underneath when pointed at */
+p a:hover, li a:hover, .lede a:hover, figcaption a:hover {
+  text-decoration-line: underline; text-decoration-style: wavy; text-decoration-thickness: 1px; text-underline-offset: 4px;
+}
+
+/* a pencil at the tip of the reading-progress line */
+.progress::after {
+  content: ""; position: absolute; right: -24px; top: -2px; width: 26px; height: 15px;
+  background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 20'%3E%3Cpath d='M2 10 L9 6 L9 14 Z' fill='%23e9c89a'/%3E%3Cpath d='M2 10 L4.6 8.5 L4.6 11.5 Z' fill='%23333'/%3E%3Crect x='9' y='6' width='19' height='8' fill='%23f2b134'/%3E%3Crect x='9' y='8.6' width='19' height='2.8' fill='%23e0a020'/%3E%3Crect x='28' y='6' width='3' height='8' fill='%23b8b8b8'/%3E%3Crect x='31' y='6' width='3' height='8' rx='1.4' fill='%23e98a9a'/%3E%3C/svg%3E");
+  transform: scaleX(-1); pointer-events: none;
+}
+
+/* the coin */
+.whimsy-coin { position: fixed; right: 22px; bottom: 22px; z-index: 90; display: flex; align-items: center; gap: 10px; perspective: 400px;
+  font: 0.82rem ui-sans-serif, system-ui, sans-serif; color: var(--ink, #222); transition: opacity 0.5s, transform 0.5s; }
+.whimsy-coin.gone { opacity: 0; transform: translateY(8px); pointer-events: none; }
+.whimsy-coin p { margin: 0; padding: 0.35rem 0.7rem; border-radius: 999px; background: var(--sheet, #fff); border: 1px solid var(--rule, #ddd); }
+.whimsy-coin .face { position: relative; width: 38px; height: 38px; transform-style: preserve-3d; animation: coin-toss 1s cubic-bezier(.2, .7, .3, 1) both; }
+.whimsy-coin .face span { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 50%; backface-visibility: hidden;
+  font: 700 0.95rem Newsreader, Georgia, serif; color: #6b4e10; background: radial-gradient(circle at 35% 30%, #fbe7a6, #d9a93c 70%, #b98a22);
+  box-shadow: inset 0 0 0 2px rgba(120, 85, 10, 0.35); }
+.whimsy-coin .face .t { transform: rotateY(180deg); }
+@keyframes coin-toss {
+  0% { transform: translateY(0) rotateY(0); }
+  45% { transform: translateY(-46px) rotateY(900deg); }
+  100% { transform: translateY(0) rotateY(calc(1800deg + var(--end, 0deg))); }
+}
+.dark .whimsy-coin { color: #e8e8e8; }
+.dark .whimsy-coin p { background: #2a2c30; border-color: #3a3d42; }
+
+/* the little coin on "Flip again" buttons */
+.mini-coin { display: inline-block; width: 0.8em; height: 0.8em; margin-right: 0.45em; vertical-align: -0.08em; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fbe7a6, #d9a93c 70%, #b98a22); box-shadow: inset 0 0 0 1px rgba(120, 85, 10, 0.4); }
+.mini-coin.spin { animation: mini-toss 0.7s cubic-bezier(.2, .7, .3, 1); }
+@keyframes mini-toss { 0% { transform: translateY(0) rotateY(0); } 45% { transform: translateY(-9px) rotateY(540deg); } 100% { transform: translateY(0) rotateY(1080deg); } }

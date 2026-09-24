@@ -207,3 +207,18 @@
 }
 .home .demos.stories .demo h3 { font-size: 1.3rem; }
 .home .demos.stories .demo.wide h3 { font-style: italic; }
+
+/* the writing index's desk, while the list is short */
+.home .desk { margin: 3rem auto 0; max-width: 360px; text-align: center; }
+.home .desk svg { width: 100%; height: auto; overflow: visible; }
+.home .desk .pg { fill: var(--sheet, #fff); stroke: var(--ink-3, #999); stroke-width: 1; }
+.home .desk .ln { fill: none; stroke: var(--ink-2, #555); stroke-width: 1; stroke-linecap: round; }
+.home .desk .ln.faint { stroke: var(--rule, #ddd); }
+.home .desk .wood { fill: #f2b134; } .home .desk .tip { fill: #e9c89a; } .home .desk .lead { fill: #333; }
+.home .desk .band { fill: #b8b8b8; } .home .desk .eraser { fill: #e98a9a; }
+.home .desk figcaption { margin-top: 0.6rem; font-size: 0.85rem; color: var(--ink-3); font-style: italic; }
+.home .desk svg g { transform-box: fill-box; }
+@media (prefers-reduced-motion: no-preference) {
+  .home .desk .ln:not(.faint) { stroke-dasharray: 400; stroke-dashoffset: 400; animation: desk-write 3s 0.4s ease-out forwards; }
+  @keyframes desk-write { to { stroke-dashoffset: 0; } }
+}

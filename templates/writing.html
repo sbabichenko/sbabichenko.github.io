@@ -24,6 +24,19 @@
         </a>
         {% endfor %}
       </div>
+      {%- if paginator.pages | length < 4 %}
+      <figure class="desk" aria-hidden="true">
+        <svg viewBox="0 0 360 150">
+          <path class="pg" d="M40,30 Q110,18 178,32 L178,132 Q110,120 40,132 Z" />
+          <path class="pg" d="M182,32 Q250,18 320,30 L320,132 Q250,120 182,132 Z" />
+          <path class="ln" d="M180,32 L180,132" />
+          <path class="ln" d="M56,52 Q80,49 104,52 T160,51 M56,66 Q90,62 120,66 T162,65 M56,80 Q75,77 96,80 T132,79 M56,94 Q88,91 118,94 T150,93 M56,108 Q70,105 88,108" />
+          <path class="ln faint" d="M198,52 L304,51 M198,66 L304,65 M198,80 L304,79 M198,94 L304,93 M198,108 L304,107" />
+          <g transform="translate(236 118) rotate(-28)"><rect x="0" y="-5" width="86" height="10" rx="1.5" class="wood" /><path d="M0,-5 L-16,0 L0,5 Z" class="tip" /><path d="M-11,-1.6 L-16,0 L-11,1.6 Z" class="lead" /><rect x="86" y="-5" width="7" height="10" class="band" /><rect x="93" y="-5" width="9" height="10" rx="3" class="eraser" /></g>
+        </svg>
+        <figcaption>{% if paginator.pages | length == 1 %}One piece so far. The next one is on the right-hand page.{% else %}More are on the right-hand page.{% endif %}</figcaption>
+      </figure>
+      {%- endif %}
       {% if paginator.number_pagers > 1 %}
       <nav class="pager">
         {% if paginator.previous %}<a href="{{ paginator.previous }}">&larr; Newer</a>{% endif %}
