@@ -213,3 +213,10 @@
 .pictures a:hover { border-color: var(--accent); }
 .pictures span { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
 .pictures b { font-family: Newsreader, Georgia, serif; font-weight: 500; font-size: 1.08rem; }
+
+/* a pencil tick beside the sections already read */
+.rail .secs a { position: relative; }
+.rail .secs a.read::after { content: ""; position: absolute; right: 0.15rem; top: 0.4rem; width: 0.7rem; height: 0.6rem; opacity: 0.7;
+  background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 12'%3E%3Cpath d='M1.5 6.5 Q3.5 8 5 10.5 Q8 4.5 12.8 1.2' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  animation: tick-in 0.4s ease-out both; }
+@keyframes tick-in { from { opacity: 0; transform: scale(0.4) rotate(-20deg); } to { opacity: 0.7; transform: none; } }

@@ -8,3 +8,8 @@
   <span class="tally" id="tally" aria-live="polite"></span>
 </footer>
 <script src="{{ get_url(path='js/tally.js') }}"></script>
+<link rel="stylesheet" href="{{ get_url(path='css/whimsy.css') }}" />
+<script src="{{ get_url(path='js/whimsy.js') }}"></script>
+{%- if current_path and current_path == "/cv/" %}
+<script src="{{ get_url(path='js/cvwalk.js') }}"></script>
+{%- endif %}

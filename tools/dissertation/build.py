@@ -226,6 +226,8 @@ def web_master(bib):
         if not f.suffix:
             f = f.with_suffix(".tex")
         t = f.read_text()
+        # a line break forced inside a heading ("Control stationarity\newline and ...") is a space on the web
+        t = re.sub(r"(\\(?:sub)*section\*?(?:\[[^\]]*\])?\{[^{}]*?)\\newline\s*", r"\1 ", t)
         if f.name == "dissertation_abstract.tex":        # a centred title block in print; a chapter here
             t = "\\chapter*{Abstract}\n" + t.split("\\end{singlespace}\\end{center}", 1)[1]
         if f.name in ("dissertation_copyright.tex", "dissertation_dedication.tex"):
@@ -524,8 +526,8 @@ def main():
         shutil.rmtree(frag)
     frag.mkdir(parents=True)
     if CONTENT.exists():
-        for f in CONTENT.glob("*.md"):
-            if f.name != "_index.md":
+        for f in CONTENT.glob("*.md"):         # only the pages this script wrote; the illustrated stories stay
+            if f.name != "_index.md" and 'template = "thesis.html"' in f.read_text():
                 f.unlink()
     CONTENT.mkdir(parents=True, exist_ok=True)
     manifest = []
