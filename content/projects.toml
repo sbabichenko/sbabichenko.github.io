@@ -26,7 +26,7 @@ desc = "A hierarchical mesh based decision tree that yields continuity with mini
 tags = ["personal", "data science"]
 image = "images/card-mesh"
 links = [
-    { name = "fit some coins", url = "/gate/", primary = true },
-    { name = "watch it grow", url = "/mesh/" },
+    { name = "the gated estimator", url = "/gate/", primary = true },
+    { name = "four meshes compared", url = "/mesh/" },
     { name = "github", url = "https://github.com/sbabichenko/Decision-Mesh" }
 ]

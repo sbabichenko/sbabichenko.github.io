@@ -1,4 +1,4 @@
-// The afterword, told: each paragraph beside a pencil drawing that builds as it scrolls past. An illusion whose
+// The afterword, illustrated: each paragraph beside a pencil drawing that builds as it scrolls past. An illusion whose
 // lines are the same length; lineages that branch and stabilize; an anchoring experiment; papers whose promises
 // stop at a wall; an orbit; a signal hidden in noise; the two simple questions.
 (function () {
