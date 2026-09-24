@@ -1,8 +1,9 @@
 +++
 title = "Game explorer"
-description = "Solve linear-quadratic-Gaussian games with private information in your browser: shock responses, information wedges, sample paths and regime changes, computed live by a C++ port of the noisestate solver."
+description = "The games of my dissertation, solved in your browser: linear-quadratic-Gaussian games with dispersed private information, where actions teach others what you know. Shock responses, information wedges, sample paths and regime changes, computed live."
 path = "lqg"
 template = "explorer.html"
+aliases = ["noisestate/"]
 [extra]
 math = false
 [extra.cover]

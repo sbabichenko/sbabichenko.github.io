@@ -11,27 +11,60 @@
     {% include "partials/header.html" %}
 
     <main class="explorer">
-      <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; Forecasting and manipulating the forecasts of others</div>
+      <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; Noise-state calculus for dynamic games with strategic information</div>
       <h1>Noise-state game explorer</h1>
-      <p class="sub">Linear-quadratic-Gaussian games in which each player sees the state only through a private noisy signal,
-        and must forecast what the others forecast. Pick a game, move a slider, and the equilibrium is solved again
-        in your browser by the solver of my dissertation.</p>
+      <p class="sub">Dynamic games with dispersed private information look hard, even when linearized, because each player
+        needs forecasts of others' forecasts, without end. The regress comes from a loop: actions move the state, the
+        state generates observations, observations update beliefs, and beliefs determine actions. My dissertation builds
+        a calculus that keeps the loop intact. Pick one of its games, move a slider, and the equilibrium is solved again
+        in your browser.</p>
       <ul class="facts">
         <li>computed live, nothing precomputed</li>
+        <li>games from Chapters 1, 3, 4, 5 and 6</li>
         <li>C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a>, compiled to WebAssembly</li>
         <li>most games solve in under a second</li>
         <li id="threadfact">loading the solver</li>
       </ul>
 
-      <details class="howto">
-        <summary>How the solver works, in four sentences</summary>
-        <p>Every quantity in these games is written as its response to the shocks that have hit so far:
-          X(t) = &Sigma;<sub>k</sub> &int; K<sub>k</sub>(t, s) dW<sup>k</sup>(s), plus a deterministic mean.
-          A player's strategy maps the signals it has seen to an action, so it is a kernel of the same kind, and its best
-          response to the others' kernels is the solution of one linear first-order condition. The solver iterates best
-          responses (with Anderson acceleration) until the kernels stop moving, on piecewise Chebyshev nodes in shock age,
-          or on a triangle of dates and shock times for a finite horizon. The information wedge in the plots is the part of
-          a player's first-order condition that exists only because the other players read its actions in their signals.</p>
+      <details class="howto idea">
+        <summary>The idea, in five paragraphs</summary>
+        <div class="ideagrid">
+          <figure><svg class="loopfig" viewBox="-4 0 350 190" role="img" aria-label="The loop: actions move the state, the state generates observations, observations update beliefs, beliefs determine actions; a direct channel runs from actions to observations">
+            <defs><marker id="lh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+            <g fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#lh)">
+              <path d="M62,82 L128,40"/><path d="M192,40 L256,82"/><path d="M256,112 L192,152"/><path d="M128,152 L62,112"/>
+            </g>
+            <path d="M78,97 L236,97" fill="none" stroke="var(--accent)" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#lh)" style="color:var(--accent)"/>
+            <g font-size="13" text-anchor="middle" fill="currentColor">
+              <text x="40" y="101">actions</text><text x="160" y="32">state</text><text x="290" y="101">observations</text><text x="160" y="170">beliefs</text>
+            </g>
+            <text x="157" y="90" font-size="10" text-anchor="middle" fill="var(--accent)">direct channel</text>
+          </svg>
+            <figcaption>The feedback loop of dispersed information, and the chord: an action can set what others observe
+              directly.</figcaption></figure>
+          <div>
+            <p><b>The loop, and the cuts.</b> Every tractable approach beyond the Kyle line severs the loop somewhere: on the
+              privacy of beliefs, on what actions can teach, on the weight of one player, on the flow from observations to
+              beliefs, or on time itself. Cutting it tends to hand back the separation principle, where learning and acting
+              can be treated apart, and with it removes the interaction between information and incentives the model set
+              out to study.</p>
+            <p><b>The noise-state.</b> Each player keeps estimates of the primitive shocks instead of belief hierarchies about
+              the endogenous state. Every linear quantity is a deterministic mean plus an impulse-response kernel against
+              those shocks, and taking a player's expectation changes the integrator and nothing else, so the tower of
+              expectations closes. Under perfect information the estimates are the shocks themselves and the kernels are the
+              model's ordinary impulse responses.</p>
+            <p><b>The information wedge.</b> The shadow price of changing another player's beliefs. It breaks separation and
+              vanishes when the loop is cut. In the plots it is the part of a player's first-order condition that exists only
+              because the others read its actions in their signals.</p>
+            <p><b>The solver.</b> Equilibrium is a deterministic fixed point in the kernels. It iterates best responses, with
+              Anderson acceleration, on piecewise Chebyshev nodes in shock age, or on a triangle of dates and shock times for
+              a finite horizon, until the kernels stop moving.</p>
+            <p><b>The games.</b> The tabs follow the chapters: the finite-horizon baseline (1), the stationary game (3),
+              Kyle&ndash;Back trading with several informed traders (4), a cycle of local markets (5), and monitored
+              deviations, naive against privy (6). Chapter 2, on delayed signals, has no tab yet; the model editor takes any
+              game the solver supports.</p>
+          </div>
+        </div>
       </details>
 
       <div class="tabs" role="tablist" id="tabs"></div>
