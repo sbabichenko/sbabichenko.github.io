@@ -3,12 +3,17 @@ title = "Curriculum Vitae"
 path = "cv"
 +++
 
+<div class="cv-print-head">
+<p class="n">Samuel Babichenko</p>
+<p class="c">sam@sbabichenko.com &middot; sbabichenko.com &middot; github.com/sbabichenko &middot; Charlotte, NC</p>
+</div>
+
 ---
 
 ## Education
 
 **PhD in Statistics and Applied Probability, UC Santa Barbara** &mdash; Sep 2021 &ndash; Jun 2026\
-Advisor: Tomoyuki Ichiba. Thesis: *Noise-State Calculus for Dynamic Games with Strategic Information.*\
+Advisor: Tomoyuki Ichiba. Thesis: [*Noise-State Calculus for Dynamic Games with Strategic Information*](/dissertation/).\
 Passed all qualifying exams prior to the first term of the PhD.\
 Graduate Teaching Assistant. Mentored 10+ undergraduates, majority of whom are now in PhD programs. Presented at UCSD Stochastic Systems Seminar.
 
@@ -65,7 +70,7 @@ Continuous surface model on an adaptive right-triangle bisection mesh with hiera
 ---
 
 <div style="text-align:center; margin:24px 0 8px;">
-<a class="cv-download" href="/Resume_Samuel_Babichenko.docx" download>Download resume</a>
+<a class="cv-download" href="/Resume_Samuel_Babichenko.pdf" download>Download as PDF</a>
 </div>
 
 Last updated: **September 2026**

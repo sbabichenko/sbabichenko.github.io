@@ -33,7 +33,7 @@ const CARDS = [
 ];
 
 const page = (c) => `<!doctype html><html><head><meta charset="utf-8">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300..600&display=swap">
+<link rel="stylesheet" href="${BASE}/fonts/newsreader.css">
 <style>
  html,body{margin:0;width:1200px;height:630px;overflow:hidden}
  body{background:#FFFFF0;position:relative;font-family:Newsreader,Georgia,serif;color:#17171b}
