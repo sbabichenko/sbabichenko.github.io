@@ -191,7 +191,7 @@
       X[2 * i] = x; X[2 * i + 1] = y; Y[i] = f(x, y) + sigma * gauss(rng);
     }
     DM.reset();
-    mesh = new DM.DecisionMesh(X, Y, { maxAspectRatio: +$("aspect").value, rng: mulberry32(seed + 1) });
+    mesh = new DM.DecisionMesh(X, Y, { maxAspectRatio: +$("aspect").value, minPoints: +$("minpts").value, rng: mulberry32(seed + 1) });
     tree = new Tree(X, Y);
     truth = truthGrid(f);
     vmax = 0; for (const v of truth) vmax = Math.max(vmax, Math.abs(v)); vmax = vmax || 1;
@@ -328,11 +328,12 @@
     $("epsval").textContent = (+$("eps").value).toFixed(2);
     $("aspectval").textContent = (+$("aspect").value).toFixed(1);
     $("speedval").textContent = $("speed").value;
+    $("minptsval").textContent = $("minpts").value;
   };
   show();
-  for (const id of ["noise", "eps", "aspect", "speed"]) $(id).addEventListener("input", show);
+  for (const id of ["noise", "eps", "aspect", "speed", "minpts"]) $(id).addEventListener("input", show);
   for (const id of ["surface", "npts"]) $(id).addEventListener("change", () => { writeHash(); reset(false); });
-  for (const id of ["noise", "aspect"]) $(id).addEventListener("change", () => reset(false));
+  for (const id of ["noise", "aspect", "minpts"]) $(id).addEventListener("change", () => reset(false));
   $("resetbtn").onclick = () => reset(true);
   $("stepbtn").onclick = () => { S.running = false; $("playbtn").textContent = "Play"; if (S.done) reset(false); advance(1, 1e9); };
   $("playbtn").onclick = () => {
