@@ -9,9 +9,9 @@ const PRESETS = {
     desc: `<p class="small muted" style="margin:0">Chapter 1. Two players push one shared state toward their own targets.
       Each sees the state only through its own noisy signal, so each must forecast what the other knows.
       The common shock moves the state; neither player observes it directly.</p>
-      <div class="eq"><div>dX = (D<sup>1</sup> + D<sup>2</sup>) dt + &sigma; dW<sup>0</sup>, &nbsp; X<sub>0</sub> = 0</div>
-      <div>dY<sup>i</sup> = &radic;p<sub>i</sub> X dt + dW<sup>i</sup></div>
-      <div>player i minimises E &int;<sub>0</sub><sup>T</sup> [ (X &minus; b<sub>i</sub>)<sup>2</sup> + r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup> ] dt</div></div>
+      <div class="eq"><div class="tex" data-tex="dX = (D^1 + D^2)\\,dt + \\sigma\\,dW^0, \\qquad X_0 = 0">dX = (D<sup>1</sup> + D<sup>2</sup>) dt + &sigma; dW<sup>0</sup>, &nbsp; X<sub>0</sub> = 0</div>
+      <div class="tex" data-tex="dY^i = \\sqrt{p_i}\\,X\\,dt + dW^i">dY<sup>i</sup> = &radic;p<sub>i</sub> X dt + dW<sup>i</sup></div>
+      <div class="tex" data-tex="\\text{player } i \\text{ minimises } \\mathbb{E}\\int_0^T \\big[(X - b_i)^2 + r_i\\,(D^i)^2\\big]\\,dt">player i minimises E &int;<sub>0</sub><sup>T</sup> [ (X &minus; b<sub>i</sub>)<sup>2</sup> + r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup> ] dt</div></div>
       <p class="small muted" style="margin:0">p<sub>i</sub> is signal precision. Reported costs include the constant b<sub>i</sub><sup>2</sup>T.</p>`,
     yaml: `name: ch1_tracking_with_targets
 params: {p1: 9.0, p2: 9.0, r1: 0.1, r2: 0.1, b1: 1.0, b2: -1.0, sigma: 1.0, T: 1.0}
@@ -50,9 +50,9 @@ numerics: {nodes: 12}
     title: "Stationary two-player tracking game",
     desc: `<p class="small muted" style="margin:0">Chapter 3. The same tracking problem run forever, scored by average cost per unit time.
       Responses are kernels in shock age: how a unit shock of a given age still moves the state or a control.</p>
-      <div class="eq"><div>dX = (D<sup>1</sup> + D<sup>2</sup>) dt + dW<sup>0</sup></div>
-      <div>dY<sup>i</sup> = &radic;p<sub>i</sub> X dt + dW<sup>i</sup></div>
-      <div>player i minimises the average of &frac12; X<sup>2</sup> + &frac12; r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup></div></div>`,
+      <div class="eq"><div class="tex" data-tex="dX = (D^1 + D^2)\\,dt + dW^0">dX = (D<sup>1</sup> + D<sup>2</sup>) dt + dW<sup>0</sup></div>
+      <div class="tex" data-tex="dY^i = \\sqrt{p_i}\\,X\\,dt + dW^i">dY<sup>i</sup> = &radic;p<sub>i</sub> X dt + dW<sup>i</sup></div>
+      <div class="tex" data-tex="\\text{player } i \\text{ minimises the average of } \\tfrac12 X^2 + \\tfrac12 r_i\\,(D^i)^2">player i minimises the average of &frac12; X<sup>2</sup> + &frac12; r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup></div></div>`,
     yaml: `name: ch3_stationary_tracking
 params: {p1: 3.0, p2: 10.0, r1: 1.0, r2: 1.0}
 channels: [w0, w1, w2]
@@ -83,9 +83,9 @@ numerics: {nodes: 32}
     title: "Stationary Kyle–Back market",
     desc: `<p class="small muted" style="margin:0">Chapter 4. An informed trader watches a noisy signal of a drifting value V and trades against
       noise flow. A competitive market maker sets the price from the order flow alone.</p>
-      <div class="eq"><div>dV = &sigma;<sub>V</sub> dW<sup>V</sup>, &nbsp; order flow dZ = D<sup>1</sup> dt + &sigma;<sub>Z</sub> dW<sup>Z</sup></div>
-      <div>trader sees dY<sup>1</sup> = &gamma;<sub>1</sub> (V &minus; P) dt + dW<sup>1</sup> and the flow</div>
-      <div>trader maximises E &int; e<sup>&minus;&rho;t</sup> [ D<sup>1</sup>(V &minus; P) &minus; &epsilon; (D<sup>1</sup>)<sup>2</sup> ] dt, &nbsp; P = E[V | flow]</div></div>
+      <div class="eq"><div class="tex" data-tex="dV = \\sigma_V\\,dW^V, \\qquad \\text{order flow } dZ = D^1\\,dt + \\sigma_Z\\,dW^Z">dV = &sigma;<sub>V</sub> dW<sup>V</sup>, &nbsp; order flow dZ = D<sup>1</sup> dt + &sigma;<sub>Z</sub> dW<sup>Z</sup></div>
+      <div class="tex" data-tex="\\text{trader sees } dY^1 = \\gamma_1 (V - P)\\,dt + dW^1 \\text{ and the flow}">trader sees dY<sup>1</sup> = &gamma;<sub>1</sub> (V &minus; P) dt + dW<sup>1</sup> and the flow</div>
+      <div class="tex" data-tex="\\text{trader maximises } \\mathbb{E}\\int e^{-\\rho t}\\big[D^1 (V - P) - \\varepsilon\\,(D^1)^2\\big]\\,dt, \\qquad P = \\mathbb{E}[V \\mid \\text{flow}]">trader maximises E &int; e<sup>&minus;&rho;t</sup> [ D<sup>1</sup>(V &minus; P) &minus; &epsilon; (D<sup>1</sup>)<sup>2</sup> ] dt, &nbsp; P = E[V | flow]</div></div>
       <p class="small muted" style="margin:0">Costs are flow losses, so the trader's profit shows as a negative number.
       The market maker's number omits the V<sup>2</sup> term and is not a welfare measure. Small trading costs make the
       fixed point hard to reach; the status bar says when a solve did not converge.</p>`,
@@ -127,8 +127,8 @@ numerics: {nodes: 16}
     desc: `<p class="small muted" style="margin:0">Chapter 5. Firm i buys from firm i - 1 and sells to firm i + 1 and to consumers, around a cycle of three.
       Each firm sets a price P<sub>i</sub> and an order o<sub>i</sub>, which take effect after a delay &tau;, and sees only noisy signals:
       its own sales, its supplier's price, its customer's order book and the order upstream. Demand, cost and firm-level shocks drive the market.</p>
-      <div class="eq"><div>sales<sub>i</sub> = q + (&theta; &minus; 1) &middot; price index &minus; &theta; P<sub>i</sub> + &eta;<sub>i</sub> &nbsp; (all prices at lag &tau;)</div>
-      <div>firm i minimises the average of (price deviation)<sup>2</sup> + m (inventory mismatch)<sup>2</sup> + r o<sub>i</sub><sup>2</sup> + &hellip; &minus; 2&kappa; (revenue terms)</div></div>
+      <div class="eq"><div class="tex" data-tex="\\text{sales}_i = q + (\\theta - 1)\\cdot\\text{price index} - \\theta P_i + \\eta_i \\qquad (\\text{all prices at lag } \\tau)">sales<sub>i</sub> = q + (&theta; &minus; 1) &middot; price index &minus; &theta; P<sub>i</sub> + &eta;<sub>i</sub> &nbsp; (all prices at lag &tau;)</div>
+      <div class="tex" data-tex="\\text{firm } i \\text{ minimises the average of } (\\text{price deviation})^2 + m\\,(\\text{inventory mismatch})^2 + r\\,o_i^2 + \\cdots - 2\\kappa\\,(\\text{revenue terms})">firm i minimises the average of (price deviation)<sup>2</sup> + m (inventory mismatch)<sup>2</sup> + r o<sub>i</sub><sup>2</sup> + &hellip; &minus; 2&kappa; (revenue terms)</div></div>
       <p class="small muted" style="margin:0">The firms are symmetric, so the solver finds one firm's strategy and relabels it around the cycle.
       This is the heaviest game on the page: a solve takes a few seconds on the quick grid and about half a minute on the dissertation's.</p>`,
     yaml: `name: ch5_cycle_market
@@ -350,9 +350,9 @@ numerics: {nodes: 16}
     desc: `<p class="small muted" style="margin:0">Chapter 3's tracking game, with mean reversion, has run in a stationary equilibrium for ever.
       At time 0 player 1's signal precision jumps. The shocks born before 0 still drive the state and both players' forecasts,
       so the players move from the old equilibrium toward the new one. After T the new stationary equilibrium takes over.</p>
-      <div class="eq"><div>dX = (&minus;a X + D<sup>1</sup> + D<sup>2</sup>) dt + dW<sup>0</sup></div>
-      <div>dY<sup>i</sup> = &radic;p<sub>i</sub>(t) X dt + dW<sup>i</sup>, &nbsp; p<sub>1</sub>(t) = p<sub>1</sub><sup>before</sup> for t &lt; 0, p<sub>1</sub> after</div>
-      <div>player i minimises E &int;<sub>0</sub><sup>T</sup> [ &frac12; X<sup>2</sup> + &frac12; r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup> ] dt, then the new stationary flow</div></div>
+      <div class="eq"><div class="tex" data-tex="dX = (-aX + D^1 + D^2)\\,dt + dW^0">dX = (&minus;a X + D<sup>1</sup> + D<sup>2</sup>) dt + dW<sup>0</sup></div>
+      <div class="tex" data-tex="dY^i = \\sqrt{p_i(t)}\\,X\\,dt + dW^i, \\qquad p_1(t) = p_1^{\\text{before}} \\text{ for } t &lt; 0,\\ p_1 \\text{ after}">dY<sup>i</sup> = &radic;p<sub>i</sub>(t) X dt + dW<sup>i</sup>, &nbsp; p<sub>1</sub>(t) = p<sub>1</sub><sup>before</sup> for t &lt; 0, p<sub>1</sub> after</div>
+      <div class="tex" data-tex="\\text{player } i \\text{ minimises } \\mathbb{E}\\int_0^T \\big[\\tfrac12 X^2 + \\tfrac12 r_i\\,(D^i)^2\\big]\\,dt, \\text{ then the new stationary flow}">player i minimises E &int;<sub>0</sub><sup>T</sup> [ &frac12; X<sup>2</sup> + &frac12; r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup> ] dt, then the new stationary flow</div></div>
       <p class="small muted" style="margin:0">The strip carries the old shocks on a band of depth L = 3 below s = 0.
       "Until settled" lets the solver pick T: it marches T = 0, 3, 6, &hellip; until the best-response rules on the last window are within 2% of the new stationary ones.</p>`,
     yaml: `name: regime_change
@@ -677,6 +677,7 @@ function renderControls() {
   const def = PRESETS[game];
   $("gametitle").textContent = def.title;
   $("gamedesc").innerHTML = def.desc;
+  typesetEquations($("gamedesc"));
   const box = $("controls"); box.innerHTML = "";
   $("editor").hidden = game !== "custom";
   if (game === "custom") { renderEditor(); renderOptions($("paramopts")); return; }
@@ -835,6 +836,15 @@ function stopSolve() {
   $("stopbtn").disabled = true; $("solvebtn").disabled = false;
   setStatus("warn", "Stopped", "The solve was stopped. Change a parameter or press Solve again.");
   startWorker();
+}
+
+// The equations in each game's description: typeset with KaTeX (served from the site) when it has loaded, otherwise
+// the plain HTML already in the block stays.
+function typesetEquations(root) {
+  if (!window.katex) { window.addEventListener("load", () => window.katex && typesetEquations(root), { once: true }); return; }
+  for (const d of root.querySelectorAll(".tex[data-tex]")) {
+    try { katex.render(d.dataset.tex, d, { displayMode: false, throwOnError: true }); d.classList.add("typeset"); } catch (e) { /* keep the HTML fallback */ }
+  }
 }
 
 function currentModel() {

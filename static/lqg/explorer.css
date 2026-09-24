@@ -159,3 +159,7 @@
 .explorer .howto.idea .loopfig { width: 100%; height: auto; display: block; }
 .explorer .howto.idea figcaption { font-size: 0.78rem; color: var(--faint); margin-top: 4px; }
 .explorer .howto.idea p { margin: 0 0 10px; }
+
+/* equations typeset by KaTeX (explorer.js typesetEquations); the HTML inside is the fallback */
+.explorer .eq .tex.typeset { padding: 3px 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
+.explorer .eq .katex { font-size: 1.08em; }
