@@ -1,5 +1,5 @@
 +++
-title = "From beliefs about beliefs to the noise-state"
+title = "The Noise-State, Explained"
 description = "Why impulse responses: how forecasting the forecasts of others collapses once every belief is written against the primitive shocks. A picture story, computed live on a small filtering problem."
 path = "dissertation/idea"
 template = "idea.html"
