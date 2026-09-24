@@ -44,7 +44,7 @@ const CARDS = [
   { out: "og-partial-pooling.png", art: "image", fit: "contain", src: "/images/card-partial-pooling.svg",
     eyebrow: "sbabichenko.com/writing",
     title: "Partial pooling for interaction effects",
-    sub: "When intersecting stock characteristics spreads the data thin, partial pooling borrows strength across the groups." },
+    sub: "" },
 ];
 
 const page = (c) => `<!doctype html><html><head><meta charset="utf-8">
