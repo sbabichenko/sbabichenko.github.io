@@ -1334,6 +1334,12 @@ $("sharebtn").onclick = async () => {
   setTimeout(() => { $("sharebtn").textContent = "Copy link"; }, 1500);
 };
 $("solvecustom").onclick = () => { customYaml = $("yaml").value; renderParamControls(); writeHash(); requestSolve(0); };
+$("saveyaml").onclick = () => {
+  const text = $("yaml").value, name = ((/^name:\s*(\S+)/m.exec(text) || [])[1] || "model").replace(/[^\w.-]/g, "_");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: "text/yaml" })); a.download = name + ".yaml";
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
 $("loadexample").onclick = () => { customYaml = EXAMPLES[$("example").value]; $("yaml").value = customYaml; renderParamControls(); writeHash(); };
 $("yaml").addEventListener("input", () => { customYaml = $("yaml").value; });
 $("yaml").addEventListener("change", () => { renderParamControls(); writeHash(); });

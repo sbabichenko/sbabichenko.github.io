@@ -24,6 +24,7 @@
         <li>computed live, nothing precomputed</li>
         <li>games from Chapters 1, 3, 4, 5 and 6</li>
         <li>C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a>, compiled to WebAssembly</li>
+        <li class="pip"><button type="button" class="copy" data-copy="pip install noisestate" title="Copy the command"><code>pip install noisestate</code></button> <a href="https://pypi.org/project/noisestate/">PyPI</a></li>
         <li>most games solve in under a second</li>
         <li id="threadfact">loading the solver</li>
       </ul>
@@ -89,6 +90,7 @@
           <div class="controls" id="paramcontrols"></div>
           <div class="controls" id="paramopts"></div>
           <div class="row" style="margin-top:12px"><button class="primary" id="solvecustom">Solve this model</button>
+            <button class="secondary" id="saveyaml" title="Save the model file; noisestate solve model.yaml runs it in Python">Save as .yaml</button>
             <span class="small error" id="yamlerror"></span></div>
         </div>
       </section>
@@ -122,6 +124,9 @@
           with the same equations and algorithms: the stationary, spectral and cell engines, transitions with their past,
           band, buffer and march in T, naive observers, and the refinement and stability checks. On its test grid its costs,
           kernels, loss paths and first-order-condition terms agree with the Python package to 1e-10 or better.</p>
+        <p>To solve games yourself, the Python package is on <a href="https://pypi.org/project/noisestate/">PyPI</a>:
+          <code>pip install noisestate</code> (source on <a href="https://github.com/sbabichenko/noisestate">GitHub</a>).
+          A model saved from the &ldquo;Your model&rdquo; tab runs there as <code>noisestate solve model.yaml</code>.</p>
         <p>Where the browser allows it (the page reloads once on a first visit to turn it on), the solver runs agents' best
           responses on their own threads; a solve after a parameter change starts from the last equilibrium, and the page
           address keeps the game and its parameters, so a link reproduces a solve. Plots by Plotly, YAML by js-yaml.</p>

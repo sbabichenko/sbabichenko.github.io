@@ -17,6 +17,7 @@ image = "images/card-noisestate"
 links = [
     { name = "arxiv", url = "https://arxiv.org/abs/2603.12140" },
     { name = "try the explorer", url = "/noisestate/", primary = true },
+    { name = "pypi", url = "https://pypi.org/project/noisestate/" },
     { name = "github", url = "https://github.com/sbabichenko/Noise-State-Games" }
 ]
 
