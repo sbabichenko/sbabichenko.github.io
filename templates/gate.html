@@ -13,16 +13,19 @@
       <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; <a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &nbsp;/&nbsp; The gate</div>
       <h1>A mesh that knows when to stop</h1>
       <p class="sub">Somewhere on this square the odds of a coin change. A few thousand sites each flip their own coin a
-        handful of times. The estimator cuts a triangular mesh only where a false-discovery gate says the flips justify
-        a cut, and it stops by itself when no candidate passes. Nobody tells it how many pieces to use.</p>
+        handful of times. The estimator cuts a mesh, of right triangles or of rectangles, only where a false-discovery
+        gate says the flips justify a cut, and it stops by itself when no candidate passes. Nobody tells it how many
+        pieces to use.</p>
       <ul class="facts">
-        <li>my C++ estimator, compiled to WebAssembly</li>
-        <li>same mesh as the native build, to 1e-12</li>
+        <li>my two C++ estimators, compiled to WebAssembly</li>
+        <li>same meshes as the native builds, to 1e-11</li>
         <li>runs in your browser, in under a second</li>
       </ul>
 
       <section class="panel">
         <div class="meshbar">
+          <div class="ctl"><label for="engine"><span>Estimator</span></label><select id="engine">
+            <option value="tri" selected>Right triangles</option><option value="rect">Rectangles</option></select></div>
           <div class="ctl"><label for="truth"><span>The odds</span></label><select id="truth"></select></div>
           <div class="ctl"><label for="sites"><span>Sites</span></label><select id="sites">
             <option value="3000">3,000</option><option value="6000" selected>6,000</option><option value="12000">12,000</option></select></div>
@@ -77,12 +80,14 @@
         <p>Things to try: give the two hills more flips and watch the mesh fill in around them; pick
           &ldquo;nothing at all&rdquo;, which it leaves uncut at any number of flips; pick &ldquo;your drawing&rdquo;
           and paint on the odds (drag to raise them, tick &ldquo;lower&rdquo; or hold shift to lower them).</p>
-        <p>The estimator is <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a>,
-          compiled from its C++ with Emscripten. Its dense linear algebra, which natively calls LAPACK, runs on Eigen
-          here; nothing else is changed, and on my test designs the browser build reproduces the native mesh to 1e-12.
-          Half the sites are held out: the mesh never sees them, and the deviance card scores the fit on them. The
-          coins are drawn on this page from the odds you pick, with a random nudge per site (standard deviation 0.25
-          on the log-odds).</p>
+        <p>The estimators are <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a>
+          and <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a>, compiled from
+          their C++ with Emscripten. Their dense linear algebra, which natively calls LAPACK, runs on Eigen here; nothing
+          else is changed, and on my test designs the browser builds reproduce the native meshes to 1e-11. The two share
+          the gate and the pool model and differ in geometry: right triangles cut only through their hypotenuse, with a
+          flat fit in each; rectangles cut across either axis, with a bilinear fit in each. Half the sites are held out:
+          the mesh never sees them, and the deviance card scores the fit on them. The coins are drawn on this page from
+          the odds you pick, with a random nudge per site (standard deviation 0.25 on the log-odds).</p>
         <p>The <a href="{{ get_url(path='mesh/') }}">growing-mesh page</a> is the geometry without the statistics: freeform
           triangles, right triangles, rectangles and a tree, grown greedily side by side. The right triangles there are
           this estimator's geometry.</p>

@@ -97,7 +97,20 @@
     const g = new Float32Array(D * D).fill(NaN), t = fit.tri;
     const [x0, x1, y0, y1] = fit.bounds;
     const X = (u) => x0 + u * (x1 - x0), Y = (u) => y0 + u * (y1 - y0);
-    for (let i = 0; i < t.length; i += 9) {
+    if (fit.engine === "rect") {
+      // each cell is bilinear in its four corner heights
+      for (let i = 0; i < t.length; i += 8) {
+        const ax = X(t[i]), ay = Y(t[i + 1]), bx = X(t[i + 2]), by = Y(t[i + 3]);
+        const c0 = Math.max(0, Math.floor(ax * D)), c1 = Math.min(D - 1, Math.ceil(bx * D));
+        const r0 = Math.max(0, Math.floor((1 - by) * D)), r1 = Math.min(D - 1, Math.ceil((1 - ay) * D));
+        for (let r = r0; r <= r1; ++r) for (let c = c0; c <= c1; ++c) {
+          const px = (c + 0.5) / D, py = 1 - (r + 0.5) / D;
+          if (px < ax || px > bx || py < ay || py > by) continue;
+          const u = (px - ax) / (bx - ax), v = (py - ay) / (by - ay);
+          g[r * D + c] = fit.baseline + (1 - u) * (1 - v) * t[i + 4] + u * (1 - v) * t[i + 5] + (1 - u) * v * t[i + 6] + u * v * t[i + 7];
+        }
+      }
+    } else for (let i = 0; i < t.length; i += 9) {
       const ax = X(t[i]), ay = Y(t[i + 1]), ah = t[i + 2], bx = X(t[i + 3]), by = Y(t[i + 4]), bh = t[i + 5], cx = X(t[i + 6]), cy = Y(t[i + 7]), ch = t[i + 8];
       const det = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy);
       if (Math.abs(det) < 1e-15) continue;
@@ -142,7 +155,7 @@
   // ------------------------------------------------------------------ state
   const S = { data: null, fit: null, truthG: null, fitG: null, busy: false, queued: false, id: 0, ready: false };
   window.gateDemo = S;
-  const opts = () => ({ truth: $("truth").value, sites: +$("sites").value, flips: +$("flips").value, seed: +$("seed").value });
+  const opts = () => ({ engine: $("engine").value, truth: $("truth").value, sites: +$("sites").value, flips: +$("flips").value, seed: +$("seed").value });
 
   function drawTruth() {
     const ctx = paint($("cvtruth"), S.truthG);
@@ -177,7 +190,10 @@
       ctx.lineWidth = Math.max(1, W / 420);
       ctx.beginPath();
       const t = fit.tri;
-      for (let i = 0; i < t.length; i += 9) {
+      if (fit.engine === "rect") for (let i = 0; i < t.length; i += 8) {
+        const ax = X(t[i]), ay = Y(t[i + 1]), bx = X(t[i + 2]), by = Y(t[i + 3]);
+        ctx.rect(Math.min(ax, bx), Math.min(ay, by), Math.abs(bx - ax), Math.abs(by - ay));
+      } else for (let i = 0; i < t.length; i += 9) {
         ctx.moveTo(X(t[i]), Y(t[i + 1])); ctx.lineTo(X(t[i + 3]), Y(t[i + 4])); ctx.lineTo(X(t[i + 6]), Y(t[i + 7])); ctx.closePath();
       }
       ctx.stroke();
@@ -213,16 +229,17 @@
     const flat = new Float32Array(D * D).fill(f.baseline);
     const err = rmse(S.fitG, S.truthG), errFlat = rmse(flat, S.truthG);
     $("cards").innerHTML = [
-      ["Vertices admitted", admitted, `over ${rounds.filter((r) => r.admitted > 0).length} round${rounds.filter((r) => r.admitted > 0).length === 1 ? "" : "s"}; ${f.tri.length / 9} triangles`],
+      ["Vertices admitted", admitted, `over ${rounds.filter((r) => r.admitted > 0).length} round${rounds.filter((r) => r.admitted > 0).length === 1 ? "" : "s"}; ${f.tri.length / f.stride} ${f.engine === "rect" ? "rectangles" : "triangles"}`],
       ["Error against the truth", fmt(err, 3), `log-odds RMSE; a flat fit: ${fmt(errFlat, 3)}`],
       ["Pool variance", fmt(f.poolVariance, 4), `the coins' own spread; truly ${fmt(POOL_SD * POOL_SD, 4)}`],
       ["Held-out deviance", f.heldout ? fmt(f.heldout.deviance, 3) : "–", f.heldout ? `per site, on ${f.heldout.pools.toLocaleString()} sites never fitted` : ""],
     ].map(([k, v, d]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join("");
 
+    const cap = f.engine === "rect" ? 3 : 6;             // each engine's upper bound on the null's spread
     const rule = (r) => (r.method === "lindsey" ? "empirical null" : r.method === "BH-fallback" ? "theoretical null (BH)" : r.method === "defer-invalid-null" ? "deferred" : r.method || "–");
     const cols = ROUND_COLOURS();
     $("rounds").innerHTML = `<table class="diag"><thead><tr><th>Round</th><th>Scored</th><th>Null centre</th><th>Null spread</th><th>&pi;<sub>0</sub></th><th>Rule</th><th>Admitted</th><th>Pool variance</th></tr></thead><tbody>` +
-      rounds.map((r) => `<tr><td class="mono"><i class="dot" style="background:${cols[Math.min(cols.length - 1, r.round)]}"></i>${r.round}</td><td class="mono">${r.candidates}</td><td class="mono">${fmt(r.nullMean, 2)}</td><td class="mono">${fmt(r.nullSd, 2)}${r.nullSd >= 5.999 ? " <span class='cap'>cap</span>" : ""}</td><td class="mono">${fmt(r.pi0, 2)}</td><td>${rule(r)}</td><td class="mono"><b>${r.admitted}</b></td><td class="mono">${fmt(r.poolVariance, 4)}</td></tr>`).join("") +
+      rounds.map((r) => `<tr><td class="mono"><i class="dot" style="background:${cols[Math.min(cols.length - 1, r.round)]}"></i>${r.round}</td><td class="mono">${r.candidates}</td><td class="mono">${fmt(r.nullMean, 2)}</td><td class="mono">${fmt(r.nullSd, 2)}${r.nullSd >= cap - 1e-3 ? " <span class='cap'>cap</span>" : ""}</td><td class="mono">${fmt(r.pi0, 2)}</td><td>${rule(r)}</td><td class="mono"><b>${r.admitted}</b></td><td class="mono">${fmt(r.poolVariance, 4)}</td></tr>`).join("") +
       `</tbody></table>`;
 
     // what happened, in the gate's own terms
@@ -230,7 +247,7 @@
     let say = admitted
       ? `Admitted ${admitted} vertices, then stopped: the last round scored ${last.candidates} candidates and none cleared the gate.`
       : `Admitted nothing: the fit is the starting mesh.`;
-    if (r0 && !admitted && r0.method === "lindsey" && r0.nullSd > 2.5) say += ` In round 0 the empirical null came out ${fmt(r0.nullSd, 1)} times as wide as the textbook one${r0.nullSd >= 5.999 ? " (its cap)" : ""}, so it took in the scores that stood out and nothing cleared the gate.`;
+    if (r0 && !admitted && r0.method === "lindsey" && r0.nullSd > 2.5) say += ` In round 0 the empirical null came out ${fmt(r0.nullSd, 1)} times as wide as the textbook one${r0.nullSd >= cap - 1e-3 ? " (its cap)" : ""}, so it took in the scores that stood out and nothing cleared the gate.`;
     else if (r0 && r0.method === "BH-fallback") say += " In round 0 the scores had no central peak to fit a null to, so the gate used the theoretical null.";
     else if (!admitted && $("truth").value === "nothing") say += " There was nothing to find.";
     $("statustext").textContent = say + ` ${Math.round(f.ms)} ms.`;
@@ -265,8 +282,8 @@
     $("results").classList.add("stale");
     S.busy = true; S.id += 1;
     setChip("busy", "Fitting");
-    $("statustext").textContent = `The estimator is fitting ${o.sites.toLocaleString()} sites…`;
-    worker.postMessage({ id: S.id, design: S.data.csv, seed: 7 });
+    $("statustext").textContent = `The ${o.engine === "rect" ? "rectangular" : "right-triangle"} estimator is fitting ${o.sites.toLocaleString()} sites…`;
+    worker.postMessage({ id: S.id, engine: o.engine, design: S.data.csv, seed: 7 });
     writeHash();
   }
   let timer = 0;
@@ -275,10 +292,10 @@
   // ------------------------------------------------------------------ controls
   function readHash() {
     const h = new URLSearchParams(location.hash.slice(1));
-    for (const k of ["truth", "sites", "flips"]) if (h.get(k) && [...$(k).options].some((o) => o.value === h.get(k))) $(k).value = h.get(k);
+    for (const k of ["engine", "truth", "sites", "flips"]) if (h.get(k) && [...$(k).options].some((o) => o.value === h.get(k))) $(k).value = h.get(k);
     if (h.get("seed")) $("seed").value = Math.max(1, parseInt(h.get("seed"), 10) || 1);
   }
-  function writeHash() { const o = opts(); history.replaceState(null, "", `#truth=${o.truth}&sites=${o.sites}&flips=${o.flips}&seed=${o.seed}`); }
+  function writeHash() { const o = opts(); history.replaceState(null, "", `#engine=${o.engine}&truth=${o.truth}&sites=${o.sites}&flips=${o.flips}&seed=${o.seed}`); }
   function syncTools() { $("drawtools").hidden = $("truth").value !== "drawing"; }
 
   // the island and the fault line are reachable by link only (#truth=island): on them the first round's
@@ -291,6 +308,7 @@
   readHash(); syncTools();
   $("truth").addEventListener("change", () => { syncTools(); soon(); });
   $("sites").addEventListener("change", soon);
+  $("engine").addEventListener("change", () => { $("statustext").textContent = "Loading the other estimator…"; soon(); });
   $("flips").addEventListener("change", soon);
   $("newdata").addEventListener("click", () => { $("seed").value = +$("seed").value + 1; run(); });
   $("showedges").addEventListener("change", drawFit);
