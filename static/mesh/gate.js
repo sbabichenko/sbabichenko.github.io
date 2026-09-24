@@ -9,7 +9,9 @@
 
   // ------------------------------------------------------------------ truths, on the log-odds scale
   const BASE = -1;           // log-odds of the background coin: expit(-1) = 27%
-  const POOL_SD = 0.25;      // each site's coin carries its own nudge; the estimator calls its variance the pool variance
+  // each site's coin carries its own effect on the log-odds, normal with this sd (the slider); the estimator fits
+  // their variance alongside the surface (its "pool variance")
+  const coinSd = () => +$("coinsd").value;
   const G = 64;              // the drawing grid
   const drawing = new Float32Array(G * G).fill(BASE);
   const TRUTHS = {
@@ -52,14 +54,14 @@
   function gauss(r) { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
   function binomial(r, n, p) { let k = 0; for (let i = 0; i < n; ++i) if (r() < p) ++k; return k; }
 
-  function makeData(truth, sites, flips, seed) {
+  function makeData(truth, sites, flips, seed, sd) {
     const r = mulberry32(seed * 7919 + 17), f = TRUTHS[truth].f;
     const x = new Float64Array(sites), y = new Float64Array(sites), n = new Int32Array(sites), k = new Int32Array(sites);
     const rows = ["wala,wac,n,k"];
     for (let i = 0; i < sites; ++i) {
       x[i] = r(); y[i] = r();
       n[i] = Math.max(1, Math.round(flips * (0.5 + r())));
-      k[i] = binomial(r, n[i], expit(f(x[i], y[i]) + POOL_SD * gauss(r)));
+      k[i] = binomial(r, n[i], expit(f(x[i], y[i]) + sd * gauss(r)));
       rows.push(x[i].toFixed(5) + "," + y[i].toFixed(5) + "," + n[i] + "," + k[i]);
     }
     return { x, y, n, k, csv: rows.join("\n") + "\n" };
@@ -155,7 +157,7 @@
   // ------------------------------------------------------------------ state
   const S = { data: null, fit: null, truthG: null, fitG: null, busy: false, queued: false, id: 0, ready: false };
   window.gateDemo = S;
-  const opts = () => ({ engine: $("engine").value, truth: $("truth").value, sites: +$("sites").value, flips: +$("flips").value, seed: +$("seed").value });
+  const opts = () => ({ engine: $("engine").value, truth: $("truth").value, sites: +$("sites").value, flips: +$("flips").value, seed: +$("seed").value, sd: coinSd() });
 
   function drawTruth() {
     const ctx = paint($("cvtruth"), S.truthG);
@@ -231,14 +233,14 @@
     $("cards").innerHTML = [
       ["Vertices admitted", admitted, `over ${rounds.filter((r) => r.admitted > 0).length} round${rounds.filter((r) => r.admitted > 0).length === 1 ? "" : "s"}; ${f.tri.length / f.stride} ${f.engine === "rect" ? "rectangles" : "triangles"}`],
       ["Error against the truth", fmt(err, 3), `log-odds RMSE; a flat fit: ${fmt(errFlat, 3)}`],
-      ["Pool variance", fmt(f.poolVariance, 4), `the coins' own spread; truly ${fmt(POOL_SD * POOL_SD, 4)}`],
+      ["Coin variance", fmt(f.poolVariance, 4), `the coin effects' variance; truly ${fmt(coinSd() ** 2, 4)}`],
       ["Held-out deviance", f.heldout ? fmt(f.heldout.deviance, 3) : "–", f.heldout ? `per site, on ${f.heldout.pools.toLocaleString()} sites never fitted` : ""],
     ].map(([k, v, d]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join("");
 
     const cap = f.engine === "rect" ? 3 : 6;             // each engine's upper bound on the null's spread
     const rule = (r) => (r.method === "lindsey" ? "empirical null" : r.method === "BH-fallback" ? "theoretical null (BH)" : r.method === "defer-invalid-null" ? "deferred" : r.method || "–");
     const cols = ROUND_COLOURS();
-    $("rounds").innerHTML = `<table class="diag"><thead><tr><th>Round</th><th>Scored</th><th>Null centre</th><th>Null spread</th><th>&pi;<sub>0</sub></th><th>Rule</th><th>Admitted</th><th>Pool variance</th></tr></thead><tbody>` +
+    $("rounds").innerHTML = `<table class="diag"><thead><tr><th>Round</th><th>Scored</th><th>Null centre</th><th>Null spread</th><th>&pi;<sub>0</sub></th><th>Rule</th><th>Admitted</th><th>Coin variance</th></tr></thead><tbody>` +
       rounds.map((r) => `<tr><td class="mono"><i class="dot" style="background:${cols[Math.min(cols.length - 1, r.round)]}"></i>${r.round}</td><td class="mono">${r.candidates}</td><td class="mono">${fmt(r.nullMean, 2)}</td><td class="mono">${fmt(r.nullSd, 2)}${r.nullSd >= cap - 1e-3 ? " <span class='cap'>cap</span>" : ""}</td><td class="mono">${fmt(r.pi0, 2)}</td><td>${rule(r)}</td><td class="mono"><b>${r.admitted}</b></td><td class="mono">${fmt(r.poolVariance, 4)}</td></tr>`).join("") +
       `</tbody></table>`;
 
@@ -278,7 +280,7 @@
     S.queued = false;
     const o = opts();
     S.truthG = truthGrid(o.truth);
-    S.data = makeData(o.truth, o.sites, o.flips, o.seed);
+    S.data = makeData(o.truth, o.sites, o.flips, o.seed, o.sd);
     drawTruth(); drawData();
     $("results").classList.add("stale");
     S.busy = true; S.id += 1;
@@ -295,8 +297,9 @@
     const h = new URLSearchParams(location.hash.slice(1));
     for (const k of ["engine", "truth", "sites", "flips"]) if (h.get(k) && [...$(k).options].some((o) => o.value === h.get(k))) $(k).value = h.get(k);
     if (h.get("seed")) $("seed").value = Math.max(1, parseInt(h.get("seed"), 10) || 1);
+    if (h.get("sd") && isFinite(+h.get("sd"))) $("coinsd").value = Math.max(0, Math.min(1, +h.get("sd")));
   }
-  function writeHash() { const o = opts(); history.replaceState(null, "", `#engine=${o.engine}&truth=${o.truth}&sites=${o.sites}&flips=${o.flips}&seed=${o.seed}`); }
+  function writeHash() { const o = opts(); history.replaceState(null, "", `#engine=${o.engine}&truth=${o.truth}&sites=${o.sites}&flips=${o.flips}&sd=${o.sd}&seed=${o.seed}`); }
   function syncTools() { $("drawtools").hidden = $("truth").value !== "drawing"; }
 
   // the island and the fault line are reachable by link only (#truth=island): on them the first round's
@@ -311,6 +314,8 @@
   $("sites").addEventListener("change", soon);
   $("engine").addEventListener("change", () => { $("statustext").textContent = "Loading the other estimator…"; soon(); });
   $("flips").addEventListener("change", soon);
+  const sdLabel = () => { $("coinsdval").textContent = coinSd().toFixed(2); };
+  $("coinsd").addEventListener("input", sdLabel); $("coinsd").addEventListener("change", soon); sdLabel();
   $("newdata").addEventListener("click", () => { $("seed").value = +$("seed").value + 1; run(); });
   $("showedges").addEventListener("change", drawFit);
   $("showadmit").addEventListener("change", drawFit);
@@ -338,7 +343,7 @@
 
   drawScale();
   S.truthG = truthGrid($("truth").value);
-  S.data = makeData($("truth").value, +$("sites").value, +$("flips").value, +$("seed").value);
+  S.data = makeData($("truth").value, +$("sites").value, +$("flips").value, +$("seed").value, coinSd());
   drawAll();
   setChip("busy", "Loading");
   $("statustext").textContent = "Loading the estimator (about 370 kB)…";

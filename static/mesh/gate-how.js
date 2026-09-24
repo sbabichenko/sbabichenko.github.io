@@ -40,7 +40,8 @@
   const phi = (z) => Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
 
   // ------------------------------------------------------------------ the data (the same odds as /gate)
-  const BASE = -1, POOL_SD = 0.25, SITES = 6000, FLIPS = 20;
+  const BASE = -1, SITES = 6000, FLIPS = 20;
+  let POOL_SD = 0.25;   // the coin effects' sd on the log-odds, from the slider
   const TRUTHS = {
     hills: (x, y) => BASE + 1.8 * Math.exp(-((x - 0.3) ** 2 + (y - 0.7) ** 2) / 0.02) - 1.5 * Math.exp(-((x - 0.7) ** 2 + (y - 0.3) ** 2) / 0.03),
     peaks: (x, y) => BASE + 1.6 * Math.exp(-((x - 0.25) ** 2 + (y - 0.3) ** 2) / 0.006) + 1.1 * Math.exp(-((x - 0.7) ** 2 + (y - 0.7) ** 2) / 0.008) - 1.4 * Math.exp(-((x - 0.72) ** 2 + (y - 0.22) ** 2) / 0.01),
@@ -54,7 +55,7 @@
     for (let i = 0; i < SITES; ++i) {
       x[i] = r(); y[i] = r();
       n[i] = Math.max(1, Math.round(FLIPS * (0.5 + r())));
-      u[i] = POOL_SD * gauss(r);                         // the site's nudge: what the two axes don't describe
+      u[i] = POOL_SD * gauss(r);                         // the coin's own effect: what the two axes don't describe
       const p = expit(f(x[i], y[i]) + u[i]);
       let kk = 0; for (let j = 0; j < n[i]; ++j) if (r() < p) ++kk;
       k[i] = kk;
@@ -180,7 +181,7 @@
 
     // 1b'. a wrong mean shows up as variance, whichever way the mean is missed ----------------------------------
     // A site's miss is its true log-odds less the fitted: the fitted surface missing the true surface, plus the
-    // site's nudge, the part of its odds the two axes don't describe. Both are known here, since the page drew them.
+    // coin's own effect, the part of its odds the two axes don't describe. Both are known here, since the page drew them.
     scenes.wrongmean = (() => {
       const g = group("wrongmean");
       const tf = TRUTHS[data.truth];
@@ -209,23 +210,23 @@
       const L0 = fit.baseline, L1 = tf(data.x[pick], data.y[pick]), L2 = L1 + data.u[pick];
       const lo = Math.min(L0, L1, L2) - 0.15, hi = Math.max(L0, L1, L2) + 0.15, AX = (v) => 110 + ((v - lo) / (hi - lo)) * 380, ay = 150;
       const top1 = el("g", {}, g);
-      text(top1, 70, 82, "one site, taken apart (log-odds)", "mono", "start");
+      text(top1, 70, 82, "one site's error, in log-odds", "mono", "start");
       line(top1, 90, ay, 510, ay, "soft", 1);
       const tick = (v, lab, cls, dy) => { line(top1, AX(v), ay - 8, AX(v), ay + 8, cls, 2); text(top1, AX(v), ay + dy, lab, "tiny", "middle"); };
       tick(L0, "fitted (flat)", "", 26); tick(L1, "the true surface", "warm", -16); tick(L2, "this coin", "accent", 26);
       const brace = (a, b, y, lab, cls) => { const q = el("g", {}, top1); line(q, AX(a), y, AX(b), y, cls, 2.4); text(q, (AX(a) + AX(b)) / 2, y + 16, lab, "tiny " + (cls === "accent" ? "acc" : cls === "warm" ? "warmt" : ""), "middle"); return q; };
-      const b1 = brace(L0, L1, ay + 44, "missed surface", "warm"), b2 = brace(L1, L2, ay + 44, "missed axes", "accent"), b3 = brace(L0, L2, ay + 80, "the miss", "");
+      const b1 = brace(L0, L1, ay + 44, "surface error", "warm"), b2 = brace(L1, L2, ay + 44, "axes error", "accent"), b3 = brace(L0, L2, ay + 80, "total error", "");
 
       // the chart
       const B = { x: 90, y: 318, w: 430, h: 210 }, mmax = top * 1.05, ymax = Math.max(2, ...flat.map((q) => Math.max(q.z2, q.pred))) * 1.08;
       const X = (m) => B.x + (m / mmax) * B.w, Y = (y) => B.y + B.h - ((y - 0.5) / (ymax - 0.5)) * B.h;
       const ch = el("g", {}, g);
-      text(ch, B.x - 10, B.y - 16, "mean squared residual, by the size of the whole miss", "mono", "start");
+      text(ch, B.x - 10, B.y - 16, "mean squared residual, by the size of the total error", "mono", "start");
       line(ch, B.x, B.y + B.h, B.x + B.w, B.y + B.h, "", 1); line(ch, B.x, B.y, B.x, B.y + B.h, "", 1);
-      text(ch, B.x, B.y + B.h + 16, "0", "tiny", "start"); text(ch, B.x + B.w, B.y + B.h + 16, `miss ${fmt(mmax, 1)}`, "tiny", "end");
+      text(ch, B.x, B.y + B.h + 16, "0", "tiny", "start"); text(ch, B.x + B.w, B.y + B.h + 16, `error ${fmt(mmax, 1)}`, "tiny", "end");
       for (const y of [1, 2, 3, 4, 5, 6, 8].filter((y) => y < ymax)) text(ch, B.x - 8, Y(y) + 4, String(y), "tiny", "end");
       line(ch, B.x, Y(1), B.x + B.w, Y(1), "soft", 1.2).setAttribute("stroke-dasharray", "4 4");
-      text(ch, B.x + B.w, Y(1) - 6, "1: no miss at all", "tiny", "end");
+      text(ch, B.x + B.w, Y(1) - 6, "1: no error", "tiny", "end");
       const theory = stroke(ch, "M" + [...flat].sort((a, b) => a.m - b.m).map((q) => `${X(q.m).toFixed(1)},${Y(q.pred).toFixed(1)}`).join(" L"), "soft", 1.6);
       const rad = (q) => 2 + Math.sqrt(q.n) / 7;
       const dots = (arr, cls) => arr.map((q) => el("circle", { cx: X(q.m), cy: Y(q.z2), r: rad(q), class: cls, "fill-opacity": 0.8 }, ch));
@@ -233,8 +234,8 @@
       const dT = tru.map((q) => el("circle", { cx: X(q.m), cy: Y(q.z2), r: rad(q) + 1.5, class: "pencil", "stroke-width": 1.6, fill: "none" }, ch));
       const leg = el("g", {}, ch);
       [["against a flat surface", "neg"], ["against the final fit", "pos"], ["against the true surface", "ring"]].forEach(([s2, c], i) => { el("circle", c === "ring" ? { cx: B.x + 14, cy: B.y + 6 + i * 17, r: 5, class: "pencil", "stroke-width": 1.6, fill: "none" } : { cx: B.x + 14, cy: B.y + 6 + i * 17, r: 5, class: c }, leg); text(leg, B.x + 26, B.y + 10 + i * 17, s2, "tiny", "start"); });
-      line(leg, B.x + 6, B.y + 57, B.x + 22, B.y + 57, "soft", 1.6); text(leg, B.x + 26, B.y + 61, "1 + n p(1 − p) · miss²", "tiny", "start");
-      const cap = text(g, 300, 586, "even the true surface misses: by what the axes leave out", "mono");
+      line(leg, B.x + 6, B.y + 57, B.x + 22, B.y + 57, "soft", 1.6); text(leg, B.x + 26, B.y + 61, "1 + n p(1 − p) · error²", "tiny", "start");
+      const cap = text(g, 300, 586, "the true surface is still off by what the axes don't capture", "mono");
       return { g, update(t) {
         fade(top1, seg(t, 0, 0.08)); fade(b1, seg(t, 0.06, 0.14)); fade(b2, seg(t, 0.12, 0.2)); fade(b3, seg(t, 0.18, 0.26));
         fade(ch, seg(t, 0.25, 0.32)); theory.set(seg(t, 0.3, 0.45));
@@ -262,7 +263,7 @@
       text(Bg, x1, y0 - 12, "against the final fit", "mono", "start");
       text(Bg, x1 + w / 2, y0 + w + 24, "incoherent: each site's own", "label");
       text(Bg, x1 + w / 2, y0 + w + 42, `mean squared residual ${disp(zFit).toFixed(2)}`, "tiny");
-      text(Bg, x1 + w / 2, y0 + w + 56, `the pool variance alone predicts ${predicted.toFixed(2)}`, "tiny");
+      text(Bg, x1 + w / 2, y0 + w + 56, `the coin variance alone predicts ${predicted.toFixed(2)}`, "tiny");
       const cap = text(g, 300, y0 + w + 96, "each dot: (heads − n p) / √(n p (1 − p)), blue above, orange below", "tiny");
       return { g, update(t) { fade(A, seg(t, 0, 0.2)); fade(Bg, seg(t, 0.35, 0.55)); fade(cap, seg(t, 0.55, 0.7)); } };
     })();
@@ -448,7 +449,7 @@
         return q;
       });
       const na = sel.filter((c) => c.admitted).length;
-      const cap = text(g, 300, SQ.y + SQ.s + 28, `${na} admitted (dots), ${sel.length - na} turned back at re-profile (crosses); faint: the mesh the fit ends with`, "tiny");
+      const cap = text(g, 300, SQ.y + SQ.s + 28, `${na} admitted (dots), ${sel.length - na} rejected on re-scoring (crosses); faint: the mesh the fit ends with`, "tiny");
       return { g, update(t) {
         const n = Math.floor(seg(t, 0.05, 0.7) * sel.length);
         segs.forEach((s, i) => s && fade(s, i < n ? 0.9 : 0)); marks.forEach((m, i) => fade(m, i < n ? 1 : 0));
@@ -484,10 +485,10 @@
       const A = { x: 80, y: 110, w: 200, h: 230 }, vmax = Math.max(...pv, truth) * 1.1;
       const AX = (i) => A.x + (i / Math.max(1, pv.length - 1)) * A.w, AY = (v) => A.y + A.h - (v / vmax) * A.h;
       const a = el("g", {}, g);
-      text(a, A.x - 10, A.y - 30, "pool variance, by round", "mono", "start");
+      text(a, A.x - 10, A.y - 30, "coin variance, by round", "mono", "start");
       line(a, A.x, A.y + A.h, A.x + A.w, A.y + A.h, "", 1); line(a, A.x, A.y, A.x, A.y + A.h, "", 1);
       const tl = line(a, A.x, AY(truth), A.x + A.w, AY(truth), "warm", 1.4); tl.setAttribute("stroke-dasharray", "5 4");
-      text(a, A.x + A.w, A.y + A.h - 12, "dashed: the true 0.25²", "tiny", "end");
+      text(a, A.x + A.w, A.y + A.h - 12, `dashed: the true ${POOL_SD.toFixed(2)}²`, "tiny", "end");
       const pl = stroke(a, "M" + pv.map((v, i) => `${AX(i).toFixed(1)},${AY(v).toFixed(1)}`).join(" L"), "accent", 2.2);
       const pd = pv.map((v, i) => el("circle", { cx: AX(i), cy: AY(v), r: 4, class: "pos" }, a));
       text(a, A.x, A.y + A.h + 16, "start", "tiny", "start"); text(a, A.x + A.w, A.y + A.h + 16, "final", "tiny", "end");
@@ -539,11 +540,11 @@
     setV("dispFlat", disp(zFlat).toFixed(2)); setV("dispFit", disp(zFit).toFixed(2));
     setV("unscoreable", D.census ? String(D.census.unscoreable) : "some");
     setV("nullMean", fmt(cal0.nullMean)); setV("nullSd", fmt(cal0.nullSd)); setV("pi0", pct(cal0.pi0));
-    setV("capnote", fit.engine === "rect" && cal0.nullSd >= 2.999 ? " The spread hit its cap of 3: without one, a round in which nearly every candidate carries signal can mistake the signal for a wide null and admit nothing." : fit.engine === "tri" && cal0.nullSd >= 5.999 ? " The spread hit its cap of 6." : "");
+    setV("capnote", fit.engine === "rect" && cal0.nullSd >= 2.999 ? " The spread is at its cap of 3. Without a cap, a round where most candidates carry signal can read the signal as a wide null and admit nothing." : fit.engine === "tri" && cal0.nullSd >= 5.999 ? " The spread is at its cap of 6." : "");
     setV("prefix0", String(r0.filter((c) => c.selected).length));
     setV("naive0", String(r0.filter((c) => Math.abs(c.z) > 1.96).length));
     const sel0 = r0.filter((c) => c.selected), adm0 = sel0.filter((c) => c.admitted).length;
-    setV("admit0", sel0.length ? `Round 0 selected ${sel0.length}; ${adm0} went in and ${sel0.length - adm0} ${sel0.length - adm0 === 1 ? "was" : "were"} turned back.` : "Round 0 selected nothing.");
+    setV("admit0", sel0.length ? `Round 0 selected ${sel0.length}: ${adm0} admitted, ${sel0.length - adm0} rejected on re-scoring.` : "Round 0 selected nothing.");
     setV("nrounds", String(rounds.length));
     setV("heldout", fit.heldout ? `mean deviance ${fit.heldout.deviance.toFixed(3)} per site over ${fit.heldout.pools.toLocaleString()} sites the fit never saw` : "no held-out sites");
     active = null; measure();
@@ -554,6 +555,7 @@
   function status(s, busy) { const n = $("howstatus"); n.textContent = s; n.classList.toggle("busy", !!busy); }
   function fitNow() {
     const engine = $("engine").value, truth = $("truth").value, seed = +(root.dataset.seed || 1);
+    POOL_SD = +$("coinsd").value;
     root.dataset.engine = engine;
     data = makeData(truth, seed); data.truth = truth;
     if (!worker) { worker = new Worker(root.dataset.worker); worker.onmessage = onMsg; worker.onerror = () => status("the estimator failed to load"); }
@@ -573,6 +575,9 @@
     status(`${m.engine === "rect" ? "rectangles" : "right triangles"} · ${(m.ms / 1000).toFixed(1)} s in your browser`);
     build(data, m);
   }
+  const sdLabel = () => { $("coinsdval").textContent = (+$("coinsd").value).toFixed(2); };
+  $("coinsd").addEventListener("input", sdLabel);
+  $("coinsd").addEventListener("change", fitNow);
   $("engine").addEventListener("change", fitNow);
   $("truth").addEventListener("change", fitNow);
   $("again").addEventListener("click", () => { root.dataset.seed = (+(root.dataset.seed || 1) % 97) + 1; fitNow(); });

@@ -12,9 +12,9 @@
     <main class="explorer mesh gate" id="gate" data-worker="{{ get_url(path='mesh/fit-worker.js') }}">
       <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; <a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &nbsp;/&nbsp; The gate</div>
       <h1>A mesh that knows when to stop</h1>
-      <p class="sub">Somewhere on this square the odds of a coin change. A few thousand sites each flip their own coin a
-        handful of times. The estimator cuts a mesh, of right triangles or of rectangles, only where a false-discovery
-        gate says the flips justify a cut, and it stops when no candidate passes.</p>
+      <p class="sub">The odds of a coin vary over this square. A few thousand sites each flip a coin a handful of
+        times. The estimator refines a mesh of right triangles or rectangles only where a false-discovery gate finds
+        support in the flips, and stops when no candidate passes.</p>
       <ul class="facts">
         <li>my two C++ estimators, compiled to WebAssembly</li>
         <li>same meshes as the native builds, to 1e-11</li>
@@ -31,6 +31,8 @@
           <div class="ctl"><label for="flips"><span>Flips per site</span></label><select id="flips">
             <option value="5">about 5</option><option value="10">about 10</option><option value="20" selected>about 20</option>
             <option value="40">about 40</option><option value="80">about 80</option><option value="160">about 160</option></select></div>
+          <div class="ctl"><label for="coinsd"><span>Coin effects, sd</span><span class="val" id="coinsdval"></span></label>
+            <input type="range" id="coinsd" min="0" max="1" step="0.05" value="0.25" /></div>
           <div class="ctl" id="drawtools" hidden><label><span>Brush</span></label>
             <div class="brushrow"><label class="check"><input type="checkbox" id="lower" /> lower</label>
               <button class="secondary small" id="clear">Clear</button></div></div>
@@ -70,8 +72,9 @@
             null. The gate fits the density of all the scores, reads the null's centre and spread off the middle of it,
             estimates the share &pi;<sub>0</sub> that are noise, and admits the candidates that stand out from that null
             at a controlled false-discovery rate. When the scores have no central peak to read a null from, it falls
-            back to the textbook one. The pool variance is the spread of the coins around the surface, fitted
-            alongside it: as the mesh learns the odds, what it cannot explain shrinks toward the coins' true spread.
+            back to the textbook one. Each coin also has an effect of its own on the log-odds, and the coin variance is
+            the estimator's estimate of their spread, fitted alongside the surface: as the mesh learns the odds, what it
+            can't explain shrinks toward the spread the slider set.
             <a href="{{ get_url(path='gate/how/') }}">How the gate decides</a> draws each of these steps from a live run.</p>
         </section>
       </div>
@@ -85,10 +88,11 @@
           their C++ with Emscripten. Their dense linear algebra, which natively calls LAPACK, runs on Eigen here, and the
           builds can write a trace of each round's candidates for the illustrated page; nothing else is changed, and on my
           test designs the browser builds reproduce the native meshes to 1e-11. The two share
-          the gate and the pool model and differ in geometry: right triangles cut only through their hypotenuse, with a
+          the gate and the model for the coin effects and differ in geometry: right triangles cut only through their hypotenuse, with a
           flat fit in each; rectangles cut across either axis, with a bilinear fit in each. Half the sites are held out:
           the mesh never sees them, and the deviance card scores the fit on them. The coins are drawn on this page from
-          the odds you pick, with a random nudge per site (standard deviation 0.25 on the log-odds).</p>
+          the odds you pick, plus a normal effect per coin on the log-odds, with the standard deviation on the slider
+          (0.25 to start). Set it to zero and the coins are plain binomial.</p>
         <p>The <a href="{{ get_url(path='mesh/') }}">growing-mesh page</a> grows the same geometries by a simple greedy rule with no gate: freeform
           triangles, right triangles, rectangles and a tree, grown greedily side by side. The right triangles there are
           this estimator's geometry.</p>
