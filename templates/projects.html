@@ -44,7 +44,7 @@
       </section>
 
       <section>
-        <h2>Run it here</h2>
+        <h2>Interactive Demos</h2>
         <div class="demos">
           <a class="demo" href="{{ get_url(path='noisestate/') }}">
             <div class="shot">
@@ -52,7 +52,7 @@
               <img class="img-dark" src="{{ get_url(path='images/card-noisestate-dark.webp') }}" alt="" width="480" height="240" />
             </div>
             <div class="body">
-              <h3>Games played through noise</h3>
+              <h3>Noise-State Game Explorer</h3>
               <p>Actions move the state, the state sets what others observe, and what they observe sets
                 their next actions. My dissertation keeps that loop intact by tracking beliefs about the
                 primitive shocks. Move a slider and the equilibrium is solved again in about a second.</p>
@@ -66,7 +66,7 @@
               <img class="img-dark" src="{{ get_url(path='images/card-gate-dark.webp') }}" alt="" width="480" height="240" />
             </div>
             <div class="body">
-              <h3>A mesh that knows when to stop</h3>
+              <h3>Gated Decision Mesh</h3>
               <p>Thousands of coins, each flipped a few times, and odds that change somewhere on the square.
                 The estimator cuts a mesh only where a false-discovery gate says the flips justify it, then
                 stops on its own. Draw the odds yourself and see what it can find.</p>
@@ -76,7 +76,7 @@
           </a>
           <a class="demo slim wide" href="{{ get_url(path='mesh/') }}">
             <div class="body">
-              <h3>Two kinds of triangle, rectangles and a tree</h3>
+              <h3>Decision Mesh Geometries Compared</h3>
               <p>Freeform triangles, right triangles, rectangles and a regression tree, grown on the same noisy surface
                 one greedy cut at a time, with the same number of free parameters each. No gate here.</p>
               <span class="go">Open the page <span class="arrow">&rarr;</span></span>
@@ -86,11 +86,11 @@
       </section>
 
       <section>
-        <h2>Illustrated explanations <span class="note">drawings that build as you scroll; the numbers are computed as you read</span></h2>
+        <h2>Illustrated Explanations</h2>
         <div class="demos stories">
           <a class="demo slim" href="{{ get_url(path='dissertation/idea/') }}">
             <div class="body">
-              <h3>From beliefs about beliefs to the noise-state</h3>
+              <h3>The Noise-State, Explained</h3>
               <p>Why every belief, price and action in these games is an impulse response, and how forecasting the
                 forecasts of others collapses into a composition of kernels.</p>
               <span class="go">Read it <span class="arrow">&rarr;</span></span>
@@ -106,7 +106,7 @@
           </a>
           <a class="demo slim" href="{{ get_url(path='gate/how/') }}">
             <div class="body">
-              <h3>How the gate decides</h3>
+              <h3>The False-Discovery Gate, Step by Step</h3>
               <p>Where the decision mesh cuts and when it stops: bias-corrected scores, an empirical null, a false-discovery
                 cutoff, drawn from a live run of the estimator in your browser.</p>
               <span class="go">Read it <span class="arrow">&rarr;</span></span>
@@ -124,7 +124,7 @@
       </section>
 
       <section>
-        <h2>Work</h2>
+        <h2>Projects</h2>
         <div class="work">
           {% for project in data.project %}
           <article class="item{% if project.detour %} with-still{% endif %}">
