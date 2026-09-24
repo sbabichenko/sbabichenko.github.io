@@ -320,7 +320,7 @@ horizon:
       horizon: {kind: stationary, window: 3.0}
       numerics: {nodes: 12}
   continuation: stationary
-numerics: {nodes: 6, continuation_nodes: 12}
+numerics: {nodes: 8, continuation_nodes: 12}
 `,
     sliders: [
       { key: "p1_before", param: "p1", where: "past", label: "p₁ before 0, player 1", min: 0.1, max: 100, log: true },
@@ -331,7 +331,7 @@ numerics: {nodes: 6, continuation_nodes: 12}
       { key: "a", where: "both", label: "a mean reversion", min: 0.3, max: 3, step: 0.05 },
       { key: "T", label: "T end of the transition", min: 3, max: 12, step: 0.5, march: false },
     ],
-    nodes: { def: 6, options: [[5, "5: fastest, rough"], [6, "6: quick"], [8, "8: finer, a few seconds"], [10, "10: fine, slowest"]] },
+    nodes: { def: 8, options: [[5, "5: fastest, rough"], [6, "6: quick"], [8, "8: about a second"], [10, "10: fine, a few seconds"]] },
     march: true,
     defaultVar: "D1", defaultCtl: "D1",
     meansCaption: "",
@@ -397,7 +397,7 @@ horizon:
 numerics: {nodes: 5, continuation_nodes: 10}
 `,
   "tracking game on the cells engine (Ch. 1)": PRESETS.ch1.yaml.replace("numerics: {nodes: 12}", "numerics: {engine: cells, nodes: 24}"),
-  "delayed control and observation (Ch. 1), about 10 s": `# Finite-horizon two-player game with a control delay and a delayed observation.
+  "delayed control and observation (Ch. 1), a few seconds": `# Finite-horizon two-player game with a control delay and a delayed observation.
 name: ch1_delayed_finite
 params: {p1: 3.0, p2: 3.0, r1: 0.1, r2: 0.1, sigma: 1.0, tau: 0.25}
 channels: [w0, w1, w2]
