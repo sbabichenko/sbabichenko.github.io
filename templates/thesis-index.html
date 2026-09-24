@@ -6,6 +6,7 @@
   {% include "partials/head.html" %}
   <body class="text-black duration-200 ease-out dark:text-white">
     <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/search.css') }}" />
     {% include "partials/header.html" %}
 
     <main class="opening" id="opening">
@@ -63,6 +64,7 @@
 
       <section class="contents" id="contents">
         <h2>Contents</h2>
+        <input class="dsearch" id="dsearch" type="search" placeholder="Search all 250 pages: a word, a phrase, &ldquo;Theorem 3.2&rdquo;" aria-label="Search the dissertation" autocomplete="off" data-base="{{ get_url(path='dissertation/') }}" />
         <p class="lede">New to the idea? <a href="{{ get_url(path='dissertation/idea/') }}">From beliefs about beliefs to the
           noise-state</a> explains it with drawings computed live, and <a href="{{ get_url(path='dissertation/wedge/') }}">The price of
           changing someone&rsquo;s mind</a> does the same for the information wedge. Every page below is the dissertation itself, with its numbering, cross-references and citations
@@ -110,5 +112,6 @@
 
     {% include "partials/footer.html" %}
     <script src="{{ get_url(path='dissertation/opening.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/search.js') }}"></script>
   </body>
 </html>
