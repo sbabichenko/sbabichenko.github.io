@@ -781,7 +781,7 @@ function setParamInYaml(text, key, value) {
   const d = jsyaml.load(text); d.params[key] = value; return jsyaml.dump(d, { flowLevel: 3 });
 }
 
-function renderAll() { renderTabs(); renderControls(); }
+function renderAll() { renderTabs(); renderControls(); if (typeof updateSweepPanel === "function") updateSweepPanel(); }
 
 // ---------------------------------------------------------------------------------------------
 // Status
@@ -897,7 +897,7 @@ function onSolved(m) {
   if (req && req.game === game) {
     prevResult = lastResult && lastResult.name === res.name && lastResult.kind === res.kind ? lastResult : null;
     lastResult = res;
-    try { renderResults(res); }
+    try { renderResults(res); updateSweepPanel(); drawSweep(); }
     catch (e) { console.error(e); setStatus("warn", "Solved, drawing failed", "The solve finished but a plot could not be drawn: " + e.message); $("results").classList.remove("stale"); return; }
   }
   if (stale) { sendSolve(); return; }
@@ -1301,3 +1301,125 @@ window.addEventListener("hashchange", () => {
   if (game !== "custom") requestSolve(0); else setStatus("idle", "Ready", "Edit the model and press Solve.");
   $("tabs").scrollIntoView({ block: "nearest" });
 });
+
+// ---------------------------------------------------------------------------------------------
+// Sweep: the equilibrium costs as one slider runs across its range, the others held.  A second worker solves the
+// points one after another, each from the last one's equilibrium, so the page's own solves are never queued behind it.
+var sweepWorker = null, sweepReady = null, sweep = null, sweepSeq = 0;   // var: renderAll reads them before this line runs
+var SWEEP_POINTS = 11;
+function ensureSweepWorker() {
+  if (sweepWorker) return sweepReady;
+  sweepWorker = new Worker("worker.js");
+  sweepReady = new Promise((resolve, reject) => {
+    sweepWorker.onmessage = (ev) => {
+      const m = ev.data;
+      if (m.type === "ready") resolve();
+      else if (m.type === "fatal") reject(new Error(m.message));
+      else if (m.type === "result") onSweepResult(m);
+    };
+    sweepWorker.onerror = (e) => reject(new Error(e.message || "the sweep worker stopped"));
+  });
+  return sweepReady;
+}
+function modelWith(over) {
+  const saved = values[game];
+  values[game] = { ...saved, ...over };
+  try { return currentModel(); } finally { values[game] = saved; }
+}
+function sweepBase(key) { try { return JSON.stringify([modelWith({ [key]: 0 }), currentRequest()]); } catch (e) { return null; } }
+function sweepable(g) { return g !== "custom" && g !== "ch5" && PRESETS[g] && PRESETS[g].sliders && PRESETS[g].sliders.length; }
+function sweepPoints(s) {
+  const out = [];
+  for (let i = 0; i < SWEEP_POINTS; ++i) {
+    const u = i / (SWEEP_POINTS - 1);
+    out.push(s.log ? Math.exp(Math.log(s.min) + (Math.log(s.max) - Math.log(s.min)) * u) : s.min + (s.max - s.min) * u);
+  }
+  return out;
+}
+function stopSweep() {
+  if (sweepWorker && sweep && sweep.running) { sweepWorker.terminate(); sweepWorker = null; sweepReady = null; }
+  if (sweep) sweep.running = false;
+}
+async function runSweep() {
+  if (sweep && sweep.running) { const same = sweep.game === game; stopSweep(); if (same) { updateSweepPanel(); return; } }
+  const def = PRESETS[game], s = def.sliders.find((k) => k.key === $("sweepkey").value);
+  if (!s) return;
+  sweep = { game, key: s.key, label: s.label, log: !!s.log, xs: sweepPoints(s), i: 0, costs: {}, naive: {}, start: lastStart[game] || null,
+    base: sweepBase(s.key), running: true, id: ++sweepSeq * 100, t0: performance.now(), failed: 0 };
+  updateSweepPanel();
+  try { await ensureSweepWorker(); } catch (e) { sweep.running = false; $("sweepnote").textContent = "The sweep could not start: " + e.message; return; }
+  nextSweep();
+}
+function nextSweep() {
+  const S = sweep;
+  if (!S || !S.running) return;
+  if (S.i >= S.xs.length) { S.running = false; S.wall = (performance.now() - S.t0) / 1000; updateSweepPanel(); return; }
+  const def = PRESETS[S.game];
+  const model = modelWith({ [S.key]: S.xs[S.i] });
+  const request = { ...currentRequest(), refine: false, stability: false, return_start: true };
+  if (def.naive) request.naive_compare = def.naive;
+  const cells = model.numerics && model.numerics.engine === "cells";
+  if (S.start) request.start = S.start; else if (!cells) request.start_policy = "coarse";
+  sweepWorker.postMessage({ type: "solve", id: S.id + S.i, model, request });
+  updateSweepPanel();
+}
+function onSweepResult(m) {
+  const S = sweep;
+  if (!S || !S.running || m.id !== S.id + S.i) return;
+  const res = JSON.parse(m.result), x = S.xs[S.i], def = PRESETS[S.game];
+  const extra = def.constCost ? def.constCost({ ...values[S.game], [S.key]: x }) : {};
+  if (res.ok && res.converged) {
+    for (const [a, v] of Object.entries(res.costs)) (S.costs[a] = S.costs[a] || []).push([x, v + (extra[a] || 0)]);
+    if (res.naive && res.naive.converged) for (const [a, v] of Object.entries(res.naive.costs)) (S.naive[a] = S.naive[a] || []).push([x, v + (extra[a] || 0)]);
+    if (res.start) S.start = res.start;
+  } else S.failed++;
+  S.i++;
+  if (S.game === game) drawSweep();
+  nextSweep();
+}
+function drawSweep() {
+  const S = sweep;
+  if (!S || S.game !== game || !$("psweep")) return;
+  const pal = palette(), agents = Object.keys(S.costs), tr = [];
+  agents.forEach((a, i) => {
+    const col = pal[(i + 1) % pal.length], P = S.costs[a];
+    tr.push({ x: P.map((p) => p[0]), y: P.map((p) => p[1]), name: AGENT_LABEL[a] || a, type: "scatter", mode: "lines+markers", line: { color: col, width: 2 }, marker: { size: 5, color: col } });
+    const Q = S.naive[a];
+    if (Q && Q.length) tr.push({ x: Q.map((p) => p[0]), y: Q.map((p) => p[1]), name: (AGENT_LABEL[a] || a) + ", naive", type: "scatter", mode: "lines+markers", line: { color: col, width: 2, dash: "dash" }, marker: { size: 5, color: col, symbol: "circle-open" } });
+  });
+  const cur = values[game][S.key], L = baseLayout();
+  Plotly.react("psweep", tr, baseLayout({
+    title: titleOf("Equilibrium costs as " + S.label + " varies"),
+    xaxis: { ...L.xaxis, type: S.log ? "log" : "linear", dtick: S.log ? "D2" : undefined, title: { text: S.label } },
+    shapes: [{ type: "line", xref: "x", yref: "paper", x0: cur, x1: cur, y0: 0, y1: 1, line: { color: css("--faint"), width: 1, dash: "dot" } }],
+    hovermode: "x unified",
+  }), plotCfg);
+}
+function updateSweepPanel() {
+  const panel = $("sweeppanel");
+  if (!panel) return;
+  const ok = sweepable(game);
+  panel.hidden = !ok;
+  if (!ok) return;
+  const def = PRESETS[game], sel = $("sweepkey");
+  const opts_ = def.sliders.filter((s) => !(s.march === false && opts.march));
+  const want = sweep && sweep.game === game ? sweep.key : sel.value;
+  if (sel.dataset.game !== game) {
+    sel.innerHTML = opts_.map((s) => `<option value="${s.key}">${esc(s.label)}</option>`).join("");
+    sel.dataset.game = game;
+  }
+  if (want && opts_.some((s) => s.key === want)) sel.value = want;
+  const S = sweep && sweep.game === game ? sweep : null;
+  const btn = $("sweepbtn"), note = $("sweepnote"), plot = $("psweep");
+  btn.textContent = S && S.running ? "Stop" : S ? "Sweep again" : "Sweep";
+  plot.style.display = S ? "" : "none";
+  plot.classList.toggle("stale-plot", !!(S && !S.running && S.base !== sweepBase(S.key)));
+  if (!S) { note.textContent = `Eleven solves across the slider's range, the others held where they are.`; $("sweepcap").textContent = ""; return; }
+  if (S.running) note.textContent = `Solving ${Math.min(S.i + 1, S.xs.length)} of ${S.xs.length}…`;
+  else if (S.i < S.xs.length) note.textContent = `Stopped after ${S.i} of ${S.xs.length}.`;
+  else note.textContent = `${S.xs.length} solves in ${S.wall.toFixed(1)} s${S.failed ? `, ${S.failed} did not converge and are left out` : ""}.`;
+  if (!S.running && S.base !== sweepBase(S.key)) note.textContent += " The other parameters have moved since; sweep again to update.";
+  $("sweepcap").textContent = `Each point is a full equilibrium; the dotted line is the slider's current value.${PRESETS[game].naive ? " Dashed: the naive equilibrium." : ""} Checks are off in the sweep.`;
+}
+$("sweepbtn").onclick = runSweep;
+$("sweepkey").onchange = () => { if (sweep && sweep.game === game && !sweep.running) { sweep = null; } updateSweepPanel(); };

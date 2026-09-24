@@ -145,3 +145,5 @@
 @media (prefers-reduced-motion: reduce) {
   .explorer *, .explorer *::before { animation: none !important; transition: none !important; }
 }
+.explorer .plot.stale-plot { opacity: 0.5; transition: opacity 0.2s; }
+.explorer #sweeppanel .row select { max-width: 100%; }
