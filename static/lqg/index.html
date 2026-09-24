@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Noise-state game explorer</title>
 <meta name="description" content="Solve linear-quadratic-Gaussian games with private information in the browser, with a C++ port of the noisestate solver compiled to WebAssembly.">
-<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<!-- coi-serviceworker (MIT, Guido Zuidhof): cross-origin isolation for the threaded solver; it reloads the page once on the
+     first visit.  Its scope is this folder only. -->
+<script src="coi-serviceworker.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js" crossorigin="anonymous"></script>
 <script src="js-yaml.min.js"></script>
 <style>
 :root {
@@ -443,6 +446,8 @@ const AGENT_LABEL = { player1: "Player 1", player2: "Player 2", market_maker: "M
 let game = "ch1";
 const values = {};              // preset -> {slider key: value, nodes}
 const opts = { refine: false, stability: false, engine: "spectral", march: false };
+const lastStart = {};
+let solverThreads = 1;             // preset -> the raw maps of its last equilibrium
 let customYaml = "";
 let worker = null, workerReady = false;
 let reqId = 0, inFlight = null, pending = false, debounce = null, lastResult = null;
@@ -668,7 +673,7 @@ function startWorker() {
   worker.onmessage = (ev) => {
     const m = ev.data;
     if (m.type === "ready") {
-      workerReady = true;
+      workerReady = true; solverThreads = m.threads || 1;
       if (game === "custom" && !inFlight && !lastResult) setStatus("idle", "Ready", "Edit the model and press Solve.");
       else requestSolve(0);
     } else if (m.type === "progress") {
@@ -718,7 +723,12 @@ function sendSolve() {
   pending = false;
   $("solvebtn").disabled = true; $("stopbtn").disabled = false;
   startTimer();
-  worker.postMessage({ type: "solve", id: inFlight.id, model, request: currentRequest() });
+  // a warm start: the last equilibrium of this tab, which the solver uses when the shapes match (a parameter moved)
+  // and ignores otherwise (a new grid or a new model)
+  const request = { ...currentRequest(), return_start: true };
+  if (lastStart[game]) request.start = lastStart[game];
+  else request.start_policy = "coarse";          // a cold solve starts from the same model on a coarser grid
+  worker.postMessage({ type: "solve", id: inFlight.id, model, request });
 }
 function onSolved(m) {
   const req = inFlight; inFlight = null; stopTimer();
@@ -736,14 +746,15 @@ function onSolved(m) {
     if (stale && req && req.game === game) sendSolve();
     return;
   }
+  if (res.start && req) { lastStart[req.game] = res.start; delete res.start; }
   if (req && req.game === game) { lastResult = res; renderResults(res); }
   if (stale) { sendSolve(); return; }
   $("results").classList.remove("stale");
   const failed = res.checks.filter((d) => d.ok === false && d.name !== "converged");
-  const t = m.wall.toFixed(1);
+  const t = m.wall.toFixed(1), how = res.warm_start ? " from the last equilibrium" : "";
   if (!res.converged) setStatus("bad", "Not converged", `The fixed point did not converge (residual ${fmtE(res.residual)} after ${res.evaluations} rounds). Try a finer grid or less extreme parameters.`);
-  else if (failed.length) setStatus("warn", "Converged, with warnings", `Solved in ${t} s. ${failed.length} check${failed.length > 1 ? "s" : ""} failed; see Diagnostics below.`);
-  else setStatus("ok", "Solved", `Solved in ${t} s, ${res.evaluations} best-response rounds, residual ${fmtE(res.residual)}. All checks passed.`);
+  else if (failed.length) setStatus("warn", "Converged, with warnings", `Solved in ${t} s${how}. ${failed.length} check${failed.length > 1 ? "s" : ""} failed; see Diagnostics below.`);
+  else setStatus("ok", "Solved", `Solved in ${t} s${how}, ${res.evaluations} best-response rounds, residual ${fmtE(res.residual)}. All checks passed.`);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -933,7 +944,7 @@ function renderDiagnostics(res, out) {
     <td class="mono">${checkValue(d)}</td>
     <td>${esc(d.ok === false ? (d.flag || d.meaning) : (CHECK_MEANING[d.name.split(":")[0]] || d.meaning))}</td></tr>`).join("");
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Diagnostics</h2>
-    <p class="small muted" style="margin-top:0">${esc(res.version)} · ${esc(res.message)} · solve ${fmt(res.seconds, 2)} s.
+    <p class="small muted" style="margin-top:0">${esc(res.version)}${solverThreads > 1 ? ` · ${solverThreads} threads` : ""} · ${esc(res.message)} · solve ${fmt(res.seconds, 2)} s.
     A failed check means the numbers may be off in the digits shown here; the row says what to raise.</p>
     <div class="tablewrap"><table class="diag"><thead><tr><th>Check</th><th>Status</th><th>Value / threshold</th><th>What it means</th></tr></thead><tbody>${rows}</tbody></table></div>
     ${res.stability ? `<p class="small" style="margin:10px 0 0">Stability: spectral radius of the best-response map ${fmt(res.stability.radius, 4)}
