@@ -43,7 +43,7 @@ onmessage = async (ev) => {
   let rc;
   try {
     rc = engine.ccall("dm_run", "number", ["number", "string"],
-      [seed, "DMESH_DATA=/w/design.csv\nDMESH_DUMP=/w/run\nDMESH_SPLIT=1"]);
+      [seed, "DMESH_DATA=/w/design.csv\nDMESH_DUMP=/w/run\nDMESH_SPLIT=1" + (ev.data.detail ? "\nDMESH_TRACE=/w/run_trace.csv" : "")]);
   } catch (e) {
     postMessage({ id, type: "error", message: String(e), log });
     return;
@@ -80,11 +80,50 @@ onmessage = async (ev) => {
   const fin = JSON.parse(read("run_final_fit.json"));
   const held = log.map((s) => /^HELDOUT: mean deviance\/pool ([\d.]+) \| X2\/info ([\d.]+) \| (\d+) pools/.exec(s)).find(Boolean);
 
+  const detail = ev.data.detail ? traceOf(kind, read, v, log) : null;
   postMessage({
-    id, type: "fit", engine: kind, ms, tri, stride: K, verts, rounds,
+    id, type: "fit", engine: kind, ms, tri, stride: K, verts, rounds, detail,
     baseline: model.baseline_logit, bounds: [model.wala_min, model.wala_max, model.wac_min, model.wac_max],
     poolVariance: fin.pool_variance, coefficients: fin.coefficients,
     heldout: held ? { deviance: +held[1], x2: +held[2], pools: +held[3] } : null,
     log: log.slice(0, 400),
   }, [tri.buffer]);
 };
+
+// For the illustrated gate (/gate/how/): every scored candidate of every round with the segment it would
+// bisect, every vertex with its depth, surplus and prior, the gate's account of each round, and the surface.
+// The triangular build writes the candidates to run_trace.csv (tools/trimesh/trace.patch), the rectangular
+// one to run_candidates.csv, which it always writes.
+function traceOf(kind, read, v, log) {
+  const n = v.id.length, byId = new Map(), byXY = new Map();
+  const key = (x, y) => (+x).toFixed(6) + "," + (+y).toFixed(6);
+  const vertices = [];
+  for (let i = 0; i < n; ++i) {
+    const q = {
+      id: +v.id[i], x: +v.x[i], y: +v.y[i], depth: +(v.scale ? v.scale[i] : v.depth[i]),
+      p0: +v.parent0[i], p1: +v.parent1[i], free: v.free_coefficient[i] === "1", admitted: v.gate_admitted[i] === "1",
+      round: +v.admit_round[i], surplus: +(kind === "rect" ? v.surplus[i] : v.delta_pooled[i]), lambda: +v.lambda_v[i],
+      postVar: +v.sigma_pooled[i], active: v.active ? v.active[i] === "1" : true,
+    };
+    vertices.push(q); byId.set(q.id, q); byXY.set(key(q.x, q.y), q);
+  }
+  const c = csv(read(kind === "rect" ? "run_candidates.csv" : "run_trace.csv"));
+  const cands = [];
+  for (let i = 0; i < c.round.length; ++i) {
+    const round = +c.round[i], x = +c.x[i], y = +c.y[i];
+    let p0, p1, admitted;
+    if (kind === "rect") { p0 = byId.get(+c.parent0[i]); p1 = byId.get(+c.parent1[i]); admitted = c.admitted[i] === "1"; }
+    else { const w = byXY.get(key(x, y)); p0 = w && byId.get(w.p0); p1 = w && byId.get(w.p1); admitted = !!(w && w.admitted && w.round === round); }
+    cands.push({ round, x, y, depth: +c.depth[i], z: +c.z[i], sd: +c.sd[i], beta: +c.beta[i], lfdr: +c.lfdr[i],
+      selected: c.selected[i] === "1", admitted, seg: p0 && p1 ? [p0.x, p0.y, p1.x, p1.y] : null });
+  }
+  const calib = [];
+  for (const line of log) {
+    const g = /^\[calibration\] round (\d+) M (\d+) score mean\/sd (\S+?)\/(\S+) emp-null mean\/sd\/pi0 (\S+?)\/(\S+?)\/(\S+) method (\S+) admitted-prefix (\d+) lindsey-status (\S+)/.exec(line);
+    if (g) calib.push({ round: +g[1], M: +g[2], mean: +g[3], sd: +g[4], nullMean: +g[5], nullSd: +g[6], pi0: +g[7], method: g[8], prefix: +g[9], status: g[10] });
+  }
+  const s = csv(read("run_surface.csv"));
+  const surface = { x: num(s.gx), y: num(s.gy), f: num(s.g_hat) };
+  const census = log.map((l) => /\[candidate census\] attempted (\d+) scored (\d+) unscoreable (\d+) \| reprofiled (\d+) rejected (\d+)/.exec(l)).find(Boolean);
+  return { vertices, cands, calib, surface, census: census ? { attempted: +census[1], scored: +census[2], unscoreable: +census[3], reprofiled: +census[4], rejected: +census[5] } : null };
+}
