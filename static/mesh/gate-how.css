@@ -25,3 +25,5 @@
 #stage text.small { font-size: 12px; }
 #stage text.tiny { font: 10px ui-monospace, Menlo, monospace; fill: var(--ink-3); }
 #stage .stagebusy { font: 12px ui-monospace, Menlo, monospace; letter-spacing: 0.08em; fill: var(--ink-3); }
+.gatehow .howbar input[type=range] { width: 120px; accent-color: var(--accent); }
+.gatehow .howbar .val { font: 0.8rem ui-monospace, Menlo, monospace; color: var(--ink); min-width: 2.2em; }

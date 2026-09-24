@@ -15,11 +15,13 @@
       <section class="ideahead">
         <p class="eyebrow"><a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &middot; <a href="{{ get_url(path='gate/') }}">The gate</a> &middot; illustrated</p>
         <h1>How the gate decides</h1>
-        <p class="lede">The decision mesh only cuts where the data justify a cut. This is how it decides. Every drawing
-          below comes from one run of the estimator, in your browser, on coin flips drawn on this page.</p>
+        <p class="lede">The decision mesh adds a vertex only where the data support one, and stops when nothing
+          else does. The drawings below come from one run of the estimator in your browser, on coin flips drawn on this
+          page.</p>
         <div class="howbar">
           <label>Estimator <select id="engine"><option value="tri" selected>Right triangles</option><option value="rect">Rectangles</option></select></label>
           <label>The odds <select id="truth"><option value="peaks" selected>Three peaks</option><option value="hills">Two hills</option><option value="ring">A ring</option></select></label>
+          <label>Coin effects, sd <input type="range" id="coinsd" min="0" max="1" step="0.05" value="0.25" /> <span class="val" id="coinsdval">0.25</span></label>
           <button id="again" type="button">Flip again</button>
           <span class="howstatus" id="howstatus">Fitting&hellip;</span>
         </div>
@@ -29,104 +31,104 @@
         <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
         <div class="steps">
           <div class="step" data-scene="sites">
-            <p>Somewhere on this square the odds of a coin change. Six thousand sites each flip their own coin about twenty
-              times, and each dot is one site&rsquo;s share of heads.</p>
-            <p class="small">Every site&rsquo;s coin also carries a nudge of its own. Half the sites are held out: the estimator never sees them, and they score the fit at the end.</p>
+            <p>The odds of a coin vary over this square. Six thousand sites each flip a coin about twenty times. Each dot
+              is one site&rsquo;s share of heads.</p>
+            <p class="small">Each coin also has an effect of its own on its log-odds, with the standard deviation set by
+              the slider above. Half the sites are held out: the estimator never sees them, and they are used to score the
+              fit at the end.</p>
           </div>
           <div class="step" data-scene="funnel">
-            <p>A binomial&rsquo;s variance is fixed by its mean. Know a coin&rsquo;s odds and you know how far its share
-              of heads may stray, so every excess over that spread is visible. Nearly everything below leans on this.</p>
-            <p class="small">Measured against the fitted odds, the sites spread more than a binomial allows:
-              <span data-v="outside">&hellip;</span> fall outside the lines, where a binomial would put 5%.</p>
+            <p>For a binomial, the variance is determined by the mean. If you know a coin&rsquo;s odds, you know how much
+              its share of heads should vary, so any extra variation can be measured.</p>
+            <p class="small">Against the fitted odds, <span data-v="outside">&hellip;</span> of sites fall outside the 95%
+              lines. With no coin effects it would be about 5%.</p>
           </div>
           <div class="step" data-scene="wrongmean">
-            <p>But the odds are never known, only fitted, and a wrong mean shows up as variance. A site&rsquo;s miss has
-              two sources: the fitted surface can miss the true one, and the two axes may not describe everything that
-              sets a coin&rsquo;s odds.</p>
-            <p class="small">Both count the same: the excess grows with the square of the whole miss, whatever its
-              source. The page drew the coins, so both parts are known here. Even the true surface leaves a miss, the part
-              the axes can&rsquo;t describe. In this demo that is a nudge per site; in real pools it is everything the
-              coordinates don&rsquo;t record.</p>
+            <p>The odds themselves have to be estimated, and an error in the mean also shows up as extra variance. A
+              site&rsquo;s error has two parts: the fitted surface can be off from the true surface, and the two axes may
+              not capture everything that determines a coin&rsquo;s odds.</p>
+            <p class="small">Both parts add to the variance in the same way, growing with the square of the error. Since
+              this page generated the coins, both parts are known. Even the true surface is off by the part the axes
+              don&rsquo;t capture, which here is the coin effect.</p>
           </div>
           <div class="step" data-scene="coherent">
-            <p>Overdispersion comes in two kinds. <em>Coherent</em>: neighbours share the excess, and the surface should
-              bend there. <em>Incoherent</em>: each site has its own, and no surface can follow it.</p>
-            <p class="small">That is how the two misses come apart. A missed surface is shared by neighbours, since they
-              sit under the same wrong piece of it. What the axes miss is each site&rsquo;s own: any part of it that
-              varied along the axes would be part of the surface.
-              Against a flat surface the mean square is <span data-v="dispFlat">&hellip;</span> and the excess clusters;
-              against the final fit it is <span data-v="dispFit">&hellip;</span> and scattered. The gate cuts only for the
-              coherent part. The rest goes into the pool variance, which tells the gate how much disagreement to expect
-              before it believes a pattern.</p>
+            <p>So there are two kinds of overdispersion. <em>Coherent</em>: neighbouring sites share it, and the surface
+              should change there. <em>Incoherent</em>: each site has its own, and no surface can fit it.</p>
+            <p class="small">An error in the surface is shared by neighbours, since they sit under the same part of it. The
+              part the axes miss is specific to each site; anything in it that varied along the axes would belong to the
+              surface. Against a flat surface the mean squared residual is <span data-v="dispFlat">&hellip;</span> and the
+              large residuals cluster; against the final fit it is <span data-v="dispFit">&hellip;</span> and they
+              don&rsquo;t. The mesh is refined for the coherent part. The incoherent part is the coin variance, which
+              the gate uses as the baseline level of disagreement between sites.</p>
           </div>
           <div class="step" data-scene="coarse">
-            <p data-engine="tri">The fit starts from a coarse mesh of right triangles with two things free: a level and a
-              tilt. A triangle can only split through the midpoint of its longest edge, and a split that would leave a
-              vertex hanging on a neighbour&rsquo;s edge splits the neighbour too.</p>
-            <p data-engine="rect">The fit starts from an 8 &times; 8 grid of rectangles with the corners and the two
-              midlines free. A rectangle can be cut through either midline, so every cell offers both directions and the
-              gate chooses. A vertex left hanging on a longer edge takes its height from that edge, and the surface stays continuous.</p>
-            <p class="small">Every segment drawn here has a candidate vertex at its middle.</p>
+            <p data-engine="tri">The fit starts from a coarse mesh of right triangles with two free parameters, a level and
+              a tilt. A triangle can only be split at the midpoint of its longest edge. If that would leave a vertex in the
+              middle of a neighbour&rsquo;s edge, the neighbour is split too.</p>
+            <p data-engine="rect">The fit starts from an 8 &times; 8 grid of rectangles, with the corners and the two
+              midlines free. A rectangle can be split along either midline, so both directions are offered as candidates
+              and the gate picks. A vertex in the middle of a longer edge takes its height from that edge, so the surface
+              stays continuous.</p>
+            <p class="small">Each segment drawn here has a candidate vertex at its midpoint.</p>
           </div>
           <div class="step" data-scene="surplus">
-            <p>A vertex that isn&rsquo;t free sits exactly at the average of its two parents, the ends of the segment it
-              splits. A free vertex may depart from that average by its <em>surplus</em>.</p>
-            <p class="small">Admitting a candidate means letting its surplus be something other than zero. A prior keeps
-              each surplus near zero, more tightly the deeper the vertex: coarse corrections may be large, fine ones must be
-              small unless the data insist.</p>
+            <p>A vertex that isn&rsquo;t free sits at the average of its two parents, the endpoints of the segment it
+              splits. A free vertex can differ from that average by its <em>surplus</em>.</p>
+            <p class="small">Admitting a candidate means allowing its surplus to be nonzero. A prior shrinks each surplus
+              toward zero, more strongly for deeper vertices, so fine corrections need more evidence than coarse ones.</p>
           </div>
           <div class="step" data-scene="score">
-            <p>A round offers every candidate at once and scores each against the current fit: would a surplus here
-              help? The score adds up the residuals of the sites under the candidate&rsquo;s tent.</p>
-            <p class="small">Blue: the data want the surface higher there. Orange: lower. Bigger dots, stronger scores.
-              Round 0 scored <span data-v="M0">&hellip;</span> candidates. Over the whole run, <span data-v="unscoreable">some</span>
-              more had too little data under them to be scored at all.</p>
+            <p>Each round scores every candidate against the current fit: would a nonzero surplus there improve it? The
+              score is a weighted sum of the residuals of the sites under the candidate&rsquo;s tent.</p>
+            <p class="small">Blue means the data pull the surface up there, orange means down; larger dots are larger
+              scores. Round 0 scored <span data-v="M0">&hellip;</span> candidates. Over the whole run,
+              <span data-v="unscoreable">some</span> more had too few sites under them to be scored.</p>
           </div>
           <div class="step" data-scene="corrections">
-            <p>A raw score flatters. Three corrections make it honest. Each site&rsquo;s residual is <em>centred</em>:
-              shrinkage and the coarseness of counts give it a nonzero mean even where the surface is right.</p>
-            <p class="small">The part of the tent that the existing coefficients could absorb is taken out, a first-order
-              refit, so a candidate gets no credit for a slope its parents could make. The bias the prior&rsquo;s shrinkage
-              induces comes out too. What is left, divided by its standard deviation, is the candidate&rsquo;s <i>z</i>.</p>
+            <p>The raw score is biased, and three corrections are applied. First, each residual is <em>centred</em>:
+              shrinkage and the discreteness of the counts give it a nonzero mean even when the surface is right.</p>
+            <p class="small">Second, the part of the candidate&rsquo;s tent that the existing coefficients could absorb is
+              removed (a first-order refit), so a candidate isn&rsquo;t credited for a slope its parents could fit. Third,
+              the bias from the prior&rsquo;s shrinkage is removed. Dividing by the standard deviation gives the
+              candidate&rsquo;s <i>z</i>.</p>
           </div>
           <div class="step" data-scene="family">
-            <p>One <i>z</i> means little alone, so the gate reads the whole round at once. If no candidate mattered, the
-              scores would pile up in one bell curve: the null.</p>
-            <p class="small">Lindsey&rsquo;s method fits the density of the scores and reads the null off its middle, so a
-              round that is shifted or spread out as a whole is judged against itself, not the textbook bell. Here the null
-              is centred at <span data-v="nullMean">&hellip;</span> with spread <span data-v="nullSd">&hellip;</span> (the
-              textbook: 0 and 1), and it puts <span data-v="pi0">&hellip;</span> of the candidates down as noise.<span data-v="capnote"></span></p>
+            <p>The gate looks at all of a round&rsquo;s scores together. If no candidate mattered, they would follow a
+              single bell curve, the null.</p>
+            <p class="small">Lindsey&rsquo;s method fits the density of the scores and estimates the null from its
+              centre, so a round whose scores are shifted or spread out is compared with its own null rather than
+              N(0, 1). Here the null has centre <span data-v="nullMean">&hellip;</span> and spread
+              <span data-v="nullSd">&hellip;</span>, and <span data-v="pi0">&hellip;</span> of candidates are estimated to
+              be noise.<span data-v="capnote"></span></p>
           </div>
           <div class="step" data-scene="lfdr">
-            <p>The null gives each candidate a local false discovery rate: how likely it is to be noise, given its score.
-              Best first, the gate takes the longest run whose average stays at or below 10%.</p>
-            <p class="small">In round 0 that run is <span data-v="prefix0">&hellip;</span> long. A textbook cutoff,
-              |<i>z</i>| &gt; 1.96, would have taken <span data-v="naive0">&hellip;</span>.</p>
+            <p>From the null, each candidate gets a local false discovery rate: the probability it is noise given its
+              score. Sorted best first, the gate takes the longest run whose average stays at or below 10%.</p>
+            <p class="small">In round 0 that is <span data-v="prefix0">&hellip;</span> candidates. A cutoff of
+              |<i>z</i>| &gt; 1.96 would have taken <span data-v="naive0">&hellip;</span>.</p>
           </div>
           <div class="step" data-scene="admit">
-            <p>Admission is careful. The selected candidates go in one at a time, best first, each re-profiled against a
-              surface the earlier admissions may already have moved, and each admitted only if it still improves the fit.</p>
+            <p>The selected candidates are admitted one at a time, best first. Each is re-scored against the surface as
+              updated by the earlier admissions, and admitted only if it still improves the fit.</p>
             <p class="small"><span data-v="admit0">&hellip;</span></p>
           </div>
           <div class="step" data-scene="rounds">
-            <p>Then the next round, against the new fit. As the signal is used up, each round&rsquo;s scores look more like
-              noise, and its null closes in on the textbook one.</p>
-            <p class="small">Three rounds in a row that admit nothing and the gate stops. This run took
+            <p>The next round scores the new candidates against the new fit. As the signal is used up, the scores look
+              more like noise and the null gets closer to N(0, 1).</p>
+            <p class="small">After three rounds in a row with no admissions, the gate stops. This run took
               <span data-v="nrounds">&hellip;</span> rounds.</p>
           </div>
           <div class="step" data-scene="variance">
-            <p>Two variances are refitted between rounds. The pool variance is the incoherent excess, the spread around the
-              surface that no surface can follow: as the mesh takes up the coherent part, it falls toward the spread the
-              coins really have.</p>
-            <p class="small">The depth variance sets how far a surplus at each depth may stray. It is estimated by EM from
-              the admitted surpluses: their squares plus their posterior variances, averaged by depth. Adding the posterior
-              variance back is what keeps a depth from freezing at its floor.</p>
+            <p>Two variances are refitted between rounds. The coin variance is the incoherent part, the spread around the
+              surface. As the mesh picks up the coherent part, it falls toward the true variance of the coin effects.</p>
+            <p class="small">The depth variance controls how large a surplus at each depth can be. It is estimated by EM
+              from the admitted surpluses, averaging their squares plus their posterior variances by depth. Including the
+              posterior variance keeps a depth&rsquo;s variance from getting stuck at its floor.</p>
           </div>
           <div class="step" data-scene="done">
-            <p>What is left is a surface that is flat wherever the flips were silent, and cut finely only where they
-              insisted.</p>
-            <p class="small">On the held-out half: <span data-v="heldout">&hellip;</span>. Change the odds or the
-              estimator above and the whole story redraws from a new run.</p>
+            <p>The final surface is flat where the data show nothing and refined where they show a pattern.</p>
+            <p class="small">On the held-out half: <span data-v="heldout">&hellip;</span>. Changing any setting above
+              refits and redraws every step.</p>
           </div>
         </div>
       </section>
@@ -138,7 +140,8 @@
           <a href="{{ get_url(path='mesh/') }}">Watch meshes grow</a>
         </div>
         <p class="note">The run: 6,000 sites on the unit square, each flipping a coin about 20 times (between 10 and 30),
-          with odds from the picture chosen above plus a nudge per site (standard deviation 0.25 on the log-odds), fitted by
+          with odds from the picture chosen above plus a normal effect per coin on the log-odds (standard deviation from the
+          slider), fitted by
           <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a> or
           <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a> compiled to
           WebAssembly. The scores, nulls, false discovery rates, admissions and variances drawn here are the
