@@ -169,3 +169,8 @@
 .explorer .facts .copy { font: inherit; background: none; border: 0; padding: 0; cursor: copy; color: inherit; }
 .explorer .facts .copy code { font-size: 0.95em; }
 .explorer .facts .copy.done code::after { content: "  copied"; color: var(--accent); font-family: inherit; }
+
+/* the "Cite it" block under the notes */
+.explorer .cite { margin: 1.4rem 0 0; font-size: 0.88rem; color: var(--muted); }
+.explorer .cite summary { cursor: pointer; }
+.explorer .cite pre { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 0.9rem 1rem; overflow-x: auto; font-size: 0.78rem; margin-top: 0.7rem; color: var(--text); white-space: pre; }
