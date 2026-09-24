@@ -157,7 +157,8 @@
         face1 = new Face(mesh, chord, edge1, this.sub["1"], side, false, face.path + "+");
         face.subdiv[face.edges.indexOf(this)] = { e: chord, "+": face1, "-": face0 };
       }
-      if (Math.max(face0.aspectRatio(), face1.aspectRatio()) >= mesh.maxAspectRatio) {
+      if (Math.max(face0.aspectRatio(), face1.aspectRatio()) >= mesh.maxAspectRatio ||
+          Math.min(face0.idx.length, face1.idx.length) < mesh.minPoints) {
         this.disqualifying.add(face);
         if (!this.midpoint.disqualified) { this.midpoint.disqualified = true; mesh.heap.delete(this.midpoint); }
       }
@@ -230,9 +231,11 @@
 
   class DecisionMesh {
     // X: Float64Array of 2n coordinates (x0, y0, x1, y1, ...), Y: Float64Array of n values
-    constructor(X, Y, { maxAspectRatio = 5, rng = Math.random } = {}) {
+    // minPoints (not in the Python; 0 keeps its behaviour): a split is disqualified, like a too-thin one, when either
+    // new triangle would hold fewer data points, which keeps a vertex from being fitted to one or two points
+    constructor(X, Y, { maxAspectRatio = 5, minPoints = 0, rng = Math.random } = {}) {
       this.X = X; this.Y = Y; this.n = Y.length;
-      this.maxAspectRatio = maxAspectRatio; this.rng = rng;
+      this.maxAspectRatio = maxAspectRatio; this.minPoints = minPoints; this.rng = rng;
       this.vertices = new Set(); this.activeFaces = new Set(); this.activeEdges = new Set();
       this.heap = new Map();
       let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;

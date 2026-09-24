@@ -1,5 +1,5 @@
 /* the Decision Mesh demo: on top of the explorer's tokens and components (lqg/explorer.css) */
-.explorer.mesh .meshbar { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px 20px; }
+.explorer.mesh .meshbar { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 12px 16px; }
 .explorer.mesh .meshbar select { width: 100%; }
 .explorer.mesh .stage { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 @media (max-width: 760px) { .explorer.mesh .stage { grid-template-columns: 1fr 1fr; } .explorer.mesh .stage figure:last-child { grid-column: 1 / -1; max-width: 50%; justify-self: center; width: 100%; } }
@@ -17,3 +17,5 @@
 .explorer.mesh .ctl select { width: 100%; font: inherit; font-size: 0.9rem; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); margin-top: 4px; }
 .explorer.mesh .legend { display: flex; gap: 16px; font-size: 0.82rem; color: var(--muted); margin-top: 6px; }
 .explorer.mesh .legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.explorer.mesh .meshbar .ctl { display: flex; flex-direction: column; justify-content: space-between; }
+@media (min-width: 700px) { .explorer.mesh .meshbar .ctl label { white-space: nowrap; } }
