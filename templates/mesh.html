@@ -1,0 +1,132 @@
+{#- The Decision Mesh demo (/mesh): the site's head, header and footer around a canvas demo whose assets live in
+    static/mesh.  It shares the explorer's stylesheet, so the two project pages read as one site. -#}
+{% import "macros.html" as macros %}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='noisestate/explorer.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='mesh/mesh.css') }}" />
+    {% include "partials/header.html" %}
+
+    <main class="explorer mesh">
+      <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; Decision Mesh</div>
+      <h1>Decision Mesh</h1>
+      <p class="sub">A regression tree cuts the plane into boxes and predicts a constant in each, so its fit is a
+        staircase. A decision mesh cuts the plane into pieces that share their corners and predicts across each piece
+        from those corner heights, so its fit is continuous. Below, four fits
+        grow on the same noisy data, each given the same number of free parameters.</p>
+      <ul class="facts">
+        <li>runs in your browser</li>
+        <li>freeform triangles: a port of <a href="https://github.com/sbabichenko/Decision-Mesh">DecisionMesh.py</a>, matching it to 1e-12</li>
+        <li>right triangles: the geometry of <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a></li>
+        <li>rectangles: the geometry of <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a></li>
+        <li id="speedfact">a few milliseconds a step</li>
+      </ul>
+
+      <details class="howto">
+        <summary>How each mesh cuts</summary>
+        <p><b>Freeform triangles.</b> Every edge carries a candidate vertex at its midpoint; activating it splits the
+          one or two triangles on that edge through their opposite corners. Any edge can be cut, so the mesh can turn
+          to follow a feature in any direction, at the price of thin triangles, which the aspect limit keeps in check.</p>
+        <p><b>Right triangles.</b> Every triangle is right isosceles and is only ever cut through the midpoint of its
+          hypotenuse, which gives two smaller right isosceles triangles. If the triangle across that hypotenuse would be
+          left with a vertex hanging in its side, it is cut first (the completion step), so the mesh never has hanging
+          vertices and its triangles never get thin, however long it grows. It cannot turn to follow a feature; it can
+          only get finer where the feature is.</p>
+        <p><b>Rectangles.</b> Every cell can be cut across either axis, so the refinement can follow anisotropy that
+          lines up with the axes; inside a cell the fit is bilinear, which carries the interaction of the two
+          coordinates that a flat triangle cannot. A vertex left hanging in the middle of a coarser cell's edge takes
+          that edge's endpoints as its parents, which keeps the surface continuous with no constraints to store.</p>
+        <p>In the right triangles and the rectangles, a vertex's height is its parents' average plus a surplus of its
+          own, and a new vertex costs a parameter only once the rule frees its surplus. In all three, each candidate
+          knows the least-squares change it would make with everything else held fixed and how much squared error that
+          would save; each step takes the largest saving. The tree is ordinary best-first CART. All four are grown to
+          the same number of free parameters: one height or surplus per free vertex, one mean per tree leaf.</p>
+      </details>
+
+      <section class="panel">
+        <div class="meshbar">
+          <div class="ctl"><label for="surface"><span>Surface</span></label><select id="surface"></select></div>
+          <div class="ctl"><label for="npts"><span>Points</span></label><select id="npts">
+            <option value="2000">2,000</option><option value="5000" selected>5,000</option><option value="10000">10,000</option><option value="20000">20,000</option></select></div>
+          <div class="ctl"><label for="noise"><span>Noise &sigma;</span><span class="val" id="noiseval"></span></label><input type="range" id="noise" min="0" max="1.5" step="0.05" value="0.5" /></div>
+          <div class="ctl"><label for="eps"><span>Explore &epsilon;</span><span class="val" id="epsval"></span></label><input type="range" id="eps" min="0" max="0.5" step="0.01" value="0.1" /></div>
+          <div class="ctl"><label for="aspect"><span>Aspect limit</span><span class="val" id="aspectval"></span></label><input type="range" id="aspect" min="2" max="12" step="0.5" value="5" /></div>
+          <div class="ctl"><label for="minpts" title="the fewest points a new piece may hold; 0 is the published triangular algorithm, 3 stops a vertex being fitted to one or two points"><span>Min points</span><span class="val" id="minptsval"></span></label><input type="range" id="minpts" min="0" max="10" step="1" value="3" /></div>
+          <div class="ctl"><label for="refresh" title="Refit the candidate splits around a vertex whose height was refitted (off is the algorithm as published)"><span>Refresh fits<sup>&#9651;</sup></span><input type="checkbox" id="refresh" class="box" /></label><div class="hint">after each refit</div></div>
+        </div>
+      </section>
+
+      <div id="statusbar">
+        <span class="chip idle" id="chip">Ready</span>
+        <span id="statustext">Starting when the meshes come into view.</span>
+        <span class="buttons">
+          <button class="secondary" id="resetbtn" title="New data and a fresh mesh">New data</button>
+          <button class="secondary" id="stepbtn" title="One step">Step</button>
+          <button class="primary" id="playbtn">Play</button>
+        </span>
+      </div>
+
+      <section class="panel">
+        <div class="stage">
+          <figure><div class="cv"><canvas id="cvmesh" width="320" height="320"></canvas></div>
+            <figcaption><b>Freeform triangles</b> <span id="capmesh"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvright" width="320" height="320"></canvas></div>
+            <figcaption><b>Right triangles</b> <span id="capright"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvrect" width="320" height="320"></canvas></div>
+            <figcaption><b>Rectangles</b> <span id="caprect"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvtree" width="320" height="320"></canvas></div>
+            <figcaption><b>Regression tree</b> <span id="captree"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvtruth" width="320" height="320"></canvas></div>
+            <figcaption><b>Truth</b> <span class="muted">the surface under the noise</span></figcaption></figure>
+          <figure class="boardfig"><div class="board" id="board"></div></figure>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <label class="check"><input type="checkbox" id="showedges" checked /> Mesh and tree lines</label>
+          <label class="check"><input type="checkbox" id="showpts" /> Data points</label>
+          <span class="scopenote"><sup>&#9651;</sup> freeform triangles only</span>
+          <label class="check speedctl" for="speed">Speed <input type="range" id="speed" min="1" max="40" step="1" value="1" /> <span class="val" id="speedval"></span> a frame</label>
+          <span class="scale" id="scale"></span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Error against the truth</h2>
+        <div class="cv wide"><canvas id="cvcurve" width="900" height="220"></canvas></div>
+        <p class="caption">Root-mean-square distance from the true surface over the square, against the number of free
+          parameters; the dashed line is the noise &sigma;. On all six surfaces the right triangles get closest to the
+          truth. Best RMSE over a run (freeform / right / rectangles / tree): cliff 0.161 / <b>0.130</b> / 0.170 / 0.217,
+          hills 0.127 / <b>0.091</b> / 0.123 / 0.152, saddle 0.099 / <b>0.075</b> / 0.120 / 0.229, disk 0.329 /
+          <b>0.277</b> / 0.284 / 0.303, ripples 0.578 / <b>0.464</b> / 0.485 / 0.495, waves 0.206 / <b>0.162</b> / 0.164 /
+          0.232. Their lead is largest early, at fifty parameters. Probably because their pieces cannot go thin, and a cut
+          costs no parameter until the rule frees its surplus, so resolution goes where the error is without paying
+          for completion. Late in a run every mesh starts fitting noise and the curves turn up. A minimum of 3 points per
+          piece is the default (0 is the published freeform algorithm), and "refresh fits" refits the freeform
+          candidates around a vertex whose height has just moved, which the published algorithm leaves stale.</p>
+      </section>
+
+      <div class="notes">
+<p>The freeform engine is a line-for-line JavaScript port of my
+          <a href="https://github.com/sbabichenko/Decision-Mesh">Decision Mesh</a>, matching the Python's squared error
+          to 1e-12 over the first 400 steps. The right-triangle and rectangular engines are written for this page: they
+          are the geometries of <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a>
+          (newest-vertex bisection with completion) and
+          <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a> (dyadic
+          bisection, two parents per vertex, bilinear cells), grown by the same greedy rule as the freeform triangles, so
+          the panels differ only in their geometry. Data, cuts and pictures are all computed on this page.</p>
+        <p>None of these four has a stopping rule: they grow until the page runs out of budget. The estimator I actually
+          use chooses its cuts with an empirical-null false-discovery gate and stops by itself;
+          <a href="{{ get_url(path='gate/') }}">it runs here too</a>, compiled from its C++, and
+          <a href="{{ get_url(path='gate/how/') }}">How the gate decides</a> walks through one of its fits step by step.</p>
+        <p>Also on this site: the <a href="{{ get_url(path='noisestate/') }}">noise-state game explorer</a>, which solves the games of my dissertation in your browser.</p>
+      </div>
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='mesh/decision-mesh.js') }}"></script>
+    <script src="{{ get_url(path='mesh/right-mesh.js') }}"></script>
+    <script src="{{ get_url(path='mesh/rect-mesh.js') }}"></script>
+    <script src="{{ get_url(path='mesh/mesh-demo.js') }}"></script>
+  </body>
+</html>

@@ -1,10 +1,24 @@
 [[project]]
+name = "Noise-State Calculus for Dynamic Games with Strategic Information"
+desc = "My dissertation. It solves forecasting the forecasts of others, which economics has worked around since Keynes. Each player keeps estimates of the primitive shocks instead of belief hierarchies, so beliefs, prices and policies are impulse responses and equilibrium is a fixed point in them. The information wedge prices changing an opponent's beliefs."
+tags = ["research", "dissertation"]
+detour = true
+image = "images/card-noisestate"
+links = [
+    { name = "read it", url = "/dissertation/", primary = true },
+    { name = "try the games", url = "/noisestate/" },
+    { name = "pypi", url = "https://pypi.org/project/noisestate/" }
+]
+
+[[project]]
 name = "Forecasting and Manipulating the Forecasts of Others"
 desc = "First exact equilibrium characterization of finite-player continuous-time LQG games with endogenous signals"
 tags = ["research", "game theory"]
+image = "images/card-noisestate"
 links = [
     { name = "arxiv", url = "https://arxiv.org/abs/2603.12140" },
-    { name = "interactive demo", url = "/lqg" },
+    { name = "try the explorer", url = "/noisestate/", primary = true },
+    { name = "pypi", url = "https://pypi.org/project/noisestate/" },
     { name = "github", url = "https://github.com/sbabichenko/Noise-State-Games" }
 ]
 
@@ -12,6 +26,9 @@ links = [
 name = "Decision Mesh"
 desc = "A hierarchical mesh based decision tree that yields continuity with minimal drawbacks"
 tags = ["personal", "data science"]
+image = "images/card-mesh"
 links = [
+    { name = "the gated estimator", url = "/gate/", primary = true },
+    { name = "four meshes compared", url = "/mesh/" },
     { name = "github", url = "https://github.com/sbabichenko/Decision-Mesh" }
 ]

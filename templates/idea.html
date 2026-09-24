@@ -1,0 +1,127 @@
+{#- /dissertation/idea: from beliefs about beliefs to the noise-state, in steps beside drawings that are
+    computed on the page (static/dissertation/idea.js) from a small filtering problem: a state X driven by shocks,
+    watched by two players through noisy signals. Formulas are SVG from tools/make_formula.js. -#}
+{%- set fx = load_data(path="data/formula.json") -%}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css') }}" />
+    {% include "partials/header.html" %}
+    <div class="progress" id="progress" aria-hidden="true"></div>
+
+    <main class="opening idea">
+      <section class="ideahead">
+        <p class="eyebrow"><a href="{{ get_url(path='dissertation/') }}">Dissertation</a> &middot; illustrated explanation</p>
+        <h1>From beliefs about beliefs to the noise-state</h1>
+        <p class="lede">Why the dissertation writes everything as impulse responses. Every drawing below is computed on this
+          page from one small problem: a state <i>X</i> pushed around by random shocks, watched by two players through
+          their own noisy signals.</p>
+      </section>
+
+      <section class="story" id="story">
+        <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
+        <div class="steps">
+          <div class="step" data-scene="doctor">
+            <p>A doctor tells you that you have six months to live. Six months where you feel perfectly fine. Maybe you quit
+              an unfulfilling job, see the world, spend more time with friends and family.</p>
+            <p class="small">The strangers you pass don&rsquo;t know. For them the world carries on as usual, so your new
+              plans are made for a world where everyone else acts mostly the same.</p>
+          </div>
+          <div class="step" data-scene="sun">
+            <p>Now everyone finds out, credibly, that in six months the sun will explode. It makes a world of difference. If
+              you planned to tour the world, who is going to fly the plane?</p>
+            <p class="small">Everyone is making the same kind of plans you are, and it would be foolish to make yours
+              assuming the world stays the same. Pandemonium.</p>
+          </div>
+          <div class="step" data-scene="telescope">
+            <p>Now only five researchers find out. They look through a telescope, do the calculations, and reach the same
+              conclusion. The news affects everyone, and nobody else knows. If they all quit their jobs and travel the
+              world, it will be obvious something happened, and then pandemonium.</p>
+            <p class="small">So they act quietly. What they do is how the rest find out.</p>
+          </div>
+          <div class="step" data-scene="hands">
+            <p>Put that into the textbook model. Many people push on one state, and each acts on their own estimate of
+              it, the way a single controller would.</p>
+            <p class="small">Now the state moves with everyone&rsquo;s estimates, so to choose an action you have to
+              anticipate what the others estimate.</p>
+          </div>
+          <div class="step" data-scene="tower">
+            <p>Your actions depend on what you believe about the world, and on what you think others believe. If everyone
+              acts on their beliefs about others&rsquo; beliefs, those become relevant too: beliefs about beliefs about
+              beliefs. There is no last layer.</p>
+            <p class="small">With <i>n</i> players there are <i>n</i> beliefs of the second order, <i>n</i>&sup2; of the
+              third, and so on. Townsend called it forecasting the forecasts of others.</p>
+          </div>
+          <div class="step" data-scene="randomness">
+            <p>Change what a belief is a belief about. Underneath everyone&rsquo;s model of everyone else are the same
+              sources of randomness. Estimate those, and the nested models are no longer needed.</p>
+          </div>
+          <div class="step" data-scene="shocks">
+            <p>In a linear-quadratic-Gaussian game nothing moves on its own. Every price, belief and action moves because
+              some primitive shock hit it: a surprise in demand, a trader&rsquo;s news, the noise in a signal.</p>
+            <p class="small">Call the shocks <i>W</i>. Above them, the state <i>X</i> they push around.</p>
+          </div>
+          <div class="step" data-scene="irf">
+            <p>Hit the system with a single shock at time <i>s</i> and watch what follows. The trace it leaves is the
+              impulse response <i>L</i>(<i>t</i>, <i>s</i>): how much of a shock at <i>s</i> still shows at <i>t</i>.</p>
+            <p class="small">For an Ornstein&ndash;Uhlenbeck process it is <i>e</i><sup>&minus;(<i>t</i>&minus;<i>s</i>)</sup>;
+              here, its discrete cousin 0.92<sup><i>t</i>&minus;<i>s</i></sup>.</p>
+          </div>
+          <div class="step" data-scene="superpose">
+            <p>Linearity means responses add. Any quantity is its mean plus the responses to every shock so far, each
+              scaled by the size of its shock.</p>
+            <div class="fx">{{ fx.linear.svg | safe }}</div>
+            <p class="small">Kick by kick, one kernel rebuilds the whole path.</p>
+          </div>
+          <div class="step" data-scene="noisestate">
+            <p>You can always make a process Markov by carrying its whole past, but which past is enough differs for every
+              process. The shocks are underneath all of them, so track <i>W</i>. A player never sees it; from a noisy
+              signal they estimate its whole path up to now, and each new observation revises old estimates too.</p>
+            <div class="fx">{{ fx.def.svg | safe }}</div>
+            <p class="small">That estimate, a belief about the shocks rather than about the state, is the noise-state. The
+              shocks already happened and do not move, so updating it needs no prediction step, only the news.</p>
+          </div>
+          <div class="step" data-scene="samekernel">
+            <p>To forecast anything, a player runs the same kernel against their estimated shocks instead of the true
+              ones. Conditioning changes the integrator and nothing else.</p>
+            <div class="fx">{{ fx.cond.svg | safe }}</div>
+          </div>
+          <div class="step" data-scene="collapse">
+            <p>Now the tower. Player 2&rsquo;s forecast is itself a kernel against the shocks, so player 1&rsquo;s forecast
+              of it is that kernel run against player 1&rsquo;s noise-state. A forecast of a forecast is a composition of
+              kernels; on a grid of dates, a matrix product.</p>
+            <p class="small">The regress closes, at any depth, without cutting the loop.</p>
+          </div>
+          <div class="step" data-scene="fixedpoint">
+            <p>Strategies are kernels too, and the best response to kernels is a kernel. Equilibrium is a fixed point in
+              kernels, found by iterating until they stop moving.</p>
+            <p class="small">Those kernels are the impulse responses the <a href="{{ get_url(path='noisestate/') }}">explorer</a>
+              plots, and what the chapters compute.</p>
+          </div>
+        </div>
+      </section>
+
+      <a class="skip-pill" href="#more" data-from="#story">Skip to the end</a>
+      <section class="ideafoot" id="more">
+        <p>The formal version is the section <a href="{{ get_url(path='dissertation/introduction/') }}#the-noise-state">The
+          noise-state</a> of the introduction, and Chapter 1 builds it for the finite-horizon game.</p>
+        <div class="cta">
+          <a class="primary" href="{{ get_url(path='dissertation/introduction/') }}#the-noise-state">Read the definition</a>
+          <a href="{{ get_url(path='dissertation/wedge/') }}">Next: the information wedge</a>
+          <a href="{{ get_url(path='noisestate/') }}">Open the explorer</a>
+          <a href="{{ get_url(path='dissertation/') }}">The dissertation</a>
+        </div>
+        <p class="note">The drawings use a discrete-time version: <i>X</i> follows <i>X</i><sub><i>k</i></sub> = 0.92 <i>X</i><sub><i>k</i>&minus;1</sub>
+          + <i>w</i><sub><i>k</i></sub>, and player <i>i</i> sees <i>X</i><sub><i>k</i></sub> plus independent noise
+          (standard deviation 1.2 for player 1, 2 for player 2). The estimates are exact Gaussian conditioning on all
+          signals so far, and the page checks that each forecast built from the kernel equals the one computed directly.
+          The last drawing iterates a filter&rsquo;s kernel to its fixed point, standing in for a game&rsquo;s.</p>
+      </section>
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script>window.IDEA_FX = { hands1: {{ fx.hands1.svg | json_encode | safe }}, hands2: {{ fx.hands2.svg | json_encode | safe }}, hands3: {{ fx.hands3.svg | json_encode | safe }}, t1: {{ fx.t1.svg | json_encode | safe }}, t2: {{ fx.t2.svg | json_encode | safe }}, t3: {{ fx.t3.svg | json_encode | safe }}, t4: {{ fx.t4.svg | json_encode | safe }} };</script>
+    <script src="{{ get_url(path='dissertation/idea.js') }}"></script>
+  </body>
+</html>

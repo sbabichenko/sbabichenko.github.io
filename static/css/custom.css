@@ -6,9 +6,22 @@
 
 /* Accent color for links and interactive elements */
 :root {
-  --accent: #3b82f6;
-  --accent-hover: #60a5fa;
+  --accent: #1f3fd0;
+  --accent-hover: #2c53ea;
 }
+.dark {
+  --accent: #8fb0ff;
+  --accent-hover: #b3caff;
+}
+
+/* the site's display face: headings and the header wordmark, as on the home page */
+:is(h1, h2, h3, .prose h1, .prose h2, .prose h3),
+header a[class*="text-2xl"] {
+  font-family: Newsreader, "Iowan Old Style", Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+header a[class*="text-2xl"] { font-size: 1.35rem; letter-spacing: -0.015em; }
 
 /* Style links in prose content with accent color */
 .prose a {
@@ -23,6 +36,9 @@
 
 /* Project card improvements */
 .project-card {
+  padding: 1rem 1.5rem;
+  margin: 1.25rem 0;
+  gap: 0.25rem;
   transition: transform 0.15s, box-shadow 0.15s;
   border: 1px solid transparent;
 }
@@ -43,7 +59,18 @@
 }
 .project-card .project-link:hover {
   background: var(--accent);
-  color: #fff;
+  color: #fff !important;
+  text-decoration: none;
+}
+
+.project-card a.project-link.project-link-primary {
+  background: var(--accent);
+  color: #fff !important;
+  padding: 3px 12px;
+  border-radius: 9999px;
+}
+.project-card a.project-link.project-link-primary:hover {
+  filter: brightness(1.1);
 }
 
 .project-card .project-tag {
@@ -76,3 +103,52 @@ main {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* project cards with a picture: the picture on the right on wide screens, on top on phones; one per theme */
+.project-card.has-image { flex-direction: column; }
+.project-card .project-image { display: block; border-radius: 0.5rem; overflow: hidden; margin: 0.25rem 0 0.75rem; aspect-ratio: 2 / 1; background: rgba(127,127,127,0.06); }
+.project-card .project-image img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+.project-card .project-image:hover img { transform: scale(1.03); }
+.project-card .img-dark { display: none !important; }
+.dark .project-card .img-dark { display: block !important; }
+.dark .project-card .img-light { display: none !important; }
+@media (min-width: 640px) {
+  .project-card.has-image { flex-direction: row-reverse; align-items: center; gap: 1.25rem; }
+  .project-card.has-image .project-image { flex: 0 0 200px; margin: 0; }
+  .project-card.has-image .project-body { flex: 1 1 auto; min-width: 0; }
+}
+
+/* Long-form pages read as a page of type: serif body at a comfortable measure, which also sits
+   better beside KaTeX's own faces. Code, tables and the UI stay in the sans. */
+.prose :is(p, li, blockquote, dd, figcaption) {
+  font-family: Newsreader, "Iowan Old Style", Georgia, serif;
+  font-size: 1.12rem;
+  line-height: 1.68;
+}
+.prose blockquote { font-style: italic; }
+.prose :is(code, pre, kbd, samp) { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92rem; font-style: normal; }
+.prose :is(h1, h2, h3, h4) { letter-spacing: -0.015em; }
+.prose h2 { font-size: 1.75rem; margin-top: 2.2em; }
+.prose h3 { font-size: 1.35rem; }
+
+/* ---------------------------------------------------------------- header and footer
+   The header is the page's own paper, frosted, with a hairline under it, rather than a grey band;
+   it spans the same measure as the home page. */
+header.blur-header { background-color: rgba(255, 255, 240, 0.82); border-bottom: 1px solid rgba(20, 20, 30, 0.07); }
+.dark header.blur-header { background-color: rgba(31, 32, 34, 0.82); border-bottom-color: rgba(255, 255, 255, 0.07); }
+header.blur-header > div { max-width: 1072px; padding-left: 16px; padding-right: 16px; }
+header .primary-link { font-size: 0.98rem; font-weight: 500; }
+@media (min-width: 1024px) { header .primary-link { padding-left: 0.7rem; padding-right: 0.7rem; } }
+
+footer.site-foot { width: min(1040px, calc(100% - 40px)); margin: 72px auto 0; padding: 18px 0 40px; font-size: 0.84rem;
+  display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; color: rgba(20, 20, 30, 0.55);
+  border-top: 1px solid rgba(20, 20, 30, 0.08); }
+.dark footer.site-foot { color: rgba(255, 255, 255, 0.5); border-top-color: rgba(255, 255, 255, 0.08); }
+footer.site-foot a { color: inherit; text-decoration: none; border-bottom: 1px solid currentColor; border-bottom-color: color-mix(in srgb, currentColor 35%, transparent); }
+footer.site-foot a:hover { color: var(--accent); }
+footer.site-foot .tally { margin-left: auto; font-variant-numeric: tabular-nums; }
+footer.site-foot .tally b { font-weight: 600; color: var(--accent); }
+@media (max-width: 640px) { footer.site-foot .tally { margin-left: 0; flex-basis: 100%; } }
+.cv-download { display: inline-block; padding: 6px 16px; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--accent) !important; border-radius: 999px; text-decoration: none !important; font-size: 0.88em; font-family: ui-sans-serif, system-ui, sans-serif; }
+.cv-download:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }

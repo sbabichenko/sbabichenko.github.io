@@ -1,0 +1,17 @@
+/* the dissertation's search box and its results (search.js) */
+.dsearch { display: block; width: 100%; box-sizing: border-box; margin: 0 0 0.9rem; padding: 0.45rem 0.7rem; font: 0.85rem ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink); background: var(--sheet, #fff); border: 1px solid var(--rule); border-radius: 8px; }
+.dsearch:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.dsearch::placeholder { color: var(--ink-3); }
+.dsearch-panel { position: fixed; z-index: 80; max-height: min(70vh, 560px); overflow-y: auto; padding: 6px; border-radius: 10px;
+  background: var(--sheet, #fff); border: 1px solid var(--rule); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14); font-family: ui-sans-serif, system-ui, sans-serif; }
+.dsearch-panel .hit { display: block; padding: 0.5rem 0.65rem; border-radius: 7px; text-decoration: none; color: var(--ink); }
+.dsearch-panel .hit.on, .dsearch-panel .hit:hover { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.dsearch-panel .where { display: block; font-size: 0.74rem; color: var(--accent); margin-bottom: 0.15rem; }
+.dsearch-panel .what { display: block; font: 0.9rem/1.45 Newsreader, Georgia, serif; color: var(--ink-2); }
+.dsearch-panel mark, mark.dsearch-hit { background: rgba(255, 214, 90, 0.6); color: inherit; border-radius: 2px; padding: 0 1px; }
+.dark .dsearch-panel mark, .dark mark.dsearch-hit { background: rgba(143, 176, 255, 0.35); }
+mark.dsearch-hit { transition: background 1.2s; }
+mark.dsearch-hit.fade { background: transparent; }
+.dsearch-panel .none { margin: 0.6rem; font-size: 0.85rem; color: var(--ink-3); }
+.contents .dsearch { max-width: 26rem; margin: 0 0 2rem; font-size: 0.95rem; padding: 0.6rem 0.9rem; }

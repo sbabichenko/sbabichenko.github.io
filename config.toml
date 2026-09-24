@@ -6,7 +6,7 @@ theme = "kita"
 
 # The site title and description; used in feeds by default.
 title = "Samuel Babichenko"
-description = "Sam's website and blog"
+description = "Game theory, stochastic control and quantitative finance, with solvers you can run in your browser."
 
 # The default site author.
 author = ""
@@ -42,13 +42,13 @@ theme = "dark-plus"
 # The Kita theme style config.
 [extra]
 # Enable KaTex math formula support globally.
-math = true
+math = false
 # Enable mermaid support globally.
 mermaid = false
 # Enable comment support globally.
 comment = false
 # The URL of social image.
-social_image = ""
+social_image = "images/og.png"
 
 [extra.style]
 # The custom background color.
@@ -70,7 +70,7 @@ header_blur = true
 [extra.profile]
 name = "Samuel Babichenko"
 bio = """
-PhD candidate in statistics and financial mathematics at UCSB. I work on game theory, stochastic control, and quantitative finance. Here I share projects and writing about what’s been on my mind. Feel free to reach out!
+Quantitative researcher at Wells Fargo in Charlotte. My PhD at UCSB solved forecasting the forecasts of others, a problem economics has worked around since Keynes. Here I share projects and writing about what’s been on my mind. Feel free to reach out!
 """
 # The URL of avatar.
 avatar_url = "images/profile.jpeg"
@@ -107,12 +107,13 @@ name = "Writing"
 url = "$BASE_URL/writing"
 
 [[extra.menu]]
+name = "Dissertation"
+url = "$BASE_URL/dissertation"
+
+[[extra.menu]]
 name = "CV"
 url = "$BASE_URL/cv"
 
-[[extra.menu]]
-name = "Projects"
-url = "$BASE_URL"
 
 
 # The page footer options.

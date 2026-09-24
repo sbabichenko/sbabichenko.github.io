@@ -1,0 +1,70 @@
+{#- One chapter of the dissertation. The body is an HTML fragment written by tools/dissertation/build.py (pandoc,
+    then LaTeX's own numbers put back, then KaTeX at build time); this template adds the contents rail, the
+    chapter pager and the reference previews (static/dissertation/thesis.js). -#}
+{%- set manifest = load_data(path="data/dissertation/manifest.json") -%}
+{%- set slug = page.extra.slug -%}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/katex/katex.min.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/thesis.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/search.css') }}" />
+    {% include "partials/header.html" %}
+    <div class="progress" id="progress" aria-hidden="true"></div>
+
+    <div class="thesis">
+      <aside class="rail" aria-label="Contents">
+        <a class="book" href="{{ get_url(path='dissertation/') }}">Noise-State Calculus for Dynamic Games with Strategic Information</a>
+        <input class="dsearch" id="dsearch" type="search" placeholder="Search the dissertation  /" aria-label="Search the dissertation" autocomplete="off" data-base="{{ get_url(path='dissertation/') }}" />
+        <ol class="toc">
+          {%- for m in manifest %}
+          <li class="{% if m.slug == slug %}here{% endif %}">
+            <a href="{{ get_url(path='dissertation/' ~ m.slug ~ '/') }}">{% if m.label %}<span class="lab">{{ m.label | replace(from="Chapter ", to="") | replace(from="Appendix ", to="") }}</span>{% endif %}<span class="t">{{ m.title }}</span></a>
+            {%- if m.slug == slug and m.sections | length > 1 %}
+            {%- set l1 = m.sections | filter(attribute="level", value=1) %}
+            {%- set lv = 2 %}{% if l1 | length > 1 %}{% set lv = 1 %}{% endif %}
+            <ol class="secs">
+              {%- for s in m.sections %}{% if s.level == lv and s.id %}
+              <li><a href="#{{ s.id }}" data-sec="{{ s.id }}">{% if s.num %}<span class="lab">{{ s.num }}</span>{% endif %}{{ s.title }}</a></li>
+              {%- endif %}{% endfor %}
+            </ol>
+            {%- endif %}
+          </li>
+          {%- endfor %}
+        </ol>
+        <a class="pdf" href="{{ get_url(path='dissertation/babichenko-dissertation.pdf') }}">The whole thing as a PDF &darr;</a>
+      </aside>
+
+      <main class="paper" id="paper">
+        <div class="kicker"><a href="{{ get_url(path='dissertation/') }}">Noise-state calculus &middot; dissertation</a></div>
+        {%- if slug == "introduction" or slug == "chapter-1" %}
+        <nav class="pictures" aria-label="Illustrated explanations">
+          <a href="{{ get_url(path='dissertation/idea/') }}"><span>Illustrated</span><b>From beliefs about beliefs to the noise-state</b></a>
+          <a href="{{ get_url(path='dissertation/wedge/') }}"><span>Illustrated</span><b>The price of changing someone&rsquo;s mind</b></a>
+        </nav>
+        {%- endif %}
+        <article class="body">
+          {{ load_data(path="data/dissertation/" ~ slug ~ ".html", format="plain") | safe }}
+        </article>
+        <div class="fin" aria-hidden="true"><svg viewBox="-4 0 208 30"><path d="M0,15.0 L4,9.9 L8,6.9 L12,6.6 L16,8.5 L20,11.8 L24,15.4 L28,18.3 L32,19.9 L36,19.9 L40,18.7 L44,16.7 L48,14.6 L52,12.9 L56,12.1 L60,12.1 L64,12.9 L68,14.1 L72,15.4 L76,16.3 L80,16.8 L84,16.7 L88,16.2 L92,15.4 L96,14.7 L100,14.2 L104,13.9 L108,14.0 L112,14.4 L116,14.8 L120,15.2 L124,15.5 L128,15.6 L132,15.6 L136,15.4 L140,15.1 L144,14.8 L148,14.7 L152,14.6 L156,14.7 L160,14.8 L164,15.0 L168,15.1 L172,15.2 L176,15.2 L180,15.2 L184,15.1 L188,15.0 L192,14.9 L196,14.9 L200,14.9" /><circle cx="200" cy="15" r="2.2" /></svg></div>
+        <nav class="pager">
+          {%- for m in manifest %}{% if m.slug == slug %}
+            {%- if not loop.first %}{% set pi = loop.index0 - 1 %}{% set p = manifest | nth(n=pi) %}
+            <a class="prev" href="{{ get_url(path='dissertation/' ~ p.slug ~ '/') }}"><span>&larr; {% if p.label %}{{ p.label }}{% else %}Previous{% endif %}</span><b>{{ p.title }}</b></a>
+            {%- else %}<span></span>{% endif %}
+            {%- if not loop.last %}{% set ni = loop.index0 + 1 %}{% set n = manifest | nth(n=ni) %}
+            <a class="next" href="{{ get_url(path='dissertation/' ~ n.slug ~ '/') }}"><span>{% if n.label %}{{ n.label }}{% else %}Next{% endif %} &rarr;</span><b>{{ n.title }}</b></a>
+            {%- endif %}
+          {%- endif %}{% endfor %}
+        </nav>
+      </main>
+    </div>
+    <div class="peek" id="peek" role="tooltip" hidden></div>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='dissertation/thesis.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/search.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/vignettes.js') }}"></script>
+  </body>
+</html>

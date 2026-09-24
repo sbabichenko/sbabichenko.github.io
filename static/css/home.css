@@ -1,0 +1,240 @@
+/* The home page. Its own stylesheet, scoped to .home, on top of the theme's reset: the page is a
+   plain column of sections, ruled like a page of notes, with the demos given the room they earn. */
+
+.home {
+  --paper: #fffff0;
+  --ink: #17171b;
+  --ink-2: #4a4a55;
+  --ink-3: #85858f;
+  --rule: rgba(20, 20, 30, 0.1);
+  --rule-2: rgba(20, 20, 30, 0.05);
+  --accent: #1f3fd0;
+  --accent-soft: rgba(31, 63, 208, 0.09);
+  --warm: #b4461f;
+  --card: rgba(255, 255, 255, 0.55);
+
+  color: var(--ink);
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 20px 72px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+.dark .home {
+  --paper: #1f2022;
+  --ink: #edeef1;
+  --ink-2: #a8a9b2;
+  --ink-3: #74757e;
+  --rule: rgba(255, 255, 255, 0.12);
+  --rule-2: rgba(255, 255, 255, 0.06);
+  --accent: #8fb0ff;
+  --accent-soft: rgba(143, 176, 255, 0.13);
+  --warm: #e5875c;
+  --card: rgba(255, 255, 255, 0.035);
+  color-scheme: dark;
+}
+
+.home *, .home *::before, .home *::after { box-sizing: border-box; }
+.home a { color: inherit; text-decoration: none; }
+.home p { margin: 0 0 1em; }
+.home .serif { font-family: Newsreader, "Iowan Old Style", Georgia, serif; }
+.home :is(a, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+/* ---------------------------------------------------------------- the head of the page */
+.home .hero { position: relative; padding: 6rem 0 1.5rem; min-height: 27rem; display: flex; flex-direction: column; justify-content: center; }
+.home .hero > * { position: relative; z-index: 1; }
+/* the ink: a decision mesh drawing itself, faint, behind the name */
+.home #heroink {
+  position: absolute; inset: 0; width: 100%; height: 100%;   /* a canvas is replaced: auto would take its intrinsic 300x150 */
+  z-index: 0; pointer-events: none;
+  /* the fade is drawn into the canvas (see heroink.js), so lines never end on a hard mask edge */
+}
+.home .eyebrow {
+  font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);
+  margin: 0 0 0.9rem;
+}
+.home h1 {
+  font-family: Newsreader, "Iowan Old Style", Georgia, serif;
+  font-size: clamp(2.7rem, 7vw, 4.4rem); font-weight: 400; line-height: 1.02;
+  letter-spacing: -0.02em; margin: 0 0 1.1rem;
+}
+.home .lede { font-size: 1.12rem; color: var(--ink-2); max-width: 46ch; margin: 0 0 1.4rem; }
+.home .lede em { font-style: italic; color: var(--ink); }
+.home .social { display: flex; gap: 14px; align-items: center; margin: 0; padding: 0; list-style: none; }
+.home .social a {
+  width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--rule); border-radius: 50%; color: var(--ink-2);
+  transition: color 0.15s, border-color 0.15s, transform 0.15s;
+}
+.home .social a:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-2px); }
+.home .social svg { width: 17px; height: 17px; fill: currentColor; }
+
+/* ---------------------------------------------------------------- sections */
+.home section + section { margin-top: 4rem; }
+.home h2 {
+  font-family: Newsreader, "Iowan Old Style", Georgia, serif;
+  font-size: 1.05rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink-3); margin: 0 0 1.5rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--rule);
+  display: flex; align-items: baseline; gap: 0.75rem;
+}
+.home h2 .note { font-family: inherit; font-size: 0.8rem; letter-spacing: 0.02em; text-transform: none; color: var(--ink-3); margin-left: auto; font-weight: 400; }
+
+/* ---------------------------------------------------------------- the two demos */
+.home .demos { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+@media (max-width: 800px) { .home .demos { grid-template-columns: 1fr; } }
+.home .demo {
+  display: flex; flex-direction: column; border: 1px solid var(--rule); border-radius: 14px;
+  overflow: hidden; background: var(--card); transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+}
+.home .demo:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); }
+.dark .home .demo:hover { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+.home .demo .shot { aspect-ratio: 2 / 1; overflow: hidden; border-bottom: 1px solid var(--rule); background: var(--rule-2); }
+.home .demo .shot img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease; }
+.home .demo:hover .shot img { transform: scale(1.04); }
+.home .demo .body { padding: 18px 20px 20px; display: flex; flex-direction: column; flex: 1; }
+.home .demo h3 { font-family: Newsreader, "Iowan Old Style", Georgia, serif; font-size: 1.45rem; font-weight: 500; margin: 0 0 0.4rem; letter-spacing: -0.01em; }
+.home .demo p { color: var(--ink-2); font-size: 0.95rem; margin: 0 0 1rem; }
+.home .demo ul { margin: 0 0 1.1rem; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.home .demo li { font-size: 0.75rem; color: var(--ink-3); border: 1px solid var(--rule); border-radius: 999px; padding: 2px 9px; }
+.home .demo .go { margin-top: auto; font-size: 0.92rem; font-weight: 600; color: var(--accent); display: inline-flex; align-items: center; gap: 6px; }
+.home .demo:hover .go .arrow { transform: translateX(4px); }
+.home .demo .go .arrow { transition: transform 0.18s; }
+
+/* ---------------------------------------------------------------- work */
+.home .work { display: grid; gap: 0; }
+.home .item { padding: 1.4rem 0; border-bottom: 1px solid var(--rule-2); }
+.home .item:first-child { padding-top: 0; }
+.home .item h3 { font-family: Newsreader, "Iowan Old Style", Georgia, serif; font-size: 1.3rem; font-weight: 500; margin: 0 0 0.3rem; letter-spacing: -0.01em; }
+.home .item p { color: var(--ink-2); font-size: 0.95rem; margin: 0; max-width: 62ch; }
+.home .item .foot { display: flex; align-items: center; gap: 8px 18px; flex-wrap: wrap; margin-top: 0.8rem; }
+.home .item .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.home .item .tags span { font-size: 0.72rem; color: var(--ink-3); border: 1px solid var(--rule); border-radius: 999px; padding: 1px 8px; }
+.home .item .out { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; margin-left: auto; }
+.home .item .out a { font-size: 0.85rem; color: var(--accent); white-space: nowrap; border-bottom: 1px solid transparent; }
+.home .item .out a:hover { border-bottom-color: currentColor; }
+.home .item .out a.strong { font-weight: 600; }
+@media (max-width: 640px) { .home .item .out { margin-left: 0; width: 100%; } }
+
+/* ---------------------------------------------------------------- writing */
+.home .posts { display: grid; gap: 0; }
+.home .post { display: flex; gap: 20px; align-items: baseline; padding: 0.85rem 0; border-bottom: 1px solid var(--rule-2); }
+.home .post time { font-size: 0.8rem; color: var(--ink-3); font-variant-numeric: tabular-nums; flex: 0 0 5.5rem; }
+.home .post .t { font-size: 1.02rem; }
+.home .post:hover .t { color: var(--accent); }
+.home .more { display: inline-block; margin-top: 1.1rem; font-size: 0.9rem; color: var(--accent); }
+.home .more:hover { text-decoration: underline; }
+
+/* ---------------------------------------------------------------- the close */
+.home .colophon { margin-top: 4.5rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); color: var(--ink-3); font-size: 0.85rem; }
+.home .colophon a { color: var(--ink-2); border-bottom: 1px solid var(--rule); }
+.home .colophon a:hover { color: var(--accent); border-bottom-color: currentColor; }
+
+@media (prefers-reduced-motion: reduce) {
+  .home *, .home *::before { transition: none !important; animation: none !important; }
+}
+
+/* the social icons are the theme's black SVGs: inverted in dark, dimmed until hover */
+.home .social img { opacity: 0.62; transition: opacity 0.15s; }
+.dark .home .social img { filter: invert(1); }
+.home .social a:hover img { opacity: 1; }
+.home .img-dark { display: none; }
+.dark .home .img-dark { display: block; }
+.dark .home .img-light { display: none; }
+
+/* on a phone the figure sits under the text: keep it, quieter */
+@media (max-width: 760px) {
+  .home #heroink { opacity: 0.55; }
+  .home .hero { padding-top: 4.5rem; min-height: 22rem; }
+  .home h2 { flex-direction: column; gap: 0.25rem; align-items: flex-start; }
+  .home h2 .note { margin-left: 0; }
+  .home .demo .shot { aspect-ratio: 16 / 7; }
+}
+
+/* not found */
+.home .hero.lost { min-height: 20rem; padding-bottom: 0; }
+.home .back { color: var(--accent); font-weight: 600; }
+.home .back:hover { text-decoration: underline; }
+.home .demo.slim .body { padding: 20px; }
+.home .demo.wide { grid-column: 1 / -1; }
+
+/* ---------------------------------------------------------------- the writing index */
+.home.listing { padding-top: 7.5rem; min-height: calc(100vh - 10rem); }
+.home.listing .listhead h1 { font-family: Newsreader, "Iowan Old Style", Georgia, serif; font-weight: 400; font-size: clamp(2.2rem, 5vw, 3.2rem); letter-spacing: -0.02em; line-height: 1.05; margin: 0.35rem 0 0.9rem; }
+.home.listing .listhead .lede { max-width: 38rem; color: var(--ink-2); font-size: 1.05rem; }
+.home.listing .listhead .lede a { color: var(--accent); }
+.home.listing .listhead + section { margin-top: 2.5rem; }
+.home .entries { border-top: 1px solid var(--rule); }
+.home .entry { display: flex; gap: 20px; align-items: baseline; padding: 1.1rem 0; border-bottom: 1px solid var(--rule-2); }
+.home .entry time { font-size: 0.8rem; color: var(--ink-3); font-variant-numeric: tabular-nums; flex: 0 0 5.5rem; }
+.home .entry .body { display: flex; flex-direction: column; gap: 0.2rem; }
+.home .entry .t { font-family: Newsreader, "Iowan Old Style", Georgia, serif; font-size: 1.35rem; line-height: 1.25; }
+.home .entry .d { color: var(--ink-2); font-size: 0.95rem; }
+.home .entry .meta { color: var(--ink-3); font-size: 0.8rem; }
+.home .entry:hover .t { color: var(--accent); }
+.home .pager { display: flex; gap: 18px; justify-content: space-between; margin-top: 1.2rem; font-size: 0.9rem; color: var(--ink-3); }
+.home .pager a { color: var(--accent); }
+@media (max-width: 640px) { .home .entry { flex-direction: column; gap: 4px; } .home.listing { padding-top: 5.5rem; } }
+
+/* the hero's toy: the mesh gathers its cuts wherever it is clicked (static/js/heroink.js) */
+.home .hero:not(.lost) { cursor: crosshair; }
+.home .hero :is(a, .lede, h1) { cursor: auto; }
+.home .hero .poke { position: absolute; right: 0; bottom: 0.6rem; margin: 0; font: 0.74rem ui-monospace, Menlo, monospace;
+  color: var(--ink-3); letter-spacing: 0.02em; opacity: 0; transition: opacity 0.6s; pointer-events: none; }
+.home .hero:hover .poke { opacity: 0.85; }
+@media (hover: none) { .home .hero .poke { opacity: 0.7; } .home .hero .poke::before { content: "tap"; } .home .hero .poke { font-size: 0; } .home .hero .poke::after { content: " the mesh to poke it"; font-size: 0.74rem; } .home .hero .poke::before { font-size: 0.74rem; } }
+@media (max-width: 480px) { .home .eyebrow { letter-spacing: 0.07em; font-size: 0.68rem; } }
+
+/* the noise-state, set in the hero as a motif; static/js/formula.js writes it on */
+.home .hero .motif { position: absolute; right: 0; bottom: 2.6rem; z-index: 2; display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem;
+  color: var(--ink); text-decoration: none; cursor: pointer; }
+.home .hero .motif svg { display: block; height: auto; overflow: visible; filter: drop-shadow(0 0 5px var(--paper)) drop-shadow(0 0 2px var(--paper)); }
+.home .hero .motif .def svg { width: clamp(15rem, 30vw, 24rem); }
+.home .hero .motif .bp svg { width: clamp(14rem, 27vw, 21.5rem); }
+.home .hero .motif .def { opacity: 0.78; transition: opacity 0.3s, color 0.3s; }
+.home .hero .motif .bp { opacity: 0.4; transition: opacity 0.3s, color 0.3s; }
+.home .hero .motif .cap { font: 0.74rem ui-monospace, Menlo, monospace; color: var(--ink-3); letter-spacing: 0.02em; opacity: 0; transform: translateY(-3px);
+  transition: opacity 0.3s, transform 0.3s; max-width: 24rem; text-align: right; }
+.home .hero .motif .cap i { font-style: italic; }
+.home .hero .motif:hover .def, .home .hero .motif:focus-visible .def { opacity: 1; color: var(--accent); }
+.home .hero .motif:hover .bp, .home .hero .motif:focus-visible .bp { opacity: 0.7; }
+.home .hero .motif:hover .cap, .home .hero .motif:focus-visible .cap { opacity: 1; transform: none; }
+.home .hero .motif path { transition: fill-opacity 0.8s; }
+@media (max-width: 900px) {
+  .home .hero .motif { position: relative; right: auto; bottom: auto; align-items: flex-start; margin-top: 2rem; }
+  .home .hero .motif .def svg { width: min(20rem, 82vw); }
+  .home .hero .motif .bp svg { width: min(18rem, 76vw); }
+  .home .hero .motif .cap { opacity: 0.9; transform: none; text-align: left; }
+}
+.home .demos.stories .demo h3 { font-size: 1.3rem; }
+.home .demos.stories .demo.wide h3 { font-style: italic; }
+
+/* the writing index's desk, while the list is short */
+.home .desk { margin: 3rem auto 0; max-width: 360px; text-align: center; }
+.home .desk svg { width: 100%; height: auto; overflow: visible; }
+.home .desk .pg { fill: var(--sheet, #fff); stroke: var(--ink-3, #999); stroke-width: 1; }
+.home .desk .ln { fill: none; stroke: var(--ink-2, #555); stroke-width: 1; stroke-linecap: round; }
+.home .desk .ln.faint { stroke: var(--rule, #ddd); }
+.home .desk .wood { fill: #f2b134; } .home .desk .tip { fill: #e9c89a; } .home .desk .lead { fill: #333; }
+.home .desk .band { fill: #b8b8b8; } .home .desk .eraser { fill: #e98a9a; }
+.home .desk figcaption { margin-top: 0.6rem; font-size: 0.85rem; color: var(--ink-3); font-style: italic; }
+.home .desk svg g { transform-box: fill-box; }
+@media (prefers-reduced-motion: no-preference) {
+  .home .desk .ln:not(.faint) { stroke-dasharray: 400; stroke-dashoffset: 400; animation: desk-write 3s 0.4s ease-out forwards; }
+  @keyframes desk-write { to { stroke-dashoffset: 0; } }
+}
+
+/* the first stop, for a first visit */
+.home .hero .starthere { position: relative; z-index: 1; margin: 1.1rem 0 0; font-size: 0.95rem; color: var(--ink-2); }
+.home .hero .starthere a { color: var(--accent); }
+
+/* the dissertation's work entry carries a still of the detour map (static/dissertation/detour.js) */
+.home .item.with-still { display: grid; grid-template-columns: minmax(0, 1fr) 260px; column-gap: 28px; }
+.home .item.with-still > .foot { grid-column: 1 / -1; }
+.home .dstill { grid-column: 2; grid-row: 1; align-self: center; display: block; color: var(--ink-2); opacity: 0.85; transition: opacity 0.2s; }
+.home .dstill:hover { opacity: 1; }
+.home .dstill svg { width: 100%; height: auto; display: block; }
+.home .dstill .pn { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+.home .dstill .soft { opacity: 0.35; }
+.home .dstill .hatch { color: var(--ink-3); }
+.home .dstill .acc { stroke: var(--accent); }
+@media (max-width: 640px) { .home .item.with-still { grid-template-columns: 1fr; } .home .dstill { grid-column: 1; grid-row: auto; margin-top: 0.9rem; max-width: 300px; } }

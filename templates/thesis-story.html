@@ -1,0 +1,44 @@
+{#- A dissertation page told as a story (the afterword): the page's own paragraphs, one per screen, beside a drawing
+    that builds as you scroll (static/dissertation/afterword.js). The fragment arrives with its paragraphs already
+    wrapped as steps by tools/dissertation/build.py. -#}
+{%- set manifest = load_data(path="data/dissertation/manifest.json") -%}
+{%- set slug = page.extra.slug -%}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/thesis.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css') }}" />
+    {% include "partials/header.html" %}
+    <div class="progress" id="progress" aria-hidden="true"></div>
+
+    <main class="opening told" id="paper">
+      <div class="toldhead">
+        <div class="kicker"><a href="{{ get_url(path='dissertation/') }}">Noise-state calculus &middot; dissertation</a></div>
+      </div>
+      <div class="story" id="story">
+        <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
+        <article class="body toldbody">
+          {{ load_data(path="data/dissertation/" ~ slug ~ ".html", format="plain") | safe }}
+        </article>
+      </div>
+      <div class="toldfoot">
+        <nav class="pager">
+          {%- for m in manifest %}{% if m.slug == slug %}
+            {%- if not loop.first %}{% set pi = loop.index0 - 1 %}{% set p = manifest | nth(n=pi) %}
+            <a class="prev" href="{{ get_url(path='dissertation/' ~ p.slug ~ '/') }}"><span>&larr; {{ p.label | default(value="Previous") }}</span><b>{{ p.title }}</b></a>
+            {%- else %}<span></span>{% endif %}
+            {%- if not loop.last %}{% set ni = loop.index0 + 1 %}{% set n = manifest | nth(n=ni) %}
+            <a class="next" href="{{ get_url(path='dissertation/' ~ n.slug ~ '/') }}"><span>{{ n.label | default(value="Next") }} &rarr;</span><b>{{ n.title }}</b></a>
+            {%- endif %}
+          {%- endif %}{% endfor %}
+        </nav>
+      </div>
+    </main>
+    <div class="peek" id="peek" role="tooltip" hidden></div>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='dissertation/thesis.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/afterword.js') }}"></script>
+  </body>
+</html>

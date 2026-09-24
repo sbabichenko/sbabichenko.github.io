@@ -1,32 +1,180 @@
-{% extends "index.html" %}<!---->
-{% block main %}<!---->
-{% include "partials/profile.html" %}<!---->
+{#- The home page: a hero with the mesh drawing itself behind the name, the two things you can run
+    here, the work, and the writing. Its own template so the layout is not the theme's prose column;
+    the head, header and footer are the site's. -#}
+{% import "macros.html" as macros %}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='css/home.css') }}" />
+    {% include "partials/header.html" %}
 
-{% set_global data = load_data(path="projects.toml", format="toml") %}<!---->
+    {% set data = load_data(path="projects.toml", format="toml") %}
 
-<h1 class="mb-8">Projects</h1>
-{% for project in data.project %}
-<div class="project-card not-prose block-bg my-5 flex w-full flex-col rounded-lg px-6 py-4">
-  <h3 class="mt-1 mb-2 text-xl font-bold text-black dark:text-white">{{ project.name }}</h3>
-  <p class="text-sm leading-relaxed opacity-80 mb-3">{{ project.desc }}</p>
-  <div class="flex flex-wrap items-center justify-between gap-2">
-    <div class="flex flex-wrap gap-2">
-      {% for tag in project.tags %}
-      <span class="project-tag">#{{ tag }}</span>
-      {% endfor %}
-    </div>
-    <div class="flex flex-wrap gap-3">
-      {% for link in project.links %}
-      <a
-        class="project-link"
-        href="{{ link.url | replace(from=`$BASE_URL`, to=config.base_url) | safe  }}"
-        rel="noopener"
-        target="_blank"
-        >{{ link.name }}</a
-      >
-      {% endfor %}
-    </div>
-  </div>
-</div>
-{% endfor %}<!---->
-{% endblock main %}
+    <main class="home">
+      <section class="hero">
+        <canvas id="heroink" aria-hidden="true"></canvas>
+        <p class="eyebrow">Quantitative research &middot; PhD, UC Santa Barbara</p>
+        <h1>{{ config.extra.profile.name }}</h1>
+        <p class="lede">{{ config.extra.profile.bio }}</p>
+        {% if config.extra.profile.social %}
+        <ul class="social">
+          {% for social in config.extra.profile.social %}
+          <li>
+            <a href="{{ social.url | replace(from=`$BASE_URL`, to=config.base_url) | safe }}"
+               {% if social.name != 'email' %}target="_blank" rel="me noopener"{% endif %}
+               aria-label="{{ social.title | default(value=social.name | capitalize) }}"
+               title="{{ social.title | default(value=social.name | capitalize) }}">
+              {{ macros::get_social_icon(icon=social.name, size=17) | safe }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        <p class="starthere">New here? Start with <a href="{{ get_url(path='dissertation/idea/') }}">the noise-state, explained</a>,
+          or <a href="{{ get_url(path='noisestate/') }}">solve a game</a> in your browser.</p>
+        {%- set formula = load_data(path="data/formula.json") %}
+        <a class="motif" href="{{ get_url(path='dissertation/idea/') }}"
+           aria-label="The noise-state: player i's estimate, at time t, of the primitive shock W at an earlier time u, given everything player i knows">
+          <span class="def">{{ formula.def.svg | safe }}</span>
+          <span class="bp">{{ formula.blueprint.svg | safe }}</span>
+          <span class="cap">the noise-state: what player <i>i</i> believes, at time <i>t</i>, about the shock at <i>u</i></span>
+        </a>
+        <p class="poke" aria-hidden="true">click the mesh to poke it</p>
+      </section>
+
+      <section>
+        <h2>Run it here <span class="note">all computed in your browser, nothing precomputed</span></h2>
+        <div class="demos">
+          <a class="demo" href="{{ get_url(path='noisestate/') }}">
+            <div class="shot">
+              <img class="img-light" src="{{ get_url(path='images/card-noisestate-light.webp') }}" alt="" width="480" height="240" />
+              <img class="img-dark" src="{{ get_url(path='images/card-noisestate-dark.webp') }}" alt="" width="480" height="240" />
+            </div>
+            <div class="body">
+              <h3>Games played through noise</h3>
+              <p>Actions move the state, the state sets what others observe, and what they observe sets
+                their next actions. My dissertation keeps that loop intact by tracking beliefs about the
+                primitive shocks. Move a slider and the equilibrium is solved again, here, in about a second.</p>
+              <ul><li>six games</li><li>shock responses</li><li>sample paths</li><li>parameter sweeps</li></ul>
+              <span class="go">Open the explorer <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+          <a class="demo" href="{{ get_url(path='gate/') }}">
+            <div class="shot">
+              <img class="img-light" src="{{ get_url(path='images/card-gate-light.webp') }}" alt="" width="480" height="240" />
+              <img class="img-dark" src="{{ get_url(path='images/card-gate-dark.webp') }}" alt="" width="480" height="240" />
+            </div>
+            <div class="body">
+              <h3>A mesh that knows when to stop</h3>
+              <p>Thousands of coins, each flipped a few times, and odds that change somewhere on the square.
+                The estimator cuts a mesh only where a false-discovery gate says the flips justify it, then
+                stops on its own. Draw the odds yourself and see what it can find.</p>
+              <ul><li>both estimators, compiled to WebAssembly</li><li>the gate, round by round</li><li>draw your own</li></ul>
+              <span class="go">Open the page <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+          <a class="demo slim wide" href="{{ get_url(path='mesh/') }}">
+            <div class="body">
+              <h3>Two kinds of triangle, rectangles and a tree</h3>
+              <p>Freeform triangles, right triangles, rectangles and a regression tree, grown on the same noisy surface
+                one greedy cut at a time, with the same number of free parameters each. No gate here: they stop when
+                the page runs out of patience.</p>
+              <span class="go">Open the page <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <h2>Illustrated explanations <span class="note">drawings that build as you scroll; the numbers are computed as you read</span></h2>
+        <div class="demos stories">
+          <a class="demo slim" href="{{ get_url(path='dissertation/idea/') }}">
+            <div class="body">
+              <h3>From beliefs about beliefs to the noise-state</h3>
+              <p>Why every belief, price and action in these games is an impulse response, and how forecasting the
+                forecasts of others collapses into a composition of kernels.</p>
+              <span class="go">Read it <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+          <a class="demo slim" href="{{ get_url(path='dissertation/wedge/') }}">
+            <div class="body">
+              <h3>The price of changing someone&rsquo;s mind</h3>
+              <p>The information wedge: what it is worth to move an opponent&rsquo;s beliefs, why it vanishes when the
+                loop is cut, and why starving one player of information can help everyone.</p>
+              <span class="go">Read it <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+          <a class="demo slim" href="{{ get_url(path='gate/how/') }}">
+            <div class="body">
+              <h3>How the gate decides</h3>
+              <p>Where the decision mesh cuts and when it stops: bias-corrected scores, an empirical null, a false-discovery
+                cutoff, drawn from a live run of the estimator in your browser.</p>
+              <span class="go">Read it <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+          <a class="demo slim" href="{{ get_url(path='dissertation/') }}">
+            <div class="body">
+              <h3>No one knows much.</h3>
+              <p>The whole dissertation, chapter by chapter, with its numbering, cross-references and a preview on every
+                reference. The afterword is illustrated too.</p>
+              <span class="go">Read the dissertation <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <h2>Work</h2>
+        <div class="work">
+          {% for project in data.project %}
+          <article class="item{% if project.detour %} with-still{% endif %}">
+            <div>
+              <h3>{{ project.name }}</h3>
+              <p>{{ project.desc }}</p>
+            </div>
+            {%- if project.detour %}
+            <a class="dstill" href="{{ get_url(path='dissertation/') }}#detour" aria-label="The detour map: ninety years of economics going around one problem">
+              <svg data-detour="still" aria-hidden="true"></svg></a>
+            {%- endif %}
+            <div class="foot">
+            <div class="tags">{% for tag in project.tags %}<span>{{ tag }}</span>{% endfor %}</div>
+            <div class="out">
+              {% for link in project.links %}
+              {%- set external = link.url is starting_with("http") -%}
+              <a class="{% if link.primary %}strong{% endif %}"
+                 href="{{ link.url | replace(from=`$BASE_URL`, to=config.base_url) | safe }}"
+                 {% if external %}target="_blank" rel="noopener"{% endif %}>{{ link.name }}{% if link.primary %} &rarr;{% endif %}</a>
+              {% endfor %}
+            </div>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      {% set writing = get_section(path="writing/_index.md") %}
+      {% if writing.pages %}
+      <section>
+        <h2>Writing</h2>
+        <div class="posts">
+          {% for page in writing.pages | slice(end=5) %}
+          <a class="post" href="{{ page.permalink }}">
+            <time datetime="{{ page.date }}">{{ page.date | date(format="%b %Y") }}</time>
+            <span class="t">{{ page.title }}</span>
+          </a>
+          {% endfor %}
+        </div>
+        <a class="more" href="{{ get_url(path='writing') }}">All writing &rarr;</a>
+      </section>
+      {% endif %}
+
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='mesh/decision-mesh.js') }}"></script>
+    <script src="{{ get_url(path='js/heroink.js') }}"></script>
+    <script src="{{ get_url(path='js/formula.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/detour.js') }}"></script>
+  </body>
+</html>

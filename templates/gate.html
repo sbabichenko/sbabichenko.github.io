@@ -1,0 +1,122 @@
+{#- /gate: the triangular decision-mesh estimator itself (triangular-decision-mesh/core, compiled to WebAssembly
+    as static/mesh/trimesh.js) fitting coin flips drawn on this page. gate.js makes the data and draws; the
+    engine runs in fit-worker.js. -#}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='noisestate/explorer.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='mesh/mesh.css') }}" />
+    {% include "partials/header.html" %}
+
+    <main class="explorer mesh gate" id="gate" data-worker="{{ get_url(path='mesh/fit-worker.js') }}">
+      <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; <a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &nbsp;/&nbsp; The gate</div>
+      <h1>A mesh that knows when to stop</h1>
+      <p class="sub">The odds of a coin vary over this square. A few thousand sites each flip a coin a handful of
+        times. The estimator refines a mesh of right triangles or rectangles only where a false-discovery gate finds
+        support in the flips, and stops when no candidate passes.</p>
+      <ul class="facts">
+        <li>my two C++ estimators, compiled to WebAssembly</li>
+        <li>same meshes as the native builds, to 1e-11</li>
+        <li>runs in your browser, in under a second</li>
+      </ul>
+
+      <section class="panel">
+        <div class="meshbar">
+          <div class="ctl"><label for="engine"><span>Estimator</span></label><select id="engine">
+            <option value="tri" selected>Right triangles</option><option value="rect">Rectangles</option></select></div>
+          <div class="ctl"><label for="truth"><span>The odds</span></label><select id="truth"></select></div>
+          <div class="ctl"><label for="sites"><span>Sites</span></label><select id="sites">
+            <option value="3000">3,000</option><option value="6000" selected>6,000</option><option value="12000">12,000</option></select></div>
+          <div class="ctl"><label for="flips"><span>Flips per site</span></label><select id="flips">
+            <option value="5">about 5</option><option value="10">about 10</option><option value="20" selected>about 20</option>
+            <option value="40">about 40</option><option value="80">about 80</option><option value="160">about 160</option></select></div>
+          <div class="ctl"><label for="coinsd"><span>Coin effects, sd</span><span class="val" id="coinsdval"></span></label>
+            <input type="range" id="coinsd" min="0" max="1" step="0.05" value="0.25" /></div>
+          <div class="ctl" id="drawtools" hidden><label><span>Brush</span></label>
+            <div class="brushrow"><label class="check"><input type="checkbox" id="lower" /> lower</label>
+              <button class="secondary small" id="clear">Clear</button></div></div>
+        </div>
+        <input type="hidden" id="seed" value="1" />
+      </section>
+
+      <div id="statusbar">
+        <span class="chip idle" id="chip">Ready</span>
+        <span id="statustext"></span>
+        <span class="buttons"><button class="secondary" id="newdata" title="Flip every coin again"><i class="mini-coin" aria-hidden="true"></i>Flip again</button></span>
+      </div>
+
+      <section class="panel">
+        <div class="stage">
+          <figure><div class="cv"><canvas id="cvtruth" width="320" height="320"></canvas></div>
+            <figcaption><b>The odds</b> <span class="muted">what the coins really do</span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvdata" width="320" height="320"></canvas></div>
+            <figcaption><b>The flips</b> <span class="muted">each site's share of heads</span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvfit" width="320" height="320"></canvas></div>
+            <figcaption><b>The fit</b> <span class="muted">dots: admitted, by round</span></figcaption></figure>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <label class="check"><input type="checkbox" id="showedges" checked /> Mesh lines</label>
+          <label class="check"><input type="checkbox" id="showadmit" checked /> Admitted vertices</label>
+          <span class="scale" id="scale"></span>
+        </div>
+      </section>
+
+      <div id="results" class="stale">
+        <section class="panel"><div class="cards" id="cards"></div></section>
+        <section class="panel">
+          <h2>The gate, round by round</h2>
+          <div class="tablewrap" id="rounds"></div>
+          <p class="caption">Each round scores every candidate vertex (the midpoints of the mesh's edges) by how much
+            it would improve the fit. If no candidate mattered, the scores would look like draws from one bell curve, the
+            null. The gate fits the density of all the scores, reads the null's centre and spread off the middle of it,
+            estimates the share &pi;<sub>0</sub> that are noise, and admits the candidates that stand out from that null
+            at a controlled false-discovery rate. When the scores have no central peak to read a null from, it falls
+            back to the textbook one. Each coin also has an effect of its own on the log-odds, and the coin variance is
+            the estimator's estimate of their spread, fitted alongside the surface: as the mesh learns the odds, what it
+            can't explain shrinks toward the spread the slider set.
+            <a href="{{ get_url(path='gate/how/') }}">How the gate decides</a> draws each of these steps from a live run.</p>
+        </section>
+      </div>
+
+      <div class="notes">
+        <p>Try giving the two hills more flips and watch the mesh fill in around them; pick
+          &ldquo;nothing at all&rdquo;, which it leaves uncut at any number of flips; pick &ldquo;your drawing&rdquo;
+          and paint on the odds (drag to raise them, tick &ldquo;lower&rdquo; or hold shift to lower them).</p>
+        <p>The estimators are <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a>
+          and <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a>, compiled from
+          their C++ with Emscripten. Their dense linear algebra, which natively calls LAPACK, runs on Eigen here, and the
+          builds can write a trace of each round's candidates for the illustrated page; nothing else is changed, and on my
+          test designs the browser builds reproduce the native meshes to 1e-11. The two share
+          the gate and the model for the coin effects and differ in geometry: right triangles cut only through their hypotenuse, with a
+          flat fit in each; rectangles cut across either axis, with a bilinear fit in each. Half the sites are held out:
+          the mesh never sees them, and the deviance card scores the fit on them. The coins are drawn on this page from
+          the odds you pick, plus a normal effect per coin on the log-odds, with the standard deviation on the slider
+          (0.25 to start). Set it to zero and the coins are plain binomial.</p>
+        <p>The <a href="{{ get_url(path='mesh/') }}">growing-mesh page</a> grows the same geometries by a simple greedy rule with no gate: freeform
+          triangles, right triangles, rectangles and a tree, grown greedily side by side. The right triangles there are
+          this estimator's geometry.</p>
+      </div>
+      <details class="cite">
+        <summary>Cite it</summary>
+<pre>@software{triangular_decision_mesh,
+  author = {Babichenko, Samuel},
+  title  = {triangular-decision-mesh: an adaptive right-triangle mesh regression with a false-discovery gate},
+  year   = {2026},
+  url    = {https://github.com/sbabichenko/triangular-decision-mesh}
+}
+
+@software{rectangular_decision_mesh,
+  author = {Babichenko, Samuel},
+  title  = {rectangular-decision-mesh: an adaptive rectangular mesh regression with a false-discovery gate},
+  year   = {2026},
+  url    = {https://github.com/sbabichenko/rectangular-decision-mesh}
+}</pre>
+      </details>
+
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='mesh/gate.js') }}"></script>
+  </body>
+</html>

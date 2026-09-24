@@ -1,0 +1,9 @@
+{
+  "name": "dissertation-web",
+  "private": true,
+  "description": "KaTeX for prerender.js, MathJax (SVG output) for tools/make_formula.js",
+  "dependencies": {
+    "katex": "0.16.11",
+    "mathjax-full": "3.2.1"
+  }
+}

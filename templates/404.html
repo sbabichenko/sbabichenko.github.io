@@ -1,0 +1,44 @@
+{#- Not found. The mesh refines where there is something to find; here there is nothing, so it has
+    left the page blank and points you at the demos. -#}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='css/home.css') }}" />
+    {% include "partials/header.html" %}
+
+    <main class="home">
+      <section class="hero lost">
+        <canvas id="heroink" data-mode="nothing" aria-hidden="true"></canvas>
+        <p class="eyebrow">404</p>
+        <h1>Nothing here</h1>
+        <p class="lede">No page at this address. The gate checked every candidate and admitted none of them.</p>
+        <p class="lede"><a class="back" href="{{ get_url(path='') }}">Back to the front &rarr;</a></p>
+      </section>
+
+      <section>
+        <h2>Demos</h2>
+        <div class="demos">
+          <a class="demo slim" href="{{ get_url(path='noisestate/') }}">
+            <div class="body">
+              <h3>Games played through noise</h3>
+              <p>Solve a linear-quadratic-Gaussian game in your browser.</p>
+              <span class="go">Open the explorer <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+          <a class="demo slim" href="{{ get_url(path='gate/') }}">
+            <div class="body">
+              <h3>A mesh that knows when to stop</h3>
+              <p>Draw the odds of a coin and watch a false-discovery gate decide where to cut.</p>
+              <span class="go">Open the page <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='mesh/decision-mesh.js') }}"></script>
+    <script src="{{ get_url(path='js/heroink.js') }}"></script>
+  </body>
+</html>

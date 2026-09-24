@@ -100,7 +100,9 @@
   <link rel="preload" as="image" href="{{ get_url(path=`icons/theme.svg`) }}" />
 
   <!-- Math -->
-  {% if page.extra.math | default(value=config.extra.math) %}
+  {%- set wants_math = config.extra.math %}
+  {%- if page %}{% set wants_math = page.extra.math | default(value=wants_math) %}{% elif section %}{% set wants_math = section.extra.math | default(value=wants_math) %}{% endif %}
+  {% if wants_math %}
   <!---->
   {% include "partials/math.html" %}
   <!---->
