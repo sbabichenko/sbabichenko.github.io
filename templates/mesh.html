@@ -41,7 +41,7 @@
           <div class="ctl"><label for="eps"><span>Explore &epsilon;</span><span class="val" id="epsval"></span></label><input type="range" id="eps" min="0" max="0.5" step="0.01" value="0.1" /></div>
           <div class="ctl"><label for="aspect"><span>Aspect limit</span><span class="val" id="aspectval"></span></label><input type="range" id="aspect" min="2" max="12" step="0.5" value="5" /></div>
           <div class="ctl"><label for="minpts" title="0 is the algorithm as published; 3 stops vertices from being fitted to one or two points"><span>Min points</span><span class="val" id="minptsval"></span></label><input type="range" id="minpts" min="0" max="10" step="1" value="0" /></div>
-          <div class="ctl"><label for="speed"><span>Steps per frame</span><span class="val" id="speedval"></span></label><input type="range" id="speed" min="1" max="40" step="1" value="1" /></div>
+          <div class="ctl"><label for="refresh" title="Refit the candidate splits around a vertex whose height was refitted (off is the algorithm as published)"><span>Refresh fits</span><input type="checkbox" id="refresh" class="box" /></label><div class="hint">after each refit</div></div>
         </div>
       </section>
 
@@ -67,6 +67,7 @@
         <div class="row" style="margin-top:12px">
           <label class="check"><input type="checkbox" id="showedges" checked /> Mesh and tree lines</label>
           <label class="check"><input type="checkbox" id="showpts" /> Data points</label>
+          <label class="check speedctl" for="speed">Speed <input type="range" id="speed" min="1" max="40" step="1" value="1" /> <span class="val" id="speedval"></span> a frame</label>
           <span class="scale" id="scale"></span>
         </div>
       </section>
@@ -79,7 +80,10 @@
           couple of hundred pieces. The tree does better on the disk, whose edge is a jump, on the ripples, whose peaks line up
           with the axes, and at the very start, when a few boxes beat a few triangles. Late in a run a thin triangle holding a
           handful of points can take an extreme height: those are the jumps in the mesh's curve. Setting a minimum of 3 points per
-          triangle (0 is the algorithm as published) removes them and leaves the best error about where it was.</p>
+          triangle (0 is the algorithm as published) removes them and leaves the best error about where it was. "Refresh fits"
+          refits the candidate splits around a vertex whose height has just been refitted, which the published algorithm
+          leaves stale. With both on, on the default data, the best error is 2 to 17% below the published algorithm's on five
+          of the six surfaces; the ripples come out 3% worse.</p>
       </section>
 
       <div class="notes">

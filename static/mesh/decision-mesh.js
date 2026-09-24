@@ -42,6 +42,14 @@
     updateHeight() {
       this.height = this.newHeight;
       for (const v of this.affected) v.updateInfo();
+      if (this.mesh.refresh) {
+        // the candidate midpoints on this vertex's triangles were fitted against its old height: refit them
+        for (const f of this.getFaces())
+          for (const e of f.edges) {
+            const m = e.midpoint;
+            if (m && !m.active) { m.height = (e.v0.height + e.v1.height) / 2; m.updateInfo(); }
+          }
+      }
       this.lossReduction = 0;
       this.mesh.heap.set(this, 0);
     }
@@ -233,9 +241,11 @@
     // X: Float64Array of 2n coordinates (x0, y0, x1, y1, ...), Y: Float64Array of n values
     // minPoints (not in the Python; 0 keeps its behaviour): a split is disqualified, like a too-thin one, when either
     // new triangle would hold fewer data points, which keeps a vertex from being fitted to one or two points
-    constructor(X, Y, { maxAspectRatio = 5, minPoints = 0, rng = Math.random } = {}) {
+    // refresh (not in the Python's default; false keeps its behaviour): after a vertex is refitted, refit the candidate
+    // midpoints on its triangles as well, so that no step acts on a fit made against an old height
+    constructor(X, Y, { maxAspectRatio = 5, minPoints = 0, refresh = false, rng = Math.random } = {}) {
       this.X = X; this.Y = Y; this.n = Y.length;
-      this.maxAspectRatio = maxAspectRatio; this.minPoints = minPoints; this.rng = rng;
+      this.maxAspectRatio = maxAspectRatio; this.minPoints = minPoints; this.refresh = refresh; this.rng = rng;
       this.vertices = new Set(); this.activeFaces = new Set(); this.activeEdges = new Set();
       this.heap = new Map();
       let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
