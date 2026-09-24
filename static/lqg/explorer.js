@@ -663,7 +663,7 @@ function renderTabs() {
     b.setAttribute("aria-selected", g === game ? "true" : "false");
     b.onclick = () => {
       if (g === game) return;
-      game = g; renderAll(); writeHash(); lastResult = null; $("results").innerHTML = "";
+      game = g; renderAll(); writeHash(); lastResult = null; $("results").innerHTML = ""; $("savebtn").disabled = true;
       if (g !== "custom") requestSolve(0); else setStatus("idle", "Ready", "Edit the model and press Solve.");
     };
     tabs.appendChild(b);
@@ -903,6 +903,7 @@ function onSolved(m) {
   if (req && req.game === game) {
     prevResult = lastResult && lastResult.name === res.name && lastResult.kind === res.kind ? lastResult : null;
     lastResult = res;
+    $("savebtn").disabled = false;
     try { renderResults(res); updateSweepPanel(); drawSweep(); }
     catch (e) { console.error(e); setStatus("warn", "Solved, drawing failed", "The solve finished but a plot could not be drawn: " + e.message); $("results").classList.remove("stale"); return; }
   }
@@ -1303,6 +1304,18 @@ function renderDiagnostics(res, out) {
 // ---------------------------------------------------------------------------------------------
 $("solvebtn").onclick = () => requestSolve(0);
 $("stopbtn").onclick = stopSolve;
+// the model as solved and everything the solver returned, for use outside the page
+$("savebtn").onclick = () => {
+  if (!lastResult) return;
+  let model = null;
+  try { model = currentModel(); } catch (e) { /* the editor holds an unfinished edit */ }
+  const blob = new Blob([JSON.stringify({ model, result: lastResult }, null, 1)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${(lastResult.name || game).replace(/[^\w.-]+/g, "_")}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
 $("sharebtn").onclick = async () => {
   writeHash();
   try { await navigator.clipboard.writeText(location.href); $("sharebtn").textContent = "Copied"; }
@@ -1318,7 +1331,7 @@ document.body.addEventListener("set-theme", () => setTimeout(() => { if (lastRes
 readHash(); renderAll(); writeHash(); startWorker();
 // a link or the back button that changes the hash (writeHash replaces it without firing this) opens that game
 window.addEventListener("hashchange", () => {
-  readHash(); renderAll(); lastResult = null; $("results").innerHTML = "";
+  readHash(); renderAll(); lastResult = null; $("results").innerHTML = ""; $("savebtn").disabled = true;
   if (game !== "custom") requestSolve(0); else setStatus("idle", "Ready", "Edit the model and press Solve.");
   $("tabs").scrollIntoView({ block: "nearest" });
 });
