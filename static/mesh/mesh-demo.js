@@ -388,7 +388,7 @@
     const rest = errs.filter((_, i) => i !== w).sort((a, b) => a - b)[0];
     const txt = `${h.df.toLocaleString()} free parameters each: ${names[w]} closest to the truth `
       + `(RMSE ${errs[w].toFixed(3)}), ${(100 * (rest / errs[w] - 1)).toFixed(0)}% ahead of the next.`;
-    $("speedfact").textContent = `about ${stepMs < 1 ? stepMs.toFixed(2) : stepMs.toFixed(1)} ms a step here`;
+    if ($("speedfact")) $("speedfact").textContent = `about ${stepMs < 1 ? stepMs.toFixed(2) : stepMs.toFixed(1)} ms a step here`;
     if (S.done && window.siteTally) window.siteTally("grow", 3);
     if (S.done) { S.running = false; $("playbtn").textContent = "Play"; setStatus("ok", "Done", txt + " Stopped at ten points per freeform triangle, on average."); }
     else setStatus(S.running ? "busy" : "idle", S.running ? "Growing" : "Paused", txt);
