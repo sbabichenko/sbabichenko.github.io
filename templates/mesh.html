@@ -85,13 +85,16 @@
         <h2>Error against the truth</h2>
         <div class="cv wide"><canvas id="cvcurve" width="900" height="220"></canvas></div>
         <p class="caption">Root-mean-square distance from the true surface over the square, against the number of free
-          parameters; the dashed line is the noise &sigma;. Both meshes beat the staircase wherever the truth is smooth,
-          and the tree takes its revenge where the truth jumps or its edges run along the axes. Between the two
-          geometries it is usually close, and which one leads changes with the surface and with the draw. Late in a run
-          a thin piece holding a handful of points can take an extreme height: those are the jumps in the curves.
-          A minimum of 3 points per piece (0 is the published algorithm) removes them, and "refresh fits" refits the
-          candidates around a vertex whose height has just moved, which the published triangular algorithm leaves
-          stale.</p>
+          parameters; the dashed line is the noise &sigma;. Both meshes beat the staircase almost everywhere once there
+          are a hundred parameters to spend, and on these six surfaces the tree never finishes ahead, though it comes
+          close where the truth jumps (the disk) or lines up with the axes (the ripples). Between the two geometries it
+          goes the way the geometry argument says: the triangles lead where the structure runs diagonally (the saddle,
+          the diagonal cliff), the rectangles where it lines up with an axis or spreads radially (the waves, the
+          ripples, the disk, the hills), because a bisected triangle can only refine one way while a rectangle can be
+          cut along either axis. Late in a run a thin piece holding a handful of points can take an extreme height:
+          those are the jumps in the curves. A minimum of 3 points per piece is the default here (0 is the published
+          triangular algorithm), and "refresh fits" refits the candidates around a vertex whose height has just moved,
+          which the published algorithm leaves stale.</p>
       </section>
 
       <div class="notes">
