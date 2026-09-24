@@ -201,7 +201,7 @@
   function measure() {
     const vh = window.innerHeight;
     let best = null, bestD = Infinity;
-    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - vh * 0.55); if (d < bestD) { bestD = d; best = s; } }
+    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - (window.readLine ? window.readLine() : vh * 0.55)); if (d < bestD) { bestD = d; best = s; } }
     if (!best) return;
     const r = best.getBoundingClientRect();
     prog = clamp((vh * 0.85 - r.top) / (r.height * 0.9));
