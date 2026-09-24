@@ -113,7 +113,7 @@
   .dark .stage { background: linear-gradient(#1f2022 88%, transparent); }
   .stage > svg { width: min(92vw, 46vh); }
   .steps { grid-column: 1; grid-row: 1; padding: 58vh 20px 30vh; position: relative; z-index: 2; pointer-events: none; }
-  .step { min-height: 70vh; justify-content: flex-end; padding-bottom: 6vh; }
+  .step { min-height: 70vh; justify-content: flex-end; padding-bottom: calc(6vh + 3rem); }
   .step p { font-size: 1.3rem; background: color-mix(in srgb, var(--paper) 92%, transparent); padding: 0.4rem 0.2rem; border-radius: 4px; }
   .step p.small { font-size: 1.02rem; }
 }
@@ -178,7 +178,7 @@
 
 /* ---------------------------------------------------------------- the detour map (detour.js) */
 .detour { position: relative; }
-.detour.js { height: 620vh; }
+.detour.js { height: 440vh; }
 .dt-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; display: flex; flex-direction: column; justify-content: center;
   width: min(1180px, calc(100% - 24px)); margin: 0 auto; padding-top: 3.2rem; box-sizing: border-box; }
 .dt-map { width: 100%; flex: 1 1 auto; min-height: 0; color: var(--ink); font-family: Newsreader, Georgia, serif; overflow: visible; }
