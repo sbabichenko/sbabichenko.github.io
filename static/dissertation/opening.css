@@ -82,6 +82,9 @@
 #stage text.warmt { fill: var(--warm); }
 #stage text.halo { paint-order: stroke; stroke: var(--paper); stroke-width: 6px; stroke-linejoin: round; }
 #stage .box { fill: var(--sheet); }
+#stage .headfill { fill: var(--sheet); }
+#stage .sunmid { fill: #f6b53d; }
+#stage .suncore { fill: #fff6d8; }
 
 /* ---------------------------------------------------------------- contents */
 .contents { width: min(1040px, calc(100% - 40px)); margin: 0 auto; padding: 6rem 0 2rem; }
