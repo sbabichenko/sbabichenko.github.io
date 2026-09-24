@@ -413,6 +413,43 @@ def fix_headings(soup, toc, stats):
                 break
 
 
+# pages told as a story (templates/thesis-story.html): each paragraph becomes a step beside a drawing; a paragraph
+# can be split before a given sentence so that it gets two drawings
+STORIES = {
+    "afterword": [("illusion", None), ("selection", "Natural selection is a statistical tool"), ("anchor", None),
+                  ("barrier", None), ("orbit", "Mathematics, the tool that let Isaac Newton"), ("noise", None),
+                  ("questions", None)],
+}
+
+
+def story(body, plan):
+    soup = BeautifulSoup(body, "html.parser")
+    sec = soup.find("section")
+    paras = [p for p in sec.find_all("p", recursive=False)]
+    chunks = []                                     # (html) in reading order, split where the plan says
+    splits = {text: scene for scene, text in plan if text}
+    for p in paras:
+        html_ = re.sub(r"\s+", " ", "".join(str(c) for c in p.contents))
+        cut = next((t for t in splits if t in html_), None)
+        if cut:
+            i = html_.index(cut)
+            chunks += [html_[:i].rstrip(), html_[i:]]
+        else:
+            chunks.append(html_)
+    if len(chunks) != len(plan):
+        raise SystemExit(f"story plan has {len(plan)} steps, text has {len(chunks)}")
+    for p in paras:
+        p.decompose()
+    steps = soup.new_tag("div", attrs={"class": "steps"})
+    for (scene, _), c in zip(plan, chunks):
+        st = soup.new_tag("div", attrs={"class": "step", "data-scene": scene})
+        st.append(BeautifulSoup(f"<p>{c}</p>", "html.parser"))
+        steps.append(st)
+    h1 = sec.find("h1")
+    h1.insert_after(steps)
+    return str(soup)
+
+
 def main():
     if WORK.exists():
         shutil.rmtree(WORK)
@@ -509,11 +546,15 @@ def main():
                 sections.append({"id": sec.get("id", "") if sec else "", "level": int(h.name[1]),
                                  "num": h.get("data-num", ""), "title": " ".join(hc.get_text().split())})
         body = "\n".join(str(s) for s in p["secs"])
+        if p["slug"] in STORIES:
+            body = story(body, STORIES[p["slug"]])
         (frag / f"{p['slug']}.html").write_text(body)
         manifest.append({"slug": p["slug"], "title": title, "label": label, "sections": sections, "weight": w})
         fm = ["+++", f'title = {json.dumps((label + ": " if label else "") + title)}', f"weight = {w}",
               f'path = "dissertation/{p["slug"]}"', 'template = "thesis.html"', "[extra]", "math = false",
               f'slug = "{p["slug"]}"', f'short = {json.dumps(title)}', f'label = "{label}"', "+++", ""]
+        if p["slug"] in STORIES:
+            fm[4] = 'template = "thesis-story.html"'
         (CONTENT / f"{p['slug']}.md").write_text("\n".join(fm))
     # the bibliography, from the .bbl, run through pandoc for its accents and emphasis
     items = []

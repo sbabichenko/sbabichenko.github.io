@@ -80,6 +80,7 @@
 #stage text.mono { font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 0.08em; fill: var(--ink-3); }
 #stage text.acc { fill: var(--accent); }
 #stage text.warmt { fill: var(--warm); }
+#stage text.halo { paint-order: stroke; stroke: var(--paper); stroke-width: 6px; stroke-linejoin: round; }
 #stage .box { fill: var(--sheet); }
 
 /* ---------------------------------------------------------------- contents */
@@ -116,4 +117,29 @@
 @media (prefers-reduced-motion: reduce) {
   .cover .big span, .cover .title, .cover .by, .cover .cta { transition: none; opacity: 1; transform: none; }
   .cover .scrollhint { animation: none; }
+}
+
+/* ---------------------------------------------------------------- a chapter told as a story (the afterword) */
+.told { padding-top: 5.5rem; }
+.told .toldhead, .told .toldfoot { width: min(1100px, calc(100% - 40px)); margin: 0 auto; }
+.told .kicker { font: 0.72rem ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
+.told .kicker a { text-decoration: none; }
+.told .story { display: grid; }
+.told .toldbody { grid-column: 1; grid-row: 1; font-family: Newsreader, Georgia, serif; }
+/* the fragment is <section><h1/><div.steps/>footnotes</section>; the section is laid out as the story's left column */
+.told .toldbody section { padding: 0; margin: 0; }
+.told .toldbody h1 { font-family: Newsreader, Georgia, serif; font-weight: 400; font-size: clamp(3rem, 8vw, 6rem); letter-spacing: -0.03em; line-height: 1; margin: 3rem 0 0; }
+.told .toldbody .steps { padding: 18vh 0 20vh; }
+.told .step p { font-size: clamp(1.2rem, 1.75vw, 1.45rem); line-height: 1.5; letter-spacing: 0; }
+.told .step a { color: var(--accent); text-decoration: none; font-size: 0.85em; }
+.told .step .footnote-ref { vertical-align: super; font-size: 0.6em; }
+.told aside.footnotes { font: 0.9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); max-width: 30rem; }
+.told aside.footnotes hr { width: 5rem; border: 0; border-top: 1px solid var(--rule); margin: 0 0 0.8rem; }
+.told aside.footnotes a { color: var(--accent); text-decoration: none; }
+.told .pager { margin: 4rem 0 0; }
+@media (max-width: 820px) {
+  .told .toldbody { position: relative; z-index: 2; padding: 0 20px; }
+  .told .toldbody h1 { position: relative; z-index: 3; }
+  .told .toldbody .steps { padding: 58vh 0 20vh; }
+  .told .step p { font-size: 1.12rem; }
 }
