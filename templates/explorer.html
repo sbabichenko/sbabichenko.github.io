@@ -79,7 +79,9 @@
             <select id="example"></select>
             <button class="secondary" id="loadexample">Load</button>
           </div>
-          <textarea id="yaml" spellcheck="false" aria-label="Model file (YAML)"></textarea>
+          <div class="tabs codetabs" role="tablist"><button type="button" class="tab" role="tab" data-pane="yaml" aria-selected="true">YAML</button><button type="button" class="tab" role="tab" data-pane="python" aria-selected="false">Python</button></div>
+          <div class="pane" data-pane="yaml"><textarea id="yaml" spellcheck="false" aria-label="Model file (YAML)"></textarea></div>
+          <div class="pane nopython" data-pane="python" hidden><p>No way am I executing wild code</p></div>
           <p class="hint">The model file format of noisestate: channels, states, agents with controls, signal rows and losses, a
             horizon (<code>stationary</code> with a <code>window</code>, <code>finite</code> with <code>T</code>, or
             <code>transition</code> with a past) and numerics. A top-level <code>naive_observers</code> makes some agents'
