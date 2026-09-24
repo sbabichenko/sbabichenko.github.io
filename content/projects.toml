@@ -4,7 +4,7 @@ desc = "First exact equilibrium characterization of finite-player continuous-tim
 tags = ["research", "game theory"]
 links = [
     { name = "arxiv", url = "https://arxiv.org/abs/2603.12140" },
-    { name = "interactive demo", url = "/lqg" },
+    { name = "try the explorer", url = "/lqg/", primary = true },
     { name = "github", url = "https://github.com/sbabichenko/Noise-State-Games" }
 ]
 
