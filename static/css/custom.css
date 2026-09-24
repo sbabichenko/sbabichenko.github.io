@@ -6,9 +6,22 @@
 
 /* Accent color for links and interactive elements */
 :root {
-  --accent: #3b82f6;
-  --accent-hover: #60a5fa;
+  --accent: #1f3fd0;
+  --accent-hover: #2c53ea;
 }
+.dark {
+  --accent: #8fb0ff;
+  --accent-hover: #b3caff;
+}
+
+/* the site's display face: headings and the header wordmark, as on the home page */
+:is(h1, h2, h3, .prose h1, .prose h2, .prose h3),
+header a[class*="text-2xl"] {
+  font-family: Newsreader, "Iowan Old Style", Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+header a[class*="text-2xl"] { font-size: 1.35rem; letter-spacing: -0.015em; }
 
 /* Style links in prose content with accent color */
 .prose a {

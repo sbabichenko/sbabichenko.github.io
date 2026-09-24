@@ -3,10 +3,10 @@
 .explorer {
   --bg: transparent; --panel: rgba(255, 255, 255, 0.62); --panel-2: rgba(0, 0, 0, 0.028); --border: rgba(0, 0, 0, 0.09);
   --text: #1b1b1f; --muted: #52525b; --faint: #8a8a93;
-  --accent: #2563eb; --accent-soft: rgba(37, 99, 235, 0.1); --accent-ink: #ffffff;
+  --accent: #1f3fd0; --accent-soft: rgba(31, 63, 208, 0.1); --accent-ink: #ffffff;
   --ok: #15803d; --ok-soft: rgba(21, 128, 61, 0.1); --warn: #a16207; --warn-soft: rgba(202, 138, 4, 0.13);
   --bad: #b91c1c; --bad-soft: rgba(185, 28, 28, 0.09);
-  --c1: #2563eb; --c2: #dc2626; --c3: #27272a; --c4: #7c3aed; --c5: #16a34a; --c6: #d97706;
+  --c1: #1f3fd0; --c2: #dc2626; --c3: #27272a; --c4: #7c3aed; --c5: #16a34a; --c6: #d97706;
   --grid: rgba(0, 0, 0, 0.075); --track: rgba(0, 0, 0, 0.12);
   color: var(--text);
   font-size: 15px; line-height: 1.55;
@@ -15,10 +15,10 @@
 .dark .explorer {
   --panel: rgba(255, 255, 255, 0.035); --panel-2: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.09);
   --text: #ececef; --muted: #a1a1aa; --faint: #71717a;
-  --accent: #60a5fa; --accent-soft: rgba(96, 165, 250, 0.14); --accent-ink: #0b1220;
+  --accent: #8fb0ff; --accent-soft: rgba(143, 176, 255, 0.14); --accent-ink: #0b1220;
   --ok: #4ade80; --ok-soft: rgba(74, 222, 128, 0.12); --warn: #facc15; --warn-soft: rgba(250, 204, 21, 0.12);
   --bad: #f87171; --bad-soft: rgba(248, 113, 113, 0.12);
-  --c1: #60a5fa; --c2: #f87171; --c3: #e4e4e7; --c4: #c4b5fd; --c5: #4ade80; --c6: #fbbf24;
+  --c1: #8fb0ff; --c2: #f87171; --c3: #e4e4e7; --c4: #c4b5fd; --c5: #4ade80; --c6: #fbbf24;
   --grid: rgba(255, 255, 255, 0.08); --track: rgba(255, 255, 255, 0.16);
   color-scheme: dark;
 }
@@ -29,11 +29,11 @@
 /* the head of the page */
 .explorer .crumbs { font-size: 0.85rem; color: var(--faint); margin-bottom: 6px; }
 .explorer .crumbs a { color: var(--faint); }
-.explorer h1 { font-size: 2rem; line-height: 1.15; font-weight: 700; margin: 0 0 8px; letter-spacing: -0.015em; }
+.explorer h1 { font-family: Newsreader, "Iowan Old Style", Georgia, serif; font-weight: 500; font-size: 2.3rem; line-height: 1.1; margin: 0 0 10px; letter-spacing: -0.02em; }
 .explorer .sub { color: var(--muted); margin: 0 0 14px; max-width: 760px; font-size: 1rem; }
 .explorer .facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; padding: 0; list-style: none; }
 .explorer .facts li { font-size: 0.8rem; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; }
-.explorer h2 { font-size: 1.15rem; font-weight: 650; margin: 0 0 10px; }
+.explorer h2 { font-family: Newsreader, "Iowan Old Style", Georgia, serif; font-size: 1.3rem; font-weight: 500; margin: 0 0 10px; letter-spacing: -0.01em; }
 .explorer .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
 .explorer .muted { color: var(--muted); }
 .explorer .small { font-size: 0.85rem; }
