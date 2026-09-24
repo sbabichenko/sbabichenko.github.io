@@ -9,12 +9,14 @@
   <body class="text-black duration-200 ease-out dark:text-white">
     <link rel="stylesheet" href="{{ get_url(path='dissertation/katex/katex.min.css') }}" />
     <link rel="stylesheet" href="{{ get_url(path='dissertation/thesis.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/search.css') }}" />
     {% include "partials/header.html" %}
     <div class="progress" id="progress" aria-hidden="true"></div>
 
     <div class="thesis">
       <aside class="rail" aria-label="Contents">
         <a class="book" href="{{ get_url(path='dissertation/') }}">Noise-State Calculus for Dynamic Games with Strategic Information</a>
+        <input class="dsearch" id="dsearch" type="search" placeholder="Search the dissertation  /" aria-label="Search the dissertation" autocomplete="off" data-base="{{ get_url(path='dissertation/') }}" />
         <ol class="toc">
           {%- for m in manifest %}
           <li class="{% if m.slug == slug %}here{% endif %}">
@@ -62,6 +64,7 @@
 
     {% include "partials/footer.html" %}
     <script src="{{ get_url(path='dissertation/thesis.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/search.js') }}"></script>
     <script src="{{ get_url(path='dissertation/vignettes.js') }}"></script>
   </body>
 </html>

@@ -590,3 +590,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    import search_index                   # the search box's index, from the fragments just written
+    search_index.main()
