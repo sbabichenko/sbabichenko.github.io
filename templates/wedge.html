@@ -1,5 +1,5 @@
 {#- /dissertation/wedge: the information wedge, in steps. The first four drawings are diagrams; the last three are
-    solved live by the explorer's solver (static/lqg/worker.js, noisestate compiled to WebAssembly) on the Chapter 1
+    solved live by the explorer's solver (static/noisestate/worker.js, noisestate compiled to WebAssembly) on the Chapter 1
     tracking game, from static/dissertation/wedge.js. -#}
 {%- set fx = load_data(path="data/formula.json") -%}
 <!doctype html>
@@ -10,12 +10,12 @@
     {% include "partials/header.html" %}
     <div class="progress" id="progress" aria-hidden="true"></div>
 
-    <main class="opening idea" data-worker="{{ get_url(path='lqg/worker.js') }}" id="wedgepage">
+    <main class="opening idea" data-worker="{{ get_url(path='noisestate/worker.js') }}" id="wedgepage">
       <section class="ideahead">
         <p class="eyebrow"><a href="{{ get_url(path='dissertation/') }}">Dissertation</a> &middot; illustrated explanation</p>
         <h1>The price of changing someone&rsquo;s mind</h1>
         <p class="lede">What the information wedge is, and why it matters. The last three drawings are solved as you read,
-          by the same solver as the <a href="{{ get_url(path='lqg/') }}">explorer</a>, on the two-player tracking game of
+          by the same solver as the <a href="{{ get_url(path='noisestate/') }}">explorer</a>, on the two-player tracking game of
           Chapter 1. <span class="solvestate" id="solvestate">Loading the solver&hellip;</span></p>
       </section>
 
@@ -70,7 +70,7 @@
         <p>The formal statement is <a href="{{ get_url(path='dissertation/chapter-1/') }}#thm:wedge-adjoints">Theorem 1.8</a>,
           and the starvation example is in <a href="{{ get_url(path='dissertation/chapter-1/') }}#information-starvation.">Chapter 1</a>.</p>
         <div class="cta">
-          <a class="primary" href="{{ get_url(path='lqg/') }}#game=ch1">Open the explorer</a>
+          <a class="primary" href="{{ get_url(path='noisestate/') }}#game=ch1">Open the explorer</a>
           <a href="{{ get_url(path='dissertation/idea/') }}">The noise-state explained</a>
           <a href="{{ get_url(path='dissertation/') }}">The dissertation</a>
         </div>
