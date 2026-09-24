@@ -114,9 +114,6 @@ url = "$BASE_URL/dissertation"
 name = "CV"
 url = "$BASE_URL/cv"
 
-[[extra.menu]]
-name = "Projects"
-url = "$BASE_URL"
 
 
 # The page footer options.

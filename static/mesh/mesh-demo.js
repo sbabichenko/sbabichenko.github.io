@@ -420,4 +420,15 @@
 
   reset(false);
   writeHash();
+
+  // start growing the first time the meshes come into view, so no one arrives at empty boxes;
+  // with reduced motion, grow a first stretch at once and wait there
+  const firstView = new IntersectionObserver((es) => {
+    if (!es.some((e) => e.isIntersecting)) return;
+    firstView.disconnect();
+    if (S.running || S.history.length > 1) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { advance(120, 400); return; }
+    $("playbtn").click();
+  }, { threshold: 0.25 });
+  firstView.observe(document.querySelector(".stage"));
 })();
