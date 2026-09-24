@@ -583,6 +583,151 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 const links = (s) => esc(s).replace(/\[([^\]]+)\]\((#[^)\s]+)\)/g, '<a href="$2">$1</a>');
 
 function presetModel(g) { return jsyaml.load(PRESETS[g].yaml); }
+
+// ---------------------------------------------------------------------------------------------
+// Each game in Python, in noisestate's equations form (the README's "As equations"): the structure written
+// out, the parameter values, horizon and numerics read from the model being solved, so the code is the
+// solve on screen. tools/check_explorer_python.js builds every one and checks it is the YAML's model.
+const py = {
+  num: (v) => (typeof v === "number" ? (Number.isInteger(v) ? v.toFixed(1) : String(v)) : String(v)),
+  params(p, names) {
+    const k = names || Object.keys(p);
+    return `${k.join(", ")}${k.length === 1 ? "," : ""} = Param.many(${k.map((n) => `${n}=${py.num(p[n])}`).join(", ")})`;
+  },
+  horizon(h, past) {
+    const d = h.discount !== undefined && h.discount !== 0 && h.discount !== "0" ? `, discount=${py.num(h.discount)}` : "";
+    if (h.kind === "finite") return `ns.Finite(T=${py.num(h.T)}${d})`;
+    if (h.kind === "stationary") return `ns.Stationary(window=${py.num(h.window)}${d})`;
+    const T = h.T !== undefined ? h.T : 6.0;
+    return `ns.Transition(T=${py.num(T)}, past=${past}, continuation="${h.continuation || "stationary"}"${d})`;
+  },
+  numerics(n) {
+    // node counts are whole numbers (nodes=12, as the package's examples write them); the rest as the model has them
+    return `ns.Numerics(${Object.entries(n).map(([k, v]) => `${k}=${k === "engine" ? JSON.stringify(v) : /nodes$/.test(k) ? String(v) : py.num(v)}`).join(", ")})`;
+  },
+  head: (extra = "") => `import noisestate as ns\nfrom noisestate import Param, State, Control, Signal, Agent, shocks, sqrt${extra}\n`,
+};
+const tracking = (loss1, loss2, drift = "D1 + D2 + sigma * w.w0") => `w = shocks("w0", "w1", "w2")
+X = State("X")
+D1, D2 = Control("D1"), Control("D2")
+X.drift = ${drift}
+player1 = Agent("player1", controls=[D1], signals=[Signal("y1", sqrt(p1) * X + w.w1)],
+                loss=${loss1})
+player2 = Agent("player2", controls=[D2], signals=[Signal("y2", sqrt(p2) * X + w.w2)],
+                loss=${loss2})`;
+const kyleBack = `w = shocks("wV", "wZ", "w1")
+V = State("V")
+P, D1 = Control("P"), Control("D1")
+V.drift = sigma_V * w.wV
+market_maker = Agent("market_maker", controls=[P], myopic=True,
+                     signals=[Signal("flow", D1 + sigma_Z * w.wZ)],
+                     loss=P**2 - 2 * P * V)
+trader1 = Agent("trader1", controls=[D1],
+                signals=[Signal("y1", gamma1 * V - gamma1 * P + w.w1), Signal("flow", sigma_Z * w.wZ)],
+                loss=-D1 * V + D1 * P + eps * D1**2)`;
+// the model panel under the results: the model file and the same model in Python, one shown at a time
+let codeTab = "yaml", modelOpen = false;
+function codeTabs(on) {
+  return `<div class="tabs codetabs" role="tablist">${[["yaml", "YAML"], ["python", "Python"]].map(([k, l]) =>
+    `<button type="button" class="tab" role="tab" data-pane="${k}" aria-selected="${k === on}">${l}</button>`).join("")}</div>`;
+}
+function modelPanel(d) {
+  const yaml = jsyaml.dump(d, { flowLevel: 3 }), code = PYTHON[game] ? PYTHON[game](d) : "";
+  const pane = (k, text) => `<div class="pane" data-pane="${k}"${codeTab === k ? "" : " hidden"}>
+    <button type="button" class="secondary small copycode" data-copy="${esc(text)}" title="Copy">Copy</button><pre class="describe">${esc(text)}</pre></div>`;
+  return `<details class="modelcode"${modelOpen ? " open" : ""}><summary>The model</summary>${codeTabs(codeTab)}${pane("yaml", yaml)}${pane("python", code)}</details>`;
+}
+document.addEventListener("click", (e) => {
+  const b = e.target.closest && e.target.closest(".codetabs [data-pane]");
+  if (!b) return;
+  const box = b.closest(".codetabs").parentElement;
+  box.querySelectorAll(".codetabs [data-pane]").forEach((x) => x.setAttribute("aria-selected", x === b));
+  box.querySelectorAll(":scope > .pane").forEach((p) => { p.hidden = p.dataset.pane !== b.dataset.pane; });
+  if (b.closest("details.modelcode")) codeTab = b.dataset.pane;
+});
+document.addEventListener("toggle", (e) => { if (e.target.classList && e.target.classList.contains("modelcode")) modelOpen = e.target.open; }, true);
+
+const PYTHON = {
+  ch1: (d) => `${py.head()}
+${py.params(d.params)}
+${tracking("X**2 - 2 * b1 * X + r1 * D1**2", "X**2 - 2 * b2 * X + r2 * D2**2")}
+game = ns.Model("${d.name}", states=[X], agents=[player1, player2],
+                horizon=${py.horizon(d.horizon)}, numerics=${py.numerics(d.numerics)})
+eq = game.solve()`,
+  ch3: (d) => `${py.head()}
+${py.params(d.params)}
+${tracking("0.5 * X**2 + 0.5 * r1 * D1**2", "0.5 * X**2 + 0.5 * r2 * D2**2", "D1 + D2 + w.w0")}
+game = ns.Model("${d.name}", states=[X], agents=[player1, player2],
+                horizon=${py.horizon(d.horizon)}, numerics=${py.numerics(d.numerics)})
+eq = game.solve()`,
+  ch4: (d) => `${py.head()}
+${py.params(d.params)}
+${kyleBack}
+game = ns.Model("${d.name}", states=[V], agents=[market_maker, trader1],
+                horizon=${py.horizon(d.horizon)}, numerics=${py.numerics(d.numerics)})
+eq = game.solve()`,
+  ch5: (d) => `${py.head(", define")}
+N = 3                                                    # firms on the cycle
+theta, xi, zeta, kappa, m, r, rP, c = Param.many(${["theta", "xi", "zeta", "kappa", "m", "r", "rP", "c"].map((n) => `${n}=${py.num(d.params[n])}`).join(", ")})
+sigma_u, theta_a, sigma_a, theta_eta, sigma_eta = Param.many(${["sigma_u", "theta_a", "sigma_a", "theta_eta", "sigma_eta"].map((n) => `${n}=${py.num(d.params[n])}`).join(", ")})
+s1, s2, s3, s4, tau = Param.many(${["s1", "s2", "s3", "s4", "tau"].map((n) => `${n}=${py.num(d.params[n])}`).join(", ")})
+w = shocks("w_q", *[n for v in range(N) for n in (f"w_a{v}", f"w_eta{v}", *[f"w_{v}_{k}" for k in range(4)])])
+q = State("q"); q.drift = sigma_u * w.w_q
+a, eta, P, o = [], [], [], []
+for v in range(N):
+    a.append(State(f"a{v}")); a[v].drift = -theta_a * a[v] + sigma_a * w[f"w_a{v}"]
+    eta.append(State(f"eta{v}")); eta[v].drift = -theta_eta * eta[v] + sigma_eta * w[f"w_eta{v}"]
+    P.append(Control(f"P{v}")); o.append(Control(f"o{v}"))
+Pidx = define("Pidx", sum(P[v].lag(tau) for v in range(N)) / N)          # the price index in force
+Pnext = define("Pnext", sum(P[v] for v in range(N)) / N)                 # the quotes' mean
+defs = [Pidx, Pnext]; pi, i, d, yH = [], [], [], []
+for v in range(N):
+    cus = (v + 1) % N
+    pi.append(define(f"pi{v}", P[v].lag(tau)))                           # the price in force
+    i.append(define(f"i{v}", o[v].lag(tau)))                             # the input arriving
+    d.append(define(f"d{v}", o[cus].lag(tau)))                           # the deliveries owed
+    yH.append(define(f"yH{v}", q + (theta - 1) * Pidx - theta * pi[v] + eta[v]))     # household demand
+    defs += [pi[v], i[v], d[v], yH[v]]
+firms = []
+for v in range(N):
+    sup, cus = (v - 1) % N, (v + 1) % N
+    dev = define(f"dev{v}", pi[v] - (1 - xi - zeta) * Pidx - xi * q - zeta * pi[sup] + zeta * a[v].lag(tau))
+    mis = define(f"mis{v}", a[v].lag(tau) + i[v] - d[v] - yH[v])
+    bill = define(f"bill{v}", P[sup] - Pnext)
+    quote_gap = define(f"quote_gap{v}", P[v] - Pnext)
+    defs += [dev, mis, bill, quote_gap]
+    loss = (dev**2 - 2 * kappa * d[v] - 2 * kappa * yH[v] + m * mis**2 + r * o[v]**2 + rP * quote_gap**2
+            + 2 * c * o[v] * bill)
+    firms.append(Agent(f"firm{v}", controls=[P[v], o[v]], loss=loss, signals=[
+        Signal("sales", yH[v] + s1 * w[f"w_{v}_0"]), Signal("trans_price", P[sup] + s2 * w[f"w_{v}_1"]),
+        Signal("order_book", o[cus] + s3 * w[f"w_{v}_2"]), Signal("upstream_order", o[sup] + s4 * w[f"w_{v}_3"]),
+        Signal("own_prod", w[f"w_a{v}"])]))
+game = ns.Model("${d.name}", states=[q] + [x for v in range(N) for x in (a[v], eta[v])], agents=firms,
+                definitions=defs, ties=[firms],
+                horizon=${py.horizon(d.horizon)}, numerics=${py.numerics(d.numerics)})
+eq = game.solve()`,
+  tr: (d) => {
+    const b = d.horizon.past.model, march = d.horizon.settle !== undefined;
+    const now = Object.keys(d.params).filter((k) => k !== "T");
+    return `${py.head()}
+def tracking(name, horizon, numerics, **values):
+    """The stationary tracking game with a mean-reverting state, at the given parameter values."""
+    ${now.join(", ")} = Param.many(**{k: values[k] for k in (${now.map((k) => `"${k}"`).join(", ")})})
+    ${tracking("0.5 * X**2 + 0.5 * r1 * D1**2", "0.5 * X**2 + 0.5 * r2 * D2**2", "-a * X + D1 + D2 + w.w0").replace(/\n/g, "\n    ")}
+    return ns.Model(name, states=[X], agents=[player1, player2], horizon=horizon, numerics=numerics)
+
+# before the change: the stationary game at the old values
+before = tracking("${b.name}", ${py.horizon(b.horizon)}, ${py.numerics(b.numerics)},
+                  ${Object.keys(b.params).map((k) => `${k}=${py.num(b.params[k])}`).join(", ")})
+${march ? `# The explorer is marching in T (horizon.settle ${d.horizon.settle} in the model file); the equations form has no
+# argument for that, so this solves to the fixed T below.
+` : ""}T = ${march ? "6.0" : `Param("T", ${py.num(d.params.T)})`}
+game = tracking("${d.name}", ${py.horizon({ ...d.horizon, T: "T" }, "before")}, ${py.numerics(d.numerics)},
+                ${now.map((k) => `${k}=${py.num(d.params[k])}`).join(", ")})
+eq = game.solve()`;
+  },
+};
+PYTHON.ch6 = PYTHON.ch4;
 // a slider's parameter lives in the model's params ("now"), the past model's ("past"), or both
 function sliderParams(d, s) {
   const where = s.where || "now", out = [];
@@ -1384,7 +1529,7 @@ function renderDiagnostics(res, out) {
     ${res.stability ? `<p class="small" style="margin:10px 0 0">Stability: spectral radius of the best-response map ${fmt(res.stability.radius, 4)}
       (${res.stability.stable ? "below 1, so the equilibrium is locally stable under best-response iteration" : "1 or more, so best-response iteration moves away from it"}; ${esc(res.stability.method)}, ${res.stability.evaluations} evaluations).</p>` : ""}
     ${res.refinement ? `<p class="small" style="margin:6px 0 0">Refinement: re-solved at ${res.refinement.nodes} nodes in ${fmt(res.refinement.seconds, 1)} s; costs moved ${fmtE(res.refinement.cost_change)}, kernels ${fmtE(res.refinement.kernel_change)}.</p>` : ""}
-    ${game !== "custom" ? `<details style="margin-top:12px"><summary>The model file</summary><pre class="describe" style="overflow-x:auto">${esc(jsyaml.dump(currentModel(), { flowLevel: 3 }))}</pre></details>` : ""}</section>`);
+    ${game !== "custom" ? modelPanel(currentModel()) : ""}</section>`);
 }
 
 // ---------------------------------------------------------------------------------------------

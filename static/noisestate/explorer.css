@@ -71,6 +71,18 @@
 .explorer textarea#yaml { width: 100%; min-height: 320px; font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--panel-2);
   color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px; resize: vertical; tab-size: 2; }
 .explorer .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+/* the model in YAML or Python (the results' model panel and "Your model") */
+.explorer details.modelcode { margin-top: 12px; }
+.explorer details.modelcode > .codetabs { margin: 10px 0 8px; }
+.explorer .codetabs { gap: 6px; margin-bottom: 8px; }
+.explorer .codetabs .tab { padding: 3px 12px 4px; font-size: 0.82rem; }
+.explorer .pane { position: relative; }
+.explorer .pane > pre.describe { overflow-x: auto; margin: 0; }
+.explorer .pane .copycode { position: absolute; top: 8px; right: 8px; z-index: 1; }
+.explorer .pane .copycode.done::after { content: " \2713"; }
+.explorer .pane.nopython { min-height: 320px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--border);
+  border-radius: 8px; background: var(--panel-2); color: var(--muted); font: 14px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.explorer .pane.nopython[hidden] { display: none; }
 .explorer .row select { font: inherit; font-size: 0.9rem; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); }
 .explorer button.primary, .explorer button.secondary { font: inherit; font-size: 0.88rem; padding: 6px 13px; border-radius: 8px; cursor: pointer; transition: filter 0.15s, background 0.15s; }
 .explorer button.primary { border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); }
