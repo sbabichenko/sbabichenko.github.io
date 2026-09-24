@@ -931,6 +931,21 @@ function baseLayout(extra) {
     showlegend: true, hovermode: "x unified",
   }, extra || {});
 }
+// on a phone a plot is short and its legend long: the x-axis title moves into the plot's title, so the legend under
+// the axis has the room the title took
+function plotly(method, id, data, layout, cfg) {
+  const el = typeof id === "string" ? document.getElementById(id) : id;
+  if (el && el.clientWidth && el.clientWidth < 520 && layout) {
+    layout = { ...layout };
+    const t = layout.xaxis && layout.xaxis.title && (layout.xaxis.title.text || layout.xaxis.title);
+    if (t && typeof t === "string") {
+      layout.xaxis = { ...layout.xaxis, title: undefined };
+      if (layout.title && layout.title.text) layout.title = { ...layout.title, text: `${layout.title.text} <span style="font-size:11px">· against ${t}</span>` };
+    }
+    layout.legend = { ...(layout.legend || {}), y: -0.12 };
+  }
+  return Plotly[method](id, data, layout, cfg);
+}
 const plotCfg = { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"] };
 const titleOf = (s) => ({ text: s, font: { size: 13 }, x: 0, xanchor: "left", xref: "paper" });
 const palette = () => ["--c3", "--c1", "--c2", "--c4", "--c5", "--c6"].map(css);
@@ -979,7 +994,7 @@ function renderFinite(res, out, keepVar, keepCtl) {
       <p class="caption">${esc((PRESETS[game] && PRESETS[game].meansCaption) || "The expected states and controls over time: the deterministic part that targets, constant drifts and initial states move.")}</p></section>`);
     const pal = palette();
     const PS = prevResult && prevResult.samples && prevResult.samples.means;
-    Plotly.newPlot("p-means", pathNames.map((n, i) => line(S.mean_t, S.means[n], "mean " + n, pal[(i + 1) % pal.length],
+    plotly("newPlot", "p-means", pathNames.map((n, i) => line(S.mean_t, S.means[n], "mean " + n, pal[(i + 1) % pal.length],
       res.states.includes(n) ? { line: { color: pal[(i + 1) % pal.length], width: 2, dash: "dash" } } : {}))
       .concat(PS ? pathNames.filter((n) => PS[n]).map((n, i) => line(prevResult.samples.mean_t, PS[n], "before", pal[(i + 1) % pal.length], { line: { color: pal[(i + 1) % pal.length], width: 1, dash: "dot" }, opacity: 0.45, showlegend: false })) : []),
       baseLayout({ xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
@@ -999,7 +1014,7 @@ function renderFinite(res, out, keepVar, keepCtl) {
       if (!curves) continue;
       if (!curves.some((cv) => nonzero(cv.v))) continue;
       const div = document.createElement("div"); div.className = "plot"; box.appendChild(div);
-      Plotly.newPlot(div, curves.map((cv, i) => line(cv.s, cv.v, `t = ${fmt(cv.t, 2)}`, ramp(i, curves.length))),
+      plotly("newPlot", div, curves.map((cv, i) => line(cv.s, cv.v, `t = ${fmt(cv.t, 2)}`, ramp(i, curves.length))),
         baseLayout({ title: titleOf(chLabel(res, c) + (tr && (res.transition.initial || []).includes(c) ? " (initial shock)" : "")),
           xaxis: { ...baseLayout().xaxis, title: { text: "shock time s" }, range: [smin, T] },
           shapes: tr ? [{ type: "line", x0: 0, x1: 0, yref: "paper", y0: 0, y1: 1, line: { color: css("--faint"), width: 1, dash: "dot" } }] : [] }), plotCfg);
@@ -1041,7 +1056,7 @@ function renderNaive(res, out) {
       if (nonzero(S.kernels[v][c])) tr.push(line(S.age, S.kernels[v][c], chLabel(res, c) + ", privy", col));
       if (T.kernels[v] && nonzero(T.kernels[v][c])) tr.push(line(T.age, T.kernels[v][c], chLabel(res, c) + ", naive", col, { line: { color: col, width: 2, dash: "dash" } }));
     });
-    Plotly.react("pnaive", tr, baseLayout({ title: titleOf("Response of " + label(v)), xaxis: { ...baseLayout().xaxis, title: { text: "shock age" } } }), plotCfg);
+    plotly("react", "pnaive", tr, baseLayout({ title: titleOf("Response of " + label(v)), xaxis: { ...baseLayout().xaxis, title: { text: "shock age" } } }), plotCfg);
   };
   sel.onchange = draw; draw();
 }
@@ -1136,7 +1151,7 @@ function renderPaths(res, out) {
         line(S.t, S.mean, "mean", css("--faint"), { line: { color: css("--faint"), width: 1, dash: "dot" } }),
         ...S.draws.map((y, d) => line(S.t, y, `draw ${d + 1}`, pal[(d + 1) % pal.length], { line: { color: pal[(d + 1) % pal.length], width: 1.5 } })),
       ];
-      Plotly.newPlot(div, traces, baseLayout({ title: titleOf(label(nm)), showlegend: false, xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
+      plotly("newPlot", div, traces, baseLayout({ title: titleOf(label(nm)), showlegend: false, xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
     }
   };
   out.querySelector("#redraw").onclick = () => { pathSeed++; draw(); };
@@ -1160,7 +1175,7 @@ function renderSurface(res, out, names) {
     const sgrid = Array.from({ length: nb + M }, (_, k) => (k - nb + 0.5) * P.h);
     const z = rows.map((r) => sgrid.map((_, k) => (k < r.length ? r[k] : null)));
     let mx = 0; for (const r of z) for (const v of r) if (v !== null) mx = Math.max(mx, Math.abs(v));
-    Plotly.react("psurf", [{ type: "heatmap", x: sgrid, y: P.times, z, zmin: -mx, zmax: mx, colorscale: [[0, css("--c2")], [0.5, css("--panel")], [1, css("--c1")]], hoverongaps: false,
+    plotly("react", "psurf", [{ type: "heatmap", x: sgrid, y: P.times, z, zmin: -mx, zmax: mx, colorscale: [[0, css("--c2")], [0.5, css("--panel")], [1, css("--c1")]], hoverongaps: false,
       colorbar: { thickness: 10, outlinewidth: 0, tickfont: { color: css("--muted") } } }],
       baseLayout({ showlegend: false, hovermode: "closest", xaxis: { ...baseLayout().xaxis, title: { text: "shock time s" } },
         yaxis: { ...baseLayout().yaxis, title: { text: "date t" } }, margin: { l: 52, r: 12, t: 20, b: 50 } }), plotCfg);
@@ -1198,8 +1213,8 @@ function renderTransition(res, out) {
     }
     for (const [st, v] of Object.entries((X.belief_error || {})[a] || {})) br.push(line(t.slice(0, -1), cut(v).slice(0, -1), `${AGENT_LABEL[a] || a}, ${st}`, c));   // t < T: the value at T itself is the buffer's
   });
-  Plotly.newPlot("p-loss", tr, baseLayout({ title: titleOf("Flow loss"), xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
-  if (br.length) Plotly.newPlot("p-belief", br, baseLayout({ title: titleOf("Forecast error variance"), xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
+  plotly("newPlot", "p-loss", tr, baseLayout({ title: titleOf("Flow loss"), xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
+  if (br.length) plotly("newPlot", "p-belief", br, baseLayout({ title: titleOf("Forecast error variance"), xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
   else $("p-belief").remove();
 }
 
@@ -1222,7 +1237,7 @@ function renderStationary(res, out, keepVar, keepCtl) {
     // the previous solve's curves, faint, to show what the last change did
     const P = prevResult && prevResult.samples && prevResult.samples.kernels && prevResult.samples.kernels[v];
     if (P) res.channels.forEach((c, i) => { if (P[c] && nonzero(P[c])) traces.unshift(line(prevResult.samples.age, P[c], chLabel(res, c) + " (before)", pal[i % pal.length], { line: { color: pal[i % pal.length], width: 1, dash: "dot" }, opacity: 0.5, showlegend: false })); });
-    Plotly.react("pk", traces, baseLayout({ title: titleOf("Response of " + label(v)), xaxis: { ...baseLayout().xaxis, title: { text: "shock age" } } }), plotCfg);
+    plotly("react", "pk", traces, baseLayout({ title: titleOf("Response of " + label(v)), xaxis: { ...baseLayout().xaxis, title: { text: "shock age" } } }), plotCfg);
   };
   const ksel = out.querySelector("#kvar"); ksel.value = kv; ksel.onchange = () => drawK(ksel.value); drawK(kv);
   renderFoc(res, out, keepCtl, "Split by shock age. The physical part is what the first-order condition would be if nobody reacted to the agent's deviation; the information wedge is the rest, which comes from the other agents revising their forecasts.", "shock age");
@@ -1245,7 +1260,7 @@ function renderFoc(res, out, keepCtl, caption, xlabel) {
       if (!d || (d.physical.length !== xs.length)) continue;
       if (!nonzero(d.physical) && !nonzero(d.wedge)) continue;
       const div = document.createElement("div"); div.className = "plot"; box.appendChild(div);
-      Plotly.newPlot(div, [
+      plotly("newPlot", div, [
         line(xs, d.physical, "physical", css("--c3")),
         line(xs, d.wedge, "information wedge", css("--c4"), { line: { color: css("--c4"), width: 2, dash: "dash" } }),
       ], baseLayout({ title: titleOf(chLabel(res, c)), xaxis: { ...baseLayout().xaxis, title: { text: xlabel } } }), plotCfg);
@@ -1394,7 +1409,7 @@ function drawSweep() {
     if (Q && Q.length) tr.push({ x: Q.map((p) => p[0]), y: Q.map((p) => p[1]), name: (AGENT_LABEL[a] || a) + ", naive", type: "scatter", mode: "lines+markers", line: { color: col, width: 2, dash: "dash" }, marker: { size: 5, color: col, symbol: "circle-open" } });
   });
   const cur = values[game][S.key], L = baseLayout();
-  Plotly.react("psweep", tr, baseLayout({
+  plotly("react", "psweep", tr, baseLayout({
     title: titleOf("Equilibrium costs as " + S.label + " varies"),
     xaxis: { ...L.xaxis, type: S.log ? "log" : "linear", dtick: S.log ? "D2" : undefined, title: { text: S.label } },
     shapes: [{ type: "line", xref: "x", yref: "paper", x0: cur, x1: cur, y0: 0, y1: 1, line: { color: css("--faint"), width: 1, dash: "dot" } }],
