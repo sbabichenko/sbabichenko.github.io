@@ -1,5 +1,6 @@
-// The Decision Mesh demo: noisy data from a chosen surface, a decision mesh (decision-mesh.js) and a best-first
-// regression tree grown to the same number of pieces, drawn side by side with the truth, and their error curves.
+// The Decision Mesh demo: noisy data from a chosen surface, fitted four ways with the same number of free parameters:
+// freeform triangles (decision-mesh.js), right triangles (right-mesh.js), rectangles (rect-mesh.js) and a best-first
+// regression tree, drawn side by side with the truth, with their error curves.
 (function () {
   "use strict";
   const $ = (id) => document.getElementById(id);
@@ -119,6 +120,7 @@
     }
     return g;
   }
+  function atGrid(m, g) { return rectGrid(m, g); }
   function rectGrid(rm, g) {
     for (let i = 0; i < D; ++i) { const y = cellY(i); for (let j = 0; j < D; ++j) g[i * D + j] = rm.at(cellX(j), y); }
     return g;
@@ -174,8 +176,8 @@
   // ------------------------------------------------------------------ state
   const S = { running: false, done: false, history: [] };
   window.meshDemo = S;
-  let mesh, rect, tree, truth, vmax = 1;
-  let gMesh = new Float32Array(D * D), gRect = new Float32Array(D * D), gTree = new Float32Array(D * D);
+  let mesh, right, rect, tree, truth, vmax = 1;
+  let gMesh = new Float32Array(D * D), gRight = new Float32Array(D * D), gRect = new Float32Array(D * D), gTree = new Float32Array(D * D);
   let X, Y, sigma;
 
   function readHash() {
@@ -197,6 +199,8 @@
     }
     DM.reset();
     mesh = new DM.DecisionMesh(X, Y, { maxAspectRatio: +$("aspect").value, minPoints: +$("minpts").value, refresh: $("refresh").checked, rng: mulberry32(seed + 1) });
+    TM.reset();
+    right = new TM.RightMesh(X, Y, { depth: 4, minPoints: +$("minpts").value });
     RM.reset();
     rect = new RM.RectMesh(X, Y, { grid: 4, minPoints: +$("minpts").value, maxAspect: +$("aspect").value, rng: mulberry32(seed + 2) });
     tree = new Tree(X, Y);
@@ -215,12 +219,14 @@
     while (tree.leaves.length < df() && tree.grow());
     let guard = 0;
     while (rect.freeCount() < df() && guard++ < 40) if (rect.step() === "none") break;
+    guard = 0;
+    while (right.freeCount() < df() && guard++ < 40) if (right.step() === "none") break;
   }
   function record() {
-    meshGrid(mesh, gMesh); rectGrid(rect, gRect); treeGrid(tree, gTree);
-    S.history.push({ df: df(), pieces: mesh.activeFaces.size, cells: rect.cells, rdf: rect.freeCount(),
+    meshGrid(mesh, gMesh); atGrid(right, gRight); rectGrid(rect, gRect); treeGrid(tree, gTree);
+    S.history.push({ df: df(), pieces: mesh.activeFaces.size, rpieces: right.faces, cells: rect.cells, rdf: rect.freeCount(),
                      leaves: tree.leaves.length,
-                     m: rmse(gMesh, truth), r: rmse(gRect, truth), t: rmse(gTree, truth) });
+                     m: rmse(gMesh, truth), q: rmse(gRight, truth), r: rmse(gRect, truth), t: rmse(gTree, truth) });
   }
 
   // ------------------------------------------------------------------ drawing
@@ -241,13 +247,25 @@
     paint(c, truth, vmax, true, (ctx, s) => dots(ctx, s));
   }
   function draw() {
-    const cm = $("cvmesh"), cr = $("cvrect"), ct = $("cvtree");
-    fitCanvas(cm); fitCanvas(cr); fitCanvas(ct);
+    const cm = $("cvmesh"), cq = $("cvright"), cr = $("cvrect"), ct = $("cvtree");
+    fitCanvas(cm); fitCanvas(cq); fitCanvas(cr); fitCanvas(ct);
     const edges = $("showedges").checked;
     paint(cm, gMesh, vmax, true, (ctx, s) => {
       if (edges) {
         ctx.strokeStyle = lineColor(); ctx.lineWidth = Math.max(0.5, s * 0.5); ctx.beginPath();
         for (const e of mesh.activeEdges) { ctx.moveTo(px(e.v0.x) * s, py(e.v0.y) * s); ctx.lineTo(px(e.v1.x) * s, py(e.v1.y) * s); }
+        ctx.stroke();
+      }
+      dots(ctx, s);
+    });
+    const QS = TM.S;
+    paint(cq, gRight, vmax, true, (ctx, s) => {
+      if (edges) {
+        ctx.strokeStyle = lineColor(); ctx.lineWidth = Math.max(0.5, s * 0.5); ctx.beginPath();
+        for (const [x0, y0, x1, y1] of right.edges()) {
+          ctx.moveTo((x0 / QS) * D * s, (1 - y0 / QS) * D * s);
+          ctx.lineTo((x1 / QS) * D * s, (1 - y1 / QS) * D * s);
+        }
         ctx.stroke();
       }
       dots(ctx, s);
@@ -274,10 +292,22 @@
     });
     const h = S.history[S.history.length - 1];
     $("capmesh").textContent = `${h.pieces.toLocaleString()} triangles · RMSE ${h.m.toFixed(3)}`;
+    $("capright").textContent = `${h.rpieces.toLocaleString()} triangles · RMSE ${h.q.toFixed(3)}`;
     $("caprect").textContent = `${h.cells.toLocaleString()} cells · RMSE ${h.r.toFixed(3)}`;
     $("captree").textContent = `${h.leaves.toLocaleString()} boxes · RMSE ${h.t.toFixed(3)}`;
     drawCurve();
     drawScale();
+    drawBoard(h);
+  }
+  // the standings: each fit's distance from the truth, as a bar against the worst of the four
+  function drawBoard(h) {
+    const rows = [["Freeform triangles", h.m, "--accent"], ["Right triangles", h.q, "--c5"], ["Rectangles", h.r, "--c6"], ["Regression tree", h.t, "--c4"]];
+    const worst = Math.max(...rows.map((r) => r[1])), best = Math.min(...rows.map((r) => r[1]));
+    $("board").innerHTML = `<div class="bhead">${h.df.toLocaleString()} free parameters each</div>` +
+      rows.slice().sort((a, b) => a[1] - b[1]).map(([name, e, col]) =>
+        `<div class="brow${e === best ? " lead" : ""}"><span class="bname"><i style="background:var(${col})"></i>${name}</span>` +
+        `<span class="bbar"><b style="width:${(100 * e / worst).toFixed(1)}%;background:var(${col})"></b></span><span class="bval">${e.toFixed(3)}</span></div>`).join("") +
+      `<div class="bfoot">RMSE against the truth; the noise &sigma; is ${sigma.toFixed(2)}</div>`;
   }
   function drawScale() {
     const stops = []; for (let k = 0; k <= 8; ++k) { const q = Math.round((k / 8) * 255); stops.push(`rgb(${LUT[3 * q]},${LUT[3 * q + 1]},${LUT[3 * q + 2]})`); }
@@ -289,7 +319,7 @@
     ctx.clearRect(0, 0, W, H);
     const L = 44 * dpr, R = 12 * dpr, T = 12 * dpr, B = 26 * dpr;
     const hist = S.history, maxP = Math.max(20, ...hist.map((h) => h.df));
-    let maxY = sigma * 1.05; for (const h of hist) maxY = Math.max(maxY, h.m, h.r, h.t); maxY = maxY * 1.05 || 1;
+    let maxY = sigma * 1.05; for (const h of hist) maxY = Math.max(maxY, h.m, h.q, h.r, h.t); maxY = maxY * 1.05 || 1;
     const X_ = (p) => L + ((W - L - R) * Math.log(p)) / Math.log(maxP);
     const Y_ = (v) => T + (H - T - B) * (1 - v / maxY);
     ctx.font = `${11 * dpr}px ui-monospace, Menlo, monospace`; ctx.fillStyle = css("--faint"); ctx.strokeStyle = css("--grid"); ctx.lineWidth = dpr;
@@ -313,9 +343,10 @@
     };
     line("t", css("--c4"));
     line("r", css("--c6"));
+    line("q", css("--c5"));
     line("m", css("--accent"));
     let lx = L + 8 * dpr;                              // the key, laid out by measured width
-    for (const [label, col] of [["triangles", css("--accent")], ["rectangles", css("--c6")], ["tree", css("--c4")]]) {
+    for (const [label, col] of [["freeform triangles", css("--accent")], ["right triangles", css("--c5")], ["rectangles", css("--c6")], ["tree", css("--c4")]]) {
       ctx.fillStyle = col; ctx.fillText(label, lx, T + 12 * dpr);
       lx += ctx.measureText(label).width + 14 * dpr;
     }
@@ -342,13 +373,13 @@
     if (did) stepMs = 0.8 * stepMs + 0.2 * ((performance.now() - t0) / did);
     sync(); record(); draw();
     const h = S.history[S.history.length - 1];
-    const names = ["triangles", "rectangles", "the tree"], errs = [h.m, h.r, h.t];
-    let w = 0; for (let i = 1; i < 3; ++i) if (errs[i] < errs[w]) w = i;
+    const names = ["freeform triangles", "right triangles", "rectangles", "the tree"], errs = [h.m, h.q, h.r, h.t];
+    let w = 0; for (let i = 1; i < 4; ++i) if (errs[i] < errs[w]) w = i;
     const rest = errs.filter((_, i) => i !== w).sort((a, b) => a - b)[0];
     const txt = `${h.df.toLocaleString()} free parameters each: ${names[w]} closest to the truth `
       + `(RMSE ${errs[w].toFixed(3)}), ${(100 * (rest / errs[w] - 1)).toFixed(0)}% ahead of the next.`;
     $("speedfact").textContent = `about ${stepMs < 1 ? stepMs.toFixed(2) : stepMs.toFixed(1)} ms a step here`;
-    if (S.done) { S.running = false; $("playbtn").textContent = "Play"; setStatus("ok", "Done", txt + " Stopped at ten points per triangle, on average."); }
+    if (S.done) { S.running = false; $("playbtn").textContent = "Play"; setStatus("ok", "Done", txt + " Stopped at ten points per freeform triangle, on average."); }
     else setStatus(S.running ? "busy" : "idle", S.running ? "Growing" : "Paused", txt);
   }
   function loop() {

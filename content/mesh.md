@@ -1,6 +1,6 @@
 +++
 title = "Decision Mesh"
-description = "Watch a decision mesh grow in your browser: a piecewise-linear fit on a triangular mesh that refines like a decision tree, next to a regression tree with the same number of pieces."
+description = "Four fits grow in your browser on the same noisy data: freeform triangles, right triangles, rectangles and a regression tree, matched on free parameters."
 path = "mesh"
 template = "mesh.html"
 [extra]
