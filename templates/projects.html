@@ -14,7 +14,7 @@
     <main class="home">
       <section class="hero">
         <canvas id="heroink" aria-hidden="true"></canvas>
-        <p class="eyebrow">Statistics &amp; Applied Probability &middot; UC Santa Barbara</p>
+        <p class="eyebrow">Quantitative research &middot; PhD, UC Santa Barbara</p>
         <h1>{{ config.extra.profile.name }}</h1>
         <p class="lede">{{ config.extra.profile.bio }}</p>
         {% if config.extra.profile.social %}
@@ -31,6 +31,8 @@
           {% endfor %}
         </ul>
         {% endif %}
+        <p class="starthere">New here? Start with <a href="{{ get_url(path='dissertation/idea/') }}">the noise-state, explained</a>,
+          or <a href="{{ get_url(path='noisestate/') }}">solve a game</a> in your browser.</p>
         {%- set formula = load_data(path="data/formula.json") %}
         <a class="motif" href="{{ get_url(path='dissertation/idea/') }}"
            aria-label="The noise-state: player i's estimate, at time t, of the primitive shock W at an earlier time u, given everything player i knows">

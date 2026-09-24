@@ -70,7 +70,7 @@ header_blur = true
 [extra.profile]
 name = "Samuel Babichenko"
 bio = """
-PhD candidate in statistics and financial mathematics at UCSB. I work on game theory, stochastic control, and quantitative finance. Here I share projects and writing about what’s been on my mind. Feel free to reach out!
+Quantitative researcher at Wells Fargo in Charlotte. I did my PhD in statistics at UCSB, on games where players learn from each other’s actions. Here I share projects and writing about what’s been on my mind. Feel free to reach out!
 """
 # The URL of avatar.
 avatar_url = "images/profile.jpeg"

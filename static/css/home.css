@@ -222,3 +222,7 @@
   .home .desk .ln:not(.faint) { stroke-dasharray: 400; stroke-dashoffset: 400; animation: desk-write 3s 0.4s ease-out forwards; }
   @keyframes desk-write { to { stroke-dashoffset: 0; } }
 }
+
+/* the first stop, for a first visit */
+.home .hero .starthere { position: relative; z-index: 1; margin: 1.1rem 0 0; font-size: 0.95rem; color: var(--ink-2); }
+.home .hero .starthere a { color: var(--accent); }
