@@ -18,3 +18,10 @@ assets live under `static/`, so `zola serve` shows them like any other page.
 
 Presets in the explorer are model files in `PRESETS` at the top of `explorer.js`, each with its sliders; a new tab is
 a new entry there.
+
+## The social card
+
+`static/images/og.png` (the `og:image`) is rendered, not drawn: `tools/make_og.js` runs the mesh
+engine in a headless browser and screenshots the result. Re-run it with the site served locally:
+
+    node tools/make_og.js          # needs playwright and the site on http://127.0.0.1:8770
