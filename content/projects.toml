@@ -22,7 +22,7 @@ links = [
 
 [[project]]
 name = "Decision Mesh"
-desc = "Adaptive, continuous regression that learns where local detail is supported and makes its borrowing of information explicit. It's also very interpretable, so it's easy to tinker with."
+desc = "Adaptive, continuous regression that makes grounded, systematic decisions about where to refine the surface, and decomposes the data into the surface, unit-level effects, and pure noise. The rectangular version splits one axis at a time, like a decision tree, so it scales to higher dimensions. It's also very interpretable, so it's easy to tinker with."
 tags = ["personal", "data science"]
 image = "images/card-mesh"
 links = [
