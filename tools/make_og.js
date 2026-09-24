@@ -24,7 +24,7 @@ const CARDS = [
     sub: "Freeform triangles, right triangles, rectangles and a regression tree fit the same noisy surface." },
   { out: "og-gate.png", art: "image", src: "/images/card-gate-light.webp",
     eyebrow: "sbabichenko.com/gate",
-    title: "The gated decision mesh",
+    title: "A mesh that knows when to stop",
     sub: "Coin flips fitted in your browser by an estimator that cuts only where a false-discovery gate allows." },
 ];
 

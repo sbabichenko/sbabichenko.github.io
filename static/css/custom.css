@@ -130,3 +130,25 @@ main {
 .prose :is(h1, h2, h3, h4) { letter-spacing: -0.015em; }
 .prose h2 { font-size: 1.75rem; margin-top: 2.2em; }
 .prose h3 { font-size: 1.35rem; }
+
+/* ---------------------------------------------------------------- header and footer
+   The header is the page's own paper, frosted, with a hairline under it, rather than a grey band;
+   it spans the same measure as the home page. */
+header.blur-header { background-color: rgba(255, 255, 240, 0.82); border-bottom: 1px solid rgba(20, 20, 30, 0.07); }
+.dark header.blur-header { background-color: rgba(31, 32, 34, 0.82); border-bottom-color: rgba(255, 255, 255, 0.07); }
+header.blur-header > div { max-width: 1072px; padding-left: 16px; padding-right: 16px; }
+header .primary-link { font-size: 0.98rem; font-weight: 500; }
+@media (min-width: 1024px) { header .primary-link { padding-left: 0.7rem; padding-right: 0.7rem; } }
+
+footer.site-foot { width: min(1040px, calc(100% - 40px)); margin: 72px auto 0; padding: 18px 0 40px; font-size: 0.84rem;
+  display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; color: rgba(20, 20, 30, 0.55);
+  border-top: 1px solid rgba(20, 20, 30, 0.08); }
+.dark footer.site-foot { color: rgba(255, 255, 255, 0.5); border-top-color: rgba(255, 255, 255, 0.08); }
+footer.site-foot a { color: inherit; text-decoration: none; border-bottom: 1px solid currentColor; border-bottom-color: color-mix(in srgb, currentColor 35%, transparent); }
+footer.site-foot a:hover { color: var(--accent); }
+footer.site-foot .tally { margin-left: auto; font-variant-numeric: tabular-nums; }
+footer.site-foot .tally b { font-weight: 600; color: var(--accent); }
+@media (max-width: 640px) { footer.site-foot .tally { margin-left: 0; flex-basis: 100%; } }
+.cv-download { display: inline-block; padding: 6px 16px; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--accent) !important; border-radius: 999px; text-decoration: none !important; font-size: 0.88em; font-family: ui-sans-serif, system-ui, sans-serif; }
+.cv-download:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }

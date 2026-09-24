@@ -7,19 +7,19 @@ path = "cv"
 
 ## Education
 
-**PhD in Statistics and Applied Probability, UC Santa Barbara** &mdash; Sep 2021 &ndash; Jun 2026
-Advisor: Tomoyuki Ichiba. Thesis: *Noise-State Calculus for Dynamic Games with Strategic Information.*
-Passed all qualifying exams prior to the first term of the PhD.
+**PhD in Statistics and Applied Probability, UC Santa Barbara** &mdash; Sep 2021 &ndash; Jun 2026\
+Advisor: Tomoyuki Ichiba. Thesis: *Noise-State Calculus for Dynamic Games with Strategic Information.*\
+Passed all qualifying exams prior to the first term of the PhD.\
 Graduate Teaching Assistant. Mentored 10+ undergraduates, majority of whom are now in PhD programs. Presented at UCSD Stochastic Systems Seminar.
 
-**BS in Mathematics, UC San Diego** &mdash; Sep 2019 &ndash; Jun 2021
+**BS in Mathematics, UC San Diego** &mdash; Sep 2019 &ndash; Jun 2021\
 Dean's Undergraduate Excellence Award (top 0.5%, Physical Sciences).
 
 ---
 
 ## Research
 
-**Forecasting and Manipulating the Forecasts of Others** &mdash; [arXiv: 2603.12140](https://arxiv.org/abs/2603.12140)
+**Forecasting and Manipulating the Forecasts of Others** &mdash; [arXiv: 2603.12140](https://arxiv.org/abs/2603.12140)\
 Solo-authored. Submitted March 2026.
 
 First exact solution to a class of multi-agent games with private signals open since Townsend (1983). Solves for equilibrium strategies, price impact, and welfare costs in markets where agents learn from each other's actions. Works in the exact model class behind Kyle-type market microstructure, optimal execution, and multi-agent control, with no approximation or large-population limit.
@@ -46,13 +46,13 @@ Models markets where traders choose how much to invest in private information, t
 
 ## Selected Projects
 
-**Multi-Agent Traffic Simulation** (Waymo Open Motion Dataset)
+**Multi-Agent Traffic Simulation** (Waymo Open Motion Dataset)\
 Reimplemented BehaviorGPT for multi-agent traffic simulation: decoder-only transformer with agent&ndash;agent attention, relative spacetime embeddings, and next-patch prediction generating closed-loop 10 Hz trajectories on the Waymo Open Motion Dataset.
 
 Extending to a two-stage architecture: the transformer predicts only at branch points where agent behavior becomes multimodal (lane changes, yielding decisions, intersection entries), then a conditional diffusion model interpolates realistic trajectories between branch points with guided sampling.
 
-**Adaptive Triangle-Mesh Regression**
-Continuous surface model on an adaptive right-triangle bisection mesh with hierarchical partial pooling and wavelet shrinkage, addressing the discontinuity problem of tree-based models observed in the Wells Fargo prepayment project.
+**Adaptive Triangle-Mesh Regression**\
+Continuous surface model on an adaptive right-triangle bisection mesh with hierarchical partial pooling and wavelet shrinkage, addressing the discontinuity problem of tree-based models observed in the Wells Fargo prepayment project. [Runs in the browser: sbabichenko.com/gate](/gate).
 
 ---
 
@@ -67,7 +67,7 @@ Continuous surface model on an adaptive right-triangle bisection mesh with hiera
 ---
 
 <div style="text-align:center; margin:24px 0 8px;">
-<a href="/Resume_Samuel_Babichenko.docx" download style="display:inline-block; padding:5px 16px; border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.6); border-radius:6px; text-decoration:none; font-size:0.85em; transition:all 0.15s;">Download Resume</a>
+<a class="cv-download" href="/Resume_Samuel_Babichenko.docx" download>Download resume</a>
 </div>
 
 Last updated: **March 2026**
