@@ -107,6 +107,10 @@ name = "Writing"
 url = "$BASE_URL/writing"
 
 [[extra.menu]]
+name = "Dissertation"
+url = "$BASE_URL/dissertation"
+
+[[extra.menu]]
 name = "CV"
 url = "$BASE_URL/cv"
 

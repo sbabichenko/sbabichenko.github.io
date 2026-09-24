@@ -1,0 +1,204 @@
+<section class="level1" id="ch:conclusion">
+<h1 data-num="7"><span class="secnum">Chapter 7</span>Conclusion: The Information Wedge Across Environments</h1>
+<p>Every equilibrium in this dissertation is a set of kernels against
+the same primitive shocks. Under perfect information the kernels are the
+ordinary impulse responses. The chapters changed what players could see,
+and the coordinates never moved.</p>
+<p>The games have two feedback channels: the physical one, and the one
+that runs through what other players learn.</p>
+<p>The noise-state representation keeps the second channel by writing
+private information as conditional estimates of the primitive shocks
+while retaining endogenous signals, private histories, and individual
+impact. In the LQG case every object of the calculus is a deterministic
+kernel, and the information wedge, a term in the state-price equation,
+prices the effect of changing another player’s posterior.</p>
+<p>The chapters vary what players see of the shocks. Monitoring varies
+what they know about a deviation’s origin. A movement a player observes
+may be filtered as noise or recognized as another player’s deviation.
+Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a> prices both ways of responding, and
+the classical closed-loop game returns at the corner where every player
+sees the shocks and every player is privy.</p>
+<p>The wedge and the accompanying equilibrium results come from the
+finite-horizon benchmark: Theorem <a class="xref" href="/dissertation/chapter-1/#thm:wedge-adjoints">1.8</a>
+derives the belief-price representation, Corollary <a class="xref" href="/dissertation/chapter-1/#cor:nsl-br">1.11</a> gives
+closure over the full admissible class, and Proposition <a class="xref" href="/dissertation/chapter-1/#prop:global_best_response">1.12</a> solves unilateral
+best responses globally. Short-horizon equilibrium follows in Theorem <a class="xref" href="/dissertation/appendix-a/#thm:short_horizon_equilibrium2">A.7</a>. The two-player
+benchmark separates statistical benefits from strategic costs and makes
+allocating signal precision a policy instrument.</p>
+<p>The same object appears outside the baseline game. In
+identical-interest games the wedge prices the effect of shifting
+teammates’ posteriors and so their future controls (Section <a class="xref" href="/dissertation/chapter-1/#subsec:identical_interest_lqg">1.4.1</a>). Delayed
+public signals add to it a birth term and a jump in the belief price at
+the date the news arrives, and the stationary equations carry the same
+terms in lag coordinates. In Kyle–Back trading the wedge becomes a
+belief price on the market maker’s and the other traders’ filters, since
+order flow changes current prices and the future filtering environment
+(Theorems <a class="xref" href="/dissertation/chapter-4/#thm:adjoints">4.6</a> and <a class="xref" href="/dissertation/chapter-4/#thm:stationary-best-response">4.10</a>). On finite
+symmetric local markets, the graph symmetry reduces policy and filter
+kernels to equivalent-position coordinates (Proposition <a class="xref" href="/dissertation/chapter-5/#prop:stabilizer_orbit_reduction">5.7</a>). Asymmetric
+monitoring splits the feedback into a naive channel, in which the naive
+player filters the deviation as noise (this is the wedge), and a privy
+channel, in which the privy player responds to the deviation directly,
+knowing who made it (Definition <a class="xref" href="/dissertation/chapter-6/#def:monitored_equilibrium">6.7</a>, Proposition <a class="xref" href="/dissertation/chapter-6/#prop:gain_reduction">6.9</a>).</p>
+<section class="level2" id="directions-beyond-the-dissertation">
+<h2 data-num="7.1"><span class="secnum">7.1</span>Directions beyond the dissertation</h2>
+<section class="level3" id="closure">
+<h3 data-num="7.1.1"><span class="secnum">7.1.1</span>Closure</h3>
+<p>A noise-state linear fixed point is already a Nash equilibrium
+against arbitrary admissible deviations, but whether every equilibrium
+takes this form is open. Proving it means allowing strategies with
+random martingale-representation coefficients, writing the induced
+nonlinear filters through the Kushner-Stratonovich equations, and
+showing that equilibrium forces those coefficients to collapse to
+deterministic kernels. The continuous-time martingale representation
+theorem gives a handle that is absent in the discrete setting where
+Witsenhausen’s counterexample [<a href="/dissertation/references/#ref-Witsenhausen1968">116</a>] applies;
+a Lyapunov argument in the variance of the representation coefficients
+is the natural route.</p>
+</section>
+<section class="level3" id="computation-and-estimation">
+<h3 data-num="7.1.2"><span class="secnum">7.1.2</span>Computation and estimation</h3>
+<p>One route to computing the kernels adapts high-dimensional PDE
+methods, in the spirit of Han’s work [<a href="/dissertation/references/#ref-HanJentzenE2018">50</a>], to the
+kernel HJB or the forward-backward kernel system. A different route
+approximates the noise-state itself. The filtering equations reweight
+old sources through kernels and project them into a current decision,
+the operation a linear attention layer performs. Linear transformers are
+a natural approximating class, with the noise-state as the target filter
+the trained network should recover. On the stationary system of
+Chapter <a class="xref" href="/dissertation/chapter-3/#chap:stationary-lqg">3</a>, however, networks trained on
+the continuum residuals converged to spurious kernels while reporting
+small residuals (Figure <a class="xref" href="/dissertation/chapter-3/#fig:stationary-pinn">3.6</a>).</p>
+<p>On the dynamic-programming side, lifting the lag dynamics of
+Section <a class="xref" href="/dissertation/appendix-a/#sec:hjb">A.2.3</a> to a fixed Hilbert space and taking a
+quadratic ansatz should recover the belief prices as off-diagonal
+Riccati blocks, and would likely give the CARA extension of the
+appendices a cleaner positivity condition than its operator
+inversions.</p>
+<p>For empirical work the problem becomes estimation. Once the kernels
+are known the observed signal law has a Gaussian likelihood. But the
+kernels are endogenous equilibrium objects, so the estimator must either
+fit parameters while solving the kernel fixed point or learn a fast
+surrogate for that fixed point.</p>
+<p>There is an easier road than fitting kernels. Across the chapters the
+strategic effects live in the means: the pooling gains of Chapter <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a> are mostly mean-path, in
+Chapter <a class="xref" href="/dissertation/chapter-5/#ch:vertex-transitive">5</a> firms hold back their orders
+by several times the filtering gap while responses to aggregate shocks
+barely move, and the quote’s inventory loading of Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a> is a level. The near-invariance of
+the responses to aggregate shocks is camouflage: an econometrician who
+fit those responses would match them and miss a level distortion, one
+that moves whenever policy changes who sees whose actions. The natural
+design is levels against observability changes, post-trade transparency
+[<a href="/dissertation/references/#ref-BessembinderMaxwellVenkataraman2006">20</a>,
+<a href="/dissertation/references/#ref-GoldsteinHotchkissSirri2007">45</a>],
+platform visibility, disclosure mandates, rather than kernel
+comparisons.</p>
+</section>
+<section class="level3" id="sec:future-sources">
+<h3 data-num="7.1.3"><span class="secnum">7.1.3</span>Sources</h3>
+<p>The most immediate extension is endogenous information acquisition.
+Signal technologies are treated as fixed throughout, and Appendix <a class="xref" href="/dissertation/appendix-a/#sec:endogenous_precision">A.1</a> takes a first step by
+isolating the obstruction. One clean version uses a Brownian sheet of
+independent measurement channels, with each player selecting a portion
+of the sheet. Acquiring a source then changes the equilibrium policy
+kernels, and so changes what other players expect the holder to do with
+what it learns.</p>
+<p>Compound Poisson signal sources are a larger step than a change of
+noise distribution. Throughout the dissertation each player knows the
+precision of their channels, so a source’s informativeness is fixed and
+the randomness lies in its realizations. A Poisson source with an
+uncertain arrival rate breaks this. Individual jumps may carry messages
+of known quality, but if the rate is unknown the value of the source as
+a whole is unknown. Signal quality itself becomes an inferred state,
+which is closer to how news, expert reports, and disclosures actually
+work. The filter is then generally infinite-dimensional, but that is not
+obviously the binding constraint; the question is whether the filter
+over primitive sources stays stable and remains easier to approximate
+than the hierarchy it replaces.</p>
+</section>
+<section class="level3" id="networks">
+<h3 data-num="7.1.4"><span class="secnum">7.1.4</span>Networks</h3>
+<p>The most immediate extension of the graph chapter is the large-cycle
+limit of Conjecture <a class="xref" href="/dissertation/chapter-5/#conj:finite_cycle_limit">5.2</a>. Replicated markets can
+also be linked endogenously, with a mean-field consistency condition on
+the distribution of market-level outcomes and possibly a few major
+markets of finite aggregate impact. Heterogeneous local environments
+would be aggregated over market types. In every case the aggregated
+object is a solved finite strategic environment, which distinguishes the
+construction from a graphon limit where local informational impact has
+already vanished.</p>
+</section>
+<section class="level3" id="markets">
+<h3 data-num="7.1.5"><span class="secnum">7.1.5</span>Markets</h3>
+<p>Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a> makes the market maker strategic and
+computes the stationary market both ways, transparent and opaque.
+Existence remains open there, away from the corner cases and away from
+the <span class="math inline"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">ρ</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">0</span></span></span></span></span> degeneracy in which
+the market maker’s first-order condition cannot pin down how much the
+quote loads on inventory.</p>
+<p>The delayed-public and monitored-deviation chapters suggest a
+separate extension in which attribution arrives after the action, with a
+trader’s order initially hidden in aggregate flow and a reporting rule
+naming it later. How players should respond on the day the order is
+named remains open.</p>
+<p>In Rebonato’s parable [<a href="/dissertation/references/#ref-Rebonato2004">99</a>], two identical
+volatility traders facing the same mispriced quote behave differently
+depending on whether the risk function marks their book to their own
+model or to the market consensus. In the Kyle–Back setting the consensus
+is the market maker’s price. A quote recognized as the market maker’s
+action is one the trader responds to directly, the way a privy player
+responds to an observed deviation in Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a>, while the
+trader’s private valuation remains a projection of primitive shocks
+through its noise-state. The gap between the trader’s valuation and the
+consensus mark is the performance measure in a principal–agent contract
+between the trader as agent and risk management as principal, with
+Sannikov-type continuation values encoding it [<a href="/dissertation/references/#ref-Sannikov2008">103</a>]. The belief
+prices of Chapter <a class="xref" href="/dissertation/chapter-4/#ch:stationary-kyle-back">4</a>
+separately price order flow that moves the consensus. The contract, risk
+penalty, and strategic channel then jointly blunt how hard the trader
+trades on its private information.</p>
+</section>
+<section class="level3" id="sec:persistent-program">
+<h3 data-num="7.1.6"><span class="secnum">7.1.6</span>Noise traders with momentum</h3>
+<p>The strategic market maker above has a balance sheet it cares about,
+and Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a> lets its quote be tested against
+deviations because every trader knows the quote is the market maker’s
+action. On its own this adds an inventory charge to the price. With
+Brownian noise that charge depends only on the inventory already held,
+since the noise adds variance but does not move the market maker’s
+forecast of future flow.</p>
+<p>Noise traders with momentum do not need a strategic market maker. In
+Kyle–Back the informed traders already trade with long memory, since
+staying under the radar means trading slowly, and it is the noise flow
+that is Brownian. Retail herding has momentum. Fractional Brownian
+motion with <span class="math inline"><span class="katex"><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7224em;vertical-align:-0.0391em;"></span><span class="mord mathnormal" style="margin-right:0.08125em;">H</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1/2</span></span></span></span></span> is the natural
+way to write this [<a href="/dissertation/references/#ref-MandelbrotVanNess1968">81</a>].</p>
+<p>With both, the net order flow is a state the market maker manages, so
+a run of trend-chasing buying is a forecastable inventory problem rather
+than noise to be absorbed. The future of the noise now matters on its
+own, and everyone holds beliefs about it where Brownian noise gave them
+nothing to forecast. I expect the market maker’s conditional expectation
+of value and the price it posts to come apart, with the price reflecting
+inventory management against the flow the market maker expects.</p>
+<p>A trader who can forecast the coming run, and the charge the market
+maker will add against it, buys ahead and sells into that charge. They
+buy to sell later. De Long et al. [<a href="/dissertation/references/#ref-DeLongShleiferSummersWaldmann1990">34</a>]
+have rational speculators front-running trend-chasing traders; here the
+trend-chasers’ persistence is a primitive. An order now moves the market
+maker’s forecast of flow as well as its estimate of value, so the trader
+manipulates through a second channel, and the wedge prices both. The
+round trip pays only if the market maker’s charge overshoots. The market
+maker forecasts the selling to come and prices it in, the traders buying
+ahead forecast the market maker, and how much of the rise survives would
+be a fixed point in the same kernels. The theorem to aim for is the
+market maker’s inventory cost against competition among the traders
+buying ahead.</p>
+<p>As markets shift toward passive and flow-driven trading, the part of
+order flow that is not about fundamentals grows [<a href="/dissertation/references/#ref-GabaixKoijen2021">41</a>] and the
+market maker’s inventory problem becomes a larger part of the price. The
+model at the end has a strategic market maker who manages inventory,
+noise traders with momentum, and informed traders whose signals keep
+arriving.</p>
+</section>
+</section>
+</section>

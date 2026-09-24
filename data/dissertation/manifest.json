@@ -1,0 +1,493 @@
+[
+ {
+  "slug": "front",
+  "title": "Front matter",
+  "label": "",
+  "sections": [
+   {
+    "id": "acknowledgements",
+    "level": 1,
+    "num": "",
+    "title": "Acknowledgements"
+   },
+   {
+    "id": "vita",
+    "level": 1,
+    "num": "",
+    "title": "Vita"
+   },
+   {
+    "id": "abstract",
+    "level": 1,
+    "num": "",
+    "title": "Abstract"
+   },
+   {
+    "id": "notation",
+    "level": 1,
+    "num": "",
+    "title": "Notation"
+   },
+   {
+    "id": "finite-horizon-and-stationary-forms",
+    "level": 2,
+    "num": "",
+    "title": "Finite-horizon and stationary forms"
+   },
+   {
+    "id": "glossary",
+    "level": 2,
+    "num": "",
+    "title": "Glossary"
+   }
+  ],
+  "weight": 1
+ },
+ {
+  "slug": "introduction",
+  "title": "Introduction",
+  "label": "",
+  "sections": [
+   {
+    "id": "introduction",
+    "level": 1,
+    "num": "",
+    "title": "Introduction"
+   },
+   {
+    "id": "the-noise-state",
+    "level": 2,
+    "num": "",
+    "title": "The noise-state"
+   },
+   {
+    "id": "chapter-roadmap",
+    "level": 2,
+    "num": "",
+    "title": "Chapter roadmap"
+   }
+  ],
+  "weight": 2
+ },
+ {
+  "slug": "chapter-1",
+  "title": "Baseline Linear-Quadratic-Gaussian Games",
+  "label": "Chapter 1",
+  "sections": [
+   {
+    "id": "ch:forecasting",
+    "level": 1,
+    "num": "1",
+    "title": "Baseline Linear-Quadratic-Gaussian Games"
+   },
+   {
+    "id": "introduction-1",
+    "level": 2,
+    "num": "1.1",
+    "title": "Introduction"
+   },
+   {
+    "id": "sec:two_player_tracking_numerics",
+    "level": 2,
+    "num": "1.2",
+    "title": "Bilateral belief manipulation in a two-player game"
+   },
+   {
+    "id": "sec:model",
+    "level": 2,
+    "num": "1.3",
+    "title": "The decentralized LQG game"
+   },
+   {
+    "id": "sec:general_theory",
+    "level": 2,
+    "num": "1.4",
+    "title": "General theory"
+   },
+   {
+    "id": "sec:conclusion",
+    "level": 2,
+    "num": "1.5",
+    "title": "Conclusion"
+   },
+   {
+    "id": "appendices-to-chapter-1",
+    "level": 2,
+    "num": "",
+    "title": "Appendices to Chapter 1"
+   },
+   {
+    "id": "app:filtering",
+    "level": 2,
+    "num": "1.A",
+    "title": "Filtering"
+   },
+   {
+    "id": "app:control_foc",
+    "level": 2,
+    "num": "1.B",
+    "title": "Control stationarityand finite-deviation verification"
+   }
+  ],
+  "weight": 3
+ },
+ {
+  "slug": "chapter-2",
+  "title": "Delayed Public Signals and Asynchronous Learning",
+  "label": "Chapter 2",
+  "sections": [
+   {
+    "id": "ch:delayed-public",
+    "level": 1,
+    "num": "2",
+    "title": "Delayed Public Signals and Asynchronous Learning"
+   },
+   {
+    "id": "sec:delayed-structure",
+    "level": 2,
+    "num": "2.1",
+    "title": "Delayed observation structure"
+   },
+   {
+    "id": "sec:delayed-filter",
+    "level": 2,
+    "num": "2.2",
+    "title": "Filtering with delayed public signals"
+   },
+   {
+    "id": "sec:delayed-derivation",
+    "level": 2,
+    "num": "2.3",
+    "title": "Filtering derivation"
+   },
+   {
+    "id": "sec:delayed-adjoints",
+    "level": 2,
+    "num": "2.4",
+    "title": "First variations and delayed-public adjoints"
+   },
+   {
+    "id": "conclusion",
+    "level": 2,
+    "num": "2.5",
+    "title": "Conclusion"
+   }
+  ],
+  "weight": 4
+ },
+ {
+  "slug": "chapter-3",
+  "title": "Stationary Infinite-Horizon LQG",
+  "label": "Chapter 3",
+  "sections": [
+   {
+    "id": "chap:stationary-lqg",
+    "level": 1,
+    "num": "3",
+    "title": "Stationary Infinite-Horizon LQG"
+   },
+   {
+    "id": "stationary-profiles-lag-coordinates-and-forward-filtering",
+    "level": 2,
+    "num": "3.1",
+    "title": "Stationary profiles, lag coordinates, and forward filtering"
+   },
+   {
+    "id": "sec:stationary-adjoints",
+    "level": 2,
+    "num": "3.2",
+    "title": "Current-value adjoints"
+   },
+   {
+    "id": "sec:stationary_transform_identities",
+    "level": 2,
+    "num": "3.3",
+    "title": "Transform identities"
+   },
+   {
+    "id": "sec:stationary-rationality",
+    "level": 2,
+    "num": "3.4",
+    "title": "Rationality and finite-dimensional state"
+   },
+   {
+    "id": "conclusion-1",
+    "level": 2,
+    "num": "3.5",
+    "title": "Conclusion"
+   },
+   {
+    "id": "app:stationary-computation",
+    "level": 2,
+    "num": "3.A",
+    "title": "Computing the stationary equilibrium"
+   }
+  ],
+  "weight": 5
+ },
+ {
+  "slug": "chapter-4",
+  "title": "The Information Wedge in a Stationary Kyle\u2013Back Market",
+  "label": "Chapter 4",
+  "sections": [
+   {
+    "id": "ch:stationary-kyle-back",
+    "level": 1,
+    "num": "4",
+    "title": "The Information Wedge in a Stationary Kyle\u2013Back Market"
+   },
+   {
+    "id": "introduction-2",
+    "level": 2,
+    "num": "4.1",
+    "title": "Introduction"
+   },
+   {
+    "id": "sec:environment",
+    "level": 2,
+    "num": "4.2",
+    "title": "The stationary Kyle\u2013Back market"
+   },
+   {
+    "id": "sec:roadmap",
+    "level": 2,
+    "num": "4.3",
+    "title": "The life of a trader\u2019s order"
+   },
+   {
+    "id": "sec:forward-response",
+    "level": 2,
+    "num": "4.4",
+    "title": "Forward response"
+   },
+   {
+    "id": "sec:discounted-adjoints",
+    "level": 2,
+    "num": "4.5",
+    "title": "Discounted belief prices and mispricing drift"
+   },
+   {
+    "id": "sec:seed-motion",
+    "level": 2,
+    "num": "4.6",
+    "title": "Moving the spike date"
+   },
+   {
+    "id": "sec:main-readoff",
+    "level": 2,
+    "num": "4.7",
+    "title": "Stationary best response and equilibrium"
+   },
+   {
+    "id": "sec:kb-numerics",
+    "level": 2,
+    "num": "4.8",
+    "title": "Numerical solutions"
+   },
+   {
+    "id": "app:kb-computation",
+    "level": 2,
+    "num": "4.A",
+    "title": "Computing the Kyle\u2013Back equilibria"
+   }
+  ],
+  "weight": 6
+ },
+ {
+  "slug": "chapter-5",
+  "title": "Local Strategic Information in Symmetric Network Economies",
+  "label": "Chapter 5",
+  "sections": [
+   {
+    "id": "ch:vertex-transitive",
+    "level": 1,
+    "num": "5",
+    "title": "Local Strategic Information in Symmetric Network Economies"
+   },
+   {
+    "id": "local-strategic-information-in-a-large-economy",
+    "level": 2,
+    "num": "5.1",
+    "title": "Local strategic information in a large economy"
+   },
+   {
+    "id": "from-local-equilibrium-to-aggregate-behavior",
+    "level": 2,
+    "num": "5.2",
+    "title": "From local equilibrium to aggregate behavior"
+   },
+   {
+    "id": "sec:ch5-equations",
+    "level": 2,
+    "num": "5.3",
+    "title": "A purchase-order market on the cycle"
+   },
+   {
+    "id": "sec:ch5-numerics",
+    "level": 2,
+    "num": "",
+    "title": "Numerical solutions of the purchase-order market"
+   },
+   {
+    "id": "sec:infinite_graph_scope",
+    "level": 2,
+    "num": "5.5",
+    "title": "Aggregate interaction and the infinite-network limit"
+   },
+   {
+    "id": "economic-implications-and-conclusion",
+    "level": 2,
+    "num": "5.6",
+    "title": "Economic implications and conclusion"
+   },
+   {
+    "id": "sec:symmetry-reduction",
+    "level": 2,
+    "num": "5.A",
+    "title": "Symmetry reduction on a vertex-transitive graph"
+   },
+   {
+    "id": "sec:finite-cycle-delayed",
+    "level": 2,
+    "num": "5.B",
+    "title": "A finite-cycle market with delayed observation"
+   }
+  ],
+  "weight": 7
+ },
+ {
+  "slug": "chapter-6",
+  "title": "Monitored Deviations: Naive Distortions and Privy Responses",
+  "label": "Chapter 6",
+  "sections": [
+   {
+    "id": "ch:monitored",
+    "level": 1,
+    "num": "6",
+    "title": "Monitored Deviations: Naive Distortions and Privy Responses"
+   },
+   {
+    "id": "introduction-3",
+    "level": 2,
+    "num": "6.1",
+    "title": "Introduction"
+   },
+   {
+    "id": "sec:baseline",
+    "level": 2,
+    "num": "6.2",
+    "title": "Baseline noise-state setting"
+   },
+   {
+    "id": "sec:monitoring",
+    "level": 2,
+    "num": "6.3",
+    "title": "Deviation origins and monitoring"
+   },
+   {
+    "id": "sec:coordinates",
+    "level": 2,
+    "num": "6.4",
+    "title": "Naive versus privy coordinates"
+   },
+   {
+    "id": "sec:fb_system",
+    "level": 2,
+    "num": "6.5",
+    "title": "The seed-dependent system"
+   },
+   {
+    "id": "sec:superposition",
+    "level": 2,
+    "num": "6.6",
+    "title": "Superposition under perfect monitoring"
+   },
+   {
+    "id": "the-two-corners",
+    "level": 2,
+    "num": "6.7",
+    "title": "The two corners"
+   },
+   {
+    "id": "sec:mm-transparent-opaque",
+    "level": 2,
+    "num": "6.8",
+    "title": "A strategic market maker: transparent and opaque markets"
+   },
+   {
+    "id": "conclusion-2",
+    "level": 2,
+    "num": "6.9",
+    "title": "Conclusion"
+   }
+  ],
+  "weight": 8
+ },
+ {
+  "slug": "chapter-7",
+  "title": "Conclusion: The Information Wedge Across Environments",
+  "label": "Chapter 7",
+  "sections": [
+   {
+    "id": "ch:conclusion",
+    "level": 1,
+    "num": "7",
+    "title": "Conclusion: The Information Wedge Across Environments"
+   },
+   {
+    "id": "directions-beyond-the-dissertation",
+    "level": 2,
+    "num": "7.1",
+    "title": "Directions beyond the dissertation"
+   }
+  ],
+  "weight": 9
+ },
+ {
+  "slug": "afterword",
+  "title": "Afterword",
+  "label": "",
+  "sections": [
+   {
+    "id": "afterword",
+    "level": 1,
+    "num": "",
+    "title": "Afterword"
+   }
+  ],
+  "weight": 10
+ },
+ {
+  "slug": "appendix-a",
+  "title": "Additional Finite-Horizon Extensions",
+  "label": "Appendix A",
+  "sections": [
+   {
+    "id": "app:finite_horizon_extensions",
+    "level": 1,
+    "num": "A",
+    "title": "Additional Finite-Horizon Extensions"
+   },
+   {
+    "id": "sec:endogenous_precision",
+    "level": 2,
+    "num": "A.1",
+    "title": "Endogenous signal precision"
+   },
+   {
+    "id": "sec:wellposedness",
+    "level": 2,
+    "num": "A.2",
+    "title": "Well-posedness of the deterministic impulse-response fixed point"
+   }
+  ],
+  "weight": 11
+ },
+ {
+  "slug": "references",
+  "title": "References",
+  "label": "",
+  "sections": [],
+  "weight": 12
+ }
+]

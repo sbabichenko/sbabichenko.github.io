@@ -1,0 +1,109 @@
+{#- /dissertation: an opening told in the dissertation's own sentences, one idea per screen, beside a drawing that
+    builds as you scroll (static/dissertation/opening.js), then the contents as a stack of cards. -#}
+{%- set manifest = load_data(path="data/dissertation/manifest.json") -%}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css') }}" />
+    {% include "partials/header.html" %}
+
+    <main class="opening" id="opening">
+      <section class="cover">
+        <svg class="shocks" id="shocks" aria-hidden="true"></svg>
+        <div class="cover-text">
+          <p class="eyebrow">A dissertation &middot; UC Santa Barbara &middot; 2026</p>
+          <h1 class="big" aria-label="No one knows much."><span>No</span> <span>one</span> <span>knows</span> <span>much.</span></h1>
+          <p class="title">Noise-State Calculus for Dynamic Games with Strategic Information</p>
+          <p class="by">Samuel Babichenko</p>
+          <div class="cta">
+            <a class="primary" href="{{ get_url(path='dissertation/introduction/') }}">Start reading</a>
+            <a href="#contents">Contents</a>
+            <a href="{{ get_url(path='dissertation/babichenko-dissertation.pdf') }}">PDF, 250 pages</a>
+          </div>
+        </div>
+        <p class="scrollhint" aria-hidden="true">scroll</p>
+      </section>
+
+      <section class="story" id="story">
+        <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
+        <div class="steps">
+          <div class="step" data-scene="pencil">
+            <p>No one person knows everything needed to make a pencil, yet pencils manage to exist, costing almost nothing.</p>
+            <p class="src">Leonard Read, &ldquo;I, Pencil&rdquo;</p>
+          </div>
+          <div class="step" data-scene="prices">
+            <p>Prices, for Hayek, were a telecommunications system. The logger never sees beyond their own corner; the prices
+              that reach them carry what the rest of the world needs them to know.</p>
+          </div>
+          <div class="step" data-scene="loop">
+            <p>Actions move the state of the system, the state generates observations, observations update beliefs. Beliefs
+              complete the cycle by determining the actions that started it.</p>
+            <p class="small">There is also a chord, where an action can set what others observe directly.</p>
+          </div>
+          <div class="step" data-scene="cuts">
+            <p>Every tractable approach severs the loop somewhere. The cuts fall on the privacy of beliefs, on what actions can
+              teach, on the weight of one player, on the flow from observations to beliefs, or on time itself.</p>
+          </div>
+          <div class="step" data-scene="intact">
+            <p>This dissertation builds a noise-state calculus that <em>keeps the loop intact</em>.</p>
+          </div>
+          <div class="step" data-scene="noise">
+            <p>Each player keeps estimates of the primitive shocks instead of belief hierarchies about the endogenous state.
+              Under perfect information, these estimates are the shocks themselves.</p>
+          </div>
+          <div class="step" data-scene="wedge">
+            <p>The information wedge is the shadow price of changing an opponent&rsquo;s beliefs. It breaks the separation
+              principle and vanishes when the loop is cut.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="contents" id="contents">
+        <h2>Contents</h2>
+        <p class="lede">Every page below is the dissertation itself, with its numbering, cross-references and citations
+          intact. Hover a reference to see what it points to.
+          The games of Chapters 1, 3, 4, 5 and 6 also <a href="{{ get_url(path='lqg/') }}">run in your browser</a>.</p>
+        {%- set blurbs = [
+          "The acknowledgements, a vita, the abstract, and the notation used throughout.",
+          "No one knows much. Pencils, prices, Lucas's islands, Townsend's regress, and the loop every tractable model cuts.",
+          "The calculus in the finite-horizon LQG game: the noise-state linear class, the belief prices, the information wedge, and a finite-deviation identity that verifies a computed equilibrium against every admissible deviation.",
+          "News arrives late. Until it arrives a player can move what others believe; once it arrives, it explains the movement away.",
+          "A game run long enough to become stationary: kernels become functions of ages rather than dates, and it is the easiest to compute.",
+          "Kyle–Back trading on an infinite horizon, where order flow is both an action and a signal, and price impact becomes trader-specific.",
+          "Many small local markets on a symmetric network: the shocks average out, the incentives do not.",
+          "A deviation seen by some players and not others: naive players filter it as a shock, privy players respond to it directly.",
+          "The information wedge across all of it, and the directions beyond: closure, computation, sources, networks, markets.",
+          "Optical illusions, I, Pencil, and two simple questions.",
+          "Additional finite-horizon extensions.",
+          "One hundred and nineteen of them."
+        ] -%}
+        <ol class="cards">
+          {%- for m in manifest %}
+          <li class="card{% if m.label is starting_with('Chapter') %} chapter{% endif %}">
+            <a href="{{ get_url(path='dissertation/' ~ m.slug ~ '/') }}">
+              <span class="num">{% if m.label %}{{ m.label | replace(from="Chapter ", to="") | replace(from="Appendix ", to="") }}{% else %}&middot;{% endif %}</span>
+              <span class="what">{% if m.label %}{{ m.label }}{% else %}&nbsp;{% endif %}</span>
+              <span class="t">{{ m.title }}</span>
+              <span class="d">{{ blurbs | nth(n=loop.index0) }}</span>
+            </a>
+          </li>
+          {%- endfor %}
+        </ol>
+        <details class="cite">
+          <summary>Cite it</summary>
+<pre>@phdthesis{Babichenko2026Dissertation,
+  author = {Babichenko, Samuel},
+  title  = {Noise-State Calculus for Dynamic Games with Strategic Information},
+  school = {University of California, Santa Barbara},
+  year   = {2026},
+  url    = {https://sbabichenko.com/dissertation/}
+}</pre>
+        </details>
+      </section>
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='dissertation/opening.js') }}"></script>
+  </body>
+</html>
