@@ -33,6 +33,7 @@
         {% endif %}
         <p class="starthere">New here? Start with <a href="{{ get_url(path='dissertation/idea/') }}">the noise-state, explained</a>,
           or <a href="{{ get_url(path='noisestate/') }}">solve a game</a> in your browser.</p>
+        <p class="poke" aria-hidden="true">click the mesh to poke it</p>
         {%- set formula = load_data(path="data/formula.json") %}
         <a class="motif" href="{{ get_url(path='dissertation/idea/') }}"
            aria-label="The noise-state: player i's estimate, at time t, of the primitive shock W at an earlier time u, given everything player i knows">
@@ -40,11 +41,10 @@
           <span class="bp">{{ formula.blueprint.svg | safe }}</span>
           <span class="cap">the noise-state: what player <i>i</i> believes, at time <i>t</i>, about the shock at <i>u</i></span>
         </a>
-        <p class="poke" aria-hidden="true">click the mesh to poke it</p>
       </section>
 
       <section>
-        <h2>Run it here <span class="note">all computed in your browser, nothing precomputed</span></h2>
+        <h2>Run it here</h2>
         <div class="demos">
           <a class="demo" href="{{ get_url(path='noisestate/') }}">
             <div class="shot">

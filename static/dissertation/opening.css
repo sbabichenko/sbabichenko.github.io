@@ -208,3 +208,8 @@
   .dt-cap { font-size: 1.02rem; line-height: 1.35; }
   .dt-map .lab { font-size: 11px; } .dt-map .lab .who { font-size: 15px; }
 }
+
+/* the bookmark ribbon (bookmark.js): hangs on the chapter where the reader stopped */
+.cards a.ribbon { position: relative; }
+.cards a.ribbon::after { content: ""; position: absolute; top: -1px; left: 14px; width: 11px; height: 26px;
+  background: #b8322a; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 74%, 0 100%); pointer-events: none; }

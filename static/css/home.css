@@ -200,7 +200,9 @@
 .home .hero .motif:hover .cap, .home .hero .motif:focus-visible .cap { opacity: 1; transform: none; }
 .home .hero .motif path { transition: fill-opacity 0.8s; }
 @media (max-width: 900px) {
-  .home .hero .motif { position: relative; right: auto; bottom: auto; align-items: flex-start; margin-top: 2rem; }
+  .home .hero .motif { position: relative; right: auto; bottom: auto; align-items: flex-start; margin-top: 0.7rem;
+    align-self: flex-start; max-width: 100%; }   /* the link is the formula, not the whole band: the mesh beside it stays pokeable */
+  .home .hero .poke { position: static; margin-top: 2rem; }
   .home .hero .motif .def svg { width: min(20rem, 82vw); }
   .home .hero .motif .bp svg { width: min(18rem, 76vw); }
   .home .hero .motif .cap { opacity: 0.9; transform: none; text-align: left; }

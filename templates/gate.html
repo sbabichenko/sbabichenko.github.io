@@ -62,6 +62,11 @@
         </div>
       </section>
 
+      <p class="tries">Try giving <a href="#truth=hills&amp;flips=160">the two hills more flips</a> and watch the mesh fill
+        in around them; pick <a href="#truth=nothing&amp;flips=160">&ldquo;nothing at all&rdquo;</a>, which it leaves uncut at
+        any number of flips; pick <a href="#truth=drawing">&ldquo;your drawing&rdquo;</a> and paint on the odds (drag to
+        raise them, tick &ldquo;lower&rdquo; or hold shift to lower them).</p>
+
       <div id="results" class="stale">
         <section class="panel"><div class="cards" id="cards"></div></section>
         <section class="panel">
@@ -80,9 +85,6 @@
       </div>
 
       <div class="notes">
-        <p>Try giving the two hills more flips and watch the mesh fill in around them; pick
-          &ldquo;nothing at all&rdquo;, which it leaves uncut at any number of flips; pick &ldquo;your drawing&rdquo;
-          and paint on the odds (drag to raise them, tick &ldquo;lower&rdquo; or hold shift to lower them).</p>
         <p>The estimators are <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a>
           and <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a>, compiled from
           their C++ with Emscripten. Their dense linear algebra, which natively calls LAPACK, runs on Eigen here, and the

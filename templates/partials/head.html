@@ -4,68 +4,38 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
+  {#- Title and link preview. A page or a section (the dissertation's front page, the writing index) speaks for
+      itself: its title, description and cover; a dissertation page without a cover shows the dissertation's card;
+      anything else falls back to the site's. -#}
+  {%- set item = page | default(value=section | default(value=false)) %}
+  {%- set page_title = item.title | default(value="") %}
+  {%- if item and item.description %}{% set description = item.description %}
+  {%- elif item and page_title and item.path is starting_with("/dissertation/") %}{% set description = page_title ~ ". From Noise-State Calculus for Dynamic Games with Strategic Information, a PhD dissertation (UC Santa Barbara, 2026)." %}
+  {%- elif page_title %}{% set description = page_title %}
+  {%- else %}{% set description = config.description | default(value="A personal blog") %}{% endif %}
+  {%- if item and item.extra.og_image %}{% set image = item.extra.og_image %}
+  {%- elif item and item.extra.cover.image %}{% set image = item.extra.cover.image %}
+  {%- elif item and item.path is starting_with("/dissertation/") %}{% set image = "images/og-dissertation.png" %}
+  {%- elif config.extra.social_image %}{% set image = config.extra.social_image %}{% endif %}
+  {%- if item and item.authors and item.authors | length > 0 %}{% set author = item.authors | join(sep=", ") %}
+  {%- else %}{% set author = config.author | default(value=config.title) %}{% endif %}
+
   <!-- Title -->
-  <title>
-    {% if page.title %}{{ page.title }} - {{ config.title }}{% else %}{{ config.title }}{% endif %}
-  </title>
+  <title>{% if page_title %}{{ page_title }} - {{ config.title }}{% else %}{{ config.title }}{% endif %}</title>
 
   <!-- Meta -->
   <meta name="theme-color" />
-
-  {% if page %}
-  <!-- Author -->
-  {% set page_title = page.title | default(value=config.title) %}
-  <!---->
-  {% set description = page.description | default(value=page_title) %}
-  <!---->
-  {% if page.authors | length > 0 %}
-  <!---->
-  {% set author = page.authors | join(sep=", ") %}
-  <!---->
-  {% else %}
-  <!---->
-  {% set author = config.author | default(value=config.title) %}
-  <!---->
-  {% endif %}
-  <!---->
   <meta name="description" content="{{ description }}" />
   <meta name="author" content="{{ author }}" />
   <!-- The Open Graph protocol -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="{{ page_title }}" />
+  <meta property="og:title" content="{{ page_title | default(value=config.title) }}" />
   <meta property="og:site_name" content="{{ config.title }}" />
   <meta property="og:description" content="{{ description }}" />
-  <meta property="og:url" content="{{ page.permalink }}" />
-  {% if page.extra.cover.image %}
-  <!---->
-  {% set image = page.extra.cover.image %}
-  <!---->
-  {% elif config.extra.social_image %}
-  <!---->
-  {% set image = config.extra.social_image %}
-  <!---->
-  {% endif %}
-  <!---->
-  {% if image %}
+  <meta property="og:url" content="{% if item %}{{ item.permalink }}{% else %}{{ get_url(path=``) }}{% endif %}" />
+  {%- if image %}
   <meta property="og:image" content="{{ get_url(path=image) }}" />
-  {% endif %}
-  <!---->
-  {% else %}
-  <!-- Author -->
-  {% set description = config.description | default(value="A personal blog") %}
-  <!---->
-  <meta name="description" content="{{ description }}" />
-  <meta name="author" content="{{ config.author | default(value=config.title) }}" />
-  <!-- The Open Graph protocol -->
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="{{ config.title }}" />
-  <meta property="og:description" content="{{ description }}" />
-  <meta property="og:url" content="{{ get_url(path=``) }}" />
-  {% if config.extra.social_image %}
-  <meta property="og:image" content="{{ get_url(path=config.extra.social_image) }}" />
-  {% endif %}
-  <!---->
-  {% endif %}
+  {%- endif %}
 
   <!-- CSS & JS -->
   <link rel="preload stylesheet" as="style" href="{{ get_url(path=`main.css`) }}" />

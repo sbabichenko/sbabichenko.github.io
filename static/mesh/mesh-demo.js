@@ -356,6 +356,16 @@
   function setStatus(kind, chip, text) {
     const c = $("chip"); c.className = "chip " + kind; c.textContent = chip;
     if (text !== undefined) $("statustext").textContent = text;
+    glass();
+  }
+  // the page's patience, beside the chip: an hourglass that empties as the freeform mesh nears its cap.
+  // A triangular bulb holds sand in proportion to the square of its depth, so both levels move with the square root.
+  function glass() {
+    if (!Y || !mesh) return;
+    const left = S.done ? 0 : Math.max(0, 1 - (mesh ? mesh.activeFaces.size : 0) / MAX_PIECES()), d = 8 * Math.sqrt(left);
+    $("sand-top").setAttribute("y", 10 - d); $("sand-top").setAttribute("height", d);
+    $("sand-bot").setAttribute("y", 10 + d); $("sand-bot").setAttribute("height", 8 - d);
+    $("sand-stream").style.opacity = S.running && left > 0 ? 1 : 0;
   }
   const MAX_PIECES = () => Math.min(3000, Math.floor(Y.length / 10));
   let stepMs = 0;
@@ -412,7 +422,7 @@
   };
   $("refresh").onchange = () => reset(false);
   $("showedges").onchange = draw; $("showpts").onchange = () => { drawTruth(); draw(); };
-  window.addEventListener("hashchange", () => { readHash(); reset(false); });
+  window.addEventListener("hashchange", () => { readHash(); reset(false); $("surface").closest(".panel").scrollIntoView({ behavior: "smooth", block: "start" }); });
   let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { drawTruth(); draw(); }, 100); });
   const retheme = () => setTimeout(() => { LUT = ramp(); drawTruth(); draw(); }, 30);
   document.body.addEventListener("set-theme", retheme);
