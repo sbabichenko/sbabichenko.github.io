@@ -3,7 +3,6 @@
 // drawn for the home page. Needs playwright and the site served locally:
 //     node tools/make_og.js [http://127.0.0.1:8770]
 const { chromium } = require("playwright");
-const fs = require("fs");
 const path = require("path");
 
 const BASE = process.argv[2] || "http://127.0.0.1:8770";
@@ -14,7 +13,7 @@ const CARDS = [
     eyebrow: "Quantitative research &middot; PhD, UC Santa Barbara",
     title: "Samuel Babichenko",
     sub: "Games played through noise, and regressions that decide where to look." },
-  { out: "og-noisestate.png", art: "image", src: "/images/card-noisestate-light.webp",
+  { out: "og-noisestate.png", art: "image", src: "/images/card-noisestate-light.webp", titleWidth: 440,   // clear of the curves
     eyebrow: "sbabichenko.com/noisestate",
     title: "Noise-state game explorer",
     sub: "Solve a linear-quadratic-Gaussian game in your browser: shock responses, sample paths, sweeps." },
@@ -38,10 +37,14 @@ const CARDS = [
     eyebrow: "sbabichenko.com/gate/how",
     title: "How the gate decides",
     sub: "Where the decision mesh cuts and when it stops, drawn from a live run of the estimator." },
-  { out: "og-dissertation.png", art: "shocks", seed: 5,
+  { out: "og-dissertation.png", art: "shocks", seed: 5, titleWidth: 1000,   // one line: the title is the book's first sentence
     eyebrow: "sbabichenko.com/dissertation",
     title: "No one knows much.",
     sub: "Noise-State Calculus for Dynamic Games with Strategic Information. The whole dissertation, to read in the browser." },
+  { out: "og-partial-pooling.png", art: "image", fit: "contain", src: "/images/card-partial-pooling.svg",
+    eyebrow: "sbabichenko.com/writing",
+    title: "Partial pooling for interaction effects",
+    sub: "When intersecting stock characteristics spreads the data thin, partial pooling borrows strength across the groups." },
 ];
 
 const page = (c) => `<!doctype html><html><head><meta charset="utf-8">
@@ -62,7 +65,7 @@ const page = (c) => `<!doctype html><html><head><meta charset="utf-8">
 </style></head><body class="${c.fit === "contain" ? "narrow" : ""}">
 ${c.art === "mesh" || c.art === "shocks" ? '<canvas id="c" width="2400" height="1260"></canvas>' : `<img class="art${c.fit === "contain" ? " contain" : ""}" src="${BASE}${c.src}">`}
 <div class="e">${c.eyebrow}</div>
-<div class="t"><h1>${c.title}</h1><p>${c.sub}</p></div>
+<div class="t"><h1${c.titleWidth ? ` style="max-width:${c.titleWidth}px"` : ""}>${c.title}</h1><p>${c.sub}</p></div>
 <div class="u">sbabichenko.com</div>
 <script src="${BASE}/mesh/decision-mesh.js"></script>
 <script>
@@ -112,11 +115,16 @@ document.title='ready';
   const only = process.argv[3];
   for (const c of CARDS) {
     if (only && c.out !== only) continue;
-    const file = "/tmp/og_card.html";
-    fs.writeFileSync(file, page(c));
+    // served from the site's own origin (a file:// page may not load the site's fonts: they are cross-origin
+    // there, and a static server sends no CORS header), then held until Newsreader has loaded
+    const url = BASE.replace(/\/$/, "") + "/__og_card.html";
     const p = await b.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 2 });
-    await p.goto("file://" + file);
+    await p.route(url, (r) => r.fulfill({ contentType: "text/html; charset=utf-8", body: page(c) }));
+    await p.goto(url);
     await p.waitForFunction(() => document.title === "ready", null, { timeout: 60000 });
+    await p.evaluate(() => document.fonts.ready);
+    if (!(await p.evaluate(() => document.fonts.check("88px Newsreader"))))
+      throw new Error(`${c.out}: Newsreader did not load from ${BASE}`);
     await p.waitForTimeout(900);
     await p.screenshot({ path: path.join(OUT, c.out) });
     await p.close();

@@ -60,6 +60,13 @@
 
       <div id="statusbar">
         <span class="chip idle" id="chip">Ready</span>
+        <svg class="glass" id="glass" viewBox="0 0 14 20" aria-hidden="true"><title>The page's patience</title>
+          <clipPath id="glass-top"><path d="M2.6,2 H11.4 L7,10 Z" /></clipPath><clipPath id="glass-bot"><path d="M7,10 L11.4,18 H2.6 Z" /></clipPath>
+          <rect class="sand" id="sand-top" clip-path="url(#glass-top)" x="0" y="2" width="14" height="8" />
+          <rect class="sand" id="sand-bot" clip-path="url(#glass-bot)" x="0" y="18" width="14" height="0" />
+          <line class="stream" id="sand-stream" x1="7" y1="9.6" x2="7" y2="18" />
+          <path class="frame" d="M1.5,1 H12.5 M1.5,19 H12.5 M2.6,1.5 L7,10 L2.6,18.5 M11.4,1.5 L7,10 L11.4,18.5" />
+        </svg>
         <span id="statustext">Starting when the meshes come into view.</span>
         <span class="buttons">
           <button class="secondary" id="resetbtn" title="New data and a fresh mesh">New data</button>
@@ -95,13 +102,20 @@
         <h2>Error against the truth</h2>
         <div class="cv wide"><canvas id="cvcurve" width="900" height="220"></canvas></div>
         <p class="caption">Root-mean-square distance from the true surface over the square, against the number of free
-          parameters; the dashed line is the noise &sigma;. On all six surfaces the right triangles get closest to the
-          truth. Best RMSE over a run (freeform / right / rectangles / tree): cliff 0.161 / <b>0.130</b> / 0.170 / 0.217,
-          hills 0.127 / <b>0.091</b> / 0.123 / 0.152, saddle 0.099 / <b>0.075</b> / 0.120 / 0.229, disk 0.329 /
-          <b>0.277</b> / 0.284 / 0.303, ripples 0.578 / <b>0.464</b> / 0.485 / 0.495, waves 0.206 / <b>0.162</b> / 0.164 /
-          0.232. Their lead is largest early, at fifty parameters. Probably because their pieces cannot go thin, and a cut
-          costs no parameter until the rule frees its surplus, so resolution goes where the error is without paying
-          for completion. Late in a run every mesh starts fitting noise and the curves turn up. A minimum of 3 points per
+          parameters; the dashed line is the noise &sigma;. Over a whole run, on all six surfaces the right triangles get closest to the
+          truth.</p>
+        <div class="tablewrap best"><table class="diag">
+          <thead><tr><th>Best RMSE over a run</th><th>Freeform</th><th>Right</th><th>Rectangles</th><th>Tree</th></tr></thead>
+          <tbody>
+            <tr><td><a href="#surface=cliff">Diagonal cliff</a></td><td class="mono">0.161</td><td class="mono"><b>0.130</b></td><td class="mono">0.170</td><td class="mono">0.217</td></tr>
+            <tr><td><a href="#surface=bump">Two hills</a></td><td class="mono">0.127</td><td class="mono"><b>0.091</b></td><td class="mono">0.123</td><td class="mono">0.152</td></tr>
+            <tr><td><a href="#surface=saddle">Saddle</a></td><td class="mono">0.099</td><td class="mono"><b>0.075</b></td><td class="mono">0.120</td><td class="mono">0.229</td></tr>
+            <tr><td><a href="#surface=disk">Disk (a jump)</a></td><td class="mono">0.329</td><td class="mono"><b>0.277</b></td><td class="mono">0.284</td><td class="mono">0.303</td></tr>
+            <tr><td><a href="#surface=ripples">Ripples</a></td><td class="mono">0.578</td><td class="mono"><b>0.464</b></td><td class="mono">0.485</td><td class="mono">0.495</td></tr>
+            <tr><td><a href="#surface=waves">Slow waves</a></td><td class="mono">0.206</td><td class="mono"><b>0.162</b></td><td class="mono">0.164</td><td class="mono">0.232</td></tr>
+          </tbody>
+        </table></div>
+        <p class="caption">Their lead is largest early, at fifty parameters. Late in a run every mesh starts fitting noise and the curves turn up. A minimum of 3 points per
           piece is the default (0 is the published freeform algorithm), and "refresh fits" refits the freeform
           candidates around a vertex whose height has just moved, which the published algorithm leaves stale.</p>
       </section>

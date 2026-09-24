@@ -6,6 +6,7 @@ description = "Partial Pooling for Estimating Interaction Effects in Factor Mode
 "writing/tags" = ["methods"] 
 [extra]
 math = true
+og_image = "images/og-partial-pooling.png"   # the link preview only (a cover would show above the post)
 +++
 
 # Introduction to the Problem  
