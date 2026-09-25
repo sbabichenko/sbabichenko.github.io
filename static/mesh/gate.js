@@ -226,6 +226,19 @@
     for (let k = 0; k < a.length; ++k) if (a[k] === a[k] && b[k] === b[k]) { s += (a[k] - b[k]) ** 2; ++n; }
     return Math.sqrt(s / n);
   }
+  // Held-out deviance with its standard error, and the floor: the same sites scored by the true surface (the mesh
+  // exactly equal to the hidden odds), which no surface can beat on average. The gap is paired, site by site.
+  function heldStats(h) {
+    if (!h || !h.rows || !h.rows.n.length) return null;
+    const f = TRUTHS[opts().truth].f, R = h.rows, m = R.n.length;
+    const dev = (k, n, p) => { p = Math.min(1 - 1e-6, Math.max(1e-6, p)); return (k > 0 ? 2 * k * Math.log(k / (n * p)) : 0) + (n - k > 0 ? 2 * (n - k) * Math.log((n - k) / (n * (1 - p))) : 0); };
+    const a = new Float64Array(m), b = new Float64Array(m);
+    for (let i = 0; i < m; ++i) { a[i] = dev(R.k[i], R.n[i], R.p[i]); b[i] = dev(R.k[i], R.n[i], expit(f(R.x[i], R.y[i]))); }
+    const mean = (v) => v.reduce((s, x) => s + x, 0) / v.length;
+    const se = (v, mu) => Math.sqrt(v.reduce((s, x) => s + (x - mu) ** 2, 0) / (v.length - 1) / v.length);
+    const d = a.map((x, i) => x - b[i]), ma = mean(a), mb = mean(b), md = mean(d);
+    return { fit: ma, fitSe: se(a, ma), floor: mb, floorSe: se(b, mb), gap: md, gapSe: se(d, md), m };
+  }
   function report() {
     const f = S.fit, rounds = f.rounds, admitted = rounds.reduce((a, r) => a + r.admitted, 0);
     const flat = new Float32Array(D * D).fill(f.baseline);
@@ -234,7 +247,13 @@
       ["Vertices admitted", admitted, `over ${rounds.filter((r) => r.admitted > 0).length} round${rounds.filter((r) => r.admitted > 0).length === 1 ? "" : "s"}; ${f.tri.length / f.stride} ${f.engine === "rect" ? "rectangles" : "triangles"}`],
       ["Error against the truth", fmt(err, 3), `log-odds RMSE; a flat fit: ${fmt(errFlat, 3)}`],
       ["Coin variance", fmt(f.poolVariance, 4), `the coin effects' variance; truly ${fmt(coinSd() ** 2, 4)}`],
-      ["Held-out deviance", f.heldout ? fmt(f.heldout.deviance, 3) : "–", f.heldout ? `per site, on ${f.heldout.pools.toLocaleString()} sites never fitted` : ""],
+      (() => {
+        const H = heldStats(f.heldout);
+        if (!H) return ["Held-out deviance", f.heldout ? fmt(f.heldout.deviance, 3) : "–", f.heldout ? `per site, on ${f.heldout.pools.toLocaleString()} sites never fitted` : ""];
+        return ["Held-out deviance", `${fmt(H.fit, 3)} <small>&plusmn; ${fmt(H.fitSe, 3)}</small>`,
+          `per site, on ${H.m.toLocaleString()} sites never fitted. The true surface scores ${fmt(H.floor, 3)} &plusmn; ${fmt(H.floorSe, 3)} there, `
+          + `the floor for any surface; the fit is ${fmt(H.gap, 3)} &plusmn; ${fmt(H.gapSe, 3)} above it.`];
+      })(),
     ].map(([k, v, d]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join("");
 
     const cap = f.engine === "rect" ? 3 : 6;             // each engine's upper bound on the null's spread
