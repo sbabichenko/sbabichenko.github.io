@@ -194,3 +194,11 @@ footer.site-foot .tally b { font-weight: 600; color: var(--accent); }
 .colophon-mesh { height: 40px; margin-top: 2.5rem; opacity: 0.35; background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'><g fill='none' stroke='%23888' stroke-width='0.8'><path d='M0,0 H80 M0,40 H80 M0,0 V40 M40,0 V40 M80,0 V40 M0,0 L40,40 M80,0 L40,40 M20,20 L40,0 M60,20 L40,0 M20,20 L0,40'/></g></svg>") repeat-x left center;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
 .dark .colophon-mesh { opacity: 0.5; }
+
+/* a quoted post from X, shown as a quote until someone asks for the embed (Partial-Pooling.md) */
+blockquote.twitter-tweet { margin: 1.4em 0 0.4em; padding: 0.9rem 1.1rem; border: 1px solid rgba(127, 127, 127, 0.3);
+  border-left: 3px solid #1f3fd0; border-radius: 0 8px 8px 0; font-style: normal; }
+blockquote.twitter-tweet p { margin: 0 0 0.5em; }
+.tweet-load { font: 0.8rem ui-sans-serif, system-ui, sans-serif; background: none; border: 1px solid rgba(127, 127, 127, 0.4);
+  border-radius: 999px; padding: 0.15em 0.8em; cursor: pointer; color: inherit; opacity: 0.75; margin-bottom: 1.2em; }
+.tweet-load:hover { opacity: 1; }

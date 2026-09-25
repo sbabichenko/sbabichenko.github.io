@@ -81,7 +81,34 @@
     const p = target && target.closest && target.closest(".proof.foldable");
     if (p && !p.classList.contains("open")) setOpen(p, true);
   }
-  const fromHash = () => { if (location.hash.length > 1) { const t = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (t) { reveal(t); t.scrollIntoView(); } } };
+  // Chapters lay out off-screen sections only as they near the screen (thesis.css, content-visibility), so a jump lands
+  // on estimated heights that then become real ones; scroll to the target again until it stops moving.
+  // Things added after the jump (the "used in" lines, citation counts) move it too, so it keeps holding the target for
+  // about a second and a half, and lets go the moment the reader scrolls on their own.
+  let holding = null;
+  function settle(t) {
+    holding = t;
+    const t0 = performance.now();
+    const go = () => {
+      if (holding !== t) return;
+      t.scrollIntoView({ block: "start" });
+      if (performance.now() - t0 < 1500) requestAnimationFrame(() => setTimeout(go, 60)); else holding = null;
+    };
+    go();
+  }
+  ["wheel", "touchstart", "keydown", "mousedown"].forEach((e) => window.addEventListener(e, () => { holding = null; }, { passive: true }));
+  const byHash = (h) => document.getElementById(decodeURIComponent(h.replace(/^#/, "")));
+  const fromHash = () => { if (location.hash.length > 1) { const t = byHash(location.hash); if (t) { reveal(t); settle(t); } } };
+  // links within the page settle the same way
+  document.addEventListener("click", (ev) => {
+    const a = ev.target.closest && ev.target.closest('a[href^="#"]');
+    if (!a || ev.defaultPrevented || ev.metaKey || ev.ctrlKey || ev.shiftKey || a.getAttribute("href").length < 2) return;
+    const t = byHash(a.getAttribute("href"));
+    if (!t) return;
+    ev.preventDefault();
+    history.pushState(null, "", a.getAttribute("href"));
+    reveal(t); settle(t);
+  });
   window.addEventListener("hashchange", fromHash);
   if (location.hash.length > 1) fromHash();
   document.addEventListener("dissertation:reveal", (e) => reveal(e.detail));   // search.js can announce a hit
@@ -115,7 +142,7 @@
     if (!box) return;
     const thm = box.classList.contains("thm") ? box : resultOf(box);
     const what = box.classList.contains("proof") ? `the proof of ${labelOf(thm)}` : labelOf(thm);
-    store.sset("way-back", { path: here, y: window.scrollY, what, t: Date.now() });
+    store.sset("way-back", { path: here, y: window.scrollY, id: (box.id || (thm && thm.id) || ""), what, t: Date.now() });
     setTimeout(showChip, 60);                            // a reference on this page: show the chip after the jump
   });
   function showChip() {
@@ -132,7 +159,7 @@
     go.addEventListener("click", (ev) => {
       store.sset("way-back", null);
       if (w.path === here) { ev.preventDefault(); window.scrollTo({ top: w.y, behavior: "smooth" }); chip.remove(); }
-      else store.sset("way-back-restore", { path: w.path, y: w.y });
+      else store.sset("way-back-restore", { path: w.path, y: w.y, id: w.id });
     });
     x.addEventListener("click", () => { store.sset("way-back", null); chip.remove(); });
     chip.append(go, x);
@@ -142,7 +169,12 @@
   if (restore && restore.path === here) {
     store.sset("way-back-restore", null);
     const y = restore.y;
-    const land = () => { window.scrollTo(0, y); const t = document.elementFromPoint(window.innerWidth / 2, 120); reveal(t); window.scrollTo(0, y); };
+    // back to the result itself where it has an id (a scroll position is only an estimate on another visit)
+    const land = () => {
+      const el = restore.id && document.getElementById(restore.id);
+      if (el) { const pf = el.nextElementSibling; if (pf && pf.classList.contains("proof")) setOpen(pf, true); settle(el); return; }
+      window.scrollTo(0, y); const t = document.elementFromPoint(window.innerWidth / 2, 120); reveal(t); window.scrollTo(0, y);
+    };
     if (document.readyState === "complete") land(); else window.addEventListener("load", land);
   } else showChip();
 
@@ -208,6 +240,7 @@
       note.title = "How often the dissertation refers to this equation";
       eq.after(note);
     }
+    if (holding) settle(holding);                                // the notes above just moved it
     let tracing = null;
     function trace(n, relies, btn) {
       const off = tracing === n.id;

@@ -16,7 +16,20 @@ A few weeks ago I woke up to this tweet by Gappy:
   <p lang="en" dir="ltr">I am thinking of writing a note full of spite and thunder about the practice of intersecting stock characteristic (i.e., let us select stocks that are high mtmo, high profitability, and low short interest). It’s a popular practice. You should not do it. I’ll probably restrict circulation of the note.</p>
   &mdash; Gappy (Giuseppe Paleologo) (@__paleologo) <a href="https://twitter.com/__paleologo/status/1979212187202683372">Oct 17, 2025</a>
 </blockquote>
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<script>
+// X's embed script is about 1.4 MB, most of this page's weight; the quote above already carries the text, the
+// author, the date and the link, so it loads only if asked
+(function () {
+  var q = document.querySelector("blockquote.twitter-tweet"); if (!q) return;
+  var b = document.createElement("button"); b.type = "button"; b.className = "tweet-load"; b.textContent = "Show the post from X";
+  b.addEventListener("click", function () {
+    b.disabled = true; b.textContent = "Loading…";
+    var s = document.createElement("script"); s.async = true; s.src = "https://platform.twitter.com/widgets.js";
+    s.onload = function () { b.remove(); }; document.body.appendChild(s);
+  });
+  q.after(b);
+})();
+</script>
 
 Gappy is currently the head of quantitative research at BAM, known also for his work in gardening and his books on portfolio management. His day job involves managing portfolio managers. Some portfolio manager wanted to chase the abnormal returns of stocks with high momentum, high profitability, and low short interest. Who am I to judge? They saw a corner of the market they wanted to understand, build intuition around, maybe even trade. Reasonable enough.
 But in doing so, they threw out seven-eighths of the market.
