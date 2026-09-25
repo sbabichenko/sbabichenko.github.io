@@ -60,9 +60,9 @@
               Anderson acceleration, on piecewise Chebyshev nodes in shock age, or on a triangle of dates and shock times for
               a finite horizon, until the kernels stop moving.</p>
             <p><b>The games.</b> The tabs follow the chapters: the finite-horizon baseline (1), the stationary game (3),
-              Kyle&ndash;Back trading with several informed traders (4), a cycle of local markets (5), and monitored
-              deviations, naive against privy (6). Chapter 2, on delayed signals, has no tab yet; the model editor takes any
-              game the solver supports.</p>
+              Kyle&ndash;Back trading with several informed traders (4) and a cycle of local markets (5). Chapter 2, on
+              delayed signals, and Chapter 6, on monitored deviations, have no tab yet; the model editor takes any game the
+              solver supports.</p>
           </div>
         </div>
       </details>
@@ -84,8 +84,7 @@
           <div class="pane nopython" data-pane="python" hidden><p>No way am I executing wild code</p></div>
           <p class="hint">The model file format of noisestate: channels, states, agents with controls, signal rows and losses, a
             horizon (<code>stationary</code> with a <code>window</code>, <code>finite</code> with <code>T</code>, or
-            <code>transition</code> with a past) and numerics. A top-level <code>naive_observers</code> makes some agents'
-            strategies ignore another agent's deviations (Chapter 6).</p>
+            <code>transition</code> with a past) and numerics.</p>
           <div class="controls" id="paramcontrols"></div>
           <div class="controls" id="paramopts"></div>
           <div class="row" style="margin-top:12px"><button class="primary" id="solvecustom">Solve this model</button>
@@ -126,7 +125,7 @@
       <div class="notes">
         <p>The solver is a C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a> 1.0.1 (MIT licence)
           with the same equations and algorithms: the stationary, spectral and cell engines, transitions with their past,
-          band, buffer and march in T, naive observers, and the refinement and stability checks. On its test grid its costs,
+          band, buffer and march in T, and the refinement and stability checks. On its test grid its costs,
           kernels, loss paths and first-order-condition terms agree with the Python package to 1e-10 or better.</p>
         <p>To solve games yourself, the Python package is on <a href="https://pypi.org/project/noisestate/">PyPI</a>:
           <code>pip install noisestate</code> (source on <a href="https://github.com/sbabichenko/noisestate">GitHub</a>).
