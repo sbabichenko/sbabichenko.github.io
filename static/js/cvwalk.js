@@ -52,9 +52,12 @@
   function draw() {
     if (!svg) return;
     const a = art.getBoundingClientRect();
-    // drawn to 80% down the screen; at the bottom of the page, all the way (the last pin never gets that high)
-    const atEnd = innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
-    const seen = reduced || atEnd ? a.height : Math.max(0, Math.min(a.height, innerHeight * 0.8 - a.top));
+    // drawn by how far down the page you are, not where the screen is: at the top only the first pin, at the
+    // bottom the last, so the walk runs ahead of the scroll and finishes exactly when the page does
+    const room = document.documentElement.scrollHeight - innerHeight;
+    const q = room > 0 ? Math.min(1, Math.max(0, scrollY / room)) : 1;
+    const first = pinLen.length ? path.getPointAtLength(pinLen[0]).y : 0, last = pinLen.length ? path.getPointAtLength(pinLen[pinLen.length - 1]).y : a.height;
+    const seen = reduced ? a.height : first + (last - first) * q + (q >= 1 ? 1 : 0);
     let far = 0;
     // walk the path to the depth read so far
     let lo = 0, hi = len;
