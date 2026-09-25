@@ -4,7 +4,8 @@
 /* the new theme spreads from the toggle, triangle by triangle */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 /* (the new theme's reveal, a mesh filling in from the toggle, is played by whimsy.js on ::view-transition-new) */
-.inking::view-transition-new(root) { animation: none; }
+/* hidden until the reveal starts, or the new theme flashes for a frame and then drops back to the old one */
+.inking::view-transition-new(root) { animation: none; clip-path: polygon(0 0, 0 0, 0 0); }
 
 /* selection: a highlighter */
 ::selection { background: rgba(255, 214, 90, 0.55); color: inherit; }

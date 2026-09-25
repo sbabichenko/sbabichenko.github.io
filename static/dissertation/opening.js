@@ -299,7 +299,7 @@
     edges.forEach(([i, j]) => { adj[i].push(j); adj[j].push(i); });
     const pulses = el("g", {}, g), live = [];
     let lastWave = 0;
-    const lab = text(g, 300, 578, "prices, passing through people who see only their own corner", "mono");
+    const lab = text(g, 300, 578, "prices carry what the rest of the world needs them to know", "mono");
     return {
       g,
       update(t, now) {
@@ -352,7 +352,7 @@
     const [ax, ay] = at(POS.actions, R - 58), [ox, oy] = at(POS.observations, R - 78);
     const chord = stroke(g, pencil([[ax, ay], [ox, oy]], seed + 9, 1), "accent", 1.5);
     chord.a.style.strokeDasharray = "5 6"; chord.b.style.display = "none";
-    const chordLab = text(g, 300, 284, "direct channel", "mono");
+    const chordLab = text(g, 300, 284, "chord", "mono");
     const nodes = Object.entries(POS).map(([name, a]) => {
       const [x, y] = at(a), w = name.length * 9.2 + 26;
       const n = el("g", {}, g);
@@ -385,7 +385,7 @@
       const pts = []; for (let x = 60; x <= 380; x += 8) pts.push([x + k * 11, 300 - f(x, k) - k * 9 + 60]);
       curves.push(stroke(g, pencil(pts, 90 + k, 0.5), k === 0 ? "accent" : "", k === 0 ? 2.2 : 1.1));
     }
-    const l1 = text(g, 150, 470, "one equation, one path", "mono"), l2 = text(g, 420, 170, "a whole surface", "mono");
+    const l1 = text(g, 150, 470, "an ODE: one path", "mono"), l2 = text(g, 420, 170, "a PDE: a whole surface", "mono");
     return {
       g,
       update(t) {
