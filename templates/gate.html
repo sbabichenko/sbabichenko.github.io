@@ -10,8 +10,8 @@
     {% include "partials/header.html" %}
 
     <main class="explorer mesh gate" id="gate" data-worker="{{ get_url(path='mesh/fit-worker.js') }}">
-      <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; <a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &nbsp;/&nbsp; The gate</div>
-      <h1>Gated Decision Mesh</h1>
+      <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; <a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &nbsp;/&nbsp; Live</div>
+      <h1>Decision Mesh, Live</h1>
       <p class="sub">The odds of a coin vary over this square. A few thousand sites each flip a coin a handful of
         times. The estimator refines a mesh of right triangles or rectangles only where a false-discovery gate finds
         support in the flips, and stops when no candidate passes. It separates the odds from each coin's own effect
@@ -87,7 +87,7 @@
           builds can write a trace of each round's candidates for the illustrated page; nothing else is changed, and on my
           test designs the browser builds reproduce the native meshes to 1e-11. The two share
           the gate and the model for the coin effects and differ in geometry: right triangles cut only through their hypotenuse, with a
-          flat fit in each; rectangles cut across either axis, with a bilinear fit in each. Half the sites are held out:
+          plane in each; rectangles cut across either axis, with a bilinear fit in each. Half the sites are held out:
           the mesh never sees them, and the deviance card scores the fit on them. The coins are drawn on this page from
           the odds you pick, plus a normal effect per coin on the log-odds, with the standard deviation on the slider
           (0.25 to start). Set it to zero and the coins are plain binomial.</p>
@@ -98,14 +98,14 @@
       <details class="cite">
         <summary>Cite it</summary>
 <pre>@software{triangular_decision_mesh,
-  author = {Babichenko, Samuel},
+  author = {Babichenko, Sam},
   title  = {triangular-decision-mesh: an adaptive right-triangle mesh regression with a false-discovery gate},
   year   = {2026},
   url    = {https://github.com/sbabichenko/triangular-decision-mesh}
 }
 
 @software{rectangular_decision_mesh,
-  author = {Babichenko, Samuel},
+  author = {Babichenko, Sam},
   title  = {rectangular-decision-mesh: an adaptive rectangular mesh regression with a false-discovery gate},
   year   = {2026},
   url    = {https://github.com/sbabichenko/rectangular-decision-mesh}

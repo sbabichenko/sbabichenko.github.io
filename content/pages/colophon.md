@@ -1,5 +1,6 @@
 +++
 title = "Colophon & Acknowledgements"
+description = "How this site was built, whose code it borrows, and its license."
 path = "colophon"
 +++
 

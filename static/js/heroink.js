@@ -83,9 +83,17 @@
 
   // the square is drawn taller than wide and pushed right, so the name sits over its quiet corner;
   // it is drawn far larger than the hero, so only an interior patch shows and no boundary reads as a frame
+  // On a screen wider than the column the canvas runs to both edges of the window (home.css), and so does the
+  // mesh: it is drawn wide enough to leave off both sides, with the quiet patch kept under the name.
+  function column() {
+    const c = cv.getBoundingClientRect(), h = hero.getBoundingClientRect(), k = cv.width / Math.max(1, c.width);
+    return { c0: (h.left - c.left) * k, c1: (h.right - c.left) * k, wide: c.width > h.width + 40 };
+  }
   function geometry() {
-    const W = cv.width, H = cv.height, side = H * 1.9, ox = W - side * 0.92, oy = (H - side) / 2;
-    return { W, H, side, ox, oy,
+    const W = cv.width, H = cv.height, col = column();
+    const side = col.wide ? Math.max(H * 1.9, W * 1.08) : H * 1.9;
+    const ox = col.wide ? W - side * 0.96 : W - side * 0.92, oy = (H - side) / 2;
+    return { W, H, side, ox, oy, col,
       px: (x) => ox + ((x - LO) / (HI - LO)) * side, py: (y) => oy + ((HI - y) / (HI - LO)) * side,
       ux: (X) => LO + ((X - ox) / side) * (HI - LO), uy: (Y) => HI - ((Y - oy) / side) * (HI - LO) };
   }
@@ -100,14 +108,19 @@
     ctx.lineWidth = Math.max(0.6, 0.8 * dpr);
     ctx.lineCap = "round";
     // the vignette is per edge, not a CSS mask: a clipped mask cuts lines off square, this fades them
-    const fx = W * 0.84, fy = H * 0.5, R = 0.95 * Math.max(W * 0.55, H);
+    const { col } = G, cw = col.c1 - col.c0;
+    const fx = col.wide ? col.c0 + cw * 0.84 : W * 0.84, fy = H * 0.5, R = 0.95 * Math.max(W * 0.55, H);
+    // wide: faint under the name, full strength everywhere else, out to both edges of the window
+    const nameX = col.c0 + cw * 0.24, quietR = cw * 0.62;
     const lensR = 150 * dpr, lensOn = pointer && now - lensAt < 2500 ? 1 - Math.max(0, (now - lensAt - 1500) / 1000) : 0;
     for (const e of mesh.activeEdges) {
       let t = drawn.get(e);
       if (t === undefined) { t = now; drawn.set(e, t); }
       const x0 = px(e.v0.x), y0 = py(e.v0.y), x1 = px(e.v1.x), y1 = py(e.v1.y);
       const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
-      const d = Math.hypot(mx - fx, (my - fy) * 0.85) / R;
+      const d = col.wide
+        ? Math.max(0, 1 - Math.hypot(mx - nameX, (my - fy) * 1.4) / quietR) * 0.75
+        : Math.hypot(mx - fx, (my - fy) * 0.85) / R;
       // the lens reaches past the vignette, so the quiet corner under the name wakes up too
       let lens = 0;
       if (lensOn) { const q = Math.hypot(mx - pointer.x, my - pointer.y) / lensR; if (q < 1) lens = lensOn * (1 - q) * (1 - q); }

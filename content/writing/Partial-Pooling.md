@@ -1,7 +1,7 @@
 +++
 title = "Partial Pooling for Estimating Interaction Effects in Factor Models" 
 date = "2025-11-08" 
-description = "Partial Pooling for Estimating Interaction Effects in Factor Models" 
+description = "Every additional filter halves the sample again. Each one has a cost. We want to estimate the abnormality of the returns without leaving food on the table."
 [taxonomies] 
 "writing/tags" = ["methods"] 
 [extra]

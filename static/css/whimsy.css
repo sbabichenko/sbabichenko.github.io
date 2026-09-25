@@ -1,19 +1,21 @@
-/* Small things on every page (static/js/whimsy.js): the ink for the theme toggle, the tossed coin, wavy
-   underlines on links in running text, a highlighter for selections, and a pencil riding the progress lines. */
+/* Small things on every page (static/js/whimsy.js): the ink for the theme toggle, the tossed coin, a quiet
+   underline on links in running text, a highlighter for selections, and a pencil riding the progress lines. */
 
-/* the new theme spreads from the toggle */
+/* the new theme spreads from the toggle, triangle by triangle */
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
-.inking::view-transition-new(root) { animation: ink-spread 0.75s cubic-bezier(.3, .1, .2, 1) both; }
-@keyframes ink-spread { from { clip-path: circle(0 at var(--ink-x) var(--ink-y)); } to { clip-path: circle(150vmax at var(--ink-x) var(--ink-y)); } }
+/* (the new theme's reveal, a mesh filling in from the toggle, is played by whimsy.js on ::view-transition-new) */
+.inking::view-transition-new(root) { animation: none; }
 
 /* selection: a highlighter */
 ::selection { background: rgba(255, 214, 90, 0.55); color: inherit; }
 .dark ::selection { background: rgba(143, 176, 255, 0.35); }
 
-/* links in running text wobble underneath when pointed at */
-p a:hover, li a:hover, .lede a:hover, figcaption a:hover {
-  text-decoration-line: underline; text-decoration-style: wavy; text-decoration-thickness: 1px; text-underline-offset: 4px;
+/* links in running text take a thin straight underline when pointed at (not the contents, menus or rails) */
+p a:hover, article li a:hover, .lede a:hover, figcaption a:hover {
+  text-decoration-line: underline; text-decoration-style: solid; text-decoration-thickness: 1px; text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
 }
+nav li a:hover, .rail li a:hover, .toc li a:hover { text-decoration-line: none; }
 
 /* a pencil at the tip of the reading-progress line */
 .progress::after {

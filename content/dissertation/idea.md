@@ -1,6 +1,6 @@
 +++
 title = "The Noise-State, Explained"
-description = "Why impulse responses: how forecasting the forecasts of others collapses once every belief is written against the primitive shocks. A picture story, computed live on a small filtering problem."
+description = "Why knowing what others know changes everything, starting from a doctor's diagnosis and the sun exploding, and how the dissertation handles beliefs about beliefs. Every drawing is computed as you read."
 path = "dissertation/idea"
 template = "idea.html"
 weight = 0

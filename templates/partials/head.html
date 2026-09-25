@@ -9,12 +9,18 @@
       anything else falls back to the site's. -#}
   {%- set item = page | default(value=section | default(value=false)) %}
   {%- set page_title = item.title | default(value="") %}
+  {%- set diss = load_data(path="data/dissertation_previews.json") %}
+  {%- set dprev = false %}
+  {%- if item and item.path is starting_with("/dissertation/") and item.extra.slug and item.extra.slug in diss %}
+  {%- set dslug = item.extra.slug %}{% set dprev = diss[dslug] %}{% endif %}
   {%- if item and item.description %}{% set description = item.description %}
+  {%- elif dprev %}{% set description = dprev.description %}
   {%- elif item and page_title and item.path is starting_with("/dissertation/") %}{% set description = page_title ~ ". From Noise-State Calculus for Dynamic Games with Strategic Information, a PhD dissertation (UC Santa Barbara, 2026)." %}
   {%- elif page_title %}{% set description = page_title %}
   {%- else %}{% set description = config.description | default(value="A personal blog") %}{% endif %}
   {%- if item and item.extra.og_image %}{% set image = item.extra.og_image %}
   {%- elif item and item.extra.cover.image %}{% set image = item.extra.cover.image %}
+  {%- elif dprev %}{% set image = "images/og-diss-" ~ dslug ~ ".png" %}
   {%- elif item and item.path is starting_with("/dissertation/") %}{% set image = "images/og-dissertation.png" %}
   {%- elif config.extra.social_image %}{% set image = config.extra.social_image %}{% endif %}
   {%- if item and item.authors and item.authors | length > 0 %}{% set author = item.authors | join(sep=", ") %}
@@ -29,8 +35,8 @@
   <meta name="author" content="{{ author }}" />
   <!-- The Open Graph protocol -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="{{ page_title | default(value=config.title) }}" />
-  <meta property="og:site_name" content="{{ config.title }}" />
+  <meta property="og:title" content="{% if page_title %}{{ page_title }}{% else %}{{ config.extra.preview_name }}{% endif %}" />
+  <meta property="og:site_name" content="{{ config.extra.preview_name }}" />
   <meta property="og:description" content="{{ description }}" />
   <meta property="og:url" content="{% if item %}{{ item.permalink }}{% else %}{{ get_url(path=``) }}{% endif %}" />
   {%- if image %}

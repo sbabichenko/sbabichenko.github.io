@@ -122,6 +122,7 @@
 .dark .body .fignum { color: #1b1b20; }
 .body figure figure { margin: 0.4rem 0; padding: 0; border: 0; }
 .body .tablewrap { overflow-x: auto; margin: 1.2em 0; }
+#vita td[style*="text-align: right"] { white-space: nowrap; }   /* keep the vita's years (2021–2026) on one line */
 .body table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
 .body th, .body td { padding: 0.4em 0.6em; border-bottom: 1px solid var(--rule-2); text-align: left; vertical-align: top; }
 .body thead th { border-bottom: 1px solid var(--rule); font-weight: 600; }
@@ -237,3 +238,129 @@
 .rail .toc > li > a.ribbon { position: relative; }
 .rail .toc > li > a.ribbon::after { content: ""; position: absolute; top: -3px; right: 10px; width: 9px; height: 20px;
   background: #b8322a; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 74%, 0 100%); pointer-events: none; }
+
+/* figures re-rendered for the web (tools/dissertation/webfigs.py): a light and a dark version, each with a
+   phone layout, drawn on the page's own paper instead of the white box the print figures need */
+.wf-dark { display: none; }
+.dark .wf-light { display: none; }
+.dark .wf-dark { display: block; }
+.body figure.webfig { background: none; border: 0; padding: 0.3rem 0 0; margin: 2em 0; }
+.body figure.webfig img { max-width: 100%; }
+.dark .body figure.webfig figcaption { color: var(--ink-2); }
+.dark .body figure.webfig .fignum { color: var(--ink); }
+.peek figure.webfig { background: none; }
+
+/* phones: figures too wide to read in place open full screen (thesis.js) */
+.body figure.zoomable { position: relative; cursor: zoom-in; }
+.body figure.zoomable::after { content: "\2922  tap to enlarge"; position: absolute; top: 0; right: 0; transform: translateY(-120%);
+  font: 0.68rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); background: var(--paper); padding: 1px 6px;
+  border: 1px solid var(--rule-2); border-radius: 999px; pointer-events: none; }
+.figzoom { position: fixed; inset: 0; z-index: 100; background: var(--paper, #fffdf7); display: flex; flex-direction: column; }
+.figzoom .fz-bar { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  padding: calc(env(safe-area-inset-top, 0px) + 6px) 8px 6px 16px; border-bottom: 1px solid var(--rule-2);
+  font: 0.8rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); }
+.figzoom button { font: 1.7rem/1 ui-sans-serif, system-ui, sans-serif; border: 0; background: none; color: var(--ink); padding: 6px 12px; cursor: pointer; }
+.figzoom .fz-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; display: flex; align-items: center;
+  padding-bottom: env(safe-area-inset-bottom, 0px); }
+.figzoom img { display: block; width: max(100%, 58rem); max-width: none; height: auto; margin: auto; padding: 0 16px; box-sizing: content-box; }
+.figzoom img.print { background: #fff; padding: 12px 16px; }
+
+/* proofs fold to a line (proofs.js) */
+.body .proof.foldable { margin: -0.5em 0 1.6em; }
+.body .proof-toggle { display: flex; align-items: baseline; gap: 0; width: 100%; text-align: left; background: none; border: 0;
+  border-top: 1px dashed var(--rule); padding: 0.55em 0 0.45em; cursor: pointer; color: var(--ink-3);
+  font: 0.78rem ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; }
+.body .proof-toggle .pt-word { text-transform: uppercase; font-weight: 600; color: var(--ink-2); }
+.body .proof-toggle .pt-len { text-transform: none; letter-spacing: 0; }
+.body .proof-toggle .pt-arrow { margin-left: auto; width: 0.5em; height: 0.5em; border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor; transform: rotate(45deg); transition: transform 0.18s; align-self: center; }
+.body .proof.open > .proof-toggle .pt-arrow { transform: rotate(-135deg); }
+.body .proof-toggle:hover .pt-word, .body .proof-toggle:focus-visible .pt-word { color: var(--accent); }
+.body .proof.foldable > .proof-body { display: none; }
+.body .proof.foldable.open > .proof-body, .body .proof.print-open > .proof-body { display: block; }
+.body .proof.foldable .proof-opening { display: none; }
+.body .proof .qed { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--rule); }
+.body .proof .qed:hover { color: var(--accent); }
+.proofs-bar { display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; align-items: baseline; margin: 0 0 1.4em;
+  font: 0.8rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.proofs-bar button { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+@media print {
+  .body .proof.foldable > .proof-body { display: block !important; }
+  .body .proof-toggle, .proofs-bar, .thm-links, .wayback, .trace-note { display: none !important; }
+  .body .proof.foldable .proof-opening { display: inline !important; }
+}
+
+/* what a result is used in, what it rests on, and tracing an assumption (proofs.js) */
+.body .thm-links { display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; margin: -0.1em 0 0.85em; font: 0.76rem/1.5 ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.body .thm-links a { color: var(--ink-2); }
+.body .thm-links a:hover { color: var(--accent); }
+.body .thm-links .tl-path { margin-left: auto; }
+.body .thm-links .tl-trace { font: inherit; color: var(--warm); background: none; border: 1px solid currentColor; border-radius: 999px; padding: 0 0.6em; cursor: pointer; }
+.body .thm-links .tl-trace[aria-pressed="true"] { background: var(--warm); color: var(--paper); }
+.body.tracing .thm, .body.tracing .proof { transition: opacity 0.2s; }
+.body.tracing .thm:not(.relies):not(.traced), .body.tracing .proof:not(.relies) { opacity: 0.38; }
+.body .relies { box-shadow: -3px 0 0 var(--warm); }
+.body .thm.relies { box-shadow: none; border-left-color: var(--warm); }
+.trace-note, .wayback { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); z-index: 60;
+  display: flex; gap: 0.7rem; align-items: center; max-width: calc(100vw - 32px); padding: 0.55rem 0.6rem 0.55rem 1rem;
+  background: var(--paper); border: 1px solid var(--rule); border-radius: 999px; box-shadow: 0 8px 28px -12px rgba(0, 0, 0, 0.35);
+  font: 0.82rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); }
+.trace-note a, .wayback a { color: var(--accent); }
+.trace-note button, .wayback button { font: inherit; background: none; border: 0; color: var(--ink-3); cursor: pointer; padding: 0 0.3rem; }
+.wayback .wb-x { font-size: 1.1rem; line-height: 1; }
+
+/* the map of what rests on what, and one result's path (graph.js) */
+.thesis.graphpage { display: block; max-width: 86rem; }
+.thesis.graphpage .paper { max-width: none; }
+.graphpage .body h1 { margin-top: 0.4em; }
+.graph-wait { color: var(--ink-3); font: 0.85rem ui-sans-serif, system-ui, sans-serif; }
+.gctl { display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; align-items: center; margin: 1.2rem 0 0.8rem;
+  font: 0.78rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.gctl label { display: inline-flex; gap: 0.35rem; align-items: center; cursor: pointer; color: var(--ink-2); }
+.glegend i { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 3px; margin: 0 0.3em 0 0.6em; vertical-align: -0.05em; }
+.glegend .k-def, .gnode.k-def { --k: var(--warm); }
+.glegend .k-res, .gnode.k-res { --k: var(--accent); }
+.glegend .k-eq, .gnode.k-eq { --k: var(--ink-3); }
+.glegend .k-def, .glegend .k-res, .glegend .k-eq { background: var(--k); opacity: 0.8; }
+.glegend .k-anc { background: var(--accent); } .glegend .k-desc { background: var(--warm); }
+.gmap { position: relative; overflow-x: auto; padding: 0.4rem 0 1rem; -webkit-overflow-scrolling: touch; }
+.gcols { position: relative; display: flex; gap: 4.2rem; align-items: flex-start; width: max-content; padding-right: 3rem; }
+.gedges { position: absolute; left: 0; top: 0.4rem; pointer-events: none; overflow: visible; }
+.gcol { display: flex; flex-direction: column; gap: 0.3rem; width: 6.2rem; position: relative; z-index: 1; }
+.gch { font: 600 0.7rem ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3);
+  height: 2.2em; display: flex; align-items: flex-end; margin-bottom: 0.3rem; }
+.gnode { font: 0.74rem/1.2 ui-sans-serif, system-ui, sans-serif; text-align: left; padding: 0.2rem 0.5rem; border-radius: 5px; cursor: pointer;
+  color: var(--ink); background: var(--paper); border: 1px solid color-mix(in srgb, var(--k) 55%, transparent);
+  box-shadow: inset 3px 0 0 var(--k); transition: opacity 0.15s, background 0.15s; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.gnode.k-eq { font-size: 0.68rem; color: var(--ink-2); padding: 0.1rem 0.45rem; box-shadow: none; border-style: dashed; }
+.gnode.lonely { opacity: 0.55; }
+.gnode:hover { background: color-mix(in srgb, var(--k) 12%, var(--paper)); }
+.gnode.sel { background: var(--ink); color: var(--paper); border-color: var(--ink); opacity: 1; }
+.gnode.anc { background: color-mix(in srgb, var(--accent) 18%, var(--paper)); border-color: var(--accent); opacity: 1; }
+.gnode.desc { background: color-mix(in srgb, var(--warm) 18%, var(--paper)); border-color: var(--warm); opacity: 1; }
+.gnode.dim { opacity: 0.22; }
+.gcols.no-eq .gnode.k-eq { display: none; }
+.ge { fill: none; stroke: var(--ink-3); stroke-opacity: 0.35; stroke-width: 1; }
+.ge-anc { stroke: var(--accent); stroke-opacity: 0.9; stroke-width: 1.6; }
+.ge-desc { stroke: var(--warm); stroke-opacity: 0.9; stroke-width: 1.6; }
+.ge-dim { stroke-opacity: 0.08; }
+.gpanel { position: sticky; bottom: 0; z-index: 5; margin-top: 0.6rem; padding: 0.9rem 1.1rem; background: var(--paper); border: 1px solid var(--rule);
+  border-radius: 8px; box-shadow: 0 -10px 30px -22px rgba(0, 0, 0, 0.4); font-size: 0.98rem; }
+.gpanel .gp-hint { margin: 0; color: var(--ink-3); font: 0.82rem ui-sans-serif, system-ui, sans-serif; }
+.gpanel .gp-head b { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.gpanel .gp-head em { float: right; font: 0.75rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); font-style: normal; }
+.gpanel p { margin: 0.4em 0 0; }
+.gpanel .gp-meta, .gpanel .gp-links { font: 0.8rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.gpanel .gp-links a { margin-right: 1rem; color: var(--accent); }
+.gp-lede { color: var(--ink-2); }
+.path-ch { font-size: 1.25rem; margin: 2em 0 0.4em; }
+.path-item { margin: 0 0 1.4rem; }
+.path-item > div > .thm { margin-bottom: 0.4em; }
+.path-target .thm { box-shadow: 0 0 0 2px var(--accent); }
+.path-src { display: block; text-align: right; font: 0.75rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.path-proof { margin: 0 0 0.6em; }
+.path-proof summary { cursor: pointer; font: 600 0.78rem ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+.path-proof .proof { margin-top: 0.3em; }
+.gpanel .gp-stmt { max-height: 13rem; overflow: auto; margin-top: 0.5rem; }
+.gpanel .gp-stmt .thm { margin: 0; }
