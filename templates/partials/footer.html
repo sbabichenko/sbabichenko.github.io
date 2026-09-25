@@ -8,13 +8,13 @@
   <a href="{{ get_url(path='atom.xml') }}" title="New writing, in any feed reader">Feed</a>
   <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
 </footer>
-<script src="{{ get_url(path='js/tally.js') }}"></script>
-<link rel="stylesheet" href="{{ get_url(path='css/whimsy.css') }}" />
-<link rel="stylesheet" href="{{ get_url(path='css/fold.css') }}" />
-<script src="{{ get_url(path='js/whimsy.js') }}"></script>
-<script src="{{ get_url(path='js/skip.js') }}" defer></script>
-<script src="{{ get_url(path='js/fold.js') }}"></script>
+<script src="{{ get_url(path='js/tally.js', cachebust=true) }}"></script>
+<link rel="stylesheet" href="{{ get_url(path='css/whimsy.css', cachebust=true) }}" />
+<link rel="stylesheet" href="{{ get_url(path='css/fold.css', cachebust=true) }}" />
+<script src="{{ get_url(path='js/whimsy.js', cachebust=true) }}"></script>
+<script src="{{ get_url(path='js/skip.js', cachebust=true) }}" defer></script>
+<script src="{{ get_url(path='js/fold.js', cachebust=true) }}"></script>
 {%- if current_path and current_path == "/cv/" %}
-<link rel="stylesheet" href="{{ get_url(path='css/cv.css') }}" />
-<script src="{{ get_url(path='js/cvwalk.js') }}"></script>
+<link rel="stylesheet" href="{{ get_url(path='css/cv.css', cachebust=true) }}" />
+<script src="{{ get_url(path='js/cvwalk.js', cachebust=true) }}"></script>
 {%- endif %}

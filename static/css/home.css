@@ -246,8 +246,7 @@
 /* three illustrated explanations in a row */
 @media (min-width: 801px) { .home .demos.stories { grid-template-columns: repeat(3, 1fr); } }
 
-/* wider than the column: the hero's mesh runs out to both edges of the window (heroink.js draws to fit) */
-@media (min-width: 1100px) {
-  body:has(.home .hero) { overflow-x: clip; }
-  .home #heroink { left: 50%; width: 100vw; transform: translateX(-50%); }
-}
+/* the hero's mesh runs out to both edges of the window whenever there is room beside the column (heroink.js
+   notices and draws to fit; on a phone the canvas is the column's width anyway) */
+body:has(.home .hero) { overflow-x: clip; }
+.home #heroink { left: 50%; width: 100vw; transform: translateX(-50%); }
