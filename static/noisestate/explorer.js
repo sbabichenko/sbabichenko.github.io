@@ -299,50 +299,6 @@ numerics: {nodes: 8, unit: 0.5, unit_range: 4.0}
     defaultVar: "P0", defaultCtl: "P0",
     channelNames: {"w_q": "aggregate demand shock", "w_a0": "cost shock, firm 0", "w_eta0": "demand shock, firm 0", "w_0_0": "sales-signal noise, firm 0", "w_0_1": "price-signal noise, firm 0", "w_0_2": "order-book noise, firm 0", "w_0_3": "upstream-order noise, firm 0", "w_a1": "cost shock, firm 1", "w_eta1": "demand shock, firm 1", "w_1_0": "sales-signal noise, firm 1", "w_1_1": "price-signal noise, firm 1", "w_1_2": "order-book noise, firm 1", "w_1_3": "upstream-order noise, firm 1", "w_a2": "cost shock, firm 2", "w_eta2": "demand shock, firm 2", "w_2_0": "sales-signal noise, firm 2", "w_2_1": "price-signal noise, firm 2", "w_2_2": "order-book noise, firm 2", "w_2_3": "upstream-order noise, firm 2"},
   },
-  ch6: {
-    tab: "Naive or privy",
-    ch: "Ch. 6",
-    title: "Naive distortions and privy responses",
-    desc: `<p class="small muted" style="margin:0">Chapter 6. The Kyle–Back market of Chapter 4, solved twice. In the privy equilibrium the
-      trader's best response accounts for how the market maker's price reacts to its orders, as it does in Chapter 4. In the naive one
-      the trader treats the market maker as naive to its deviations: in its first-order condition the price does not move when it trades
-      more, so it trades as if it had no price impact, while the market maker still prices the trader's actual strategy.</p>
-      <div class="eq"><div>privy: the trader's deviation moves the flow, the market maker's forecast and the price, and the trader pays for it</div>
-      <div>naive: the same deviation, with the market maker's strategy switched off in the trader's calculation</div></div>
-      <p class="small muted" style="margin:0">Both are solved on every change (the naive one starts from the privy equilibrium). The comparison below
-      shows what the naive belief costs the trader: it trades harder on its information, the price becomes more informative
-      faster, and its profit turns into a loss.</p>`,
-    yaml: `name: ch6_naive_kyle_back
-params: {eps: 0.2, rho: 0.5, gamma1: 1.0, sigma_V: 1.0, sigma_Z: 1.0}
-channels: [wV, wZ, w1]
-states:
-  V: {drift: {}, noise: {wV: sigma_V}}
-agents:
-  market_maker:
-    controls: [P]
-    myopic: true
-    signals:
-      flow: {drift: {D1: 1.0}, noise: {wZ: sigma_Z}}
-    loss: [[1.0, P, P], [-2.0, P, V]]
-  trader1:
-    controls: [D1]
-    signals:
-      y1: {drift: {V: gamma1, P: "-gamma1"}, noise: {w1: 1.0}}
-      flow: {drift: {}, noise: {wZ: sigma_Z}}
-    loss: [[-1.0, D1, V], [1.0, D1, P], [eps, D1, D1]]
-horizon: {kind: stationary, discount: rho, window: 8.0}
-numerics: {nodes: 16}
-`,
-    naive: { trader1: ["market_maker"] },
-    sliders: [
-      { key: "eps", label: "ε trading cost", min: 0.05, max: 2, log: true },
-      { key: "gamma1", label: "γ₁ signal loading", min: 0.1, max: 4, log: true },
-      { key: "sigma_Z", label: "σ_Z noise-flow volatility", min: 0.2, max: 3, step: 0.05 },
-      { key: "rho", label: "ρ discount rate", min: 0.1, max: 2, step: 0.05 },
-    ],
-    defaultVar: "D1", defaultCtl: "D1",
-    channelNames: { wV: "value shock", wZ: "noise-trader flow shock", w1: "trader's signal noise" },
-  },
   tr: {
     tab: "Regime change",
     ch: "Ch. 3",
@@ -495,26 +451,6 @@ horizon:
     initial:
       - {name: v0, loads: {V: "sqrt(Sigma0)"}, rows: {trader1.flow: 1.0}}
   continuation: end
-`,
-  "tracking with naive observers (Ch. 6)": `# Each player's best response ignores the other's reaction to its deviations
-# (naive_observers: agent -> the observers treated as naive). Compare with the stationary tracking example.
-name: ch6_naive_tracking
-params: {p1: 3.0, p2: 10.0, r1: 1.0, r2: 1.0}
-channels: [w0, w1, w2]
-states:
-  X: {drift: {D1: 1.0, D2: 1.0}, noise: {w0: 1.0}}
-agents:
-  player1:
-    controls: [D1]
-    signals: {y1: {drift: {X: "sqrt(p1)"}, noise: {w1: 1.0}}}
-    loss: [[0.5, X, X], ["0.5*r1", D1, D1]]
-  player2:
-    controls: [D2]
-    signals: {y2: {drift: {X: "sqrt(p2)"}, noise: {w2: 1.0}}}
-    loss: [[0.5, X, X], ["0.5*r2", D2, D2]]
-naive_observers: {player1: [player2], player2: [player1]}
-horizon: {kind: stationary, discount: 0.0, window: 8.0}
-numerics: {nodes: 32}
 `,
   "tracking game on the cells engine (Ch. 1)": PRESETS.ch1.yaml.replace("numerics: {nodes: 12}", "numerics: {engine: cells, nodes: 24}"),
   "delayed control and observation (Ch. 1), a few seconds": `# Finite-horizon two-player game with a control delay and a delayed observation.
@@ -737,7 +673,6 @@ game = tracking("${d.name}", ${py.horizon({ ...d.horizon, T: "T" }, "before")}, 
 eq = game.solve()`;
   },
 };
-PYTHON.ch6 = PYTHON.ch4;
 // a slider's parameter lives in the model's params ("now"), the past model's ("past"), or both
 function sliderParams(d, s) {
   const where = s.where || "now", out = [];
@@ -810,7 +745,7 @@ function showVal(p, v) { const d = Math.abs(v) >= 10 ? 1 : Math.abs(v) >= 1 ? 2 
 
 function renderTabs() {
   const tabs = $("tabs"); tabs.innerHTML = "";
-  const order = ["ch1", "ch3", "tr", "ch4", "ch5", "ch6", "custom"];
+  const order = ["ch1", "ch3", "tr", "ch4", "ch5", "custom"];
   const keys = [...order.filter((g) => PRESETS[g]), ...Object.keys(PRESETS).filter((g) => !order.includes(g))];
   for (const g of keys) {
     const def = PRESETS[g];
@@ -1080,12 +1015,8 @@ function sendSolve() {
   // and ignores otherwise (a new grid or a new model)
   const request = { ...currentRequest(), return_start: true };
   if (game !== "custom" && PRESETS[game].naive) request.naive_compare = PRESETS[game].naive;
-  // a model file with naive observers: solve it both ways, the privy equilibrium as the main result and the naive one
-  // beside it (the same comparison as the Chapter 6 tab)
-  if (game === "custom" && model.naive_observers && Object.keys(model.naive_observers).length && model.horizon && model.horizon.kind === "stationary") {
-    request.naive_compare = model.naive_observers;
-    model = { ...model }; delete model.naive_observers;
-  }
+  // naive_observers is withdrawn: it did not compute Chapter 6's naive or privy equilibria (a fix is in progress)
+  if (game === "custom" && model.naive_observers) { model = { ...model }; delete model.naive_observers; }
   const hk = model.horizon && model.horizon.kind;
   if (!(model.numerics && model.numerics.engine === "cells")) request.path_grid = hk === "stationary" ? 150 : hk === "transition" ? 48 : 60;
   if (lastStart[game]) request.start = lastStart[game];
