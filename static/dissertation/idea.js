@@ -455,15 +455,15 @@
       }
       return out;
     };
-    // two first guesses, one too timid and one too trusting of the signal, iterated through the same map
+    // two first guesses, one trusting the signal too little and one too much, iterated through the same map
     const low = kernelsFrom(0.004), high = kernelsFrom(40);
     const draw = (h, n, cls, seed) => el("path", { d: pencil(h.map((v, k) => [T(k), 470 - v * 320]), seed + n, 0.1), class: "pencil " + cls, "stroke-width": 1.4 }, g);
     const pl = low.map((h, n) => draw(h, n, "warm", 60)), ph = high.map((h, n) => draw(h, n, "", 80));
     const fin = el("path", { d: pencil(low[5].map((v, k) => [T(k), 470 - v * 320]), 99, 0.1), class: "pencil accent", "stroke-width": 3 }, g);
     const lab = text(g, 300, 520, "the forecast's response to a shock, by age", "mono");
     const it = text(g, 540, 110, "", "label acc", "end");
-    const l1 = text(g, 540, 135, "from a guess too trusting of the signal", "mono", "end");
-    const l2 = text(g, 540, 155, "and one too timid", "mono warmt", "end"); l2.style.fill = "var(--warm)";
+    const l1 = text(g, 540, 135, "start: trusts the signal too much", "mono", "end");
+    const l2 = text(g, 540, 155, "start: trusts it too little", "mono warmt", "end"); l2.style.fill = "var(--warm)";
     const cap = text(g, 300, 560, "both land on the same kernel (a filter's here, standing in for a game's)", "mono");
     return { g, update(t) {
       const n = Math.min(5, Math.floor(seg(t, 0.05, 0.75) * 6));

@@ -24,7 +24,7 @@
       document.documentElement.classList.add("inking");
       const t = document.startViewTransition(() => { passing = true; btn.click(); passing = false; });
       t.ready.then(() => document.documentElement.animate({ clipPath: frames },
-        { duration: 900, easing: "linear", fill: "both", pseudoElement: "::view-transition-new(root)" })).catch(() => {});
+        { duration: 520, easing: "linear", fill: "both", pseudoElement: "::view-transition-new(root)" })).catch(() => {});
       t.finished.finally(() => document.documentElement.classList.remove("inking"));
     }, true);
   }
