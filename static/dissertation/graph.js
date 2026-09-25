@@ -14,7 +14,7 @@
   const SHORT = { assumption: "Asm", definition: "Def", lemma: "Lem", proposition: "Prop", theorem: "Thm", corollary: "Cor", conjecture: "Conj" };
   const short = (n) => n.kind === "equation" ? n.label.replace(/^Equation\s*/, "") : `${SHORT[n.kind] || n.kind} ${n.label.split(" ").pop()}`;
 
-  fetch(BASE + "deps.json").then((r) => r.json()).then(({ nodes, edges }) => {
+  fetch(BASE + "deps.json").then((r) => r.json()).then(({ nodes, edges, lean }) => {
     const byId = new Map(nodes.map((n, i) => [n.id, Object.assign(n, { i })]));
     const uses = new Map(), users = new Map();
     for (const [a, b] of edges) {
@@ -23,7 +23,7 @@
     }
     const closure = (id, next) => { const seen = new Set(), st = [id]; while (st.length) for (const y of next.get(st.pop()) || []) if (!seen.has(y)) { seen.add(y); st.push(y); } return seen; };
     const tools = { byId, uses, users, closure };
-    if (root.dataset.mode === "path") path(nodes, tools); else map(nodes, edges, tools);
+    if (root.dataset.mode === "path") path(nodes, tools); else { map(nodes, edges, tools); leanOn(lean || []); }
   }).catch(() => { out.innerHTML = '<p class="graph-wait">The graph could not be loaded.</p>'; });
 
   // ------------------------------------------------------------------ the map
@@ -148,6 +148,22 @@
         b.scrollIntoView({ block: "center", inline: "center" });
       }
     });
+  }
+
+  // ------------------------------------------------------------------ the equations the dissertation leans on
+  function leanOn(lean) {
+    if (!lean.length) return;
+    const sec = el("section", "lean");
+    sec.appendChild(el("h2", "", "The Equations It Comes Back To"));
+    sec.appendChild(el("p", "lean-lede", "The equations the text refers to most often, counting every reference in every chapter."));
+    const ol = el("ol", "lean-list");
+    for (const e of lean) {
+      const li = el("li", "", `<a href="${BASE}${e.page}/#${encodeURIComponent(e.id)}"><b>${esc(e.label.replace(/^Equation\s*/, ""))}</b></a>`
+        + ` <span class="lean-n">cited ${e.cited} times, ${esc(e.chapter)}</span><span class="lean-t">${esc(e.text)}</span>`);
+      ol.appendChild(li);
+    }
+    sec.appendChild(ol);
+    out.appendChild(sec);
   }
 
   // ------------------------------------------------------------------ one result and just what it rests on

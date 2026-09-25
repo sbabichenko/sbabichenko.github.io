@@ -54,7 +54,7 @@
     hits = search(q); pick = hits.length ? 0 : -1;
     panel.innerHTML = hits.length ? hits.map((e, i) => `<a class="hit${i === pick ? " on" : ""}" role="option" href="${hrefOf(e)}" data-i="${i}">
         <span class="where">${esc(index.pages[e.s] || e.s)}${e.l ? " · " + esc(e.l) : ""}</span>${e.x ? `<span class="what">${snippet(e.x, words)}</span>` : ""}</a>`).join("")
-      : `<p class="none">Nothing matches every word of that. No one knows much.</p>`;
+      : `<p class="none">Nothing matches every word of that. No one knows much.</p><svg class="none-detour" viewBox="0 0 160 44" aria-hidden="true"><rect x="96" y="2" width="18" height="40" class="nd-band"/><path class="nd-way" pathLength="1" d="M4,12 C40,10 70,12 90,14 C98,15 92,24 80,26"/><path class="nd-way" pathLength="1" style="animation-delay:.35s" d="M4,24 C38,25 66,22 88,22 C99,22 96,34 82,36"/><path class="nd-way" pathLength="1" style="animation-delay:.7s" d="M4,36 C36,36 64,34 86,32 C97,31 99,8 86,6"/></svg>`;
     panel.hidden = false; place();
   }
   function go(e) { try { sessionStorage.setItem("dsearch", input.value.trim()); } catch (x) {} location.href = hrefOf(e); if (panel) panel.hidden = true; }

@@ -60,7 +60,7 @@
       status.textContent = done < jobs.length ? `Solving: ${done} of ${jobs.length} equilibria…` : `Solved ${jobs.length} equilibria in your browser, in ${((performance.now() - t0) / 1000).toFixed(1)} s.`;
       status.classList.toggle("ok", done === jobs.length);
     }
-    if (window.siteTally) window.siteTally("solve");
+    if (window.siteTally) window.siteTally("solve", 1, done === jobs.length ? `${jobs.length} equilibria for the information wedge` : "");
   }
   try {
     const worker = new Worker(page.dataset.worker);
@@ -246,6 +246,31 @@
       for (const f of [0, 0.5, 1]) text(live, X(f), 495, f === 0 ? "all to player 2" : f === 1 ? "all to player 1" : "half", "mono");
       text(live, 70, 140, "the players' total cost", "label warmt", "start");
       text(live, 300, 540, "share of the precision budget given to player 1", "mono");
+      // a lens to run along the curve: it reads the total cost at any split, between the solved points
+      if (R.starve.length > 1) {
+        const lens = el("g", { class: "lens" }, live);
+        lens.style.opacity = 0;
+        el("circle", { r: 20, class: "pencil", "stroke-width": 1.6, fill: "none" }, lens);
+        el("line", { x1: 14, y1: 14, x2: 30, y2: 30, class: "pencil", "stroke-width": 3, "stroke-linecap": "round" }, lens);
+        const read = text(live, 300, 118, "", "mono");
+        read.style.opacity = 0;
+        const hit = el("rect", { x: 70, y: 130, width: 460, height: 350, fill: "transparent" }, live);
+        hit.style.pointerEvents = "all"; hit.style.cursor = "ew-resize";
+        const svg = live.ownerSVGElement, qs = R.starve.slice().sort((a, b) => a.f - b.f);
+        const at = (ev) => {
+          const m = svg.getScreenCTM(); if (!m) return;
+          const p = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(m.inverse());
+          const f = Math.min(1, Math.max(0, (p.x - 80) / 440));
+          let k = 1; while (k < qs.length - 1 && qs[k].f < f) k++;
+          const a = qs[k - 1], b = qs[k], w = b.f === a.f ? 0 : (f - a.f) / (b.f - a.f), J = a.J + (b.J - a.J) * Math.min(1, Math.max(0, w));
+          lens.setAttribute("transform", `translate(${X(f)} ${Y(J)})`);
+          lens.style.opacity = 1; read.style.opacity = 1;
+          read.textContent = `${Math.round(f * 100)}% to player 1: total cost ${J.toFixed(3)}`;
+        };
+        hit.addEventListener("pointermove", at);
+        hit.addEventListener("pointerdown", at);
+        hit.addEventListener("pointerleave", () => { lens.style.opacity = 0; read.style.opacity = 0; });
+      }
       n = R.starve.length;
     }
     return { g, update(t) { if (R.starve.length !== n) draw(); fade(wait, R.starve.length ? 0 : 1); fade(live, seg(t, 0.05, 0.25)); } };

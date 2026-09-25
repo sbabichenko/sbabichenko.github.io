@@ -153,7 +153,6 @@
       months.push(el("path", { d: `M${cx - 6},-7 L${cx + 6},7`, class: "pencil accent", "stroke-width": 1.8 }, cal));
     }
     text(cal, 0, -12, "six months", "mono");
-    const cap = text(g, 300, 585, "one person knows; the world goes on", "mono");
     return { g, update(t, now) {
       crowd.forEach((c) => {
         fade(c.p, seg(t, 0, 0.12) * (c.k ? 1 : 0.4));
@@ -163,7 +162,6 @@
       });
       fade(cal, seg(t, 0.15, 0.3));
       months.forEach((m, i) => fade(m, seg(t, 0.3 + i * 0.07, 0.36 + i * 0.07)));
-      fade(cap, seg(t, 0.7, 0.85));
     } };
   })();
 
@@ -182,7 +180,6 @@
       const p = person(g, x, y, "fillacc"); p.style.fill = "var(--accent)";
       crowd.push({ p, x, y, jx: (r() - 0.5) * 40, jy: (r() - 0.5) * 30, ja: (r() - 0.5) * 70, ph: r() * 6 });
     }
-    const cap = text(g, 300, 585, "everyone knows; everyone's plans change at once", "mono");
     return { g, update(t, now) {
       fade(sun, seg(t, 0, 0.15));
       const pulse = 1 + 0.05 * Math.sin(now / 160) + 0.25 * seg(t, 0.3, 0.7);
@@ -195,7 +192,6 @@
         const wob = Math.sin(now / 200 + c.ph);
         c.p.setAttribute("transform", `translate(${c.x + chaos * (c.jx + wob * 6)} ${c.y + chaos * c.jy}) rotate(${chaos * (c.ja + wob * 12)})`);
       });
-      fade(cap, seg(t, 0.7, 0.85));
     } };
   })();
 
@@ -215,7 +211,6 @@
       crowd.push({ p, x, y, k, d: Math.hypot(i - 3, (j - 1) * 1.15) });
     }
     const rings = [0, 1, 2].map(() => el("circle", { cx: 271, cy: 402, class: "pencil accent", "stroke-width": 1.2 }, g));
-    const cap = text(g, 300, 585, "five know; the rest find out from what they do", "mono");
     return { g, update(t, now) {
       fade(sun, seg(t, 0, 0.1)); fade(scope, seg(t, 0.02, 0.12)); fade(sight, seg(t, 0.08, 0.18) * 0.8);
       const spread = seg(t, 0.35, 0.95) * 2.4;          // word spreads, but slowly: the far edge never hears
@@ -226,7 +221,6 @@
         c.p.style.fill = learned > 0.5 ? "var(--accent)" : "currentColor";
       });
       rings.forEach((r, i) => { const ph = ((now / 2400 + i / 3) % 1); r.setAttribute("r", 30 + ph * 200); fade(r, seg(t, 0.3, 0.4) * (1 - ph) * 0.5); });
-      fade(cap, seg(t, 0.6, 0.75));
     } };
   })();
 

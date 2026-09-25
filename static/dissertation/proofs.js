@@ -6,6 +6,9 @@
 // - Each result says which later results use it, and links to "just what it rests on" (/dissertation/path/).
 // - An assumption can light up every result on the page that relies on it, directly or through others.
 // - Following a reference out of a proof leaves a chip that brings you back to the line you left.
+// - A few results link to the page that computes them live; much-cited equations say how often they are cited.
+// - A proof with several displays can be stepped through, one display and its sentence at a time.
+// - On a screen wide enough, proofs can sit beside the text, level with what they prove.
 // The graph comes from deps.json (tools/dissertation/deps.py): only the references the text itself makes.
 (function () {
   "use strict";
@@ -142,7 +145,18 @@
   } else showChip();
 
   // ---- the graph: "used in", "what it rests on", assumption tracing
-  fetch(BASE + "deps.json").then((r) => r.json()).then(({ nodes, edges }) => {
+  // results with a page that computes them (checked by hand; a chapter's game is linked from one result only)
+  const ROOT = BASE.replace(/dissertation\/$/, "");
+  const LIVE = {
+    "thm:noise_state_filter_compact": [`${BASE}idea/`, "Drawn as you read: The Noise-State, Explained"],
+    "thm:wedge-adjoints": [`${BASE}wedge/`, "Solved live: The Price of Changing Someone’s Mind"],
+    "cor:nsl-br": [`${ROOT}noisestate/#game=ch1`, "Checked on every solve: the tracking game in the explorer"],
+    "prop:stationary_verification": [`${ROOT}noisestate/#game=ch3`, "This chapter’s game, solved in the explorer"],
+    "thm:stationary-best-response": [`${ROOT}noisestate/#game=ch4`, "This chapter’s market, solved in the explorer"],
+    "cor:graph_unique_equilibrium": [`${ROOT}noisestate/#game=ch5`, "This chapter’s game, solved in the explorer"],
+    "prop:gain_reduction": [`${ROOT}noisestate/#game=ch6`, "This chapter’s game, solved in the explorer"],
+  };
+  fetch(BASE + "deps.json").then((r) => r.json()).then(({ nodes, edges, cites }) => {
     const byId = new Map(nodes.map((n) => [n.id, n]));
     const users = new Map(), uses = new Map();
     for (const [a, b] of edges) {
@@ -168,6 +182,11 @@
         a.title = `${below.size} results and equations, in reading order`;
         line.append(a);
       }
+      if (LIVE[n.id]) {
+        const a = el("a", "tl-live", `${LIVE[n.id][1]} &rarr;`);
+        a.href = LIVE[n.id][0];
+        line.append(a);
+      }
       if (n.kind === "assumption") {
         const relies = closure(n.id, users);
         if (relies.size) {
@@ -178,6 +197,14 @@
         }
       }
       if (line.childNodes.length) thm.appendChild(line);
+    }
+    // equations the text keeps coming back to
+    for (const [eid, k] of Object.entries(cites || {})) {
+      const eq = document.getElementById(eid);
+      if (!eq || k < 4 || eq.closest("article.body") !== body) continue;
+      const note = el("span", "eqcite", `cited ${k} times`);
+      note.title = "How often the dissertation refers to this equation";
+      eq.after(note);
     }
     let tracing = null;
     function trace(n, relies, btn) {
@@ -210,4 +237,81 @@
       (paper.closest(".thesis") || document.body).appendChild(bar);
     }
   }).catch(() => { /* no graph: the pages read as before */ });
+
+  // ---- step through a proof: each display and the sentence that leads to it, the rest held back
+  proofs.forEach((p) => {
+    const inner = p.querySelector(".proof-body");
+    const shows = [...inner.querySelectorAll(".math.display")].filter((m) => !m.parentElement.closest(".math.display"));
+    if (shows.length < 2) return;
+    const bar = el("div", "proof-steps");
+    const go = el("button", "ps-start", `Step through, ${shows.length} displays`);
+    go.type = "button";
+    bar.append(go);
+    inner.prepend(bar);
+    const blocks = [...inner.children].filter((c) => c !== bar);
+    const blockOf = (m) => blocks.find((b) => b.contains(m));
+    let at = -1;
+    function paint() {
+      const on = at >= 0;
+      p.classList.toggle("stepping", on);
+      shows.forEach((m, i) => m.classList.toggle("step-now", on && i === at));
+      const cut = on ? blocks.indexOf(blockOf(shows[at])) : -1;
+      blocks.forEach((b, i) => b.classList.toggle("step-later", on && i > cut));
+      if (on) {
+        // inside the block that holds this display, what comes after it waits too
+        const inBlock = [...blocks[cut].querySelectorAll(".math.display")], k = inBlock.indexOf(shows[at]);
+        inBlock.forEach((m, i) => m.classList.toggle("step-later", i > k));
+        bar.innerHTML = "";
+        const prev = el("button", "", "&lsaquo; Back"), next = el("button", "", at < shows.length - 1 ? "Next &rsaquo;" : "Show all"), n = el("span", "ps-n", `${at + 1} of ${shows.length}`);
+        prev.type = next.type = "button";
+        prev.disabled = at === 0;
+        prev.addEventListener("click", () => { at--; paint(); });
+        next.addEventListener("click", () => { at = at < shows.length - 1 ? at + 1 : -1; paint(); });
+        bar.append(prev, n, next);
+        shows[at].scrollIntoView({ block: "center", behavior: "smooth" });
+      } else {
+        inner.querySelectorAll(".step-later").forEach((x) => x.classList.remove("step-later"));
+        bar.innerHTML = ""; bar.append(go);
+      }
+    }
+    go.addEventListener("click", () => { setOpen(p, true); at = 0; paint(); });
+  });
+
+  // ---- proofs beside the text, on a screen with room for a third column
+  const wideEnough = window.matchMedia("(min-width: 1500px)");
+  const bar = body.querySelector(".proofs-bar");
+  if (bar && proofs.length) {
+    const side = el("button", "proofs-side");
+    side.type = "button";
+    bar.append(side);
+    let beside = store.get("proofs-beside") === "1";
+    const thesis = paper.closest(".thesis");
+    function place() {
+      if (!thesis.classList.contains("beside")) return;
+      let floor = 0;
+      for (const p of proofs) {
+        const thm = resultOf(p);
+        const want = thm ? thm.offsetTop : p.offsetTop;
+        const top = Math.max(want, floor);
+        p.style.top = top + "px";
+        floor = top + p.offsetHeight + 16;
+      }
+      body.style.minHeight = floor + "px";
+    }
+    function apply() {
+      const on = beside && wideEnough.matches;
+      thesis.classList.toggle("beside", on);
+      side.hidden = !wideEnough.matches;
+      side.textContent = on ? "Proofs in the text" : "Proofs beside the text";
+      proofs.forEach((p) => { p.classList.toggle("side", on); if (on) setOpen(p, true); else p.style.top = ""; });
+      if (!on) body.style.minHeight = "";
+      place();
+    }
+    side.addEventListener("click", () => { beside = !beside; store.set("proofs-beside", beside ? "1" : "0"); apply(); });
+    wideEnough.addEventListener ? wideEnough.addEventListener("change", apply) : wideEnough.addListener(apply);
+    window.addEventListener("resize", () => requestAnimationFrame(place));
+    window.addEventListener("load", place);
+    body.addEventListener("click", () => requestAnimationFrame(place));
+    apply();
+  }
 })();
