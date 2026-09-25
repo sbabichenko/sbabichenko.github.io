@@ -62,8 +62,8 @@
               the gate uses as the baseline level of disagreement between sites.</p>
           </div>
           <div class="step" data-scene="coarse">
-            <p data-engine="tri">The fit starts from a coarse mesh of right triangles with two free parameters, a level and
-              a tilt. A triangle can only be split at the midpoint of its longest edge. If that would leave a vertex in the
+            <p data-engine="tri">The fit starts from a coarse mesh of right triangles, with only its coarsest vertices
+              free: the four corners and the first midpoints, nine in all. A triangle can only be split at the midpoint of its longest edge. If that would leave a vertex in the
               middle of a neighbour&rsquo;s edge, the neighbour is split too.</p>
             <p data-engine="rect">The fit starts from an 8 &times; 8 grid of rectangles, with the corners and the two
               midlines free. A rectangle can be split along either midline, so both directions are offered as candidates

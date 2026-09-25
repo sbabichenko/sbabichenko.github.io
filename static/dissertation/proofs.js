@@ -71,7 +71,9 @@
     };
     sw.addEventListener("click", () => { allOpen = !allOpen; store.set("proofs-open", allOpen ? "1" : "0"); proofs.forEach((p) => setOpen(p, allOpen)); paint(); });
     paint();
-    bar.append(note, sw);
+    const map = el("a", "pb-map", "How the results connect: the map &rarr;");
+    map.href = BASE + "map/";
+    bar.append(note, sw, map);
     body.insertBefore(bar, body.firstElementChild && body.firstElementChild.nextElementSibling || body.firstChild);
   }
   // a link, a search hit or a back-chip that lands inside a folded proof opens it
