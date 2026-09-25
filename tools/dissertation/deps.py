@@ -144,7 +144,40 @@ def main():
             if n["page"] == page:
                 pos[n["id"]] = (order[page], html.find(f'id="{n["id"]}"'))
     nodes.sort(key=lambda n: pos.get(n["id"], (99, 0)))
-    OUT.write_text(json.dumps({"nodes": nodes, "edges": sorted(edges)}, ensure_ascii=False, separators=(",", ":")))
+    # how often each equation is cited anywhere in the text, results or not: the ones the dissertation leans on
+    cites, where = {}, {}
+    for m in manifest:
+        f = PAGES / f"{m['slug']}.html"
+        if not f.exists():
+            continue
+        for a in BeautifulSoup(f.read_text(), "html.parser").select('a.xref[href*="#eq:"]'):
+            eid = a["href"].split("#", 1)[1]
+            cites[eid] = cites.get(eid, 0) + 1
+            t = " ".join(a.get_text("", strip=True).split())
+            if re.fullmatch(r"\(?[\dA-Z]+(\.[\dA-Z]+)*\)?", t):
+                where.setdefault(eid, {}).setdefault(t.strip("()"), 0)
+                where[eid][t.strip("()")] += 1
+    top = sorted((e for e in cites if cites[e] >= 3), key=lambda e: -cites[e])
+    lean = []
+    for eid in top:
+        n = next((x for x in nodes if x["id"] == eid), None)
+        if n is None:                                  # cited, but not by a result: find it on its page
+            for m in manifest:
+                f = PAGES / f"{m['slug']}.html"
+                if not f.exists() or f'id="{eid}"' not in f.read_text():
+                    continue
+                eq = BeautifulSoup(f.read_text(), "html.parser").find(id=eid)
+                tag = eq.select_one(".tag")
+                n = {"id": eid, "label": "Equation " + (" ".join(tag.get_text("", strip=True).split()) if tag else ""),
+                     "page": m["slug"], "chapter": m.get("label") or m.get("title"), "text": lead_in(eq)}
+                break
+        if n:
+            # the number the citing links print is the equation's own, even inside a block with several numbers
+            if where.get(eid):
+                n = dict(n, label="Equation (" + max(where[eid], key=where[eid].get) + ")")
+            lean.append({"id": eid, "label": n["label"], "page": n["page"], "chapter": n["chapter"], "text": n["text"], "cited": cites[eid]})
+    OUT.write_text(json.dumps({"nodes": nodes, "edges": sorted(edges), "cites": {e: c for e, c in cites.items() if c >= 3},
+                               "lean": lean[:12]}, ensure_ascii=False, separators=(",", ":")))
     k = sum(n["kind"] == "equation" for n in nodes)
     print(f"deps: {len(nodes) - k} results and {k} cited equations, {len(edges)} references -> {OUT.relative_to(ROOT)}")
 

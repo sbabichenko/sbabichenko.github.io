@@ -371,3 +371,42 @@
   .body .katex-display { overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
   .body .katex-display > .katex > .katex-html > .tag { position: static; display: block; text-align: right; margin-top: 0.15em; }
 }
+
+/* dark mode, figures with no dark version of their own (the TikZ diagrams, the print-only plots): inverted, with
+   the hues turned back so blue stays blue, on the page's own ground instead of a white box */
+.dark .body figure:not(.webfig) { background: none; border-color: var(--rule); }
+.dark .body figure:not(.webfig) img, .dark .figzoom img.print { filter: invert(0.87) hue-rotate(180deg) saturate(1.3); }
+.dark .figzoom img.print { background: #fff; }
+.dark .body figure:not(.webfig) figcaption { color: var(--ink-2); }
+.dark .body figure:not(.webfig) .fignum { color: var(--ink); }
+.dark .peek figure:not(.webfig) { background: none; }
+.dark .peek figure:not(.webfig) img { filter: invert(0.87) hue-rotate(180deg) saturate(1.3); }
+
+/* live links, citation counts, stepping through a proof, proofs beside the text (proofs.js) */
+.body .thm-links .tl-live { color: var(--accent); }
+.body .eqcite { display: block; text-align: right; margin: -0.5em 0 0.6em; font: 0.7rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.body .proof-steps { display: flex; gap: 0.8rem; align-items: center; justify-content: flex-end; margin: 0.2em 0 0.4em;
+  font: 0.76rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.body .proof-steps button { font: inherit; color: var(--accent); background: none; border: 1px solid var(--rule); border-radius: 999px; padding: 0.1em 0.7em; cursor: pointer; }
+.body .proof-steps button:disabled { color: var(--ink-3); cursor: default; opacity: 0.5; }
+.body .proof.stepping .step-later { opacity: 0.12; transition: opacity 0.25s; }
+.body .proof.stepping .step-now { background: var(--accent-soft); border-radius: 6px; box-shadow: 0 0 0 6px var(--accent-soft); }
+.proofs-bar .proofs-side { margin-left: auto; }
+@media (min-width: 1500px) {
+  .thesis.beside { grid-template-columns: 15rem minmax(0, 44rem) 24rem; max-width: 1560px; }
+  .thesis.beside .body { position: relative; }
+  .thesis.beside .body .proof.side { position: absolute; left: calc(100% + 3.4rem + 2.5rem); width: 24rem; margin: 0;
+    font-size: 0.92rem; padding: 0.6rem 0.9rem 0.4rem; background: var(--paper); border: 1px solid var(--rule-2); border-radius: 6px;
+    box-shadow: 0 8px 30px -22px rgba(0, 0, 0, 0.4); max-height: none; }
+  .thesis.beside .body .proof.side .proof-toggle { border-top: 0; padding-top: 0.2em; }
+  .thesis.beside .body .proof.side .katex-display { overflow-x: auto; overflow-y: hidden; }
+}
+.lean { margin-top: 3rem; }
+.lean h2 { font-size: 1.35rem; }
+.lean-lede { color: var(--ink-2); }
+.lean-list { list-style: none; padding: 0; columns: 2 22rem; column-gap: 2.5rem; }
+.lean-list li { break-inside: avoid; margin: 0 0 0.9rem; }
+.lean-list b { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.85rem; }
+.lean-n { font: 0.75rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.lean-t { display: block; font-size: 0.92rem; color: var(--ink-2); }
+@media (min-width: 1500px) { .thesis.beside .body .katex-display { overflow-x: auto; overflow-y: hidden; } }
