@@ -1101,7 +1101,8 @@ function onSolved(m) {
   const res = JSON.parse(m.result);
   rallyEnd(res.ok ? res.evaluations || 0 : 0);
   if (res.ok) settleAdd(res.residual);
-  if (res.ok && window.siteTally) window.siteTally("solve", res.naive ? 2 : 1);
+  if (res.ok && window.siteTally)
+    window.siteTally("solve", res.naive ? 2 : 1, `${(PRESETS[game] && PRESETS[game].tab) || "your model"}, ${(m.wall || 0).toFixed(1)} s`);
   if (!res.ok) {
     if (req && req.game === game) {
       setStatus("bad", "Error", res.error);

@@ -184,10 +184,21 @@
     const r = cv.getBoundingClientRect(), dpr = cv.width / Math.max(1, r.width);
     return { x: (ev.clientX - r.left) * dpr, y: (ev.clientY - r.top) * dpr };
   };
-  hero.addEventListener("pointermove", (ev) => { if (ev.pointerType === "mouse") { pointer = toCanvas(ev); lensAt = performance.now(); } });
-  hero.addEventListener("pointerleave", () => { pointer = null; });
-  if (!nothing) hero.addEventListener("click", (ev) => {
-    if (ev.target.closest("a, button, input, select, textarea")) return;
+  // the mesh runs past the column to the window's edges, so it listens wherever it is drawn, not only on the hero
+  const overMesh = (ev) => {
+    const r = cv.getBoundingClientRect();
+    if (ev.clientX < r.left || ev.clientX > r.right || ev.clientY < r.top || ev.clientY > r.bottom) return false;
+    return !(ev.target.closest && ev.target.closest("a, button, input, select, textarea, header, nav, .motif"));
+  };
+  document.addEventListener("pointermove", (ev) => {
+    const on = overMesh(ev);
+    document.documentElement.classList.toggle("over-mesh", on && !nothing);
+    if (on && ev.pointerType === "mouse") { pointer = toCanvas(ev); lensAt = performance.now(); }
+    else if (!on) pointer = null;
+  }, { passive: true });
+  document.addEventListener("pointerleave", () => { pointer = null; });
+  if (!nothing) document.addEventListener("click", (ev) => {
+    if (!overMesh(ev)) return;
     const p = toCanvas(ev), G = geometry(), x = G.ux(p.x), y = G.uy(p.y);
     if (x < LO || x > HI || y < LO || y > HI) return;
     pokes.push({ x, y, h: pokes.length % 2 ? -3.2 : 3.2 });

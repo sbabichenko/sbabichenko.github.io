@@ -41,7 +41,7 @@
             <p class="small">So they act quietly.</p>
           </div>
           <div class="step" data-scene="hands">
-            <p>Put that into the textbook model. Many people push on one state, and each acts on their own estimate of
+            <p>Many people push on one state, and each acts on their own estimate of
               it, the way a single controller would.</p>
             <p class="small">Now the state moves with everyone&rsquo;s estimates, so to choose an action you have to
               anticipate what the others estimate.</p>
@@ -76,7 +76,7 @@
           <div class="step" data-scene="noisestate">
             <p>You can always make a process Markov by carrying its whole past, but which past is enough differs for every
               process. The shocks are underneath all of them, so track <i>W</i>. A player never sees it; from a noisy
-              signal they estimate its whole path up to now, and each new observation revises old estimates too.</p>
+              signal they estimate its path.</p>
             <div class="fx">{{ fx.def.svg | safe }}</div>
             <p class="small">That estimate, a belief about the shocks rather than about the state, is the noise-state. The
               shocks already happened and do not move, so updating it needs no prediction step, only the news.</p>
@@ -87,7 +87,7 @@
             <div class="fx">{{ fx.cond.svg | safe }}</div>
           </div>
           <div class="step" data-scene="collapse">
-            <p>Now the tower. Player 2&rsquo;s forecast is itself a kernel against the shocks, so player 1&rsquo;s forecast
+            <p>Player 2&rsquo;s forecast is itself a kernel against the shocks, so player 1&rsquo;s forecast
               of it is that kernel run against player 1&rsquo;s noise-state. A forecast of a forecast is a composition of
               kernels; on a grid of dates, a matrix product.</p>
           </div>

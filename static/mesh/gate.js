@@ -267,7 +267,7 @@
       if (m.id !== S.id) { S.busy = false; if (S.queued) run(); return; }
       S.busy = false;
       S.fit = m; S.fitG = fitGrid(m);
-      if (window.siteTally) window.siteTally("fit");
+      if (window.siteTally) window.siteTally("fit", 1, `a decision mesh on ${opts().sites.toLocaleString()} sites of coin flips`);
       $("results").classList.remove("stale");
       setChip("ok", "Fitted"); report(); drawFit();
       if (S.queued) run();
@@ -318,7 +318,31 @@
   $("coinsd").addEventListener("input", sdLabel); $("coinsd").addEventListener("change", soon); sdLabel();
   // a link on the page (or the back button) that changes the settings runs them
   window.addEventListener("hashchange", () => { readHash(); syncTools(); sdLabel(); run(); });
-  $("newdata").addEventListener("click", () => { $("seed").value = +$("seed").value + 1; run(); });
+  // hold to shake: the coins keep being flipped while the button is held, the flips redrawn each time, and the
+  // mesh is fitted once to wherever they land when it is let go
+  let holdT = 0, shaking = false, swallow = false;
+  const shake = () => {
+    if (!shaking) return;
+    $("seed").value = +$("seed").value + 1;
+    const o = opts();
+    S.data = makeData(o.truth, o.sites, o.flips, o.seed, o.sd);
+    drawData();
+    const c = $("newdata").querySelector(".mini-coin");
+    if (c) { c.classList.remove("spin"); void c.offsetWidth; c.classList.add("spin"); }
+    setTimeout(shake, 170);
+  };
+  const letGo = () => {
+    clearTimeout(holdT);
+    if (!shaking) return;
+    shaking = false; swallow = true;
+    run();
+  };
+  $("newdata").addEventListener("pointerdown", () => { holdT = setTimeout(() => { shaking = true; shake(); }, 350); });
+  ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => $("newdata").addEventListener(ev, letGo));
+  $("newdata").addEventListener("click", () => {
+    if (swallow) { swallow = false; return; }            // the click that ends a hold: already refitted
+    $("seed").value = +$("seed").value + 1; run();
+  });
   $("showedges").addEventListener("change", drawFit);
   $("showadmit").addEventListener("change", drawFit);
   $("clear").addEventListener("click", () => { drawing.fill(BASE); S.truthG = truthGrid("drawing"); drawTruth(); soon(); });

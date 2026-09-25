@@ -135,6 +135,10 @@ $$
 
 Qualitatively, this gives us what we want. Quantitatively, it's always possible to tinker and improve, but this works for now.
 
+<figure class="pooltoy" id="pooltoy"></figure>
+<script src="/js/pooltoy.js" defer></script>
+
+
 A true Bayesian would impose a prior on $\mu$ and $\tau$. I am not a true Bayesian. $\mu$ and $\tau$ can be estimated from the data, with the most common technique to be via maximum likelihood, assuming normally distributed errors. 
 
 The maximum likelihood estimate of each is:

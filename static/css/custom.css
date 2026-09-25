@@ -171,3 +171,26 @@ footer.site-foot .tally b { font-weight: 600; color: var(--accent); }
 .dark .fin path { stroke: #7c7d86; }
 /* a diagram drawn at a fixed width in a writing piece shrinks to the screen (KaTeX's own SVGs are not touched) */
 .prose section > svg { max-width: 100%; height: auto; }
+
+/* the eight schools, pooled as you drag tau (static/js/pooltoy.js, in the partial-pooling post) */
+.pooltoy { margin: 1.6em 0; }
+.pooltoy .pt-svg { width: 100%; height: auto; display: block; }
+.pooltoy .pt-grid { stroke: currentColor; opacity: 0.1; }
+.pooltoy .pt-tick, .pooltoy .pt-meanlab { font: 11px ui-sans-serif, system-ui, sans-serif; fill: currentColor; opacity: 0.6; }
+.pooltoy .pt-bar { stroke: currentColor; opacity: 0.25; stroke-width: 1.5; }
+.pooltoy .pt-raw { fill: none; stroke: currentColor; opacity: 0.55; stroke-width: 1.3; }
+.pooltoy .pt-pull { stroke: #1f3fd0; opacity: 0.45; stroke-width: 1.5; }
+.pooltoy .pt-dot { fill: #1f3fd0; }
+.pooltoy .pt-mean { stroke: #a8431c; stroke-dasharray: 4 4; stroke-width: 1.3; }
+.pooltoy .pt-meanlab { fill: #a8431c; opacity: 0.9; }
+.dark .pooltoy .pt-pull, .dark .pooltoy .pt-dot { stroke: #8fb0ff; fill: #8fb0ff; }
+.dark .pooltoy .pt-pull { fill: none; }
+.dark .pooltoy .pt-mean { stroke: #f0a27a; } .dark .pooltoy .pt-meanlab { fill: #f0a27a; }
+.pooltoy .pt-row { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; align-items: center; font: 0.85rem ui-sans-serif, system-ui, sans-serif; margin-top: 0.4rem; }
+.pooltoy .pt-row input { flex: 1; min-width: 10rem; }
+.pooltoy .pt-note { opacity: 0.6; font-size: 0.8rem; }
+
+/* the colophon ends on a strip of the site's mesh: right triangles, a few bisected */
+.colophon-mesh { height: 40px; margin-top: 2.5rem; opacity: 0.35; background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'><g fill='none' stroke='%23888' stroke-width='0.8'><path d='M0,0 H80 M0,40 H80 M0,0 V40 M40,0 V40 M80,0 V40 M0,0 L40,40 M80,0 L40,40 M20,20 L40,0 M60,20 L40,0 M20,20 L0,40'/></g></svg>") repeat-x left center;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+.dark .colophon-mesh { opacity: 0.5; }
