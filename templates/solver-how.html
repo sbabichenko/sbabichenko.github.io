@@ -1,0 +1,167 @@
+{#- /noisestate/how: the noise-state solver's algorithm, one step per screen beside a drawing
+    (static/noisestate/solver-how.js). Every drawing marked live is read off solves run when the page opens, by the
+    explorer's solver (static/noisestate/worker.js, the noisestate package compiled to WebAssembly): the Chapter 1
+    tracking game, the Chapter 3 stationary game at three windows, and the explorer's regime-change preset. The three
+    drawings that are diagrams say so in their corner. -#}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css', cachebust=true) }}" />
+    {% include "partials/header.html" %}
+    <div class="progress" id="progress" aria-hidden="true"></div>
+
+    <main class="opening idea" data-worker="{{ get_url(path='noisestate/worker.js', cachebust=true) }}" id="solverpage">
+      <section class="ideahead">
+        <p class="eyebrow"><a href="{{ get_url(path='noisestate/') }}">Noise-State Game Explorer</a> &middot; illustrated</p>
+        <h1>How the Noise-State Solver Works</h1>
+        <p class="lede">The algorithm behind the <a href="{{ get_url(path='noisestate/') }}">explorer</a>, one step at a
+          time. Most drawings are solved as you read, by the explorer&rsquo;s own solver, on games from Chapters 1 and 3 of
+          the dissertation. <span class="solvestate" id="solvestate">Loading the solver&hellip;</span></p>
+      </section>
+
+      <section class="story" id="story">
+        <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
+        <div class="steps">
+          <div class="step" data-scene="triangle">
+            <p>An equilibrium of these games is a set of kernels. A kernel <i>D</i>&sup1;<sub><i>W</i>,<i>t</i></sub>(<i>s</i>) is how
+              much player 1&rsquo;s action at date <i>t</i> moves per unit of a shock that struck at an earlier date
+              <i>s</i>. The pairs with <i>s</i> &le; <i>t</i> make up the causal triangle, and each kernel is a function
+              on it, one for every control and every shock.</p>
+            <p class="small">The solver&rsquo;s unknowns are the control kernels. The state&rsquo;s kernel and every
+              player&rsquo;s beliefs follow from them by linear solves. The drawing is player 1&rsquo;s kernel for the
+              state shock <i>w</i>&#8304; in the tracking game of Chapter 1: each curve fixes a date <i>t</i> and shows the
+              response at <i>t</i> to a unit shock at time <i>s</i>.</p>
+          </div>
+          <div class="step" data-scene="estimates">
+            <p>The kernels in these drawings are responses to the primitive shocks. The dissertation writes a strategy
+              differently, as a rule on the player&rsquo;s noise-state: the estimates
+              <i>&Wcirc;</i>&sup1;<sub><i>t</i></sub>(<i>u</i>) = E[<i>W<sub>u</sub></i> | F&sup1;<sub><i>t</i></sub>] of
+              the past shocks, revised as new signals arrive. The strategy kernel <i>D</i>&sup1;<sub><i>t</i></sub>(<i>u</i>)
+              weights those estimates. Running the estimates back to the shocks gives the primitive-control response
+              <i>D</i>&sup1;<sub><i>W</i>,<i>t</i></sub>(<i>s</i>).</p>
+            <p class="small">The drawing is player 1 in the tracking game of Chapter 1 at date <i>t</i> = 0.5, both kernels
+              read off the solve. By Remark 1.13 player 1 acts on its estimate of the state price,
+              <i>D</i>&sup1;<sub><i>t</i></sub> = &minus;E[<i>H</i><sub><i>t</i></sub> | F&sup1;<sub><i>t</i></sub>]/(2<i>r</i><sub>1</sub>),
+              so the strategy kernel is the state price&rsquo;s kernel, <i>D</i>&sup1;<sub><i>t</i></sub>(<i>u</i>) =
+              &minus;<i>H</i><sub><i>t</i></sub>(<i>u</i>)/(2<i>r</i><sub>1</sub>). The solver stores the kernel of the
+              first-order condition, 2<i>r</i><sub>1</sub><i>D</i>&sup1;<sub><i>W</i></sub> + <i>H</i>, and the drawing
+              reads <i>H</i> off it. A shock that has just struck is not yet learned, so the
+              action does not respond to it even though the weight on its estimate is largest. Player 1 sees its own
+              noise in its signal at once and responds to it strongly; it responds little to player 2&rsquo;s.</p>
+          </div>
+          <div class="step" data-scene="nodes">
+            <p>A kernel is stored by its values at a few points, its nodes. The triangle is mapped onto a square (a Duffy
+              map), and 12 Chebyshev nodes go along each side, bunched toward the edges: 144 values per kernel. Between
+              the nodes the kernel is the polynomial through them.</p>
+            <p class="small">The kernels are smooth on the triangle, so 12 nodes per side give the Chapter 1 costs to
+              about nine digits and the kernels to about five. The representation error in the drawing checks one requirement: a strategy must be
+              a rule applied to what the player has seen. The solver rewrites each action kernel as such a rule and
+              measures how far the rule&rsquo;s action is from the kernel.</p>
+          </div>
+          <div class="step" data-scene="loop">
+            <p>Solving the game means finding a fixed point. A candidate profile of strategies fixes what each player&rsquo;s
+              signals reveal, and so everyone&rsquo;s beliefs. The beliefs fix each player&rsquo;s best response. An
+              equilibrium is a profile that is its own best response.</p>
+            <p class="small">In the dissertation&rsquo;s words: each map determines the other, so the profile must be
+              solved as a fixed point.</p>
+          </div>
+          <div class="step" data-scene="passive">
+            <p>Take one best response. Hold player 2&rsquo;s strategy fixed and switch player 1&rsquo;s off. What is left is
+              player 1&rsquo;s passive world. Player 1&rsquo;s own actions move its signals in a known way, so subtracting
+              them leaves signals with the same information that do not depend on player 1&rsquo;s strategy.</p>
+            <p class="small">Written as kernels on those signals, player 1&rsquo;s action enters its first-order
+              condition linearly. The passive world is solved forward in time. The value of a push at date <i>t</i> adds
+              up its effects from <i>t</i> to the end, which is the shadow price of the dissertation&rsquo;s backward
+              equations. The best response is then a single linear solve, with no inner iteration.</p>
+          </div>
+          <div class="step" data-scene="split">
+            <p>The first-order condition sets the cost of effort against the value of a push, as far as player 1&rsquo;s
+              signals can tell it. The value has two parts. The physical part runs through the state. The information
+              wedge runs through player 2: the push shows up in player 2&rsquo;s signal, and player 2 revises their
+              forecast and acts on it.</p>
+            <p class="small">In the backward equation for the shadow price the wedge is one extra term
+              (<a href="{{ get_url(path='dissertation/chapter-1/') }}#thm:wedge-adjoints">Theorem 1.8</a>). The drawing
+              shows both parts at every node, for the state shock <i>w</i>&#8304;.</p>
+          </div>
+          <div class="step" data-scene="anderson">
+            <p>The fixed point is found by iterating the best-response map <i>G</i>. The residual is the size of
+              <i>G</i>(<i>D</i>) &minus; <i>D</i> relative to <i>D</i>. The plain update moves halfway from <i>D</i> to
+              <i>G</i>(<i>D</i>). Anderson acceleration remembers the last fifteen steps and their residuals and takes the
+              combination of them with the smallest residual, fitted by least squares.</p>
+            <p class="small">A small ridge term in that fit (Tikhonov regularisation) keeps repeated or zero directions
+              from breaking it. If an accelerated step more than doubles the residual, the memory is cleared and a plain
+              step is taken. If Anderson stalls, a Newton&ndash;Krylov polish (Newton&rsquo;s method with its linear
+              systems solved iteratively) takes over. Both runs in the drawing start
+              from zero kernels.</p>
+          </div>
+          <div class="step" data-scene="coarse">
+            <p>The explorer does not start the iteration from zero. The solver first solves the same game at half the nodes, 6 per side,
+              then interpolates that equilibrium onto the 12-node grid and carries on from there.</p>
+            <p class="small">Evaluations on the coarse grid are cheap: the package&rsquo;s notes put the whole coarse
+              solve at the cost of a few fine evaluations.</p>
+          </div>
+          <div class="step" data-scene="checks">
+            <p>Every solve carries a list of checks on the answer, each a measured number against a threshold. The second-order check asks whether a player&rsquo;s
+              loss, as a quadratic in its own strategy, curves up in every direction, so that the first-order condition
+              found a minimum. Refinement solves again with 1.5 times the nodes and compares.</p>
+            <p class="small">Stability is the spectral radius of the best-response map at the equilibrium, the factor by
+              which a small deviation shrinks per round of best responses. Below 1,
+              players who kept best-responding to each other would find it. <span id="refineline"></span></p>
+          </div>
+          <div class="step" data-scene="quadrant">
+            <p>In a stationary game the calendar drops out and only ages remain: a kernel depends on how long ago the shock
+              struck. The
+              causal triangle becomes a lag quadrant, the quarter plane of two nonnegative ages: the age of the shock and
+              the age of the belief about it.</p>
+            <p class="small">The solver cuts the quadrant at a window <i>L</i> and stores kernels at Chebyshev nodes on
+              [0,&nbsp;<i>L</i>], 32 of them here.</p>
+          </div>
+          <div class="step" data-scene="window">
+            <p>Cutting at <i>L</i> solves a slightly different game, one in which shocks older than <i>L</i> are
+              forgotten. The window check measures how much a kernel still moves over the last tenth of the window,
+              relative to its peak. Above 2% the window is too short.</p>
+            <p class="small">The drawing solves the stationary game of Chapter 3 at three windows. A discount rate
+              &rho; on future losses changes the equilibrium but does not shorten these kernels: at a window of 2 the
+              tail grows with &rho;. In the Kyle&ndash;Back game of Chapter 4 a discount is what makes the stationary
+              problem well posed at all.</p>
+          </div>
+          <div class="step" data-scene="transition">
+            <p>A transition is a change of regime. The game has run in the old stationary equilibrium, and at date 0 player
+              1&rsquo;s signal precision jumps from 1 to 6. Before 0 the old kernels hold, and shocks from before 0 are
+              still remembered. On [0,&nbsp;<i>T</i>] the kernels are solved on the triangle. After <i>T</i> comes a
+              buffer one window long, where strategies are frozen at the new stationary equilibrium.</p>
+            <p class="small">The settled check measures, over the last window before <i>T</i>, how far the solved
+              strategies still are from the new stationary ones, relative to their peak. Instead of fixing <i>T</i>, the
+              solver can march: solve at <i>T</i> = <i>L</i>, lengthen <i>T</i> one window at a time with the earlier
+              strategies held fixed, and stop once the settled check passes.</p>
+          </div>
+        </div>
+      </section>
+
+      <a class="skip-pill" href="#more" data-from="#story">Skip to the end</a>
+      <section class="ideafoot" id="more">
+        <p>The method is written up in the <a href="https://github.com/sbabichenko/noisestate">noisestate package</a>
+          (docs/method.md and docs/guards.md). The computation sections of <a href="{{ get_url(path='dissertation/chapter-1/') }}#sec:ex_computation">Chapter 1</a>
+          and <a href="{{ get_url(path='dissertation/chapter-3/') }}#app:stationary-computation">Chapter 3</a> describe the
+          schemes the dissertation&rsquo;s figures were made with.</p>
+        <div class="cta">
+          <a class="primary" href="{{ get_url(path='noisestate/') }}">Open the explorer</a>
+          <a href="{{ get_url(path='dissertation/wedge/') }}">The information wedge</a>
+          <a href="https://pypi.org/project/noisestate/">noisestate on PyPI</a>
+        </div>
+        <p class="note">The finite game: <i>dX</i> = (<i>D</i>&sup1; + <i>D</i>&sup2;) <i>dt</i> + <i>dW</i>&#8304;, player <i>i</i>
+          sees <i>dY</i><sup><i>i</i></sup> = &radic;<i>p</i><sub><i>i</i></sub> <i>X dt</i> + <i>dW</i><sup><i>i</i></sup> and
+          minimises <i>E</i>&int;<sub>0</sub><sup>1</sup>[(<i>X</i> &minus; <i>b</i><sub><i>i</i></sub>)&sup2; + <i>r</i><sub><i>i</i></sub>(<i>D</i><sup><i>i</i></sup>)&sup2;]<i>dt</i>
+          with <i>p</i><sub>1</sub> = <i>p</i><sub>2</sub> = 9, <i>r</i><sub>1</sub> = <i>r</i><sub>2</sub> = 0.1, <i>b</i> = &plusmn;1, 12 nodes per side.
+          The stationary game: the same state and signals with <i>p</i><sub>1</sub> = 3, <i>p</i><sub>2</sub> = 10, flow loss
+          &frac12;<i>X</i>&sup2; + &frac12;<i>r</i><sub><i>i</i></sub>(<i>D</i><sup><i>i</i></sup>)&sup2;, <i>r</i><sub>1</sub> = <i>r</i><sub>2</sub> = 1.
+          The transition is the explorer&rsquo;s regime-change preset: mean reversion <i>a</i> = 1, <i>T</i> = 6, window 3,
+          8 nodes. Every number marked as solved is computed in your browser when the page opens.</p>
+      </section>
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='noisestate/solver-how.js', cachebust=true) }}"></script>
+  </body>
+</html>

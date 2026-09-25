@@ -412,3 +412,10 @@
 .lean-t { display: block; font-size: 0.92rem; color: var(--ink-2); }
 @media (min-width: 1500px) { .thesis.beside .body .katex-display { overflow-x: auto; overflow-y: hidden; } }
 .proofs-bar .pb-map { color: var(--accent); }
+
+/* long chapters: the browser skips laying out sections until they near the screen (Chapter 1 has ~66,000 elements
+   of typeset maths; this cuts its load from about 950 ms to 190). Beside mode measures every proof's height, so there
+   everything is laid out. */
+.body section.level2 { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+.thesis.beside .body section.level2 { content-visibility: visible; }
+@media print { .body section.level2 { content-visibility: visible; } }

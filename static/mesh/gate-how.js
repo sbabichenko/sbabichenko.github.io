@@ -116,6 +116,13 @@
     svg.textContent = ""; scenes = {};
     inks();
     const D = fit.detail, cands = D.cands, rounds = [...new Set(cands.map((c) => c.round))].sort((a, b) => a - b);
+    // A triangle-mesh location can hold a coarse and a fine vertex (the two-node hierarchy), and the worker's trace keys
+    // one vertex per location, so a candidate's own flag can miss its admission. Read it off every vertex there instead.
+    {
+      const k6 = (x, y) => x.toFixed(6) + "," + y.toFixed(6);
+      const admAt = new Set(D.vertices.filter((v) => v.admitted).map((v) => v.round + "|" + k6(v.x, v.y)));
+      cands.forEach((c) => { if (c.selected) c.admitted = admAt.has(c.round + "|" + k6(c.x, c.y)); });
+    }
     const byRound = (r) => cands.filter((c) => c.round === r);
     const r0 = byRound(0), cal = D.calib, cal0 = cal.find((c) => c.round === 0) || cal[0];
     const zmax = Math.max(4, ...r0.map((c) => Math.abs(c.z)));
@@ -450,7 +457,7 @@
         return q;
       });
       const na = sel.filter((c) => c.admitted).length;
-      const cap = text(g, 300, SQ.y + SQ.s + 28, `${na} admitted (dots), ${sel.length - na} rejected on re-scoring (crosses); faint: the mesh the fit ends with`, "tiny");
+      const cap = text(g, 300, SQ.y + SQ.s + 28, na === sel.length ? `all ${na} admitted (dots); faint: the mesh the fit ends with` : `${na} admitted (dots), ${sel.length - na} turned back on re-scoring (crosses); faint: the mesh the fit ends with`, "tiny");
       return { g, update(t) {
         const n = Math.floor(seg(t, 0.05, 0.7) * sel.length);
         segs.forEach((s, i) => s && fade(s, i < n ? 0.9 : 0)); marks.forEach((m, i) => fade(m, i < n ? 1 : 0));
@@ -545,7 +552,8 @@
     setV("prefix0", String(r0.filter((c) => c.selected).length));
     setV("naive0", String(r0.filter((c) => Math.abs(c.z) > 1.96).length));
     const sel0 = r0.filter((c) => c.selected), adm0 = sel0.filter((c) => c.admitted).length;
-    setV("admit0", sel0.length ? `Round 0 selected ${sel0.length}: ${adm0} admitted, ${sel0.length - adm0} rejected on re-scoring.` : "Round 0 selected nothing.");
+    setV("admit0", !sel0.length ? "Round 0 selected nothing." : adm0 === sel0.length ? `Round 0 selected ${sel0.length}, and all ${adm0} were admitted.`
+      : `Round 0 selected ${sel0.length}: ${adm0} admitted, ${sel0.length - adm0} turned back on re-scoring.`);
     setV("nrounds", String(rounds.length));
     // with its standard error, and the floor: the true surface scored on the same sites (paired gap)
     const H = (() => {
