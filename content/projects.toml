@@ -5,6 +5,7 @@ tags = ["research", "dissertation"]
 detour = true
 image = "images/card-noisestate"
 links = [
+    { name = "dissertation", url = "$BASE_URL/dissertation/", primary = true },
     { name = "pypi", url = "https://pypi.org/project/noisestate/" },
     { name = "github", url = "https://github.com/sbabichenko/noisestate" }
 ]

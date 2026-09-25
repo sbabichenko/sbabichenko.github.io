@@ -1,0 +1,65 @@
+{
+  "_note": "Link previews for the dissertation's pages: read by templates/partials/head.html (description, card) and tools/make_og.js (renders static/images/og-diss-<slug>.png). The descriptions are the chapters' own opening lines. A \"card\" line, when given, replaces the description on the image. Hand-maintained; build.py does not touch it.",
+  "front": {
+    "eyebrow": "Front matter",
+    "title": "Acknowledgements, Vita, Abstract",
+    "description": "Acknowledgements, vita, abstract and notation."
+  },
+  "introduction": {
+    "eyebrow": "Introduction",
+    "title": "No one knows much.",
+    "description": "No one knows much. In life, we only see a corner of the world, and we see beyond it by watching what others say or do."
+  },
+  "chapter-1": {
+    "eyebrow": "Chapter 1",
+    "title": "Baseline Linear-Quadratic-Gaussian Games",
+    "description": "One player’s action changes what the others learn, their response feeds back into the state, and the first player must price it."
+  },
+  "chapter-2": {
+    "eyebrow": "Chapter 2",
+    "title": "Delayed Public Signals and Asynchronous Learning",
+    "description": "Public information often arrives after private learning has already occurred. Delay creates a disclosure window during which a private action can move what others infer.",
+    "card": "Delay creates a disclosure window during which a private action can move what others infer."
+  },
+  "chapter-3": {
+    "eyebrow": "Chapter 3",
+    "title": "Stationary Infinite-Horizon LQG",
+    "description": "The calendar drops out and only ages remain, the age of the shock and the age of the belief about it."
+  },
+  "chapter-4": {
+    "eyebrow": "Chapter 4",
+    "title": "The Information Wedge in a Stationary Kyle–Back Market",
+    "description": "In a Kyle–Back market an order is at once a trade and a signal. It earns or loses money at execution, and it changes what the market maker and the other traders infer from order flow."
+  },
+  "chapter-5": {
+    "eyebrow": "Chapter 5",
+    "title": "Local Strategic Information in Symmetric Network Economies",
+    "description": "A regional credit market may contain only a few major lenders. A local labor market may be dominated by a few employers. Such players are atomistic globally but oligopolistic locally.",
+    "card": "Players who are atomistic globally but oligopolistic locally: a few lenders, a few employers."
+  },
+  "chapter-6": {
+    "eyebrow": "Chapter 6",
+    "title": "Monitored Deviations: Naive Distortions and Privy Responses",
+    "description": "A strategic market maker requires a different equilibrium test. Its quote must be an admissible control, and changing the quote unilaterally must not improve its payoff."
+  },
+  "chapter-7": {
+    "eyebrow": "Chapter 7",
+    "title": "The Information Wedge Across Environments",
+    "description": "Every equilibrium in this dissertation is a set of kernels against the same primitive shocks. The chapters changed what players could see, and the coordinates never moved."
+  },
+  "afterword": {
+    "eyebrow": "Afterword",
+    "title": "Afterword",
+    "description": "My background was originally in cognitive neuroscience. It started from looking at optical illusions."
+  },
+  "appendix-a": {
+    "eyebrow": "Appendix A",
+    "title": "Additional Finite-Horizon Extensions",
+    "description": "The obstruction to optimizing precision in the multi-player setting, and other finite-horizon extensions."
+  },
+  "references": {
+    "eyebrow": "References",
+    "title": "References",
+    "description": "The 119 works the dissertation cites."
+  }
+}

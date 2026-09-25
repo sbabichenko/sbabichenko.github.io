@@ -137,9 +137,11 @@
 .home .social img { opacity: 0.62; transition: opacity 0.15s; }
 .dark .home .social img { filter: invert(1); }
 .home .social a:hover img { opacity: 1; }
-.home .img-dark { display: none; }
-.dark .home .img-dark { display: block; }
-.dark .home .img-light { display: none; }
+/* the card pictures come in a light and a dark version; as specific as ".home .demo .shot img", which sets them
+   display: block and would otherwise show both (only the first fits the frame, so dark mode showed the light one) */
+.home .img-dark, .home .demo .shot img.img-dark { display: none; }
+.dark .home .img-dark, .dark .home .demo .shot img.img-dark { display: block; }
+.dark .home .img-light, .dark .home .demo .shot img.img-light { display: none; }
 
 /* on a phone the figure sits under the text: keep it, quieter */
 @media (max-width: 760px) {
@@ -240,3 +242,12 @@
 .home .dstill .hatch { color: var(--ink-3); }
 .home .dstill .acc { stroke: var(--accent); }
 @media (max-width: 640px) { .home .item.with-still { grid-template-columns: 1fr; } .home .dstill { grid-column: 1; grid-row: auto; margin-top: 0.9rem; max-width: 300px; } }
+
+/* three illustrated explanations in a row */
+@media (min-width: 801px) { .home .demos.stories { grid-template-columns: repeat(3, 1fr); } }
+
+/* wider than the column: the hero's mesh runs out to both edges of the window (heroink.js draws to fit) */
+@media (min-width: 1100px) {
+  body:has(.home .hero) { overflow-x: clip; }
+  .home #heroink { left: 50%; width: 100vw; transform: translateX(-50%); }
+}

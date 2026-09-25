@@ -1,0 +1,26 @@
+{#- The dissertation's results as a graph (static/dissertation/graph.js, from deps.json): the map of what rests on
+    what (page.extra.mode = "map"), or one result with just what it rests on, in reading order ("path"). -#}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/katex/katex.min.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/thesis.css') }}" />
+    {% include "partials/header.html" %}
+    <div class="progress" id="progress" aria-hidden="true"></div>
+    <div class="thesis graphpage">
+      <main class="paper" id="paper">
+        <div class="kicker"><a href="{{ get_url(path='dissertation/') }}">Noise-state calculus &middot; dissertation</a></div>
+        <article class="body" id="graph" data-mode="{{ page.extra.mode }}" data-base="{{ get_url(path='dissertation/') }}">
+          <h1>{{ page.title }}</h1>
+          {{ page.content | safe }}
+          <div id="graph-out"><p class="graph-wait">Loading&hellip;</p></div>
+        </article>
+      </main>
+    </div>
+    <div class="peek" id="peek" role="tooltip" hidden></div>
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='dissertation/thesis.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/graph.js') }}"></script>
+  </body>
+</html>

@@ -125,14 +125,13 @@
     }
     const wall = line(g, 40, 236, 560, 236, 77, "warm", 3);
     const wl = text(g, 300, 226, "a barrier", "label warmt halo");
-    const cap = text(g, 300, 520, "the introductions promise; the rest cannot follow", "mono");
     return { g, update(t) {
       pages.forEach((p, k) => {
         p.intro.forEach((l, i) => l.set(seg(t, 0.02 + k * 0.06 + i * 0.02, 0.12 + k * 0.06 + i * 0.02)));
         // below the wall the lines only get so far before they stop
         p.body.forEach((l, i) => l.set(seg(t, 0.35 + k * 0.04, 0.6 + k * 0.04) * (0.25 + 0.2 * ((i * 7 + k * 3) % 5) / 4)));
       });
-      wall.set(seg(t, 0.3, 0.45)); fade(wl, seg(t, 0.4, 0.5)); fade(cap, seg(t, 0.7, 0.85));
+      wall.set(seg(t, 0.3, 0.45)); fade(wl, seg(t, 0.4, 0.5));
     } };
   })();
 
@@ -146,7 +145,6 @@
     const planet = el("circle", { r: 7, class: "fillacc" }, g);
     const radius = el("line", { class: "pencil soft", "stroke-width": 1, "stroke-dasharray": "3 4" }, g);
     const law = text(g, 300, 540, "F = G m M / r²", "label");
-    const cap = text(g, 300, 570, "a joy that had not yet found a use", "mono");
     let M = 0;
     return { g, update(t, now, dt) {
       orbit.set(seg(t, 0.02, 0.3)); fade(sun, seg(t, 0.1, 0.2));
@@ -157,7 +155,7 @@
       planet.setAttribute("cx", x); planet.setAttribute("cy", y); fade(planet, seg(t, 0.25, 0.35));
       radius.setAttribute("x1", fx); radius.setAttribute("y1", cy); radius.setAttribute("x2", x); radius.setAttribute("y2", y);
       fade(radius, seg(t, 0.35, 0.45) * 0.8);
-      fade(law, seg(t, 0.5, 0.65)); fade(cap, seg(t, 0.7, 0.85));
+      fade(law, seg(t, 0.5, 0.65));
     } };
   })();
 
@@ -174,10 +172,9 @@
     const pts = []; for (let x = 60; x <= 540; x += 6) pts.push([x, 300 - f(x)]);
     const curve = stroke(g, pencil(pts, 3, 0.3), "warm", 2.6);
     const q = text(g, 300, 520, "can we tell it apart from randomness?", "label");
-    const cap = text(g, 300, 552, "sometimes, with the proper mathematics", "mono");
     return { g, update(t) {
       dots.forEach((d, i) => fade(d, seg(t, 0.02 + (i % 40) * 0.005, 0.1 + (i % 40) * 0.005) * (0.8 - 0.35 * seg(t, 0.6, 0.8))));
-      fade(q, seg(t, 0.2, 0.35)); curve.set(seg(t, 0.55, 0.85)); fade(cap, seg(t, 0.82, 0.95));
+      fade(q, seg(t, 0.2, 0.35)); curve.set(seg(t, 0.55, 0.85));
     } };
   })();
 
@@ -192,8 +189,7 @@
       return { set(t) { rect.setAttribute("width", 600 * clamp(t)); u.set(seg(t, 0.85, 1)); } };
     };
     const a = make(250, "What is optimal?", "acc", 91), b = make(370, "What is a relic?", "warmt", 92);
-    const cap = text(g, 300, 470, "two simple questions, still open", "mono");
-    return { g, update(t) { a.set(seg(t, 0.05, 0.45)); b.set(seg(t, 0.4, 0.8)); fade(cap, seg(t, 0.8, 0.95)); } };
+    return { g, update(t) { a.set(seg(t, 0.05, 0.45)); b.set(seg(t, 0.4, 0.8)); } };
   })();
 
   // ------------------------------------------------------------------ scroll to scene

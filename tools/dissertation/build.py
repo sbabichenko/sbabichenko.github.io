@@ -198,6 +198,12 @@ def rewrite(s, bib):
     s = re.sub(r"\\looseness\s*=\s*-?\d+\s*", "", s)
     s = re.sub(r"\\[Nn]eedspace\{[^}]*\}", "", s)
     s = re.sub(r"\\setstretch\{[^}]*\}", "", s)
+    # print-only spacing (the abstract's): pandoc would keep "=plus minus 1.5" as text
+    s = re.sub(r"\\(?:x?spaceskip)\s*=[^\n]*", "", s)
+    s = re.sub(r"\\tolerance\s*=\s*\d+", "", s)
+    # the vita's tables fix a column width for print (@{}p{0.87\textwidth}r@{}); pandoc reads that spec as text, so
+    # give it a plain two-column table
+    s = re.sub(r"\\begin\{tabular\}\{@\{\}p\{[\d.]+\\textwidth\}r@\{\}\}", r"\\begin{tabular}{lr}", s)
     for env in ("compactmath", "singlespace", "doublespace", "Large"):
         s = re.sub(r"\\begin\{" + env + r"\}|\\end\{" + env + r"\}", "", s)
 
@@ -582,6 +588,10 @@ def main():
                                                      "math = false", 'slug = "references"', 'short = "References"', 'label = ""', "+++", ""]))
     (frag / "manifest.json").write_text(json.dumps(manifest, indent=1))
     subprocess.run(["node", str(Path(__file__).parent / "prerender.js")], check=True)
+    # figures re-rendered for the web replace their print conversions (tools/dissertation/webfigs.py)
+    subprocess.run([sys.executable, str(Path(__file__).parent / "webfigs.py")], check=True)
+    # what rests on what, for the "used in" lines, assumption tracing, the map and the paths
+    subprocess.run([sys.executable, str(Path(__file__).parent / "deps.py")], check=True)
     pdf = SRC / "combined_dissertation.pdf"
     if pdf.exists():
         shutil.copy(pdf, STATIC / "babichenko-dissertation.pdf")
