@@ -45,6 +45,50 @@
     if (window.matchMedia("(max-width: 1060px)").matches) { ev.preventDefault(); rail.classList.toggle("open"); }
   });
 
+  // ---- phones: a figure too wide to read at this width opens full screen, to pan and pinch. Figures with a
+  // phone layout of their own (a <source> for narrow screens) are readable in place and are left alone.
+  const phone = window.matchMedia("(max-width: 600px)");
+  const zoomable = (fig) => !fig.querySelector("source[media]");
+  const mark = () => paper.querySelectorAll(".body figure").forEach((f) => {
+    if (!f.parentElement.closest("figure")) f.classList.toggle("zoomable", phone.matches && zoomable(f));
+  });
+  mark();
+  phone.addEventListener ? phone.addEventListener("change", mark) : phone.addListener(mark);
+  let zoom = null;
+  function closeZoom(fromHistory) {
+    if (!zoom) return;
+    zoom.remove(); zoom = null;
+    document.documentElement.style.overflow = "";
+    if (!fromHistory && history.state && history.state.figzoom) history.back();
+  }
+  function openZoom(img, fig) {
+    const num = fig.querySelector(".fignum");
+    zoom = document.createElement("div");
+    zoom.className = "figzoom";
+    zoom.setAttribute("role", "dialog"); zoom.setAttribute("aria-modal", "true");
+    zoom.innerHTML = `<div class="fz-bar"><span>${num ? num.textContent.trim().replace(/\.$/, "") + " · " : ""}drag to pan, pinch to zoom</span>`
+      + `<button type="button" aria-label="Close">&times;</button></div><div class="fz-scroll"></div>`;
+    const big = document.createElement("img");
+    big.src = img.currentSrc || img.src; big.alt = "";
+    if (!fig.classList.contains("webfig")) big.className = "print";     // print conversions need their white ground
+    zoom.querySelector(".fz-scroll").appendChild(big);
+    zoom.querySelector("button").addEventListener("click", () => closeZoom(false));
+    (paper.closest(".thesis") || document.body).appendChild(zoom);   // inside .thesis, where the colours are defined
+    document.documentElement.style.overflow = "hidden";
+    history.pushState({ figzoom: true }, "");                           // the back button closes it
+    const sc = zoom.querySelector(".fz-scroll");
+    big.addEventListener("load", () => { sc.scrollLeft = 0; });
+  }
+  paper.addEventListener("click", (ev) => {
+    if (!phone.matches || ev.target.closest("a")) return;
+    const img = ev.target.closest(".body figure img");
+    const fig = img && img.closest("figure");
+    if (!fig || !zoomable(fig) || fig.closest(".peek")) return;
+    openZoom(img, fig);
+  });
+  window.addEventListener("popstate", () => closeZoom(true));
+  window.addEventListener("keydown", (ev) => { if (ev.key === "Escape") closeZoom(false); });
+
   // ---- previews
   const peek = document.getElementById("peek");
   if (!peek || window.matchMedia("(hover: none)").matches) return;
@@ -115,4 +159,5 @@
   paper.addEventListener("focusin", (ev) => { const a = ev.target.closest("a"); if (isRef(a)) { current = a; show(a); } });
   paper.addEventListener("focusout", hide);
   window.addEventListener("keydown", (ev) => { if (ev.key === "Escape") hide(); });
+
 })();

@@ -9,6 +9,12 @@ const OUT = path.join(__dirname, "..", "static", "Resume_Samuel_Babichenko.pdf")
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage();
+  // the build's stylesheets and fonts are linked as https://sbabichenko.com/...; serve those from the local
+  // build too, or the PDF is printed with the live site's CSS rather than the one being edited
+  await p.route("https://sbabichenko.com/**", async (r) => {
+    const u = new URL(r.request().url());
+    r.fulfill({ response: await p.request.get(BASE + u.pathname + u.search) });
+  });
   await p.goto(BASE + "/cv/", { waitUntil: "networkidle" });
   await p.evaluate(async (base) => {
     for (const a of document.querySelectorAll("a[href]")) {

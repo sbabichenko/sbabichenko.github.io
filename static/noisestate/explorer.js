@@ -584,6 +584,16 @@ const links = (s) => esc(s).replace(/\[([^\]]+)\]\((#[^)\s]+)\)/g, '<a href="$2"
 
 function presetModel(g) { return jsyaml.load(PRESETS[g].yaml); }
 
+// the solver calls every finite-horizon cost a "discounted integral"; most games here have no discounting
+function costKind(res) {
+  const kind = res.cost_kind || "";
+  if (!kind.startsWith("discounted ")) return kind;
+  let m; try { m = currentModel(); } catch (e) { return kind; }
+  let d = m && m.horizon ? m.horizon.discount : undefined;
+  if (typeof d === "string" && m.params && d in m.params) d = m.params[d];
+  return d === undefined || Number(d) === 0 ? kind.slice("discounted ".length) : kind;
+}
+
 // ---------------------------------------------------------------------------------------------
 // Each game in Python, in noisestate's equations form (the README's "As equations"): the structure written
 // out, the parameter values, horizon and numerics read from the model being solved, so the code is the
@@ -938,7 +948,7 @@ function setStatus(kind, chipText, text) {
   $("statustext").textContent = text;
 }
 function startTimer(reset = true) {
-  if (reset || !timerHandle) { solveStart = performance.now(); progress = null; rallyStart(); }
+  if (reset || !timerHandle) { solveStart = performance.now(); progress = null; rallyStart(); settleReset(); }
   clearInterval(timerHandle);
   const tick = () => {
     const s = (performance.now() - solveStart) / 1000;
@@ -957,6 +967,20 @@ function stopTimer() { clearInterval(timerHandle); timerHandle = null; }
 // ball settles in the middle: the fixed point. A solve that runs past a second starts the rally while it works,
 // a hit per progress report, and tops it up to the count when it ends.
 const rally = { hits: 0, played: 0, side: 1, busy: false, done: false, live: false, timer: 0 };
+// beside it, the fixed point settling: the residual the solver reports after each round, on a log scale, falling
+// to the dashed line at the tolerance (1e-8). It stays after the solve, a record of how this one converged.
+const settle = { pts: [] };
+function settleReset() { settle.pts = []; settleDraw(); }
+function settleAdd(r) { if (r > 0 && isFinite(r)) { settle.pts.push(Math.log10(r)); settleDraw(); } }
+function settleDraw() {
+  const line = document.getElementById("settleline");
+  if (!line) return;
+  const p = settle.pts, n = p.length;
+  if (!n) { line.setAttribute("points", ""); return; }
+  const top = Math.max(p[0], -2), tol = -8, W = 56;
+  const y = (v) => 1.5 + 11 * Math.min(1, Math.max(0, (top - v) / Math.max(1e-9, top - tol)));
+  line.setAttribute("points", p.map((v, i) => `${(n === 1 ? 0 : (i / (n - 1)) * W).toFixed(1)},${y(v).toFixed(1)}`).join(" "));
+}
 function rallyStart() {
   clearTimeout(rally.timer);
   Object.assign(rally, { hits: 0, played: 0, done: false, live: false });
@@ -996,7 +1020,7 @@ function startWorker() {
       if (game === "custom" && !inFlight && !lastResult) setStatus("idle", "Ready", "Edit the model and press Solve.");
       else requestSolve(0);
     } else if (m.type === "progress") {
-      if (inFlight && m.id === inFlight.id) { progress = m; rallyProgress(); }
+      if (inFlight && m.id === inFlight.id) { progress = m; rallyProgress(); settleAdd(m.residual); }
     } else if (m.type === "result") {
       onSolved(m);
     } else if (m.type === "fatal") {
@@ -1076,6 +1100,7 @@ function onSolved(m) {
   const stale = pending || !req || req.game !== game || (key !== null && key !== req.key);
   const res = JSON.parse(m.result);
   rallyEnd(res.ok ? res.evaluations || 0 : 0);
+  if (res.ok) settleAdd(res.residual);
   if (res.ok && window.siteTally) window.siteTally("solve", res.naive ? 2 : 1);
   if (!res.ok) {
     if (req && req.game === game) {
@@ -1208,7 +1233,7 @@ function renderResults(res) {
     return `<div class="card"><div class="k">${esc(AGENT_LABEL[a] || a)}</div><div class="v">${fmt(shown, 4)} ${delta}</div><div class="d">${split || note}</div></div>`;
   }).join("");
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Equilibrium costs</h2><div class="cards">${cards}</div>
-    <p class="caption">Expected losses at the equilibrium (${esc(res.cost_kind)}); smaller is better.${prevResult ? " Arrows: the change from the previous solve." : ""}${res.naive && game === "custom" ? " These are the privy equilibrium's; the equilibrium with the model file's naive observers is in the next panel." : ""}</p>
+    <p class="caption">Expected losses at the equilibrium (${esc(costKind(res))}); smaller is better.${prevResult ? " Arrows: the change from the previous solve." : ""}${res.naive && game === "custom" ? " These are the privy equilibrium's; the equilibrium with the model file's naive observers is in the next panel." : ""}</p>
     ${res.warnings && res.warnings.length ? `<p class="caption" style="color:var(--warn)">${res.warnings.map(esc).join("<br>")}</p>` : ""}</section>`);
   if (res.kind === "transition") renderTransition(res, out);
   if (res.naive) renderNaive(res, out);

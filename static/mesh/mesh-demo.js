@@ -14,7 +14,7 @@
     bump: { name: "Two hills", f: (x, y) => 2.6 * Math.exp(-((x - 1.4) ** 2 + (y - 1) ** 2) / 1.8) - 2 * Math.exp(-((x + 1.6) ** 2 + (y + 1.2) ** 2) / 1.2) },
     saddle: { name: "Saddle", f: (x, y) => (x * x - y * y) / 6 },
     disk: { name: "Disk (a jump)", f: (x, y) => (x * x + y * y < 5 ? 1.5 : -1) },
-    ripples: { name: "Ripples (the notebook's)", f: (x, y) => 2 * Math.cos(5 * x) * Math.cos(2 * y) },
+    ripples: { name: "Ripples", f: (x, y) => 2 * Math.cos(5 * x) * Math.cos(2 * y) },
     waves: { name: "Slow waves", f: (x, y) => 1.6 * Math.sin(1.1 * x) * Math.cos(0.8 * y) + 0.3 * x },
   };
   const LO = -4, HI = 4;

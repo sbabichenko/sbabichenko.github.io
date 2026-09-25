@@ -1,11 +1,12 @@
 // Small things, on every page:
-// - the theme toggle spreads the new theme from the button like ink, where the browser can (View Transitions);
+// - the theme toggle brings the new theme in as a mesh, triangles filling from the button (View Transitions);
 // - type "flip" anywhere (outside a form field) and a coin is tossed in the corner, with this visit's running count;
 // - type "noise" and every heading on the page takes a short random walk, then settles back;
 // - type "forecast" and the page tries to guess each next key before you press it, and keeps score;
 // - on a phone: shake it to toss the coin, and tap three times on a blank spot for the random walk;
 // - leave the tab and its title notes that no new observations are coming in;
-// - leave the page alone for a while and something gets doodled in an empty margin (three at most);
+// - leave the page alone for a while and something gets doodled in an empty margin (three at most), the page's own
+//   kind first: the loop on the dissertation, a pinned walk on the CV, a null over scores by the mesh;
 // - a hello in the console, for anyone who opens it.
 (function () {
   "use strict";
@@ -18,12 +19,46 @@
     btn.addEventListener("click", (e) => {
       if (passing) return;
       e.stopImmediatePropagation(); e.preventDefault();
-      const r = btn.getBoundingClientRect(), root = document.documentElement.style;
-      root.setProperty("--ink-x", r.left + r.width / 2 + "px"); root.setProperty("--ink-y", r.top + r.height / 2 + "px");
+      const r = btn.getBoundingClientRect();
+      const frames = meshFrames(r.left + r.width / 2, r.top + r.height / 2);
       document.documentElement.classList.add("inking");
       const t = document.startViewTransition(() => { passing = true; btn.click(); passing = false; });
+      t.ready.then(() => document.documentElement.animate({ clipPath: frames },
+        { duration: 900, easing: "linear", fill: "both", pseudoElement: "::view-transition-new(root)" })).catch(() => {});
       t.finished.finally(() => document.documentElement.classList.remove("inking"));
     }, true);
+  }
+
+  // the new theme arrives as a mesh: right triangles, alternating diagonals like the home page's, each growing
+  // from its middle, the ones near the toggle first. One clip-path per frame, every triangle in every frame
+  // (a triangle not yet started is a point), so the browser can play them in order.
+  function meshFrames(ox, oy) {
+    const W = innerWidth, H = innerHeight, s = Math.max(72, W / 16), nx = Math.ceil(W / s), ny = Math.ceil(H / s);
+    const tris = [];
+    for (let i = 0; i < nx; ++i) for (let j = 0; j < ny; ++j) {
+      const x0 = i * s, y0 = j * s, x1 = x0 + s, y1 = y0 + s;
+      const pair = (i + j) % 2 ? [[[x0, y0], [x1, y0], [x1, y1]], [[x0, y0], [x1, y1], [x0, y1]]]
+        : [[[x0, y1], [x0, y0], [x1, y0]], [[x0, y1], [x1, y0], [x1, y1]]];
+      for (const t of pair) tris.push(t);
+    }
+    const far = Math.hypot(Math.max(ox, W - ox), Math.max(oy, H - oy));
+    const jit = (k) => { const x = Math.sin(k * 12.9898) * 43758.5453; return x - Math.floor(x); };
+    const info = tris.map((t, k) => {
+      const cx = (t[0][0] + t[1][0] + t[2][0]) / 3, cy = (t[0][1] + t[1][1] + t[2][1]) / 3;
+      return { t, cx, cy, d: 0.62 * Math.hypot(cx - ox, cy - oy) / far + 0.12 * jit(k) };
+    });
+    const out = [], N = 16;
+    for (let f = 0; f <= N; ++f) {
+      const T = f / N;
+      let d = "";
+      for (const { t, cx, cy, d: at } of info) {
+        const q = Math.min(1, Math.max(0, (T - at) / 0.26)), k = q === 1 ? 1.03 : (1 - Math.pow(1 - q, 3)) * 1.03;
+        const p = t.map(([x, y]) => `${(cx + (x - cx) * k).toFixed(1)} ${(cy + (y - cy) * k).toFixed(1)}`);
+        d += `M${p[0]}L${p[1]}L${p[2]}Z`;
+      }
+      out.push(`path('${d}')`);
+    }
+    return out;
   }
 
   // ---- the coin on a "Flip again" button tosses when pressed
@@ -186,21 +221,65 @@
     svg.setAttribute("viewBox", "0 0 90 90"); svg.setAttribute("class", "whimsy-doodle"); svg.setAttribute("aria-hidden", "true");
     Object.assign(svg.style, { left: spot[0] + scrollX + "px", top: spot[1] + scrollY + "px" });
     const path = (d, w = 1.2) => { const p = document.createElementNS(NS, "path"); p.setAttribute("d", d); p.setAttribute("stroke-width", w); svg.appendChild(p); return p; };
-    const kind = doodles % 4;
-    if (kind === 0) {        // a random walk
-      let x = 45, y = 45, d = `M${x},${y}`;
-      for (let i = 0; i < 70; ++i) { x = Math.max(5, Math.min(85, x + (Math.random() - 0.5) * 16)); y = Math.max(5, Math.min(85, y + (Math.random() - 0.5) * 16)); d += ` L${x.toFixed(1)},${y.toFixed(1)}`; }
-      path(d);
-    } else if (kind === 1) { // a bell curve, and a tail shaded by hand
-      let d = "M5,75"; for (let x = 5; x <= 85; x += 2) d += ` L${x},${(75 - 55 * Math.exp(-((x - 45) ** 2) / 250)).toFixed(1)}`;
-      path("M5,75 L85,75", 0.8); path(d);
-      let h = ""; for (let x = 66; x <= 84; x += 3) h += `M${x},75 L${x},${(75 - 55 * Math.exp(-((x - 45) ** 2) / 250)).toFixed(1)} `; path(h, 0.7);
-    } else if (kind === 2) { // a triangle, bisected a few times
-      path("M10,80 L80,80 L10,10 Z M45,45 L10,80 M45,45 L45,80 M27.5,62.5 L45,80 M27.5,27.5 L10,45 M27.5,62.5 L10,45");
-    } else {                 // a coin, mid-air
-      path("M45,20 m-14,0 a14,14 0 1,0 28,0 a14,14 0 1,0 -28,0"); path("M40,15 L40,25 M50,15 L50,25 M40,20 L50,20", 1.4);
-      path("M36,42 Q45,47 54,42 M38,50 Q45,54 52,50", 0.8); path("M20,82 L70,82", 0.8);
-    }
+    const bell = (x, c = 45, h = 55, w = 250, base = 75) => (base - h * Math.exp(-((x - c) ** 2) / w)).toFixed(1);
+    const dot = (x, y, r = 2.2) => { const c = document.createElementNS(NS, "circle"); c.setAttribute("cx", x); c.setAttribute("cy", y); c.setAttribute("r", r); svg.appendChild(c); return c; };
+    const DRAW = {
+      walk() {               // a random walk
+        let x = 45, y = 45, d = `M${x},${y}`;
+        for (let i = 0; i < 70; ++i) { x = Math.max(5, Math.min(85, x + (Math.random() - 0.5) * 16)); y = Math.max(5, Math.min(85, y + (Math.random() - 0.5) * 16)); d += ` L${x.toFixed(1)},${y.toFixed(1)}`; }
+        path(d);
+      },
+      tail() {               // a bell curve, and a tail shaded by hand
+        let d = "M5,75"; for (let x = 5; x <= 85; x += 2) d += ` L${x},${bell(x)}`;
+        path("M5,75 L85,75", 0.8); path(d);
+        let h = ""; for (let x = 66; x <= 84; x += 3) h += `M${x},75 L${x},${bell(x)} `; path(h, 0.7);
+      },
+      bisect() {             // a triangle, bisected a few times
+        path("M10,80 L80,80 L10,10 Z M45,45 L10,80 M45,45 L45,80 M27.5,62.5 L45,80 M27.5,27.5 L10,45 M27.5,62.5 L10,45");
+      },
+      coin() {               // a coin, mid-air
+        path("M45,20 m-14,0 a14,14 0 1,0 28,0 a14,14 0 1,0 -28,0"); path("M40,15 L40,25 M50,15 L50,25 M40,20 L50,20", 1.4);
+        path("M36,42 Q45,47 54,42 M38,50 Q45,54 52,50", 0.8); path("M20,82 L70,82", 0.8);
+      },
+      loop() {               // actions, state, observations, beliefs, and back; the chord across
+        const P = [[45, 14], [76, 45], [45, 76], [14, 45]];
+        P.forEach(([x, y]) => path(`M${x + 5},${y} a5,5 0 1,0 -10,0 a5,5 0 1,0 10,0`, 1));
+        path("M52,16 Q72,22 75,38 M74,52 Q70,72 52,75 M38,75 Q20,70 16,52 M16,38 Q20,20 38,15");
+        path("M19,41 L70,49", 0.7).setAttribute("stroke-dasharray", "2 3");
+      },
+      impulse() {            // a shock, and what is left of it later
+        path("M10,15 L10,78 L84,78", 0.8);
+        let d = "M10,78 L12,24"; for (let x = 12; x <= 84; x += 2) d += ` L${x},${(78 - 54 * Math.exp(-(x - 12) / 14) * Math.cos((x - 12) / 9)).toFixed(1)}`;
+        path(d);
+      },
+      triangle() {           // the causal triangle: a kernel lives below the diagonal
+        path("M12,12 L12,80 L80,80 Z", 1);
+        let h = ""; for (let k = 18; k < 80; k += 6) h += `M12,${k} L${k},${k} `; path(h, 0.6);
+      },
+      bridge() {             // a walk pinned at both ends
+        const n = 44, w = [0]; for (let i = 1; i <= n; ++i) w.push(w[i - 1] + (Math.random() - 0.5) * 2);
+        let d = ""; for (let i = 0; i <= n; ++i) { const b = w[i] - (i / n) * w[n]; d += `${i ? "L" : "M"}${(10 + i * 70 / n).toFixed(1)},${(45 + b * 5).toFixed(1)} `; }
+        path(d); dot(10, 45); dot(80, 45);
+      },
+      discovery() {          // scores, the null over them, and the few that stand out
+        const hs = [4, 9, 17, 27, 33, 27, 17, 9, 5, 3, 6, 11];
+        let b = ""; hs.forEach((h, i) => { const x = 8 + i * 6.3; b += `M${x},78 L${x},${78 - h} L${x + 5},${78 - h} L${x + 5},78 `; }); path(b, 0.7);
+        let d = "M8,78"; for (let x = 8; x <= 84; x += 2) d += ` L${x},${bell(x, 34, 36, 110, 78)}`; path(d, 1.1);
+        let h = ""; for (let x = 72; x <= 83; x += 2.5) h += `M${x},78 L${x},${78 - (x > 77 ? 11 : 6)} `; path(h, 0.6);
+      },
+      shrink() {             // raw estimates, pulled toward the pooled mean
+        path("M8,45 L82,45", 0.7).setAttribute("stroke-dasharray", "3 3");
+        [[16, 14], [30, 72], [44, 24], [58, 64], [72, 20]].forEach(([x, y]) => {
+          const to = 45 + (y - 45) * 0.45; dot(x, y, 2); path(`M${x},${y} L${x},${to.toFixed(1)}`, 0.8); dot(x, to, 1.4);
+        });
+      },
+    };
+    const here = location.pathname;
+    const own = /\/dissertation\//.test(here) ? ["loop", "impulse", "triangle"] : /\/cv\//.test(here) ? ["bridge"]
+      : /\/(gate|mesh)\//.test(here) ? ["discovery", "bisect"] : /\/noisestate\//.test(here) ? ["impulse", "triangle"]
+      : /\/writing\//.test(here) ? ["shrink", "tail"] : [];
+    const pool = [...own, ...["walk", "tail", "bisect", "coin"].filter((k) => !own.includes(k))];
+    DRAW[pool[doodles % pool.length]]();
     document.body.appendChild(svg);
     ++doodles; poke();
   }

@@ -18,3 +18,16 @@ resolved, formulas typeset. All of LaTeX's numbering comes from the `.aux`, `.to
 pages and the PDF agree.
 
 Needs pandoc 3, poppler (`pdftocairo`), Pillow and BeautifulSoup.
+
+## Web versions of the figures
+
+The chapters' scripted figures are re-rendered for the site rather than converted from the print PDFs:
+
+    tools/dissertation/webstyle/render_all.sh ~/dissertation
+
+runs every script in the dissertation's `numerics/regen_figs.sh` through `webstyle/webstyle.py`. That makes four
+SVGs per figure in `static/dissertation/media/web/`: light and dark, wide and phone (side-by-side panels
+stacked). Each is in Newsreader, with text enlarged only as far as nothing collides. Phone layouts that would
+not come out clean are skipped, and phones then get the wide one. `webfigs.py` then points the chapter pages at
+them; `build.py` runs it after every regeneration. Figures without a script (the TikZ diagrams, fig2, fig12,
+fig13) keep their print conversions.
