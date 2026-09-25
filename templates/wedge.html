@@ -6,11 +6,11 @@
 <html class="not-ready lg:text-base" lang="{{ lang }}">
   {% include "partials/head.html" %}
   <body class="text-black duration-200 ease-out dark:text-white">
-    <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css', cachebust=true) }}" />
     {% include "partials/header.html" %}
     <div class="progress" id="progress" aria-hidden="true"></div>
 
-    <main class="opening idea" data-worker="{{ get_url(path='noisestate/worker.js') }}" id="wedgepage">
+    <main class="opening idea" data-worker="{{ get_url(path='noisestate/worker.js', cachebust=true) }}" id="wedgepage">
       <section class="ideahead">
         <p class="eyebrow"><a href="{{ get_url(path='dissertation/') }}">Dissertation</a> &middot; illustrated explanation</p>
         <h1>The Price of Changing Someone&rsquo;s Mind</h1>
@@ -85,6 +85,6 @@
 
     {% include "partials/footer.html" %}
     <script>window.WEDGE_FX = { backward1: {{ fx.backward1.svg | json_encode | safe }}, backward2: {{ fx.backward2.svg | json_encode | safe }} };</script>
-    <script src="{{ get_url(path='dissertation/wedge.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/wedge.js', cachebust=true) }}"></script>
   </body>
 </html>

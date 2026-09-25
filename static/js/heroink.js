@@ -110,17 +110,17 @@
     // the vignette is per edge, not a CSS mask: a clipped mask cuts lines off square, this fades them
     const { col } = G, cw = col.c1 - col.c0;
     const fx = col.wide ? col.c0 + cw * 0.84 : W * 0.84, fy = H * 0.5, R = 0.95 * Math.max(W * 0.55, H);
-    // wide: faint under the name, full strength everywhere else, out to both edges of the window
-    const nameX = col.c0 + cw * 0.24, quietR = cw * 0.62;
+    // wide: faint behind the text block (the column's left 55%), full strength everywhere else, out to both edges
+    // of the window; the edges of the quiet block are soft, so lines fade in rather than stop
+    const ramp = (v) => Math.min(1, Math.max(0, v));
+    const quietAt = (x) => x < col.c0 ? ramp(1 - (col.c0 - x) / (0.07 * cw)) : ramp(1 - (x - (col.c0 + 0.55 * cw)) / (0.14 * cw));
     const lensR = 150 * dpr, lensOn = pointer && now - lensAt < 2500 ? 1 - Math.max(0, (now - lensAt - 1500) / 1000) : 0;
     for (const e of mesh.activeEdges) {
       let t = drawn.get(e);
       if (t === undefined) { t = now; drawn.set(e, t); }
       const x0 = px(e.v0.x), y0 = py(e.v0.y), x1 = px(e.v1.x), y1 = py(e.v1.y);
       const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
-      const d = col.wide
-        ? Math.max(0, 1 - Math.hypot(mx - nameX, (my - fy) * 1.4) / quietR) * 0.75
-        : Math.hypot(mx - fx, (my - fy) * 0.85) / R;
+      const d = col.wide ? quietAt(mx) * 0.78 : Math.hypot(mx - fx, (my - fy) * 0.85) / R;
       // the lens reaches past the vignette, so the quiet corner under the name wakes up too
       let lens = 0;
       if (lensOn) { const q = Math.hypot(mx - pointer.x, my - pointer.y) / lensR; if (q < 1) lens = lensOn * (1 - q) * (1 - q); }

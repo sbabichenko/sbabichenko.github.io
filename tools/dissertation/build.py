@@ -28,8 +28,12 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup, NavigableString
 
-SRC = Path(sys.argv[1]).resolve()
+ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
+FORCE = "--force" in sys.argv
+SRC = Path(ARGS[0] if ARGS else ".").resolve()
 SITE = Path(__file__).resolve().parents[2]
+# which LaTeX the pages on the site were built from (written after each build, checked before the next)
+STAMP = SITE / "data" / "dissertation" / "source.json"
 CONTENT = SITE / "content" / "dissertation"
 STATIC = SITE / "static" / "dissertation"
 WORK = Path("/tmp/dissertation-web")
@@ -458,7 +462,35 @@ def story(body, plan):
     return str(soup)
 
 
+def fingerprint():
+    """a hash of the LaTeX that makes the pages, and the newest time any of it was edited"""
+    import hashlib
+    files = sorted([SRC / "combined_dissertation.tex", *(SRC / "chapters").glob("*.tex")])
+    h = hashlib.sha256()
+    for f in files:
+        h.update(f.name.encode()); h.update(f.read_bytes())
+    newest = max(f.stat().st_mtime for f in files)
+    return h.hexdigest()[:16], newest
+
+
+def guard():
+    """Refuse to overwrite pages built from another copy of the dissertation. Two copies once diverged: the site's
+    pages came from one, a regeneration from the other would have silently undone its wording. --force overrides."""
+    sha, newest = fingerprint()
+    if FORCE:
+        return sha
+    if not STAMP.exists():
+        sys.exit("build.py: the pages on the site carry no record of the LaTeX they came from (they were built\n"
+                 "elsewhere), so this source may be older or newer than them. Compare the two, then rerun with --force.")
+    old = json.loads(STAMP.read_text())
+    if old.get("tex") != sha and newest < old.get("built", 0):
+        sys.exit(f"build.py: this LaTeX differs from what the pages were built from, and none of it was edited since\n"
+                 f"that build ({old.get('source')}). It is probably an older copy. Rerun with --force to use it anyway.")
+    return sha
+
+
 def main():
+    sha = guard()
     if WORK.exists():
         shutil.rmtree(WORK)
     WORK.mkdir(parents=True)
@@ -588,6 +620,8 @@ def main():
                                                      "math = false", 'slug = "references"', 'short = "References"', 'label = ""', "+++", ""]))
     (frag / "manifest.json").write_text(json.dumps(manifest, indent=1))
     subprocess.run(["node", str(Path(__file__).parent / "prerender.js")], check=True)
+    import time
+    STAMP.write_text(json.dumps({"tex": sha, "built": time.time(), "source": str(SRC)}) + "\n")
     # figures re-rendered for the web replace their print conversions (tools/dissertation/webfigs.py)
     subprocess.run([sys.executable, str(Path(__file__).parent / "webfigs.py")], check=True)
     # what rests on what, for the "used in" lines, assumption tracing, the map and the paths

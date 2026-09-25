@@ -31,3 +31,9 @@ stacked). Each is in Newsreader, with text enlarged only as far as nothing colli
 not come out clean are skipped, and phones then get the wide one. `webfigs.py` then points the chapter pages at
 them; `build.py` runs it after every regeneration. Figures without a script (the TikZ diagrams, fig2, fig12,
 fig13) keep their print conversions.
+
+## Which copy of the dissertation
+
+`build.py` records a fingerprint of the LaTeX it built from in `data/dissertation/source.json` and refuses to
+overwrite the pages from different LaTeX that is no newer, or when there is no record at all (the pages online
+in September 2026 were built from another machine's copy). Compare the copies, then pass `--force`.

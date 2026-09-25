@@ -7,9 +7,9 @@
 <html class="not-ready lg:text-base" lang="{{ lang }}">
   {% include "partials/head.html" %}
   <body class="text-black duration-200 ease-out dark:text-white">
-    <link rel="stylesheet" href="{{ get_url(path='dissertation/katex/katex.min.css') }}" />
-    <link rel="stylesheet" href="{{ get_url(path='dissertation/thesis.css') }}" />
-    <link rel="stylesheet" href="{{ get_url(path='dissertation/search.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/katex/katex.min.css', cachebust=true) }}" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/thesis.css', cachebust=true) }}" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/search.css', cachebust=true) }}" />
     {% include "partials/header.html" %}
     <div class="progress" id="progress" aria-hidden="true"></div>
 
@@ -63,10 +63,10 @@
     <div class="peek" id="peek" role="tooltip" hidden></div>
 
     {% include "partials/footer.html" %}
-    <script src="{{ get_url(path='dissertation/thesis.js') }}"></script>
-    <script src="{{ get_url(path='dissertation/search.js') }}"></script>
-    <script src="{{ get_url(path='dissertation/proofs.js') }}"></script>
-    <script src="{{ get_url(path='dissertation/vignettes.js') }}"></script>
-    <script src="{{ get_url(path='dissertation/bookmark.js') }}"></script>
+    <script src="{{ get_url(path='dissertation/thesis.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='dissertation/search.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='dissertation/proofs.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='dissertation/vignettes.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='dissertation/bookmark.js', cachebust=true) }}"></script>
   </body>
 </html>
