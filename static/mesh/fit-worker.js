@@ -79,13 +79,27 @@ onmessage = async (ev) => {
   const model = JSON.parse(read("run_model.json"));
   const fin = JSON.parse(read("run_final_fit.json"));
   const held = log.map((s) => /^HELDOUT: mean deviance\/pool ([\d.]+) \| X2\/info ([\d.]+) \| (\d+) pools/.exec(s)).find(Boolean);
+  // the held-out sites themselves (run_obs.csv, is_train = 0) with the fit's probability at each, so the page can put
+  // an error bar on the deviance and score the true surface on the same sites: the floor any surface could reach
+  let heldRows = null;
+  try {
+    const lines = read("run_obs.csv").trim().split("\n"), head = lines[0].split(",");
+    const col = (name) => head.indexOf(name), ix = col("x"), iy = col("y"), inn = col("n"), ik = col("k"), ip = col("p_hat"), it = col("is_train");
+    const xs = [], ys = [], ns = [], ks = [], ps = [];
+    for (let r = 1; r < lines.length; ++r) {
+      const v = lines[r].split(",");
+      if (v[it] !== "0") continue;
+      xs.push(+v[ix]); ys.push(+v[iy]); ns.push(+v[inn]); ks.push(+v[ik]); ps.push(+v[ip]);
+    }
+    heldRows = { x: Float64Array.from(xs), y: Float64Array.from(ys), n: Float64Array.from(ns), k: Float64Array.from(ks), p: Float64Array.from(ps) };
+  } catch (e) { heldRows = null; }
 
   const detail = ev.data.detail ? traceOf(kind, read, v, log) : null;
   postMessage({
     id, type: "fit", engine: kind, ms, tri, stride: K, verts, rounds, detail,
     baseline: model.baseline_logit, bounds: [model.wala_min, model.wala_max, model.wac_min, model.wac_max],
     poolVariance: fin.pool_variance, coefficients: fin.coefficients,
-    heldout: held ? { deviance: +held[1], x2: +held[2], pools: +held[3] } : null,
+    heldout: held ? { deviance: +held[1], x2: +held[2], pools: +held[3], rows: heldRows } : null,
     log: log.slice(0, 400),
   }, [tri.buffer]);
 };

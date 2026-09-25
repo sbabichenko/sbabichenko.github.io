@@ -88,7 +88,11 @@
           test designs the browser builds reproduce the native meshes to 1e-11. The two share
           the gate and the model for the coin effects and differ in geometry: right triangles cut only through their hypotenuse, with a
           plane in each; rectangles cut across either axis, with a bilinear fit in each. Half the sites are held out:
-          the mesh never sees them, and the deviance card scores the fit on them. The coins are drawn on this page from
+          the mesh never sees them, and the deviance card scores the fit on them. A site&rsquo;s deviance is
+          2[<i>k</i>&thinsp;log(<i>k</i>&thinsp;/&thinsp;<i>n p</i>) + (<i>n</i>&minus;<i>k</i>)&thinsp;log((<i>n</i>&minus;<i>k</i>)&thinsp;/&thinsp;(<i>n</i>(1&minus;<i>p</i>)))],
+          with <i>k</i> heads in <i>n</i> flips and fitted odds <i>p</i>: zero when <i>p</i> is exactly the share of heads, and
+          larger the less likely the flips are under the fit. Even the true surface scores above zero, because each coin has
+          its own effect and flips are random, so it sets the floor. The coins are drawn on this page from
           the odds you pick, plus a normal effect per coin on the log-odds, with the standard deviation on the slider
           (0.25 to start). Set it to zero and the coins are plain binomial.</p>
         <p>The <a href="{{ get_url(path='mesh/') }}">growing-mesh page</a> grows the same geometries by a simple greedy rule with no gate: freeform

@@ -393,8 +393,12 @@
     if (S.done) { S.running = false; $("playbtn").textContent = "Play"; setStatus("ok", "Done", txt + " Stopped at ten points per freeform triangle, on average."); }
     else setStatus(S.running ? "busy" : "idle", S.running ? "Growing" : "Paused", txt);
   }
+  // while playing, the race only computes when it can be seen: scrolled away, it waits (still "Growing"), and
+  // picks up where it was when it comes back into view
+  let onScreen = true, waiting = false;
   function loop() {
     if (!S.running) return;
+    if (!onScreen) { waiting = true; return; }
     advance(+$("speed").value, 40);
     if (S.running) requestAnimationFrame(loop);
   }
@@ -441,4 +445,8 @@
     $("playbtn").click();
   }, { threshold: 0.25 });
   firstView.observe(document.querySelector(".stage"));
+  new IntersectionObserver((es) => {
+    onScreen = es.some((e) => e.isIntersecting);
+    if (onScreen && waiting && S.running) { waiting = false; requestAnimationFrame(loop); }
+  }).observe(document.querySelector(".stage"));
 })();

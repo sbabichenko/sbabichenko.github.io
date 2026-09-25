@@ -547,7 +547,20 @@
     const sel0 = r0.filter((c) => c.selected), adm0 = sel0.filter((c) => c.admitted).length;
     setV("admit0", sel0.length ? `Round 0 selected ${sel0.length}: ${adm0} admitted, ${sel0.length - adm0} rejected on re-scoring.` : "Round 0 selected nothing.");
     setV("nrounds", String(rounds.length));
-    setV("heldout", fit.heldout ? `mean deviance ${fit.heldout.deviance.toFixed(3)} per site over ${fit.heldout.pools.toLocaleString()} sites the fit never saw` : "no held-out sites");
+    // with its standard error, and the floor: the true surface scored on the same sites (paired gap)
+    const H = (() => {
+      const h = fit.heldout; if (!h || !h.rows || !h.rows.n.length) return null;
+      const R = h.rows, m = R.n.length, f = TRUTHS[data.truth], lg = (t) => 1 / (1 + Math.exp(-t));
+      const dev = (k, n, p) => { p = Math.min(1 - 1e-6, Math.max(1e-6, p)); return (k > 0 ? 2 * k * Math.log(k / (n * p)) : 0) + (n - k > 0 ? 2 * (n - k) * Math.log((n - k) / (n * (1 - p))) : 0); };
+      const a = [], b = [];
+      for (let i = 0; i < m; ++i) { a.push(dev(R.k[i], R.n[i], R.p[i])); b.push(dev(R.k[i], R.n[i], lg(f(R.x[i], R.y[i])))); }
+      const mean = (v) => v.reduce((s, x) => s + x, 0) / v.length, se = (v, mu) => Math.sqrt(v.reduce((s, x) => s + (x - mu) ** 2, 0) / (v.length - 1) / v.length);
+      const d = a.map((x, i) => x - b[i]);
+      return { fit: mean(a), fitSe: se(a, mean(a)), floor: mean(b), floorSe: se(b, mean(b)), gap: mean(d), gapSe: se(d, mean(d)), m };
+    })();
+    setV("heldout", H ? `mean deviance ${H.fit.toFixed(3)} ± ${H.fitSe.toFixed(3)} per site over ${H.m.toLocaleString()} sites the fit never saw; `
+      + `the true surface scores ${H.floor.toFixed(3)} ± ${H.floorSe.toFixed(3)} on them, so the fit is ${H.gap.toFixed(3)} ± ${H.gapSe.toFixed(3)} above the floor`
+      : fit.heldout ? `mean deviance ${fit.heldout.deviance.toFixed(3)} per site over ${fit.heldout.pools.toLocaleString()} sites the fit never saw` : "no held-out sites");
     active = null; measure();
   }
 
