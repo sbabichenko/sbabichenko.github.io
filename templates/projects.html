@@ -33,7 +33,7 @@
         {% endif %}
         <p class="starthere">New here? Start with <a href="{{ get_url(path='dissertation/idea/') }}">the noise-state, explained</a>,
           or <a href="{{ get_url(path='noisestate/') }}">solve a game</a> in your browser.</p>
-        <p class="poke" aria-hidden="true">click the mesh in the background to poke it</p>
+        <p class="poke" aria-hidden="true">click the mesh in the background to poke it, or drag to draw a ridge</p>
         {%- set formula = load_data(path="data/formula.json") %}
         <a class="motif" href="{{ get_url(path='dissertation/idea/') }}"
            aria-label="The noise-state: player i's estimate, at time t, of the primitive shock W at an earlier time u, given everything player i knows">
@@ -109,6 +109,22 @@
               <p>How the decision mesh decides where the data justify more detail, and when to stop, drawn from a live run
                 in your browser.</p>
               <span class="go">Follow one fit <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+          <a class="demo slim" href="{{ get_url(path='gate/deep/') }}">
+            <div class="body">
+              <h3>The Decision Mesh, in Detail</h3>
+              <p>One level further down: how a split spreads, how a candidate is scored and corrected, how the null is
+                fitted, and how the two engines differ, drawn from live runs in your browser.</p>
+              <span class="go">Go through the algorithm <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
+          <a class="demo slim" href="{{ get_url(path='noisestate/how/') }}">
+            <div class="body">
+              <h3>How the Noise-State Solver Works</h3>
+              <p>What the explorer does when it solves a game: kernels on a grid, one best response, the fixed point and
+                its acceleration, the checks, drawn from solves run in your browser.</p>
+              <span class="go">Watch a solve <span class="arrow">&rarr;</span></span>
             </div>
           </a>
         </div>
