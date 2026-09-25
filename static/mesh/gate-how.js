@@ -148,6 +148,7 @@
       const img = el("image", { x: SQ.x, y: SQ.y, width: SQ.s, height: SQ.s, href: c.toDataURL() }, g);
       frame(g, "6,000 sites, each dot one site's share of heads");
       const truth = el("image", { x: SQ.x, y: SQ.y, width: SQ.s, height: SQ.s, href: raster((x, y) => TRUTHS[data.truth](x, y) - BASE, 110), opacity: 0 }, g);
+      g.insertBefore(truth, img);                            // the true odds come in beneath the dots, not over them
       const tl = text(g, SQ.x + SQ.s, SQ.y + SQ.s + 26, "the odds the coins really have", "mono", "end");
       const leg = el("g", {}, g);
       [["more heads than usual", "pos"], ["fewer", "neg"]].forEach(([s, cls], i) => { el("circle", { cx: SQ.x + 6 + i * 170, cy: SQ.y + SQ.s + 22, r: 5, class: cls }, leg); text(leg, SQ.x + 16 + i * 170, SQ.y + SQ.s + 26, s, "tiny", "start"); });

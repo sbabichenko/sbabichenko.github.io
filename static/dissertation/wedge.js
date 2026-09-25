@@ -108,7 +108,7 @@
       const d = k === 3 ? pencil([[x0 - 10, y0 - 22], [mx + 10, (y0 + y1) / 2 + 30], [x1 - 20, y1 + 22]], 10 + k, 1) : pencil([[x0 + (x1 > x0 ? 40 : -40), y0 + (y1 > y0 ? 20 : -20)], [x1 - (x1 > x0 ? 40 : -40), y1 - (y1 > y0 ? 22 : -22)]], 10 + k, 1);
       return stroke(g, d, k === 3 ? "warm" : "", 1.8);
     });
-    const labs = [text(g, 170, 190, "you push", "mono"), text(g, 440, 190, "they see it", "mono"), text(g, 440, 410, "they revise", "mono"), text(g, 220, 330, "they push back", "mono warmt")];
+    const labs = [text(g, 170, 190, "you push", "mono"), text(g, 440, 190, "they see it", "mono"), text(g, 440, 410, "they revise", "mono"), text(g, 284, 322, "they push back", "mono warmt", "start")];
     const pulse = el("circle", { r: 8, class: "fillacc" }, g);
     const cap = text(g, 300, 570, "your action does something and says something", "label");
     return { g, update(t, now) {
@@ -178,9 +178,10 @@
       chans.forEach((c, k) => {
         const top = 90 + k * 160, H = 110, x0 = 60, W = 490, mid = top + H / 2, s = f.s, sx = (v) => x0 + (W * v) / s[s.length - 1], sy = (v) => mid - (v / mx) * (H / 2);
         el("line", { x1: x0, y1: mid, x2: x0 + W, y2: mid, class: "pencil soft", "stroke-width": 1 }, live);
-        text(live, x0, top + 4, NAMES[c] || c, "mono", "start");
+        // labels sit just above the panel: the curves are scaled to fill it, so the largest reaches its top
+        text(live, x0, top - 8, NAMES[c] || c, "mono", "start");
         const pm = maxAbs(f.channels[c].physical), wm = maxAbs(f.channels[c].wedge);
-        if (pm > 1e-9) text(live, x0 + W, top + 4, `wedge up to ${Math.round((100 * wm) / pm)}% of the physical part`, "mono acc", "end");
+        if (pm > 1e-9) text(live, x0 + W, top - 8, `wedge up to ${Math.round((100 * wm) / pm)}% of the physical part`, "mono acc", "end");
         el("path", { d: pencil(s.map((v, i) => [sx(v), sy(f.channels[c].physical[i])]), 20 + k, 0.1), class: "pencil", "stroke-width": 2 }, live);
         el("path", { d: pencil(s.map((v, i) => [sx(v), sy(f.channels[c].wedge[i])]), 30 + k, 0.1), class: "pencil accent", "stroke-width": 2.6 }, live);
       });
