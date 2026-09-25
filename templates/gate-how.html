@@ -6,12 +6,12 @@
 <html class="not-ready lg:text-base" lang="{{ lang }}">
   {% include "partials/head.html" %}
   <body class="text-black duration-200 ease-out dark:text-white">
-    <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css') }}" />
-    <link rel="stylesheet" href="{{ get_url(path='mesh/gate-how.css') }}" />
+    <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css', cachebust=true) }}" />
+    <link rel="stylesheet" href="{{ get_url(path='mesh/gate-how.css', cachebust=true) }}" />
     {% include "partials/header.html" %}
     <div class="progress" id="progress" aria-hidden="true"></div>
 
-    <main class="opening idea gatehow" id="gatehow" data-engine="tri" data-worker="{{ get_url(path='mesh/fit-worker.js') }}">
+    <main class="opening idea gatehow" id="gatehow" data-engine="tri" data-worker="{{ get_url(path='mesh/fit-worker.js', cachebust=true) }}">
       <section class="ideahead">
         <p class="eyebrow"><a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &middot; <a href="{{ get_url(path='gate/') }}">The gate</a> &middot; illustrated</p>
         <h1>The False-Discovery Gate, Step by Step</h1>
@@ -153,6 +153,6 @@
     </main>
 
     {% include "partials/footer.html" %}
-    <script src="{{ get_url(path='mesh/gate-how.js') }}"></script>
+    <script src="{{ get_url(path='mesh/gate-how.js', cachebust=true) }}"></script>
   </body>
 </html>

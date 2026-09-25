@@ -364,3 +364,10 @@
 .path-proof .proof { margin-top: 0.3em; }
 .gpanel .gp-stmt { max-height: 13rem; overflow: auto; margin-top: 0.5rem; }
 .gpanel .gp-stmt .thm { margin: 0; }
+
+/* phones: a displayed equation wider than the screen scrolls sideways, and its number drops to its own line on the
+   right instead of sitting over the end of the equation */
+@media (max-width: 700px) {
+  .body .katex-display { overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
+  .body .katex-display > .katex > .katex-html > .tag { position: static; display: block; text-align: right; margin-top: 0.15em; }
+}
