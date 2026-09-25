@@ -287,6 +287,68 @@
   // folding or unfolding moves the margins, so the doodles go
   window.addEventListener("sitefold", () => { document.querySelectorAll(".whimsy-doodle").forEach((d) => d.remove()); doodles = 0; poke(); });
 
+  // ---- the reading-progress line, drawn for the page: a random walk on the dissertation and noise-state pages, a
+  // strip of mesh triangles on the Decision Mesh pages. The pages still set the line's width; the drawing is full width underneath and the width uncovers it.
+  (function progressLine() {
+    const bar = document.getElementById("progress");
+    if (!bar) return;
+    const mode = /^\/gate(\/|$)/.test(location.pathname) ? "mesh" : "walk";
+    bar.classList.add("bar-" + mode);
+    const NS = "http://www.w3.org/2000/svg", H = 10;
+    const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+    let seed = 0; for (const c of location.pathname) seed = (Math.imul(seed, 31) + c.charCodeAt(0)) | 0;
+    const rng = (a => () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; })(seed);
+    const gauss = () => Math.sqrt(-2 * Math.log(1 - rng())) * Math.cos(2 * Math.PI * rng());
+    let svg = null, ys = null, tip = null, cells = [], step = 2;
+    function draw() {
+      const W = Math.max(320, window.innerWidth);
+      if (svg) svg.remove();
+      svg = mk("svg", { class: "bar-art", width: W, height: H, viewBox: `0 0 ${W} ${H}`, "aria-hidden": "true" }, bar);
+      cells = []; tip = null;
+      if (mode === "walk") {
+        // one random path per page (seeded by its address): Brownian at the scale of a few pixels, pulled gently
+        // back to the middle (an Ornstein-Uhlenbeck path) so that it stays in the band
+        const n = Math.ceil(W / step) + 1, lo = 1.6, hi = H - 1.6; let y = H / 2;
+        ys = [y];
+        for (let i = 1; i < n; ++i) { y += -0.04 * (y - H / 2) + 0.75 * gauss(); y = y < lo ? 2 * lo - y : y > hi ? 2 * hi - y : y; ys.push(y); }
+        mk("path", { d: "M" + ys.map((y, i) => `${(i * step).toFixed(1)},${y.toFixed(2)}`).join(" L"), class: "bar-ink" }, svg);
+        tip = mk("circle", { r: 2.2, class: "bar-dot" }, svg);
+      } else if (mode === "mesh") {
+        // an irregular strip, like the adaptive mesh: three rows of vertices spaced by a slowly varying density
+        // (fine in some stretches, coarse in others), the middle row wandering, stitched into triangles row to row
+        const dens = (x) => 0.55 + 0.45 * Math.sin(x / 83 + seed % 7) * Math.sin(x / 29 + 1.3);
+        const row = (yfn) => { const pts = [[-4, yfn()]]; let x = -4; while (x < W + 16) { x += (4 + 13 * (0.5 + 0.5 * dens(x))) * (0.7 + 0.6 * rng()); pts.push([x, yfn()]); } return pts; };
+        const top = row(() => 0.5 + 2.6 * rng()), mid = row(() => H / 2 + (rng() - 0.5) * 2.4), bot = row(() => H - 0.5 - 2.6 * rng());
+        const stitch = (A, B) => {           // triangulate between two rows, always advancing the one that lags
+          let i = 0, k = 0;
+          while (i < A.length - 1 || k < B.length - 1) {
+            const takeA = k >= B.length - 1 || (i < A.length - 1 && A[i + 1][0] <= B[k + 1][0]);
+            const tri = takeA ? [A[i], A[i + 1], B[k]] : [A[i], B[k + 1], B[k]];
+            if (takeA) ++i; else ++k;
+            const p = mk("polygon", { points: tri.map((v) => v[0].toFixed(1) + "," + v[1].toFixed(1)).join(" "), class: "bar-tri" }, svg);
+            cells.push({ p, x: Math.max(...tri.map((v) => v[0])) });
+          }
+        };
+        stitch(top, mid); stitch(mid, bot);
+      }
+      place();
+    }
+    function place() {
+      // the width the page asked for (some pages animate it, so the measured width lags behind)
+      const pct = parseFloat(bar.style.width), x = isFinite(pct) ? pct / 100 * document.documentElement.clientWidth : bar.getBoundingClientRect().width;
+      if (mode === "mesh") {
+        for (const c of cells) { const lag = x - c.x; c.p.classList.toggle("on", lag >= 0); c.p.classList.toggle("fresh", lag >= 0 && lag < 22); }
+        return;
+      }
+      if (!tip || !ys) return;
+      const i = Math.min(ys.length - 1, Math.max(0, Math.round(x / step))), y = ys[i];
+      tip.setAttribute("cx", Math.max(2.2, x - 2.2).toFixed(1)); tip.setAttribute("cy", y.toFixed(2)); tip.style.opacity = x > 3 ? 1 : 0;
+    }
+    draw();
+    new MutationObserver(place).observe(bar, { attributes: true, attributeFilter: ["style"] });
+    let rt = 0; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(draw, 150); });
+  })();
+
   // ---- hello, console
   try { console.log("%cHello. Everything on this site is computed in your browser.\nThe game solver is also a Python package: pip install noisestate", "font: 13px Georgia, serif; color: #1f3fd0"); } catch (e) {}
 })();
