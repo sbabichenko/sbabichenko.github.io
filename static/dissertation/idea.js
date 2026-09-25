@@ -208,6 +208,8 @@
     for (let i = 0; i < 8; ++i) for (let j = 0; j < 3; ++j) {
       const x = 85 + i * 62, y = 330 + j * 72, k = know.has(`${i},${j}`);
       const p = person(g, x, y, "fillacc"); p.style.fill = k ? "var(--accent)" : "currentColor";
+      // the five who know are ringed, so they stay apart from the people who later work it out from what they do
+      if (k) el("circle", { cx: 0, cy: -2, r: 22, class: "pencil accent", "stroke-width": 1.4, fill: "none" }, p);
       crowd.push({ p, x, y, k, d: Math.hypot(i - 3, (j - 1) * 1.15) });
     }
     const rings = [0, 1, 2].map(() => el("circle", { cx: 271, cy: 402, class: "pencil accent", "stroke-width": 1.2 }, g));
@@ -217,7 +219,7 @@
       crowd.forEach((c) => {
         if (c.k) { fade(c.p, seg(t, 0.1, 0.2)); return; }
         const learned = clamp(spread - c.d + 1);
-        c.p.style.opacity = seg(t, 0.05, 0.15) * (0.28 + 0.5 * learned);
+        c.p.style.opacity = seg(t, 0.05, 0.15) * (0.28 + 0.2 * learned);
         c.p.style.fill = learned > 0.5 ? "var(--accent)" : "currentColor";
       });
       rings.forEach((r, i) => { const ph = ((now / 2400 + i / 3) % 1); r.setAttribute("r", 30 + ph * 200); fade(r, seg(t, 0.3, 0.4) * (1 - ph) * 0.5); });

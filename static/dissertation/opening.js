@@ -396,31 +396,54 @@
     };
   })();
 
-  // -- the noise-state: the shocks, and each player's estimate of them
+  // -- the noise-state: each player's estimate, at the present t, of every shock so far. Each new signal revises
+  // the estimates of old shocks too, so the bars behind the "now" line keep moving as it advances. The numbers are
+  // exact Gaussian conditioning: shocks w, a state x_k = sum_j phi^(k-j) w_j, and each player sees x plus their own
+  // noise; W-hat_t(u) = E[w_u | player's signals up to t].
   scenes.noise = (() => {
-    const g = group("noise"), r = mulberry32(21), n = 220, W = [], E1 = [], E2 = [];
-    let w = 0, e1 = 0, e2 = 0;
-    for (let i = 0; i < n; ++i) {
-      w += gauss(r) * 7; w *= 0.985; W.push(w);
-      e1 += 0.16 * (w - e1); E1.push(e1);
-      e2 += 0.06 * (w - e2) + gauss(r) * 0.6; E2.push(e2);
+    const g = group("noise"), r = mulberry32(21), N = 30, phi = 0.85, SIG = [0.55, 1.4];
+    const w = Array.from({ length: N }, () => gauss(r));
+    const x = w.map((_, k) => { let v = 0; for (let j = 0; j <= k; ++j) v += Math.pow(phi, k - j) * w[j]; return v; });
+    const y = SIG.map((sd) => x.map((v) => v + sd * gauss(r)));
+    const cxx = (m, l) => { let v = 0; for (let j = 0; j <= Math.min(m, l); ++j) v += Math.pow(phi, m - j) * Math.pow(phi, l - j); return v; };
+    function solve(A, b) {                                           // Cholesky: A is symmetric positive definite
+      const n = b.length, L = A.map((row) => row.slice());
+      for (let i = 0; i < n; ++i) for (let j = 0; j <= i; ++j) {
+        let s = L[i][j]; for (let k = 0; k < j; ++k) s -= L[i][k] * L[j][k];
+        L[i][j] = i === j ? Math.sqrt(s) : s / L[j][j];
+      }
+      const z = b.slice();
+      for (let i = 0; i < n; ++i) { for (let k = 0; k < i; ++k) z[i] -= L[i][k] * z[k]; z[i] /= L[i][i]; }
+      for (let i = n - 1; i >= 0; --i) { for (let k = i + 1; k < n; ++k) z[i] -= L[k][i] * z[k]; z[i] /= L[i][i]; }
+      return z;
     }
-    const X = (i) => 50 + 490 * i / (n - 1), Y = (v) => 300 - v * 2.6;
-    el("line", { x1: 50, y1: 300, x2: 560, y2: 300, class: "pencil soft", "stroke-width": 1 }, g);
-    const sW = stroke(g, pencil(W.map((v, i) => [X(i), Y(v)]), 30, 0.3), "", 1.5);
-    const s1 = stroke(g, pencil(E1.map((v, i) => [X(i), Y(v)]), 31, 0.2), "accent", 2.2);
-    const s2 = stroke(g, pencil(E2.map((v, i) => [X(i), Y(v)]), 32, 0.2), "warm", 2.2);
-    const lW = text(g, 0, 0, "W", "", "start"), l1 = text(g, 0, 0, "Ŵ¹", "acc", "start"), l2 = text(g, 0, 0, "Ŵ²", "warmt", "start");
-    const cap = text(g, 300, 560, "the primitive shocks W, and two players' estimates of them", "mono");
+    // est[i][t][u]: player i's estimate, at t, of the shock at u (u <= t)
+    const est = SIG.map((sd, i) => Array.from({ length: N }, (_, t) => {
+      const A = Array.from({ length: t + 1 }, (_, m) => Array.from({ length: t + 1 }, (_, l) => cxx(m, l) + (m === l ? sd * sd : 0)));
+      const a = solve(A, y[i].slice(0, t + 1));
+      return Array.from({ length: t + 1 }, (_, u) => { let v = 0; for (let m = u; m <= t; ++m) v += Math.pow(phi, m - u) * a[m]; return v; });
+    }));
+    const X = (u) => 60 + (480 * (u + 0.5)) / N, Y0 = 330, S = 52, slot = 480 / N;
+    el("line", { x1: 50, y1: Y0, x2: 560, y2: Y0, class: "pencil soft", "stroke-width": 1 }, g);
+    const bar = (u, dx, wd, cls) => { const b = el("rect", { x: X(u) + dx, width: wd, class: cls }, g); return b; };
+    const truth = w.map((v, u) => { const b = bar(u, -slot * 0.42, slot * 0.84, ""); b.style.fill = "currentColor"; b.style.opacity = 0.13;
+      b.setAttribute("y", v >= 0 ? Y0 - v * S : Y0); b.setAttribute("height", Math.abs(v) * S); return b; });
+    const b1 = w.map((_, u) => bar(u, -slot * 0.34, slot * 0.3, "fillacc")), b2 = w.map((_, u) => bar(u, slot * 0.04, slot * 0.3, "fillwarm"));
+    const now = el("line", { y1: 120, y2: 500, class: "pencil warm", "stroke-width": 1.4, "stroke-dasharray": "3 4" }, g);
+    const nowl = text(g, 0, 112, "now, t", "label warmt");
+    const key = text(g, 60, 150, "", "mono", "start");
+    key.innerHTML = '<tspan style="fill:var(--accent)">Ŵ¹ₜ(u)</tspan>, <tspan style="fill:var(--warm)">Ŵ²ₜ(u)</tspan>: each player\'s estimate, at t, of the shock at u';
+    const cap = text(g, 300, 560, "grey: the shocks themselves, which neither player sees", "mono");
+    const put = (b, v, on) => { b.setAttribute("y", v >= 0 ? Y0 - v * S : Y0); b.setAttribute("height", Math.abs(v) * S); b.style.opacity = on ? 1 : 0; };
     return {
       g,
       update(t) {
-        const k = seg(t, 0.02, 0.8);
-        sW.set(k); s1.set(clamp(k - 0.02)); s2.set(clamp(k - 0.035));
-        const i = Math.max(1, Math.round(k * (n - 1)));
-        const place = (lab, arr, j, dy) => { lab.setAttribute("x", X(j) + 8); lab.setAttribute("y", Y(arr[j]) + dy); fade(lab, seg(t, 0.1, 0.2)); };
-        place(lW, W, i, -8); place(l1, E1, Math.max(0, i - 4), 16); place(l2, E2, Math.max(0, i - 8), 30);
-        fade(cap, seg(t, 0.4, 0.6));
+        const k = Math.min(N - 1, Math.max(2, Math.round(seg(t, 0.05, 0.9) * (N - 1))));
+        truth.forEach((b, u) => { b.style.opacity = u <= k ? 0.13 : 0.05; });
+        for (let u = 0; u < N; ++u) { put(b1[u], u <= k ? est[0][k][u] : 0, u <= k); put(b2[u], u <= k ? est[1][k][u] : 0, u <= k); }
+        const xn = X(k) + slot / 2;
+        now.setAttribute("x1", xn); now.setAttribute("x2", xn); nowl.setAttribute("x", xn);
+        fade(key, seg(t, 0.05, 0.2)); fade(cap, seg(t, 0.3, 0.5));
       },
     };
   })();

@@ -76,7 +76,7 @@
           <div class="step" data-scene="noisestate">
             <p>You can always make a process Markov by carrying its whole past, but which past is enough differs for every
               process. The shocks are underneath all of them, so track <i>W</i>. A player never sees it; from a noisy
-              signal they estimate its path.</p>
+              signal they estimate its path, and each new observation revises the old estimates.</p>
             <div class="fx">{{ fx.def.svg | safe }}</div>
             <p class="small">That estimate, a belief about the shocks rather than about the state, is the noise-state. The
               shocks already happened and do not move, so updating it needs no prediction step, only the news.</p>
