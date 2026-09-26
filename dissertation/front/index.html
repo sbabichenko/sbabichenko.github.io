@@ -1,0 +1,911 @@
+<!doctype html>
+<html class="not-ready lg:text-base" lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Title -->
+  <title>Front matter - Sam Babichenko</title>
+
+  <!-- Meta -->
+  <meta name="theme-color" />
+  <meta name="description" content="Acknowledgements, vita, abstract and notation." />
+  <meta name="author" content="" />
+  <!-- The Open Graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Front matter" />
+  <meta property="og:site_name" content="Sam Babichenko" />
+  <meta property="og:description" content="Acknowledgements, vita, abstract and notation." />
+  <meta property="og:url" content="https:&#x2F;&#x2F;sbabichenko.com&#x2F;dissertation&#x2F;front&#x2F;" />
+  <meta property="og:image" content="https://sbabichenko.com/images/og-diss-front.png" />
+
+  <!-- CSS & JS -->
+  <link rel="preload stylesheet" as="style" href="https://sbabichenko.com/main.css?h=f49bde0cf4c2681243a5" />
+  <style>
+    :root {
+      --bg: #FFFFF0;
+      --bg-dark: #1F2022;
+      --header: #e4e4e7;
+      --header-dark: #27272a;
+    }
+  </style>
+
+  
+
+  <!-- Dark Icon -->
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/theme.svg" />
+
+  <!-- Math -->
+  
+  <!---->
+
+  <!-- Mermaid -->
+  
+  <!---->
+
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://sbabichenko.com/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://sbabichenko.com/favicon-16x16.png">
+  <link rel="shortcut icon" href="https://sbabichenko.com/favicon.ico">
+  <link rel="apple-touch-icon" href="https://sbabichenko.com/apple-touch-icon.png">
+
+
+  <!-- Feeds -->
+  
+  <!---->
+  
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title="Atom"
+    href="https://sbabichenko.com/atom.xml"
+  />
+   
+  <!---->
+  
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https:&#x2F;&#x2F;sbabichenko.com&#x2F;dissertation&#x2F;front&#x2F;" />
+
+  <!-- Head inject -->
+  <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="font" type="font/woff2" href="https://sbabichenko.com/fonts/newsreader-latin-opsz-normal.woff2" crossorigin>
+<link rel="stylesheet" href="https://sbabichenko.com/fonts/newsreader.css?h=76764bb675ec2845fffb">
+<link rel="stylesheet" href="https://sbabichenko.com/css/custom.css?h=f836d5c06c9f94dc466b">
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="https://sbabichenko.com/dissertation/katex/katex.min.css?h=f0dbfcc2940b4d788c80" />
+    <link rel="stylesheet" href="https://sbabichenko.com/dissertation/thesis.css?h=62e5f2f8c133642a814c" />
+    <link rel="stylesheet" href="https://sbabichenko.com/dissertation/search.css?h=ff759eead03c26dbe676" />
+    <header
+  class="blur-header fixed top-0 z-40 mx-auto min-h-[3.5rem] w-full"
+>
+  <div class="mx-auto w-full max-w-4xl p-3 lg:flex lg:justify-between">
+    <div class="flex justify-between">
+      <div class="flex items-center">
+        <a class="text-2xl font-semibold" href="https://sbabichenko.com">Sam Babichenko</a>
+        <div
+          class="btn-dark ml-4 h-6 w-6 shrink-0 cursor-pointer text-[0px] [background:url(./icons/theme.svg)_left_center/cover_no-repeat] dark:[background-position:right] dark:invert"
+          role="button"
+          aria-label="Dark"
+        ></div>
+      </div>
+      
+      <div
+        class="btn-menu relative z-50 flex h-8 w-8 shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+        role="button"
+        aria-label="Menu"
+      ></div>
+      
+    </div>
+    <script>
+      // base
+      const htmlClass = document.documentElement.classList;
+      setTimeout(() => {
+        htmlClass.remove("not-ready");
+      }, 10);
+
+      // mobile menu
+      const btnMenu = document.querySelector(".btn-menu");
+      btnMenu?.addEventListener("click", () => {
+        htmlClass.toggle("open");
+      });
+
+      // dark theme
+      const setDark = (isDark) => {
+        if (isDark) {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
+          htmlClass.add("dark");
+        } else {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "light" }));
+          htmlClass.remove("dark");
+        }
+        localStorage.setItem("dark", isDark);
+      };
+
+      // init
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      if (htmlClass.contains("dark")) {
+        setDark(true);
+      } else {
+        const darkVal = localStorage.getItem("dark");
+        setDark(darkVal ? darkVal === "true" : darkScheme.matches);
+      }
+
+      // listen system
+      darkScheme.addEventListener("change", (event) => {
+        setDark(event.matches);
+      });
+
+      // manual switch
+      const btnDark = document.querySelector(".btn-dark");
+      btnDark.addEventListener("click", () => {
+        setDark(localStorage.getItem("dark") !== "true");
+      });
+    </script>
+    
+    <nav class="flex w-full items-center lg:w-auto">
+      <ul
+        class="nav-wrapper flex w-full flex-col py-2 lg:w-auto lg:flex-row lg:self-center lg:py-0"
+      >
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/writing"
+            >Writing</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/dissertation"
+            >Dissertation</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/cv"
+            >CV</a
+          >
+        </li>
+        
+      </ul>
+      <!-- Header Nav inject -->
+      
+    </nav>
+    
+  </div>
+</header>
+
+    <div class="progress" id="progress" aria-hidden="true"></div>
+
+    <div class="thesis">
+      <aside class="rail" aria-label="Contents">
+        <a class="book" href="https://sbabichenko.com/dissertation">Noise-State Calculus for Dynamic Games with Strategic Information</a>
+        <input class="dsearch" id="dsearch" type="search" placeholder="Search the dissertation  /" aria-label="Search the dissertation" autocomplete="off" data-base="https://sbabichenko.com/dissertation" />
+        <ol class="toc">
+          <li class="here">
+            <a href="https://sbabichenko.com/dissertation/front"><span class="t">Front matter</span></a>
+            <ol class="secs">
+              <li><a href="#acknowledgements" data-sec="acknowledgements">Acknowledgements</a></li>
+              <li><a href="#vita" data-sec="vita">Vita</a></li>
+              <li><a href="#abstract" data-sec="abstract">Abstract</a></li>
+              <li><a href="#notation" data-sec="notation">Notation</a></li>
+            </ol>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/introduction"><span class="t">Introduction</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/chapter-1"><span class="lab">1</span><span class="t">Baseline Linear-Quadratic-Gaussian Games</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/chapter-2"><span class="lab">2</span><span class="t">Delayed Public Signals and Asynchronous Learning</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/chapter-3"><span class="lab">3</span><span class="t">Stationary Infinite-Horizon LQG</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/chapter-4"><span class="lab">4</span><span class="t">The Information Wedge in a Stationary Kyle–Back Market</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/chapter-5"><span class="lab">5</span><span class="t">Local Strategic Information in Symmetric Network Economies</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/chapter-6"><span class="lab">6</span><span class="t">Monitored Deviations: Naive Distortions and Privy Responses</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/chapter-7"><span class="lab">7</span><span class="t">Conclusion: The Information Wedge Across Environments</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/afterword"><span class="t">Afterword</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/appendix-a"><span class="lab">A</span><span class="t">Additional Finite-Horizon Extensions</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/references"><span class="t">References</span></a>
+          </li>
+        </ol>
+        <a class="pdf maplink" href="https://sbabichenko.com/dissertation/map">What rests on what: the map of results &rarr;</a>
+        <a class="pdf" href="https://sbabichenko.com/dissertation/babichenko-dissertation.pdf#page=1">In the PDF: pp. i–xvi &darr;</a>
+        <a class="pdf" href="https://sbabichenko.com/dissertation/babichenko-dissertation.pdf">The whole thing as a PDF &darr;</a>
+      </aside>
+
+      <main class="paper" id="paper">
+        <div class="kicker"><a href="https://sbabichenko.com/dissertation">Noise-state calculus &middot; dissertation</a></div>
+        <article class="body">
+          <section class="level1 unnumbered" id="acknowledgements">
+<h1 class="unnumbered">Acknowledgements</h1>
+<p>My first thanks go to my grandmother, Lyudmila, who left her job and
+her friends to move across the world and raise me through the first
+years of my life. Without her, I would not have been in a position to
+write this dissertation.</p>
+<p>I am grateful to my advisor, Tomoyuki Ichiba, for his guidance and
+support throughout my doctoral studies, and to Javier Birchenall for
+valuable discussions on the economic applications of this work. I thank
+my committee members Jean-Pierre Fouque and Michael Ludkovski for their
+time and feedback.</p>
+<p>I thank my girlfriend, Viki, for her love and for taking on my
+physical and mental burden while I wrote. Without her, I would not have
+been able to finish this dissertation.</p>
+<p>I am grateful to the rest of my family: my sister Anna, my cousin
+Max, my mother Lena, my father Leonard, my aunt Ira, my uncle Andrew,
+and my late grandfather Genrikh. Finally, I thank my friends Thiha Aung,
+Olivier Mulkin, Yan Lashchev, and Daniel Naylor for their encouragement
+and companionship throughout my time as a doctoral student.</p>
+</section>
+<section class="level1 unnumbered" id="vita">
+<h1 class="unnumbered">Vita</h1>
+<div class="center">
+<p>Samuel Babichenko</p>
+</div>
+<section class="level3 unnumbered" id="education">
+<h3 class="unnumbered">Education</h3>
+<div class="tablewrap"><table>
+<tbody>
+<tr>
+<td style="text-align: left;">Ph.D. in Statistics and Applied
+Probability, emphasis in Financial Mathematics, UC Santa Barbara</td>
+<td style="text-align: right;">2026</td>
+</tr>
+<tr>
+<td style="text-align: left;">M.A. in Statistics, UC Santa Barbara</td>
+<td style="text-align: right;">2026</td>
+</tr>
+<tr>
+<td style="text-align: left;">B.S. in Mathematics, UC San Diego</td>
+<td style="text-align: right;">2021</td>
+</tr>
+<tr>
+<td style="text-align: left;">A.S. in Physics, Chemistry, and
+Mathematics, Orange Coast College</td>
+<td style="text-align: right;">2019</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section class="level3 unnumbered" id="professional-employment">
+<h3 class="unnumbered">Professional Employment</h3>
+<div class="tablewrap"><table>
+<tbody>
+<tr>
+<td style="text-align: left;">Teaching Assistant, Department of
+Statistics and Applied Probability, UC Santa Barbara</td>
+<td style="text-align: right;">2021–2026</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section class="level3 unnumbered" id="presentations">
+<h3 class="unnumbered">Presentations</h3>
+<p>“Forecasting and Manipulating the Forecasts of Others.” Southern
+California Quantitative Finance Forum (SCQF), UC Santa Barbara, April
+14, 2026.</p>
+</section>
+<section class="level3 unnumbered" id="publications">
+<h3 class="unnumbered">Publications</h3>
+<p>Babichenko, Sam. “Forecasting and Manipulating the Forecasts of
+Others.”<br/>
+arXiv preprint arXiv:2603.12140, 2026.</p>
+</section>
+<section class="level3 unnumbered" id="fields-of-study">
+<h3 class="unnumbered">Fields of Study</h3>
+<p>Major Field: Statistics and Applied Probability.</p>
+<p>Studies in dynamic games with private information, stochastic
+filtering, and market microstructure with Professor Tomoyuki Ichiba.</p>
+</section>
+</section>
+<section class="level1 unnumbered" id="abstract">
+<h1 class="unnumbered">Abstract</h1>
+<p>Dynamic games with dispersed private information look
+hard, even when linearized, because each player needs forecasts of
+others’ forecasts, without end. The regress comes from a loop. Actions
+move the state, the state generates observations, observations update
+beliefs, and beliefs determine actions. Current approaches become
+tractable by cutting the loop. This dissertation builds a noise-state
+calculus that keeps the loop intact.</p>
+<p>Each player keeps estimates of the primitive shocks instead of belief
+hierarchies about the endogenous state. Under perfect information, these
+estimates are the shocks themselves, and the calculus reduces to
+ordinary impulse responses. Beliefs, prices, and policy rules are
+deterministic impulse responses in continuous-time
+linear-quadratic-Gaussian games. Equilibrium is a fixed point in those
+functions and is solved numerically. A finite-deviation identity
+verifies a computed Nash equilibrium against arbitrary admissible
+deviations.</p>
+<p>The information wedge is the shadow price of changing an opponent’s
+beliefs. It breaks the separation principle and vanishes when the loop
+is cut. In a two-player benchmark, a planner can starve an inefficient
+player by reallocating signal precision.</p>
+<p>Signals and actions may arrive late without changing the calculus.
+Stationary systems describe kernels in terms of ages and measure
+distance from finite-dimensionality. In Kyle–Back markets, traders
+differ in signal precision within and across markets and face
+trader-specific price impact. On symmetric networks of local markets,
+shocks average out but strategic restraint does not, lowering mean
+orders while nearly invisible in responses to aggregate shocks. When
+some can identify deviations and others cannot, naive players attribute
+effects to ordinary shocks while privy players respond to labeled
+deviations. In computed markets, strategic market makers put more weight
+on inventory in their quotes when order flow is public and bear lower
+real inventory cost, with price discovery unchanged.</p>
+</section>
+<section class="level1 unnumbered" id="notation">
+<h1 class="unnumbered">Notation</h1>
+<p><strong>Times, indices, and conventions</strong></p>
+<div class="tablewrap"><table>
+
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo separator="true">,</mo><mtext> </mtext><mi>s</mi><mo separator="true">,</mo><mtext> </mtext><mi>τ</mi></mrow><annotation encoding="application/x-tex">t,\ s,\
+\tau</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">calendar times</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo separator="true">,</mo><mtext> </mtext><mi>r</mi></mrow><annotation encoding="application/x-tex">u,\
+r</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">primitive source times</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi><mo separator="true">,</mo><mtext> </mtext><mi>b</mi></mrow><annotation encoding="application/x-tex">a,\
+b</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">ages; <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">ℓ</mi></mrow><annotation encoding="application/x-tex">\ell</annotation></semantics></math></span></span> the two-sided lag</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>X</mi><mi>t</mi></msub><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">X_t(u)</annotation></semantics></math></span></span> vs. <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">x(a)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">finite-horizon objects carry calendar time
+as a subscript and source time as an argument; stationary objects are
+functions of ages or lags</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>X</mi><mi>t</mi></msub><mo separator="true">,</mo><mtext> </mtext><msub><mi>X</mi><mi>t</mi></msub><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">X_t,\
+X_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">a process and its kernel share a letter:
+the state, and its response to the shock born at <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi></mrow><annotation encoding="application/x-tex">u</annotation></semantics></math></span></span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>D</mi><mi>t</mi><mi>i</mi></msubsup><mo separator="true">,</mo><mtext> </mtext><msubsup><mi>D</mi><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">D^i_t,\
+D^i_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">the control and its policy kernel</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>B</mi><mi>X</mi><mi>X</mi></msubsup><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mtext> </mtext><msup><mi>G</mi><mrow><mi>X</mi><mi>X</mi><mo separator="true">,</mo><mi>i</mi></mrow></msup><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mtext> </mtext><mi>σ</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">B^X_X(t),\
+G^{XX,i}(t),\ \sigma(t)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">exogenous coefficients carry time in
+parentheses</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>X</mi><mi>t</mi></msub><mo separator="true">,</mo><mtext> </mtext><msubsup><mi>D</mi><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mtext> </mtext><msubsup><mi>H</mi><mi>t</mi><mrow><mi>k</mi><mo separator="true">,</mo><mi>i</mi></mrow></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">X_t,\
+D^i_t(u),\ H^{k,i}_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">processes, kernels, and equilibrium gains
+carry it as a subscript</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo separator="true">,</mo><mtext> </mtext><mi>j</mi><mo separator="true">,</mo><mtext> </mtext><mi>k</mi><mo>∈</mo><mi mathvariant="normal">ℐ</mi></mrow><annotation encoding="application/x-tex">i,\ j,\
+k\in\mathcal I</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">player indices, as superscripts</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">x(a)</annotation></semantics></math></span></span>
+vs. <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>X</mi><mi>t</mi></msub><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">X_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">lowercase letters are the stationary
+current-value counterparts of uppercase finite-horizon objects</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>D</mi><mrow><mi>W</mi><mo separator="true">,</mo><mi>t</mi></mrow><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mtext> </mtext><msubsup><mi>d</mi><mi>W</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">D^i_{W,t}(u),\
+d^i_W(a)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">a subscript <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>W</mi></mrow><annotation encoding="application/x-tex">W</annotation></semantics></math></span></span> marks a kernel written in
+primitive-shock coordinates</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">ℱ</mi><mo separator="true">,</mo><mtext> </mtext><mi mathvariant="normal">ℬ</mi><mo separator="true">,</mo><mtext> </mtext><mo>…</mo></mrow><annotation encoding="application/x-tex">\mathcal F,\
+\mathcal B,\ \ldots</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">calligraphic letters are sets, <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>σ</mi></mrow><annotation encoding="application/x-tex">\sigma</annotation></semantics></math></span></span>-fields, and operators; the wedge
+<span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi mathvariant="normal">𝒱</mi><mi>t</mi><mi>i</mi></msubsup></mrow><annotation encoding="application/x-tex">\mathcal V^i_t</annotation></semantics></math></span></span> is the one
+calligraphic process</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Accents</strong></p>
+<div class="tablewrap"><table>
+
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>W</mi><mo stretchy="true">^</mo></mover><mo separator="true">,</mo><mtext> </mtext><mover accent="true"><mi>X</mi><mo stretchy="true">^</mo></mover></mrow><annotation encoding="application/x-tex">\widehat W,\
+\widehat X</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">hats are conditional expectations</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>X</mi><mo stretchy="true">~</mo></mover><mo separator="true">,</mo><mtext> </mtext><mover accent="true"><mi>C</mi><mo stretchy="true">~</mo></mover></mrow><annotation encoding="application/x-tex">\widetilde X,\
+\widetilde C</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">tildes are unresolved parts</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>D</mi><mo>ˉ</mo></mover><mo separator="true">,</mo><mtext> </mtext><mover accent="true"><mi>h</mi><mo>ˉ</mo></mover></mrow><annotation encoding="application/x-tex">\bar D,\ \bar
+h</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">bars are deterministic means</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>f</mi><mo>ˇ</mo></mover></mrow><annotation encoding="application/x-tex">\check
+f</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">checks are transforms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi></mrow><annotation encoding="application/x-tex">C</annotation></semantics></math></span></span>; <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi mathvariant="normal">𝖢</mi><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo separator="true">,</mo><mi>r</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\mathsf
+C^i_t(u,r)</annotation></semantics></math></span></span>; <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover accent="true"><mi>C</mi><mo stretchy="true">~</mo></mover><mi>t</mi><mrow><mi>i</mi><mo separator="true">,</mo><mi>Y</mi></mrow></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\widetilde
+C^{i,Y}_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">an observation kernel; a conditional
+covariance; the unresolved observation row</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Letters whose meaning is local to a chapter</strong></p>
+<div class="tablewrap"><table>
+
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi></mrow><annotation encoding="application/x-tex">z</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">a control spike (Chapter <a class="xref" href="/dissertation/chapter-4/#ch:stationary-kyle-back">4</a>’s raw order spike is the
+same object) or a transform variable, never a time</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo>=</mo><msubsup><mi>B</mi><mi>i</mi><mi>X</mi></msubsup><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mi>z</mi></mrow><annotation encoding="application/x-tex">v=B^X_i(t)z</annotation></semantics></math></span></span>; <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>v</mi><mi>i</mi></msub><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">v_i(s)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">the state impulse a spike induces; a
+deviation seed (Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a>)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>δ</mi><mo separator="true">,</mo><mtext> </mtext><msub><mi>δ</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\delta,\
+\delta_i</annotation></semantics></math></span></span>; <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>δ</mi><msubsup><mi>w</mi><mi>t</mi><mi>k</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\delta w^k_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">a first variation, one with respect to an
+origin-<span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span> seed; the noise-state
+perturbation in density form</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi mathvariant="normal">Δ</mi><mi>i</mi></msub><mo separator="true">,</mo><mtext> </mtext><msub><mi mathvariant="normal">Δ</mi><mi>r</mi></msub></mrow><annotation encoding="application/x-tex">\Delta_i,\
+\Delta_r</annotation></semantics></math></span></span>; <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi></mrow><annotation encoding="application/x-tex">\Delta</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">observation delays; in the appendix to
+Chapter <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a>, a finite difference</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ζ</mi></mrow><annotation encoding="application/x-tex">\zeta</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">the noise-trader variance asymmetry, <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi mathvariant="normal">Σ</mi><mi>Z</mi></msub><mo>=</mo><mi mathvariant="normal">diag</mi><mo>⁡</mo><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><mi>ζ</mi><mo separator="true">,</mo><mn>1</mn><mo>−</mo><mi>ζ</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\Sigma_Z=\operatorname{diag}(1+\zeta,1-\zeta)</annotation></semantics></math></span></span>
+(Chapter <a class="xref" href="/dissertation/chapter-4/#ch:stationary-kyle-back">4</a>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>v</mi><mo separator="true">,</mo><mtext> </mtext><mi>w</mi></mrow><annotation encoding="application/x-tex">v,\
+w</annotation></semantics></math></span></span>; <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>r</mi></mrow><annotation encoding="application/x-tex">r</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">vertices and a group displacement
+(Chapter <a class="xref" href="/dissertation/chapter-5/#ch:vertex-transitive">5</a>)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>q</mi></mrow><annotation encoding="application/x-tex">q</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">the number of assets (Chapter <a class="xref" href="/dissertation/chapter-4/#ch:stationary-kyle-back">4</a>); the delayed source date
+<span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>q</mi><mi>k</mi></msub><mo>=</mo><mi>s</mi><mo>−</mo><msub><mi mathvariant="normal">Δ</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">q_k=s-\Delta_k</annotation></semantics></math></span></span> (Chapter <a class="xref" href="/dissertation/chapter-2/#ch:delayed-public">2</a>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>p</mi><mo separator="true">,</mo><mi>q</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(p,q)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">Laplace variables (Chapter <a class="xref" href="/dissertation/chapter-3/#chap:stationary-lqg">3</a>); naive and privy indices
+(Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a>)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi><mo>⊵</mo><mi>i</mi></mrow><annotation encoding="application/x-tex">j\trianglerighteq i</annotation></semantics></math></span></span>; <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi mathvariant="normal">𝒫</mi><mi>i</mi></msub><mo separator="true">,</mo><mtext> </mtext><msub><mi mathvariant="normal">𝒩</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\mathcal P_i,\ \mathcal N_i</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math></span></span> observes deviations whose origin is
+player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span>; the players privy and
+naive to an origin-<span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span> deviation
+(Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a>)</td>
+</tr>
+</tbody>
+</table></div>
+<p>The following table collects the objects carried across chapters and
+marks where each is developed. Chapter-specific objects, proof-local
+variables, and one-use abbreviations are defined in place.</p>
+<p><strong>Core finite-horizon objects</strong></p>
+<div class="tablewrap"><table>
+
+<thead>
+<tr class="header">
+<th style="text-align: left;">Symbol</th>
+<th style="text-align: left;">Object</th>
+<th style="text-align: left;">Scope</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>W</mi><mo>=</mo><mo stretchy="false">(</mo><msup><mi>W</mi><mn>0</mn></msup><mo separator="true">,</mo><msup><mi>W</mi><mn>1</mn></msup><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msup><mi>W</mi><mi>n</mi></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">W=(W^0,W^1,\ldots,W^n)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">primitive Brownian shock path, with common
+and player-specific coordinates</td>
+<td style="text-align: left;">General</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">ℐ</mi><mo separator="true">;</mo><mtext> </mtext><mi>i</mi><mo separator="true">,</mo><mi>j</mi><mo separator="true">,</mo><mi>k</mi></mrow><annotation encoding="application/x-tex">\mathcal I;\
+i,j,k</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">player set and generic player indices</td>
+<td style="text-align: left;">General</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi mathvariant="normal">ℱ</mi><mi>t</mi></msub><mo separator="true">,</mo><mtext> </mtext><msubsup><mi mathvariant="normal">ℱ</mi><mi>t</mi><mi>i</mi></msubsup></mrow><annotation encoding="application/x-tex">\mathcal F_t,\
+\mathcal F^i_t</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">primitive and player-<span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span> information filtrations</td>
+<td style="text-align: left;">General</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>E</mi><mi>i</mi></msup></mrow><annotation encoding="application/x-tex">E^i</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">block selector for player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span>’s noise channel, <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>W</mi><mi>i</mi></msup><mo>=</mo><msup><mi>E</mi><mi>i</mi></msup><mi>W</mi></mrow><annotation encoding="application/x-tex">W^i=E^iW</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">General</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>X</mi><mi>t</mi></msub><mo separator="true">,</mo><mtext> </mtext><msub><mi>X</mi><mi>t</mi></msub><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">X_t,\
+X_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">physical state and its primitive response
+to the shock born at <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi></mrow><annotation encoding="application/x-tex">u</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">Ch. <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>B</mi><mi>X</mi><mi>X</mi></msubsup><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mtext> </mtext><msubsup><mi>B</mi><mi>i</mi><mi>X</mi></msubsup><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mtext> </mtext><mi>σ</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">B^X_X(t),\
+B^X_i(t),\ \sigma(t)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">drift, control gains, and noise loading of
+the state, <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><msub><mi>X</mi><mi>t</mi></msub><mo>=</mo><mo fence="false" stretchy="true" minsize="1.2em" maxsize="1.2em">(</mo><msubsup><mi>B</mi><mi>X</mi><mi>X</mi></msubsup><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><msub><mi>X</mi><mi>t</mi></msub><mo>+</mo><msub><mo>∑</mo><mi>i</mi></msub><msubsup><mi>B</mi><mi>i</mi><mi>X</mi></msubsup><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><msubsup><mi>D</mi><mi>t</mi><mi>i</mi></msubsup><mo fence="false" stretchy="true" minsize="1.2em" maxsize="1.2em">)</mo><mi>d</mi><mi>t</mi><mo>+</mo><mi>σ</mi><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo><mtext> </mtext><mi>d</mi><msubsup><mi>W</mi><mi>t</mi><mn>0</mn></msubsup></mrow><annotation encoding="application/x-tex">dX_t=\big(B^X_X(t)X_t+\sum_iB^X_i(t)D^i_t\big)dt+\sigma(t)\,dW^0_t</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">Ch. <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>Y</mi><mi>t</mi><mi>i</mi></msubsup><mo separator="true">,</mo><mtext> </mtext><msubsup><mi>B</mi><mi>X</mi><mrow><mi>Y</mi><mo separator="true">,</mo><mi>i</mi></mrow></msubsup><mo separator="true">,</mo><mtext> </mtext><msup><mi>P</mi><mi>i</mi></msup><mo stretchy="false">(</mo><mi>t</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">Y^i_t,\
+B^{Y,i}_X,\ P^i(t)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span>’s observation process, observation map,
+and precision <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>B</mi><mi>X</mi><mrow><mi>Y</mi><mo separator="true">,</mo><mi>i</mi><mi mathvariant="normal">⊤</mi></mrow></msubsup><msubsup><mi>B</mi><mi>X</mi><mrow><mi>Y</mi><mo separator="true">,</mo><mi>i</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">B^{Y,i\top}_XB^{Y,i}_X</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">Ch. <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><msubsup><mi>I</mi><mi>t</mi><mi>i</mi></msubsup></mrow><annotation encoding="application/x-tex">dI_t^i</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span>’s innovation, <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><msubsup><mi>Y</mi><mi>t</mi><mi>i</mi></msubsup><mo>−</mo><msubsup><mi>B</mi><mi>X</mi><mrow><mi>Y</mi><mo separator="true">,</mo><mi>i</mi></mrow></msubsup><msubsup><mover accent="true"><mi>X</mi><mo stretchy="true">^</mo></mover><mi>t</mi><mi>i</mi></msubsup><mtext> </mtext><mi>d</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">dY^i_t-B^{Y,i}_X\widehat X^i_t\,dt</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">Ch. <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a></td>
+</tr>
+</tbody>
+</table></div>
+<div class="tablewrap"><table>
+
+<thead>
+<tr class="header">
+<th style="text-align: left;">Symbol</th>
+<th style="text-align: left;">Object</th>
+<th style="text-align: left;">Scope</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover accent="true"><mi>W</mi><mo stretchy="true">^</mo></mover><mi>t</mi><mrow><mtext> </mtext><mi>i</mi></mrow></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\widehat
+W^{\,i}_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">noise-state: player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span>’s conditional estimate of <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mi>u</mi></msub></mrow><annotation encoding="application/x-tex">W_u</annotation></semantics></math></span></span> at time <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">Ch. <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi mathvariant="normal">Π</mi><mi>i</mi></msup><mo separator="true">,</mo><mtext> </mtext><msubsup><mi>F</mi><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo separator="true">,</mo><mi>s</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\Pi^i,\
+F^i_t(u,s)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">direct projection and filter kernel;
+together, the blueprint of player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span>’s beliefs</td>
+<td style="text-align: left;">Ch. <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover accent="true"><mi>X</mi><mo stretchy="true">~</mo></mover><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\widetilde X^i_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">unresolved response: the part of <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>X</mi><mi>t</mi></msub><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">X_t(u)</annotation></semantics></math></span></span> that player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span>’s information does not resolve</td>
+<td style="text-align: left;">Ch. <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>δ</mi><msubsup><mi>w</mi><mi>t</mi><mi>k</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\delta w^k_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">noise-state perturbation in density form,
+<span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>d</mi><mi>u</mi></msub><mtext> </mtext><mi>δ</mi><msubsup><mover accent="true"><mi>W</mi><mo stretchy="true">^</mo></mover><mi>t</mi><mi>k</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo><mo>=</mo><mi>δ</mi><msubsup><mi>w</mi><mi>t</mi><mi>k</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo><mtext> </mtext><mi>d</mi><mi>u</mi></mrow><annotation encoding="application/x-tex">d_u\,\delta\widehat
+W^k_t(u)=\delta w^k_t(u)\,du</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">Chs. <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a>, <a class="xref" href="/dissertation/chapter-2/#ch:delayed-public">2</a>, <a class="xref" href="/dissertation/chapter-4/#ch:stationary-kyle-back">4</a>, <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>D</mi><mi>t</mi><mi>i</mi></msubsup><mo separator="true">,</mo><mtext> </mtext><msubsup><mi>D</mi><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mtext> </mtext><msubsup><mi>D</mi><mrow><mi>W</mi><mo separator="true">,</mo><mi>t</mi></mrow><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">D^i_t,\
+D^i_t(u),\ D^i_{W,t}(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">control, its policy kernel, and its
+control kernel in primitive-shock coordinates</td>
+<td style="text-align: left;">Ch. <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>H</mi><mi>t</mi><mrow><mi>X</mi><mo separator="true">,</mo><mi>i</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">H^{X,i}_t</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">state price: player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span>’s adjoint to the physical state</td>
+<td style="text-align: left;">Ch. <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>H</mi><mi>t</mi><mrow><mi>k</mi><mo separator="true">,</mo><mi>i</mi></mrow></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">H^{k,i}_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">belief price: player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span>’s adjoint to player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span></span>’s noise-state coordinate at source time
+<span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi></mrow><annotation encoding="application/x-tex">u</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">Ch. <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi mathvariant="normal">𝒱</mi><mi>t</mi><mi>i</mi></msubsup></mrow><annotation encoding="application/x-tex">\mathcal V^i_t</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">information wedge: the price of moving
+opponents’ noise-states, entering the dynamics of the state price</td>
+<td style="text-align: left;">Chs. <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a>, <a class="xref" href="/dissertation/chapter-2/#ch:delayed-public">2</a>, <a class="xref" href="/dissertation/chapter-4/#ch:stationary-kyle-back">4</a>, <a class="xref" href="/dissertation/chapter-5/#ch:vertex-transitive">5</a>, <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi mathvariant="normal">𝔅</mi><mi>k</mi></msup><mo separator="true">,</mo><mtext> </mtext><msup><mi mathvariant="normal">𝔅</mi><mrow><mi>k</mi><mi mathvariant="normal">⊤</mi></mrow></msup></mrow><annotation encoding="application/x-tex">\mathfrak
+B^{k},\ \mathfrak B^{k\top}</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">filter contraction: integrates a belief
+price against player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span></span>’s own filter
+row; and its transpose</td>
+<td style="text-align: left;">Chs. <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a>, <a class="xref" href="/dissertation/chapter-2/#ch:delayed-public">2</a>, <a class="xref" href="/dissertation/chapter-4/#ch:stationary-kyle-back">4</a>, <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi></mrow><annotation encoding="application/x-tex">\rho</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">exponential discount rate</td>
+<td style="text-align: left;">Chs. <a class="xref" href="/dissertation/chapter-3/#chap:stationary-lqg">3</a>, <a class="xref" href="/dissertation/chapter-4/#ch:stationary-kyle-back">4</a></td>
+</tr>
+</tbody>
+</table></div>
+<section class="level2 unnumbered" id="finite-horizon-and-stationary-forms">
+<h2 class="unnumbered">Finite-horizon and stationary forms</h2>
+<p>The stationary chapter changes coordinates rather than economic
+objects. Calendar dates become ages or lags, and finite-horizon
+uppercase objects become lowercase current-value objects; processes keep
+their letters:</p>
+<div class="tablewrap"><table>
+
+<thead>
+<tr class="header">
+<th style="text-align: left;">Finite-horizon form</th>
+<th style="text-align: left;">Stationary form</th>
+<th style="text-align: left;">Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>X</mi><mi>t</mi></msub><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">X_t(s)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi><mo stretchy="false">(</mo><mi>t</mi><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo><mo>=</mo><mi>x</mi><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">x(t-s)=x(a)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">state-response kernel</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover accent="true"><mi>X</mi><mo stretchy="true">~</mo></mover><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\widetilde
+X^i_t(s)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mover accent="true"><mi>x</mi><mo>~</mo></mover><mi>i</mi></msup><mo stretchy="false">(</mo><mi>t</mi><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mover accent="true"><mi>x</mi><mo>~</mo></mover><mi>i</mi></msup><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\tilde
+x^i(t-s)=\tilde x^i(a)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">unresolved response</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>D</mi><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">D^i_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>d</mi><mi>i</mi></msup><mo stretchy="false">(</mo><mi>t</mi><mo>−</mo><mi>u</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mi>d</mi><mi>i</mi></msup><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">d^i(t-u)=d^i(a)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">noise-state policy kernel</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>D</mi><mrow><mi>W</mi><mo separator="true">,</mo><mi>t</mi></mrow><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">D^i_{W,t}(s)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>d</mi><mi>W</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>t</mi><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo><mo>=</mo><msubsup><mi>d</mi><mi>W</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">d^i_W(t-s)=d^i_W(a)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">control kernel in primitive-shock
+coordinates</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>F</mi><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo separator="true">,</mo><mi>s</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">F^i_t(u,s)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>f</mi><mi>i</mi></msup><mo stretchy="false">(</mo><mi>t</mi><mo>−</mo><mi>u</mi><mo separator="true">,</mo><mi>t</mi><mo>−</mo><mi>s</mi><mo stretchy="false">)</mo><mo>=</mo><msup><mi>f</mi><mi>i</mi></msup><mo stretchy="false">(</mo><mi>b</mi><mo separator="true">,</mo><mi>a</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">f^i(t-u,t-s)=f^i(b,a)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">filter kernel</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover accent="true"><mi>W</mi><mo stretchy="true">^</mo></mover><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\widehat W^i_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover accent="true"><mi>W</mi><mo stretchy="true">^</mo></mover><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>t</mi><mo>−</mo><mi>a</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\widehat
+W^i_t(t-a)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">noise-state (a process; stays
+uppercase)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>H</mi><mi>t</mi><mrow><mi>X</mi><mo separator="true">,</mo><mi>i</mi></mrow></msubsup></mrow><annotation encoding="application/x-tex">H^{X,i}_t</annotation></semantics></math></span></span></td>
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mover accent="true"><mi>h</mi><mo>ˉ</mo></mover><mrow><mi>X</mi><mo separator="true">,</mo><mi>i</mi></mrow></msup></mrow><annotation encoding="application/x-tex">\bar
+h^{X,i}</annotation></semantics></math></span></span> and <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>h</mi><mrow><mi>X</mi><mo separator="true">,</mo><mi>i</mi></mrow></msup><mo stretchy="false">(</mo><mi mathvariant="normal">ℓ</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">h^{X,i}(\ell)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">mean and two-sided state price</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>H</mi><mi>t</mi><mrow><mi>k</mi><mo separator="true">,</mo><mi>i</mi></mrow></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">H^{k,i}_t(u)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mover accent="true"><mi>h</mi><mo>ˉ</mo></mover><mrow><mi>k</mi><mo separator="true">,</mo><mi>i</mi></mrow></msup><mo stretchy="false">(</mo><mi>b</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\bar
+h^{k,i}(b)</annotation></semantics></math></span></span> and <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>h</mi><mrow><mi>k</mi><mo separator="true">,</mo><mi>i</mi></mrow></msup><mo stretchy="false">(</mo><mi>b</mi><mo separator="true">,</mo><mi mathvariant="normal">ℓ</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">h^{k,i}(b,\ell)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">belief price</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi mathvariant="normal">𝒱</mi><mi>t</mi><mi>i</mi></msubsup></mrow><annotation encoding="application/x-tex">\mathcal V^i_t</annotation></semantics></math></span></span></td>
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mover accent="true"><mi>v</mi><mo>ˉ</mo></mover><mi>i</mi></msup></mrow><annotation encoding="application/x-tex">\bar v^i</annotation></semantics></math></span></span> and <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>v</mi><mi>i</mi></msup><mo stretchy="false">(</mo><mi mathvariant="normal">ℓ</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">v^i(\ell)</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">information wedge</td>
+</tr>
+</tbody>
+</table></div>
+</section>
+<section class="level2 unnumbered" id="glossary">
+<h2 class="unnumbered">Glossary</h2>
+<div class="tablewrap"><table>
+
+<thead>
+<tr class="header">
+<th style="text-align: left;">Term</th>
+<th style="text-align: left;">Meaning</th>
+<th style="text-align: left;">Where</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Term</td>
+<td style="text-align: left;">Meaning</td>
+<td style="text-align: left;">Where</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">noise-state</td>
+<td style="text-align: left;">a player’s conditional estimate of the
+primitive shock path, <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover accent="true"><mi>W</mi><mo stretchy="true">^</mo></mover><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo><mo>=</mo><mi mathvariant="normal">𝔼</mi><mo stretchy="false">[</mo><msub><mi>W</mi><mi>u</mi></msub><mo>∣</mo><msubsup><mi mathvariant="normal">ℱ</mi><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">\widehat
+W^i_t(u)=\mathbb{E}[W_u\mid\mathcal F^i_t]</annotation></semantics></math></span></span>; the coordinates in
+which strategies, filters, and prices are written</td>
+<td style="text-align: left;">Introduction; Thm. <a class="xref" href="/dissertation/chapter-1/#thm:noise_state_filter_compact">1.5</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">blueprint</td>
+<td style="text-align: left;">the pair <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><msup><mi mathvariant="normal">Π</mi><mi>i</mi></msup><mo separator="true">,</mo><msup><mi>F</mi><mi>i</mi></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(\Pi^i,F^i)</annotation></semantics></math></span></span> of direct projection and
+filter kernel, the deterministic map from primitive shocks to a player’s
+estimated shocks</td>
+<td style="text-align: left;">Thm. <a class="xref" href="/dissertation/chapter-1/#thm:noise_state_filter_compact">1.5</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">unresolved response</td>
+<td style="text-align: left;">the part <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mover accent="true"><mi>X</mi><mo stretchy="true">~</mo></mover><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\widetilde X^i_t(u)</annotation></semantics></math></span></span> of the state’s
+impulse response that a player’s information has not resolved; the
+filtering gain</td>
+<td style="text-align: left;">Sec. <a class="xref" href="/dissertation/chapter-1/#sec:info_structure">1.3.2</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">loop, chord</td>
+<td style="text-align: left;">the state–observation–belief–action
+feedback cycle, and the direct edge by which an action enters what
+others observe without passing through the state</td>
+<td style="text-align: left;">Introduction, Fig. <a class="xref" href="/dissertation/introduction/#fig:loop">1</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">spike</td>
+<td style="text-align: left;">a marginal control impulse <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi><mtext> </mtext><msub><mi>δ</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">z\,\delta_t</annotation></semantics></math></span></span>; the deviation whose first
+variation gives the first-order conditions (Chapter <a class="xref" href="/dissertation/chapter-4/#ch:stationary-kyle-back">4</a>’s raw order spike is the
+same object)</td>
+<td style="text-align: left;">Sec. <a class="xref" href="/dissertation/chapter-1/#sec:ex_spike">1.2.3</a>;
+Sec. <a class="xref" href="/dissertation/chapter-4/#sec:environment">4.2</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">belief price</td>
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>H</mi><mi>t</mi><mrow><mi>k</mi><mo separator="true">,</mo><mi>i</mi></mrow></msubsup><mo stretchy="false">(</mo><mi>u</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">H^{k,i}_t(u)</annotation></semantics></math></span></span>, the marginal cost to player
+<span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span> of moving player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span></span>’s estimate of the shock born at <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi></mrow><annotation encoding="application/x-tex">u</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">Thm. <a class="xref" href="/dissertation/chapter-1/#thm:wedge-adjoints">1.8</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">information wedge</td>
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi mathvariant="normal">𝒱</mi><mi>t</mi><mi>i</mi></msubsup></mrow><annotation encoding="application/x-tex">\mathcal V^i_t</annotation></semantics></math></span></span>, the adjoint price of moving opponents’ noise-states; the
+only term through which belief manipulation enters the state-price
+equation</td>
+<td style="text-align: left;">Thm. <a class="xref" href="/dissertation/chapter-1/#thm:wedge-adjoints">1.8</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">birth</td>
+<td style="text-align: left;">the entry of a new source coordinate into
+a filter or adjoint at the current date (diagonal birth); a delayed
+public signal adds a second birth when its news arrives, at <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>u</mi><mo>=</mo><mi>t</mi><mo>−</mo><msub><mi mathvariant="normal">Δ</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">u=t-\Delta_i</annotation></semantics></math></span></span></td>
+<td style="text-align: left;">Thm. <a class="xref" href="/dissertation/chapter-1/#thm:noise_state_filter_compact">1.5</a>; Ch. <a class="xref" href="/dissertation/chapter-2/#ch:delayed-public">2</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">disclosure window</td>
+<td style="text-align: left;">the interval between a private action and
+the public arrival of the news that explains it</td>
+<td style="text-align: left;">Ch. <a class="xref" href="/dissertation/chapter-2/#ch:delayed-public">2</a>,
+Fig. <a class="xref" href="/dissertation/chapter-2/#fig:delayed_birth_geometry">2.1</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">early peak</td>
+<td style="text-align: left;">the peak in the stationary state price of
+a signal-noise shock a short lag after it arrives; a noise shock harms
+only through the responses it triggers, and no player has responded yet
+when it arrives</td>
+<td style="text-align: left;">Sec. <a class="xref" href="/dissertation/chapter-3/#sec:stationary-adjoints">3.2</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">seed</td>
+<td style="text-align: left;">the displacement a spike leaves in
+observers’ filters, an old-history density plus a birth atom; in
+Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a>, the labeled state impulse a
+monitored deviation creates</td>
+<td style="text-align: left;">Sec. <a class="xref" href="/dissertation/chapter-4/#sec:noise-state-price-impact">4.3</a>;
+Def. <a class="xref" href="/dissertation/chapter-6/#def:monitoring">6.1</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">execution, position</td>
+<td style="text-align: left;">the two parts of trading profit: execution
+is earned at the fill, the gap between the new quote and the price paid;
+position is earned afterwards on shares already held; their sum, the
+price-profit rate, is zero-sum across the market</td>
+<td style="text-align: left;">Sec. <a class="xref" href="/dissertation/chapter-4/#sec:kb-numerics">4.8</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">book gap</td>
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">𝔼</mi><mo stretchy="false">[</mo><msubsup><mi>Q</mi><mi>t</mi><mi>i</mi></msubsup><mo stretchy="false">(</mo><msub><mi>V</mi><mi>t</mi></msub><mo>−</mo><msub><mi>P</mi><mi>t</mi></msub><mo stretchy="false">)</mo><mo stretchy="false">]</mo></mrow><annotation encoding="application/x-tex">\mathbb{E}[Q^i_t(V_t-P_t)]</annotation></semantics></math></span></span>, the average
+undervaluation of the shares held; a level, not a flow</td>
+<td style="text-align: left;">Sec. <a class="xref" href="/dissertation/chapter-4/#sec:kb-numerics">4.8</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">monitoring relation</td>
+<td style="text-align: left;"><span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi><mo>⊵</mo><mi>i</mi></mrow><annotation encoding="application/x-tex">j\trianglerighteq i</annotation></semantics></math></span></span>: player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math></span></span> observes player <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span>’s deviations and knows they are player
+<span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span></span>’s; reflexive and transitive</td>
+<td style="text-align: left;">Def. <a class="xref" href="/dissertation/chapter-6/#def:monitoring">6.1</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">privy, naive</td>
+<td style="text-align: left;">a player who sees a deviation, knows who
+made it, and responds to it; one who does not and treats its effect as
+more primitive shock</td>
+<td style="text-align: left;">Sec. <a class="xref" href="/dissertation/chapter-6/#sec:coordinates">6.4</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">blip of irrationality</td>
+<td style="text-align: left;">a single forced departure after which the
+deviating player resumes equilibrium play; pins down what the deviator
+does after the blip, which is what privy players respond to</td>
+<td style="text-align: left;">Sec. <a class="xref" href="/dissertation/chapter-6/#subsec:blip">6.4.2</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">transparent, opaque market</td>
+<td style="text-align: left;">the market with and without published
+order flow, in which the trader is privy or naive to quote
+deviations</td>
+<td style="text-align: left;">Sec. <a class="xref" href="/dissertation/chapter-6/#sec:mm-transparent-opaque">6.8</a></td>
+</tr>
+</tbody>
+</table></div>
+</section>
+</section>
+        </article>
+        <div class="fin" aria-hidden="true"><svg viewBox="-4 0 208 30"><path d="M0,15.0 L4,9.9 L8,6.9 L12,6.6 L16,8.5 L20,11.8 L24,15.4 L28,18.3 L32,19.9 L36,19.9 L40,18.7 L44,16.7 L48,14.6 L52,12.9 L56,12.1 L60,12.1 L64,12.9 L68,14.1 L72,15.4 L76,16.3 L80,16.8 L84,16.7 L88,16.2 L92,15.4 L96,14.7 L100,14.2 L104,13.9 L108,14.0 L112,14.4 L116,14.8 L120,15.2 L124,15.5 L128,15.6 L132,15.6 L136,15.4 L140,15.1 L144,14.8 L148,14.7 L152,14.6 L156,14.7 L160,14.8 L164,15.0 L168,15.1 L172,15.2 L176,15.2 L180,15.2 L184,15.1 L188,15.0 L192,14.9 L196,14.9 L200,14.9" /><circle cx="200" cy="15" r="2.2" /></svg></div>
+        <nav class="pager"><span></span>
+            <a class="next" href="https://sbabichenko.com/dissertation/introduction"><span>Next &rarr;</span><b>Introduction</b></a>
+        </nav>
+      </main>
+    </div>
+    <div class="peek" id="peek" role="tooltip" hidden></div>
+
+    
+<footer class="site-foot">
+  
+  <span>&copy; 2025&ndash;2026 Sam Babichenko</span>
+  <a href="https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by&#x2F;4.0&#x2F;deed.en" rel="noopener" target="_blank">CC BY 4.0</a>
+  <a href="https://sbabichenko.com/colophon">Colophon</a>
+  <a href="https://sbabichenko.com/atom.xml" title="New writing, in any feed reader">Feed</a>
+  <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
+</footer>
+<script src="https://sbabichenko.com/js/tally.js?h=4000db8cd9e27f8f27cd"></script>
+<link rel="stylesheet" href="https://sbabichenko.com/css/whimsy.css?h=47c637d7150a148c9bce" />
+<link rel="stylesheet" href="https://sbabichenko.com/css/fold.css?h=65a4ad70c1f9e810669b" />
+<script src="https://sbabichenko.com/js/whimsy.js?h=03baa37dd53e13046bb1"></script>
+<script src="https://sbabichenko.com/js/skip.js?h=8b0612be930eb6b54639" defer></script>
+<script src="https://sbabichenko.com/js/fold.js?h=c0b53bc8e268c5e50f1c"></script>
+<script type="application/json" id="fignotes" data-explorer="https://sbabichenko.com/noisestate">{"fig:impulse_w0_first":{"note":"Computed with the noisestate package at 24 nodes.","explorer":{"hash":"game=ch1&p1=3&p2=10&r1=0.1&r2=0.1&b1=1&b2=-1&sigma=1&T=1","label":"Solve this game in the explorer"},"inspect":{"code":"fig1_2.py","model":"fig1_2.yaml"}},"fig:mean_response_precision":{"note":"Computed with spec_ch1, the spectral solver for this chapter, at 12 × 16 nodes (16 × 24 at p = 10⁴).","explorer":{"hash":"game=ch1&p1=10&p2=10&r1=0.1&r2=0.1&b1=1&b2=-1&sigma=1&T=1","label":"Solve this game in the explorer, at p = 10"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/ch1_mean_spectral_2026-08-27","label":"The code"}},"fig:costs_private_vs_pooled":{"note":"Computed with spec_ch1 at 12 × 16 nodes.","code":{"url":"https://github.com/sbabichenko/Forecasting-And-Manipulating-The-Forecasts-Of-Others/blob/main/spectral_ch1/fig12_sweep.py","label":"The code"}},"fig:precision_decomposition":{"note":"Computed with the finite-difference solver (lqg_solver.cpp) on grids of 40 and 79 points and Richardson-extrapolated.","explorer":{"hash":"game=ch1&p1=10&p2=10&r1=0.05&r2=0.2&b1=1&b2=-1&sigma=0.5&T=1","label":"Solve this game in the explorer, at an even split"},"code":{"url":"https://github.com/sbabichenko/Forecasting-And-Manipulating-The-Forecasts-Of-Others/blob/main/generate_figures.cpp","label":"The code"}},"fig:stationary-filter":{"note":"Computed with solve_spectral at 32 Chebyshev nodes per side.","explorer":{"hash":"game=ch3&p1=3&p2=3&r1=0.1&r2=0.1&b1=0&b2=0","label":"Solve this game in the explorer"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary","label":"The code"}},"fig:stationary-adjoint":{"note":"Computed with solve_spectral at 32 Chebyshev nodes per side.","explorer":{"hash":"game=ch3&p1=3&p2=3&r1=0.1&r2=0.1&b1=0&b2=0","label":"Solve this game in the explorer"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary","label":"The code"}},"fig:stationary-precision":{"note":"Two sweeps of 200 equilibria with solve_spectral at 24 nodes per side.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary","label":"The code"}},"fig:stationary-hankel":{"note":"Computed with solve_spectral at 32 Chebyshev nodes per side.","explorer":{"hash":"game=ch3&p1=3&p2=3&r1=0.1&r2=0.1&b1=0&b2=0","label":"Solve this game in the explorer"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary","label":"The code"}},"fig:stationary-refinement":{"note":"Finite differences (solve_stationary) at N = 500, 1000, 2000 and 4000; solve_spectral at 8 to 24 nodes per side.","explorer":{"hash":"game=ch3&p1=3&p2=3&r1=0.1&r2=0.1&b1=0&b2=0","label":"Solve this game in the explorer"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary","label":"The code"}},"fig:stationary-pinn":{"note":"Stored solutions: a 256 × 5 neural network and a Wiener–Hopf solver on 1000 points.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary","label":"The code"}},"fig:kb-kernels":{"note":"Computed with kb_spectral at 64 and 128 nodes, on windows of 8 and 32.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback","label":"The code"}},"fig:kb-multiasset":{"note":"Computed with kb_spectral_q at 48 nodes on a window of 8.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback","label":"The code"}},"fig:kb-impact-decomp":{"note":"Computed with the grid solver kb_multi.py, 100 cells on a window of 8.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback","label":"The code"}},"fig:kb-wedge-decomp":{"note":"Computed from kb_multi.py solutions, 100 cells on a window of 8.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback","label":"The code"}},"fig:kb-rho-ladder":{"note":"Computed with kb_spectral at 64, 96 and 128 nodes for windows of 8, 16 and 32.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback","label":"The code"}},"fig:ch5-logdev":{"note":"An illustrative simulated path.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle","label":"The code"}},"fig:ch5-schematic":{"note":"Drawn with a plotting script.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle","label":"The code"}},"fig:ch5-levels":{"note":"Computed with spectral_market.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle","label":"The code"}},"fig:ch5-transmission":{"note":"Computed with spectral_market.","explorer":{"hash":"game=ch5&window=24","label":"Solve this game in the explorer, at σᵤ = 1"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle","label":"The code"}},"fig:ch5-idiosyncratic":{"note":"Computed with spectral_market.","explorer":{"hash":"game=ch5&window=24","label":"Solve this game in the explorer, at σᵤ = 1"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle","label":"The code"}},"fig:ch5-kernels":{"note":"Computed with spectral_market at 8 and 12 nodes per panel on a window of 24.","explorer":{"hash":"game=ch5&window=24","label":"Solve this game in the explorer"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle","label":"The code"}},"fig:mm-stationary":{"note":"Computed with mm_stationary.py and mm_opaque.py on the grid solver of Chapter 4, 60 cells on a window of 8.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/monitored_deviations","label":"The code"}}}</script>
+    <script src="https://sbabichenko.com/dissertation/thesis.js?h=4d35c7efe520662943be"></script>
+    <script src="https://sbabichenko.com/dissertation/search.js?h=5e7878f6c281fbcc4bd9"></script>
+    <script src="https://sbabichenko.com/dissertation/proofs.js?h=a3baa764d34a99a6f47b"></script>
+    <script src="https://sbabichenko.com/dissertation/vignettes.js?h=4648cab2b3d45c78ccf9"></script>
+    <script src="https://sbabichenko.com/dissertation/bookmark.js?h=4b4777ad0ccb4b7bd7ea"></script>
+  </body>
+</html>

@@ -1,0 +1,96 @@
+/* Small things on every page (static/js/whimsy.js): the ink for the theme toggle, the tossed coin, a quiet
+   underline on links in running text, a highlighter for selections, and the drawn reading-progress lines. */
+
+/* the new theme spreads from the toggle, triangle by triangle */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+/* (the new theme's reveal, a mesh filling in from the toggle, is played by whimsy.js on ::view-transition-new) */
+/* hidden until the reveal starts, or the new theme flashes for a frame and then drops back to the old one */
+.inking::view-transition-new(root) { animation: none; clip-path: polygon(0 0, 0 0, 0 0); }
+
+/* selection: a highlighter */
+::selection { background: rgba(255, 214, 90, 0.55); color: inherit; }
+.dark ::selection { background: rgba(143, 176, 255, 0.35); }
+
+/* links in running text take a thin straight underline when pointed at (not the contents, menus or rails) */
+p a:hover, article li a:hover, .lede a:hover, figcaption a:hover {
+  text-decoration-line: underline; text-decoration-style: solid; text-decoration-thickness: 1px; text-underline-offset: 3px;
+  text-decoration-color: color-mix(in srgb, currentColor 55%, transparent);
+}
+nav li a:hover, .rail li a:hover, .toc li a:hover { text-decoration-line: none; }
+
+/* the reading-progress line, drawn for the page (static/js/whimsy.js): the pages set its width, which uncovers the drawing;
+   a line marked data-auto has its width set by whimsy.js from the scroll */
+.progress[data-auto] { position: fixed; top: 0; left: 0; width: 0; z-index: 60; }
+.progress.bar-walk, .progress.bar-mesh { height: 10px !important; background: none !important; overflow: hidden; pointer-events: none; }
+.progress .bar-art { position: absolute; left: 0; top: 0; display: block; overflow: visible; }
+.progress .bar-ink { fill: none; stroke: #1f3fd0; stroke-width: 1.3; stroke-linejoin: round; }
+.progress .bar-dot { fill: #1f3fd0; }
+.progress .bar-tri { fill: #1f3fd0; fill-opacity: 0; stroke: rgba(20, 22, 40, 0.28); stroke-width: 0.7; stroke-linejoin: round; transition: fill-opacity 0.4s; }
+.progress .bar-tri.on { fill-opacity: 0.1; }
+.progress .bar-tri.fresh { fill-opacity: 0.45; }
+.dark .progress .bar-ink { stroke: #8fb0ff; }
+.dark .progress .bar-dot { fill: #8fb0ff; }
+.dark .progress .bar-tri { fill: #8fb0ff; stroke: rgba(255, 255, 255, 0.28); }
+
+/* the coin */
+.whimsy-coin { position: fixed; right: 22px; bottom: 22px; z-index: 90; display: flex; align-items: center; gap: 10px; perspective: 400px;
+  font: 0.82rem ui-sans-serif, system-ui, sans-serif; color: var(--ink, #222); transition: opacity 0.5s, transform 0.5s; }
+.whimsy-coin.gone { opacity: 0; transform: translateY(8px); pointer-events: none; }
+.whimsy-coin p { margin: 0; padding: 0.35rem 0.7rem; border-radius: 999px; background: var(--sheet, #fff); border: 1px solid var(--rule, #ddd); }
+.whimsy-coin .face { position: relative; width: 38px; height: 38px; transform-style: preserve-3d; animation: coin-toss 1s cubic-bezier(.2, .7, .3, 1) both; }
+.whimsy-coin .face span { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 50%; backface-visibility: hidden;
+  font: 700 0.95rem Newsreader, Georgia, serif; color: #6b4e10; background: radial-gradient(circle at 35% 30%, #fbe7a6, #d9a93c 70%, #b98a22);
+  box-shadow: inset 0 0 0 2px rgba(120, 85, 10, 0.35); }
+.whimsy-coin .face .t { transform: rotateY(180deg); }
+@keyframes coin-toss {
+  0% { transform: translateY(0) rotateY(0); }
+  45% { transform: translateY(-46px) rotateY(900deg); }
+  100% { transform: translateY(0) rotateY(calc(1800deg + var(--end, 0deg))); }
+}
+.dark .whimsy-coin { color: #e8e8e8; }
+.dark .whimsy-coin p { background: #2a2c30; border-color: #3a3d42; }
+
+/* the little coin on "Flip again" buttons */
+.mini-coin { display: inline-block; width: 0.8em; height: 0.8em; margin-right: 0.45em; vertical-align: -0.08em; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fbe7a6, #d9a93c 70%, #b98a22); box-shadow: inset 0 0 0 1px rgba(120, 85, 10, 0.4); }
+.mini-coin.spin { animation: mini-toss 0.7s cubic-bezier(.2, .7, .3, 1); }
+@keyframes mini-toss { 0% { transform: translateY(0) rotateY(0); } 45% { transform: translateY(-9px) rotateY(540deg); } 100% { transform: translateY(0) rotateY(1080deg); } }
+
+/* idle doodles */
+.whimsy-doodle { position: absolute; width: 90px; height: 90px; pointer-events: none; z-index: 1; color: var(--ink-3, #999); opacity: 0.55; }
+.whimsy-doodle path { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 600; stroke-dashoffset: 600; animation: doodle-in 4s ease-out forwards; }
+.whimsy-doodle path + path { animation-delay: 1.2s; } .whimsy-doodle path + path + path { animation-delay: 2.2s; }
+@keyframes doodle-in { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .whimsy-doodle path { animation: none; stroke-dashoffset: 0; } }
+
+/* on paper */
+@media print {
+  .whimsy-coin, .whimsy-doodle, .progress { display: none !important; }
+  .site-foot::after { content: "Printed from sbabichenko.com, where the drawings move."; display: block; width: 100%; margin-top: 0.4rem; font-style: italic; }
+}
+
+/* keyboard focus, everywhere: a clear accent ring, only for keyboard users */
+:focus-visible { outline: 2px solid var(--accent, #1f3fd0); outline-offset: 2px; border-radius: 3px; }
+.step :focus-visible, .cards a:focus-visible, .demo:focus-visible { outline-offset: 4px; }
+
+/* the forecaster */
+.whimsy-forecast { position: fixed; left: 22px; bottom: 22px; z-index: 90; max-width: 300px; padding: 0.55rem 0.85rem; border-radius: 12px;
+  background: var(--sheet, #fff); border: 1px solid var(--rule, #ddd); font: 0.82rem ui-sans-serif, system-ui, sans-serif; color: var(--ink, #222);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06); transition: opacity 0.5s, transform 0.5s; }
+.whimsy-forecast p { margin: 0; }
+.whimsy-forecast .s { margin-top: 0.2rem; color: var(--ink-3, #888); font-variant-numeric: tabular-nums; }
+.whimsy-forecast.gone { opacity: 0; transform: translateY(8px); }
+.dark .whimsy-forecast { background: #2a2c30; border-color: #3a3d42; color: #e8e8e8; }
+@media print { .whimsy-forecast { display: none !important; } }
+
+/* the way past a scroll-told section (static/js/skip.js) */
+.skip-pill { position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 80; transform: translate(-50%, 12px);
+  opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s;
+  font: 600 0.82rem ui-sans-serif, system-ui, sans-serif; padding: 0.5rem 0.95rem; border-radius: 999px; text-decoration: none;
+  color: var(--ink, #222); background: color-mix(in srgb, var(--sheet, #fff) 88%, transparent); border: 1px solid var(--rule, #ddd);
+  backdrop-filter: blur(6px); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); white-space: nowrap; }
+.skip-pill::after { content: " ↓"; }
+.skip-pill.on { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.skip-pill:hover { color: var(--accent, #1f3fd0); border-color: currentColor; }
+.dark .skip-pill { color: #e8e8e8; background: rgba(42, 44, 48, 0.9); border-color: #3a3d42; }
+@media print { .skip-pill { display: none !important; } }

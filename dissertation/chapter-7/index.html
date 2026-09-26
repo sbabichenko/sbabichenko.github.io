@@ -1,0 +1,479 @@
+<!doctype html>
+<html class="not-ready lg:text-base" lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Title -->
+  <title>Chapter 7: Conclusion: The Information Wedge Across Environments - Sam Babichenko</title>
+
+  <!-- Meta -->
+  <meta name="theme-color" />
+  <meta name="description" content="Every equilibrium in this dissertation is a set of kernels against the same primitive shocks. The chapters changed what players could see, and the coordinates never moved." />
+  <meta name="author" content="" />
+  <!-- The Open Graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Chapter 7: Conclusion: The Information Wedge Across Environments" />
+  <meta property="og:site_name" content="Sam Babichenko" />
+  <meta property="og:description" content="Every equilibrium in this dissertation is a set of kernels against the same primitive shocks. The chapters changed what players could see, and the coordinates never moved." />
+  <meta property="og:url" content="https:&#x2F;&#x2F;sbabichenko.com&#x2F;dissertation&#x2F;chapter-7&#x2F;" />
+  <meta property="og:image" content="https://sbabichenko.com/images/og-diss-chapter-7.png" />
+
+  <!-- CSS & JS -->
+  <link rel="preload stylesheet" as="style" href="https://sbabichenko.com/main.css?h=f49bde0cf4c2681243a5" />
+  <style>
+    :root {
+      --bg: #FFFFF0;
+      --bg-dark: #1F2022;
+      --header: #e4e4e7;
+      --header-dark: #27272a;
+    }
+  </style>
+
+  
+
+  <!-- Dark Icon -->
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/theme.svg" />
+
+  <!-- Math -->
+  
+  <!---->
+
+  <!-- Mermaid -->
+  
+  <!---->
+
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://sbabichenko.com/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://sbabichenko.com/favicon-16x16.png">
+  <link rel="shortcut icon" href="https://sbabichenko.com/favicon.ico">
+  <link rel="apple-touch-icon" href="https://sbabichenko.com/apple-touch-icon.png">
+
+
+  <!-- Feeds -->
+  
+  <!---->
+  
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title="Atom"
+    href="https://sbabichenko.com/atom.xml"
+  />
+   
+  <!---->
+  
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https:&#x2F;&#x2F;sbabichenko.com&#x2F;dissertation&#x2F;chapter-7&#x2F;" />
+
+  <!-- Head inject -->
+  <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="font" type="font/woff2" href="https://sbabichenko.com/fonts/newsreader-latin-opsz-normal.woff2" crossorigin>
+<link rel="stylesheet" href="https://sbabichenko.com/fonts/newsreader.css?h=76764bb675ec2845fffb">
+<link rel="stylesheet" href="https://sbabichenko.com/css/custom.css?h=f836d5c06c9f94dc466b">
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="https://sbabichenko.com/dissertation/katex/katex.min.css?h=f0dbfcc2940b4d788c80" />
+    <link rel="stylesheet" href="https://sbabichenko.com/dissertation/thesis.css?h=62e5f2f8c133642a814c" />
+    <link rel="stylesheet" href="https://sbabichenko.com/dissertation/search.css?h=ff759eead03c26dbe676" />
+    <header
+  class="blur-header fixed top-0 z-40 mx-auto min-h-[3.5rem] w-full"
+>
+  <div class="mx-auto w-full max-w-4xl p-3 lg:flex lg:justify-between">
+    <div class="flex justify-between">
+      <div class="flex items-center">
+        <a class="text-2xl font-semibold" href="https://sbabichenko.com">Sam Babichenko</a>
+        <div
+          class="btn-dark ml-4 h-6 w-6 shrink-0 cursor-pointer text-[0px] [background:url(./icons/theme.svg)_left_center/cover_no-repeat] dark:[background-position:right] dark:invert"
+          role="button"
+          aria-label="Dark"
+        ></div>
+      </div>
+      
+      <div
+        class="btn-menu relative z-50 flex h-8 w-8 shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+        role="button"
+        aria-label="Menu"
+      ></div>
+      
+    </div>
+    <script>
+      // base
+      const htmlClass = document.documentElement.classList;
+      setTimeout(() => {
+        htmlClass.remove("not-ready");
+      }, 10);
+
+      // mobile menu
+      const btnMenu = document.querySelector(".btn-menu");
+      btnMenu?.addEventListener("click", () => {
+        htmlClass.toggle("open");
+      });
+
+      // dark theme
+      const setDark = (isDark) => {
+        if (isDark) {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
+          htmlClass.add("dark");
+        } else {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "light" }));
+          htmlClass.remove("dark");
+        }
+        localStorage.setItem("dark", isDark);
+      };
+
+      // init
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      if (htmlClass.contains("dark")) {
+        setDark(true);
+      } else {
+        const darkVal = localStorage.getItem("dark");
+        setDark(darkVal ? darkVal === "true" : darkScheme.matches);
+      }
+
+      // listen system
+      darkScheme.addEventListener("change", (event) => {
+        setDark(event.matches);
+      });
+
+      // manual switch
+      const btnDark = document.querySelector(".btn-dark");
+      btnDark.addEventListener("click", () => {
+        setDark(localStorage.getItem("dark") !== "true");
+      });
+    </script>
+    
+    <nav class="flex w-full items-center lg:w-auto">
+      <ul
+        class="nav-wrapper flex w-full flex-col py-2 lg:w-auto lg:flex-row lg:self-center lg:py-0"
+      >
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/writing"
+            >Writing</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/dissertation"
+            >Dissertation</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/cv"
+            >CV</a
+          >
+        </li>
+        
+      </ul>
+      <!-- Header Nav inject -->
+      
+    </nav>
+    
+  </div>
+</header>
+
+    <div class="progress" id="progress" aria-hidden="true"></div>
+
+    <div class="thesis">
+      <aside class="rail" aria-label="Contents">
+        <a class="book" href="https://sbabichenko.com/dissertation">Noise-State Calculus for Dynamic Games with Strategic Information</a>
+        <input class="dsearch" id="dsearch" type="search" placeholder="Search the dissertation  /" aria-label="Search the dissertation" autocomplete="off" data-base="https://sbabichenko.com/dissertation" />
+        <ol class="toc">
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/front"><span class="t">Front matter</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/introduction"><span class="t">Introduction</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/chapter-1"><span class="lab">1</span><span class="t">Baseline Linear-Quadratic-Gaussian Games</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/chapter-2"><span class="lab">2</span><span class="t">Delayed Public Signals and Asynchronous Learning</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/chapter-3"><span class="lab">3</span><span class="t">Stationary Infinite-Horizon LQG</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/chapter-4"><span class="lab">4</span><span class="t">The Information Wedge in a Stationary Kyle–Back Market</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/chapter-5"><span class="lab">5</span><span class="t">Local Strategic Information in Symmetric Network Economies</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/chapter-6"><span class="lab">6</span><span class="t">Monitored Deviations: Naive Distortions and Privy Responses</span></a>
+          </li>
+          <li class="here">
+            <a href="https://sbabichenko.com/dissertation/chapter-7"><span class="lab">7</span><span class="t">Conclusion: The Information Wedge Across Environments</span></a>
+            <ol class="secs">
+              <li><a href="#directions-beyond-the-dissertation" data-sec="directions-beyond-the-dissertation"><span class="lab">7.1</span>Directions beyond the dissertation</a></li>
+            </ol>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/afterword"><span class="t">Afterword</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/appendix-a"><span class="lab">A</span><span class="t">Additional Finite-Horizon Extensions</span></a>
+          </li>
+          <li class="">
+            <a href="https://sbabichenko.com/dissertation/references"><span class="t">References</span></a>
+          </li>
+        </ol>
+        <a class="pdf maplink" href="https://sbabichenko.com/dissertation/map">What rests on what: the map of results &rarr;</a>
+        <a class="pdf" href="https://sbabichenko.com/dissertation/babichenko-dissertation.pdf#page=221">In the PDF: pp. 205–210 &darr;</a>
+        <a class="pdf" href="https://sbabichenko.com/dissertation/babichenko-dissertation.pdf">The whole thing as a PDF &darr;</a>
+      </aside>
+
+      <main class="paper" id="paper">
+        <div class="kicker"><a href="https://sbabichenko.com/dissertation">Noise-state calculus &middot; dissertation</a></div>
+        <article class="body">
+          <section class="level1" id="ch:conclusion">
+<h1 data-num="7"><span class="secnum">Chapter 7</span>Conclusion: The Information Wedge Across Environments</h1>
+<p>Every equilibrium in this dissertation is a set of kernels against
+the same primitive shocks. Under perfect information the kernels are the
+ordinary impulse responses. The chapters changed what players could see,
+and the coordinates never moved.</p>
+<p>The games have two feedback channels: the physical one, and the one
+that runs through what other players learn.</p>
+<p>The noise-state representation keeps the second channel by writing
+private information as conditional estimates of the primitive shocks
+while retaining endogenous signals, private histories, and individual
+impact. In the LQG case every object of the calculus is a deterministic
+kernel, and the information wedge, a term in the state-price equation,
+prices the effect of changing another player’s posterior.</p>
+<p>The chapters vary what players see of the shocks. Monitoring varies
+what they know about a deviation’s origin. A movement a player observes
+may be filtered as noise or recognized as another player’s deviation.
+Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a> prices both ways of responding, and
+the classical closed-loop game returns at the corner where every player
+sees the shocks and every player is privy.</p>
+<p>The wedge and the accompanying equilibrium results come from the
+finite-horizon benchmark: Theorem <a class="xref" href="/dissertation/chapter-1/#thm:wedge-adjoints">1.8</a>
+derives the belief-price representation, Corollary <a class="xref" href="/dissertation/chapter-1/#cor:nsl-br">1.11</a> gives
+closure over the full admissible class, and Proposition <a class="xref" href="/dissertation/chapter-1/#prop:global_best_response">1.12</a> solves unilateral
+best responses globally. Short-horizon equilibrium follows in Theorem <a class="xref" href="/dissertation/appendix-a/#thm:short_horizon_equilibrium2">A.7</a>. The two-player
+benchmark separates statistical benefits from strategic costs and makes
+allocating signal precision a policy instrument.</p>
+<p>The same object appears outside the baseline game. In
+identical-interest games the wedge prices the effect of shifting
+teammates’ posteriors and so their future controls (Section <a class="xref" href="/dissertation/chapter-1/#subsec:identical_interest_lqg">1.4.1</a>). Delayed
+public signals add to it a birth term and a jump in the belief price at
+the date the news arrives, and the stationary equations carry the same
+terms in lag coordinates. In Kyle–Back trading the wedge becomes a
+belief price on the market maker’s and the other traders’ filters, since
+order flow changes current prices and the future filtering environment
+(Theorems <a class="xref" href="/dissertation/chapter-4/#thm:adjoints">4.6</a> and <a class="xref" href="/dissertation/chapter-4/#thm:stationary-best-response">4.10</a>). On finite
+symmetric local markets, the graph symmetry reduces policy and filter
+kernels to equivalent-position coordinates (Proposition <a class="xref" href="/dissertation/chapter-5/#prop:stabilizer_orbit_reduction">5.7</a>). Asymmetric
+monitoring splits the feedback into a naive channel, in which the naive
+player filters the deviation as noise (this is the wedge), and a privy
+channel, in which the privy player responds to the deviation directly,
+knowing who made it (Definition <a class="xref" href="/dissertation/chapter-6/#def:monitored_equilibrium">6.7</a>, Proposition <a class="xref" href="/dissertation/chapter-6/#prop:gain_reduction">6.9</a>).</p>
+<section class="level2" id="directions-beyond-the-dissertation">
+<h2 data-num="7.1"><span class="secnum">7.1</span>Directions beyond the dissertation</h2>
+<section class="level3" id="closure">
+<h3 data-num="7.1.1"><span class="secnum">7.1.1</span>Closure</h3>
+<p>A noise-state linear fixed point is already a Nash equilibrium
+against arbitrary admissible deviations, but whether every equilibrium
+takes this form is open. Proving it means allowing strategies with
+random martingale-representation coefficients, writing the induced
+nonlinear filters through the Kushner-Stratonovich equations, and
+showing that equilibrium forces those coefficients to collapse to
+deterministic kernels. The continuous-time martingale representation
+theorem gives a handle that is absent in the discrete setting where
+Witsenhausen’s counterexample [<a href="/dissertation/references/#ref-Witsenhausen1968">116</a>] applies;
+a Lyapunov argument in the variance of the representation coefficients
+is the natural route.</p>
+</section>
+<section class="level3" id="computation-and-estimation">
+<h3 data-num="7.1.2"><span class="secnum">7.1.2</span>Computation and estimation</h3>
+<p>One route to computing the kernels adapts high-dimensional PDE
+methods, in the spirit of Han’s work [<a href="/dissertation/references/#ref-HanJentzenE2018">50</a>], to the
+kernel HJB or the forward-backward kernel system. A different route
+approximates the noise-state itself. The filtering equations reweight
+old sources through kernels and project them into a current decision,
+the operation a linear attention layer performs. Linear transformers are
+a natural approximating class, with the noise-state as the target filter
+the trained network should recover. On the stationary system of
+Chapter <a class="xref" href="/dissertation/chapter-3/#chap:stationary-lqg">3</a>, however, networks trained on
+the continuum residuals converged to spurious kernels while reporting
+small residuals (Figure <a class="xref" href="/dissertation/chapter-3/#fig:stationary-pinn">3.6</a>).</p>
+<p>On the dynamic-programming side, lifting the lag dynamics of
+Section <a class="xref" href="/dissertation/appendix-a/#sec:hjb">A.2.3</a> to a fixed Hilbert space and taking a
+quadratic ansatz should recover the belief prices as off-diagonal
+Riccati blocks, and would likely give the CARA extension of the
+appendices a cleaner positivity condition than its operator
+inversions.</p>
+<p>For empirical work the problem becomes estimation. Once the kernels
+are known the observed signal law has a Gaussian likelihood. But the
+kernels are endogenous equilibrium objects, so the estimator must either
+fit parameters while solving the kernel fixed point or learn a fast
+surrogate for that fixed point.</p>
+<p>There is an easier road than fitting kernels. Across the chapters the
+strategic effects live in the means: the pooling gains of Chapter <a class="xref" href="/dissertation/chapter-1/#ch:forecasting">1</a> are mostly mean-path, in
+Chapter <a class="xref" href="/dissertation/chapter-5/#ch:vertex-transitive">5</a> firms hold back their orders
+by several times the filtering gap while responses to aggregate shocks
+barely move, and the quote’s inventory loading of Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a> is a level. The near-invariance of
+the responses to aggregate shocks is camouflage: an econometrician who
+fit those responses would match them and miss a level distortion, one
+that moves whenever policy changes who sees whose actions. The natural
+design is levels against observability changes—post-trade transparency
+[<a href="/dissertation/references/#ref-BessembinderMaxwellVenkataraman2006">20</a>,
+<a href="/dissertation/references/#ref-GoldsteinHotchkissSirri2007">45</a>],
+platform visibility, disclosure mandates—rather than kernel
+comparisons.</p>
+</section>
+<section class="level3" id="sec:future-sources">
+<h3 data-num="7.1.3"><span class="secnum">7.1.3</span>Sources</h3>
+<p>The most immediate extension is endogenous information acquisition.
+Signal technologies are treated as fixed throughout, and Appendix <a class="xref" href="/dissertation/appendix-a/#sec:endogenous_precision">A.1</a> takes a first step by
+isolating the obstruction. One clean version uses a Brownian sheet of
+independent measurement channels, with each player selecting a portion
+of the sheet. Acquiring a source then changes the equilibrium policy
+kernels, and so changes what other players expect the holder to do with
+what it learns.</p>
+<p>Compound Poisson signal sources are a larger step than a change of
+noise distribution. Throughout the dissertation each player knows the
+precision of their channels, so a source’s informativeness is fixed and
+the randomness lies in its realizations. A Poisson source with an
+uncertain arrival rate breaks this. Individual jumps may carry messages
+of known quality, but if the rate is unknown the value of the source as
+a whole is unknown. Signal quality itself becomes an inferred state,
+which is closer to how news, expert reports, and disclosures actually
+work. The filter is then generally infinite-dimensional, but that is not
+obviously the binding constraint; the question is whether the filter
+over primitive shocks stays stable and remains easier to approximate
+than the hierarchy it replaces.</p>
+</section>
+<section class="level3" id="networks">
+<h3 data-num="7.1.4"><span class="secnum">7.1.4</span>Networks</h3>
+<p>The most immediate extension of the graph chapter is the large-cycle
+limit of Conjecture <a class="xref" href="/dissertation/chapter-5/#conj:finite_cycle_limit">5.2</a>. Replicated markets can
+also be linked endogenously, with a mean-field consistency condition on
+the distribution of market-level outcomes and possibly a few major
+markets of finite aggregate impact. Heterogeneous local environments
+would be aggregated over market types. In every case the aggregated
+object is a solved finite strategic environment, which distinguishes the
+construction from a graphon limit where local informational impact has
+already vanished.</p>
+</section>
+<section class="level3" id="markets">
+<h3 data-num="7.1.5"><span class="secnum">7.1.5</span>Markets</h3>
+<p>Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a> makes the market maker strategic and
+computes the stationary market both ways, transparent and opaque.
+Existence remains open there, away from the corner cases and away from
+the <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>→</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">\rho\to0</annotation></semantics></math></span></span> degeneracy in which
+the market maker’s first-order condition cannot pin down how much the
+quote loads on inventory.</p>
+<p>The delayed-public and monitored-deviation chapters suggest a
+separate extension in which attribution arrives after the action, with a
+trader’s order initially hidden in aggregate flow and a reporting rule
+naming it later. How players should respond on the day the order is
+named remains open.</p>
+<p>In Rebonato’s parable [<a href="/dissertation/references/#ref-Rebonato2004">99</a>], two identical
+volatility traders facing the same mispriced quote behave differently
+depending on whether the risk function marks their book to their own
+model or to the market consensus. In the Kyle–Back setting the consensus
+is the market maker’s price. A quote recognized as the market maker’s
+action is one the trader responds to directly, the way a privy player
+responds to an observed deviation in Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a>, while the
+trader’s private valuation remains a projection of primitive shocks
+through its noise-state. The gap between the trader’s valuation and the
+consensus mark is the performance measure in a principal–agent contract
+between the trader as agent and risk management as principal, with
+Sannikov-type continuation values encoding it [<a href="/dissertation/references/#ref-Sannikov2008">103</a>]. The belief
+prices of Chapter <a class="xref" href="/dissertation/chapter-4/#ch:stationary-kyle-back">4</a>
+separately price order flow that moves the consensus. The contract, risk
+penalty, and strategic channel then jointly blunt how hard the trader
+trades on its private information.</p>
+</section>
+<section class="level3" id="sec:persistent-program">
+<h3 data-num="7.1.6"><span class="secnum">7.1.6</span>Noise traders with momentum</h3>
+<p>The strategic market maker above has a balance sheet it cares about,
+and Chapter <a class="xref" href="/dissertation/chapter-6/#ch:monitored">6</a> prices its quote deviations in two
+markets: a trader who sees the order flow recognizes a departure from
+the quote rule as the market maker’s, and a trader who sees only the
+quote filters it as noise. Either way the strategic market maker adds an
+inventory charge to the price. With Brownian noise that charge depends
+only on the inventory already held, since the noise adds variance but
+does not move the market maker’s forecast of future flow.</p>
+<p>Noise traders with momentum do not need a strategic market maker. In
+Kyle–Back the informed traders already trade with long memory, since
+staying under the radar means trading slowly, and it is the noise flow
+that is Brownian. Retail herding has momentum. Fractional Brownian
+motion with <span class="math inline"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mo>&gt;</mo><mn>1</mn><mi mathvariant="normal">/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">H&gt;1/2</annotation></semantics></math></span></span> is the natural
+way to write this [<a href="/dissertation/references/#ref-MandelbrotVanNess1968">81</a>].</p>
+<p>With both, the net order flow is a state the market maker manages, so
+a run of trend-chasing buying is a forecastable inventory problem rather
+than noise to be absorbed. The future of the noise now matters on its
+own, and everyone holds beliefs about it where Brownian noise gave them
+nothing to forecast. I expect the market maker’s conditional expectation
+of value and the price it posts to come apart, with the price reflecting
+inventory management against the flow the market maker expects.</p>
+<p>A trader who can forecast the coming run, and the charge the market
+maker will add against it, buys ahead and sells into that charge. They
+buy to sell later. De Long et al. [<a href="/dissertation/references/#ref-DeLongShleiferSummersWaldmann1990">34</a>]
+have rational speculators front-running trend-chasing traders; here the
+trend-chasers’ persistence is a primitive. An order now moves the market
+maker’s forecast of flow as well as its estimate of value, so the trader
+manipulates through a second channel, and the wedge prices both. The
+round trip pays only if the market maker’s charge overshoots. The market
+maker forecasts the selling to come and prices it in, the traders buying
+ahead forecast the market maker, and how much of the rise survives would
+be a fixed point in the same kernels. The theorem to aim for is the
+market maker’s inventory cost against competition among the traders
+buying ahead.</p>
+<p>As markets shift toward passive and flow-driven trading, the part of
+order flow that is not about fundamentals grows [<a href="/dissertation/references/#ref-GabaixKoijen2021">41</a>] and the
+market maker’s inventory problem becomes a larger part of the price. The
+model at the end has a strategic market maker who manages inventory,
+noise traders with momentum, and informed traders whose signals keep
+arriving.</p>
+</section>
+</section>
+</section>
+        </article>
+        <div class="fin" aria-hidden="true"><svg viewBox="-4 0 208 30"><path d="M0,15.0 L4,9.9 L8,6.9 L12,6.6 L16,8.5 L20,11.8 L24,15.4 L28,18.3 L32,19.9 L36,19.9 L40,18.7 L44,16.7 L48,14.6 L52,12.9 L56,12.1 L60,12.1 L64,12.9 L68,14.1 L72,15.4 L76,16.3 L80,16.8 L84,16.7 L88,16.2 L92,15.4 L96,14.7 L100,14.2 L104,13.9 L108,14.0 L112,14.4 L116,14.8 L120,15.2 L124,15.5 L128,15.6 L132,15.6 L136,15.4 L140,15.1 L144,14.8 L148,14.7 L152,14.6 L156,14.7 L160,14.8 L164,15.0 L168,15.1 L172,15.2 L176,15.2 L180,15.2 L184,15.1 L188,15.0 L192,14.9 L196,14.9 L200,14.9" /><circle cx="200" cy="15" r="2.2" /></svg></div>
+        <nav class="pager">
+            <a class="prev" href="https://sbabichenko.com/dissertation/chapter-6"><span>&larr; Chapter 6</span><b>Monitored Deviations: Naive Distortions and Privy Responses</b></a>
+            <a class="next" href="https://sbabichenko.com/dissertation/afterword"><span>Next &rarr;</span><b>Afterword</b></a>
+        </nav>
+      </main>
+    </div>
+    <div class="peek" id="peek" role="tooltip" hidden></div>
+
+    
+<footer class="site-foot">
+  
+  <span>&copy; 2025&ndash;2026 Sam Babichenko</span>
+  <a href="https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by&#x2F;4.0&#x2F;deed.en" rel="noopener" target="_blank">CC BY 4.0</a>
+  <a href="https://sbabichenko.com/colophon">Colophon</a>
+  <a href="https://sbabichenko.com/atom.xml" title="New writing, in any feed reader">Feed</a>
+  <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
+</footer>
+<script src="https://sbabichenko.com/js/tally.js?h=4000db8cd9e27f8f27cd"></script>
+<link rel="stylesheet" href="https://sbabichenko.com/css/whimsy.css?h=47c637d7150a148c9bce" />
+<link rel="stylesheet" href="https://sbabichenko.com/css/fold.css?h=65a4ad70c1f9e810669b" />
+<script src="https://sbabichenko.com/js/whimsy.js?h=03baa37dd53e13046bb1"></script>
+<script src="https://sbabichenko.com/js/skip.js?h=8b0612be930eb6b54639" defer></script>
+<script src="https://sbabichenko.com/js/fold.js?h=c0b53bc8e268c5e50f1c"></script>
+<script type="application/json" id="fignotes" data-explorer="https://sbabichenko.com/noisestate">{"fig:impulse_w0_first":{"note":"Computed with the noisestate package at 24 nodes.","explorer":{"hash":"game=ch1&p1=3&p2=10&r1=0.1&r2=0.1&b1=1&b2=-1&sigma=1&T=1","label":"Solve this game in the explorer"},"inspect":{"code":"fig1_2.py","model":"fig1_2.yaml"}},"fig:mean_response_precision":{"note":"Computed with spec_ch1, the spectral solver for this chapter, at 12 × 16 nodes (16 × 24 at p = 10⁴).","explorer":{"hash":"game=ch1&p1=10&p2=10&r1=0.1&r2=0.1&b1=1&b2=-1&sigma=1&T=1","label":"Solve this game in the explorer, at p = 10"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/ch1_mean_spectral_2026-08-27","label":"The code"}},"fig:costs_private_vs_pooled":{"note":"Computed with spec_ch1 at 12 × 16 nodes.","code":{"url":"https://github.com/sbabichenko/Forecasting-And-Manipulating-The-Forecasts-Of-Others/blob/main/spectral_ch1/fig12_sweep.py","label":"The code"}},"fig:precision_decomposition":{"note":"Computed with the finite-difference solver (lqg_solver.cpp) on grids of 40 and 79 points and Richardson-extrapolated.","explorer":{"hash":"game=ch1&p1=10&p2=10&r1=0.05&r2=0.2&b1=1&b2=-1&sigma=0.5&T=1","label":"Solve this game in the explorer, at an even split"},"code":{"url":"https://github.com/sbabichenko/Forecasting-And-Manipulating-The-Forecasts-Of-Others/blob/main/generate_figures.cpp","label":"The code"}},"fig:stationary-filter":{"note":"Computed with solve_spectral at 32 Chebyshev nodes per side.","explorer":{"hash":"game=ch3&p1=3&p2=3&r1=0.1&r2=0.1&b1=0&b2=0","label":"Solve this game in the explorer"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary","label":"The code"}},"fig:stationary-adjoint":{"note":"Computed with solve_spectral at 32 Chebyshev nodes per side.","explorer":{"hash":"game=ch3&p1=3&p2=3&r1=0.1&r2=0.1&b1=0&b2=0","label":"Solve this game in the explorer"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary","label":"The code"}},"fig:stationary-precision":{"note":"Two sweeps of 200 equilibria with solve_spectral at 24 nodes per side.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary","label":"The code"}},"fig:stationary-hankel":{"note":"Computed with solve_spectral at 32 Chebyshev nodes per side.","explorer":{"hash":"game=ch3&p1=3&p2=3&r1=0.1&r2=0.1&b1=0&b2=0","label":"Solve this game in the explorer"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary","label":"The code"}},"fig:stationary-refinement":{"note":"Finite differences (solve_stationary) at N = 500, 1000, 2000 and 4000; solve_spectral at 8 to 24 nodes per side.","explorer":{"hash":"game=ch3&p1=3&p2=3&r1=0.1&r2=0.1&b1=0&b2=0","label":"Solve this game in the explorer"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary","label":"The code"}},"fig:stationary-pinn":{"note":"Stored solutions: a 256 × 5 neural network and a Wiener–Hopf solver on 1000 points.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary","label":"The code"}},"fig:kb-kernels":{"note":"Computed with kb_spectral at 64 and 128 nodes, on windows of 8 and 32.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback","label":"The code"}},"fig:kb-multiasset":{"note":"Computed with kb_spectral_q at 48 nodes on a window of 8.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback","label":"The code"}},"fig:kb-impact-decomp":{"note":"Computed with the grid solver kb_multi.py, 100 cells on a window of 8.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback","label":"The code"}},"fig:kb-wedge-decomp":{"note":"Computed from kb_multi.py solutions, 100 cells on a window of 8.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback","label":"The code"}},"fig:kb-rho-ladder":{"note":"Computed with kb_spectral at 64, 96 and 128 nodes for windows of 8, 16 and 32.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback","label":"The code"}},"fig:ch5-logdev":{"note":"An illustrative simulated path.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle","label":"The code"}},"fig:ch5-schematic":{"note":"Drawn with a plotting script.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle","label":"The code"}},"fig:ch5-levels":{"note":"Computed with spectral_market.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle","label":"The code"}},"fig:ch5-transmission":{"note":"Computed with spectral_market.","explorer":{"hash":"game=ch5&window=24","label":"Solve this game in the explorer, at σᵤ = 1"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle","label":"The code"}},"fig:ch5-idiosyncratic":{"note":"Computed with spectral_market.","explorer":{"hash":"game=ch5&window=24","label":"Solve this game in the explorer, at σᵤ = 1"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle","label":"The code"}},"fig:ch5-kernels":{"note":"Computed with spectral_market at 8 and 12 nodes per panel on a window of 24.","explorer":{"hash":"game=ch5&window=24","label":"Solve this game in the explorer"},"code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle","label":"The code"}},"fig:mm-stationary":{"note":"Computed with mm_stationary.py and mm_opaque.py on the grid solver of Chapter 4, 60 cells on a window of 8.","code":{"url":"https://github.com/sbabichenko/dissertation-numerics/tree/main/monitored_deviations","label":"The code"}}}</script>
+    <script src="https://sbabichenko.com/dissertation/thesis.js?h=4d35c7efe520662943be"></script>
+    <script src="https://sbabichenko.com/dissertation/search.js?h=5e7878f6c281fbcc4bd9"></script>
+    <script src="https://sbabichenko.com/dissertation/proofs.js?h=a3baa764d34a99a6f47b"></script>
+    <script src="https://sbabichenko.com/dissertation/vignettes.js?h=4648cab2b3d45c78ccf9"></script>
+    <script src="https://sbabichenko.com/dissertation/bookmark.js?h=4b4777ad0ccb4b7bd7ea"></script>
+  </body>
+</html>

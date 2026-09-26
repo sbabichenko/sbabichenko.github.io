@@ -1,0 +1,394 @@
+
+<!doctype html>
+<html class="not-ready lg:text-base" lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Title -->
+  <title>The Decision Mesh, in Detail - Sam Babichenko</title>
+
+  <!-- Meta -->
+  <meta name="theme-color" />
+  <meta name="description" content="The decision mesh&#x27;s algorithm one level down: bisection and its closure, the hierarchical basis, the candidate score and its corrections, Lindsey&#x27;s null, admission, the two variances, stopping and the rectangle engine, drawn from live runs in your browser." />
+  <meta name="author" content="" />
+  <!-- The Open Graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="The Decision Mesh, in Detail" />
+  <meta property="og:site_name" content="Sam Babichenko" />
+  <meta property="og:description" content="The decision mesh&#x27;s algorithm one level down: bisection and its closure, the hierarchical basis, the candidate score and its corrections, Lindsey&#x27;s null, admission, the two variances, stopping and the rectangle engine, drawn from live runs in your browser." />
+  <meta property="og:url" content="https:&#x2F;&#x2F;sbabichenko.com&#x2F;gate&#x2F;deep&#x2F;" />
+  <meta property="og:image" content="https://sbabichenko.com/images/og.png" />
+
+  <!-- CSS & JS -->
+  <link rel="preload stylesheet" as="style" href="https://sbabichenko.com/main.css?h=f49bde0cf4c2681243a5" />
+  <style>
+    :root {
+      --bg: #FFFFF0;
+      --bg-dark: #1F2022;
+      --header: #e4e4e7;
+      --header-dark: #27272a;
+    }
+  </style>
+
+  
+
+  <!-- Dark Icon -->
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/theme.svg" />
+
+  <!-- Math -->
+  
+  <!---->
+
+  <!-- Mermaid -->
+  
+  <!---->
+
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://sbabichenko.com/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://sbabichenko.com/favicon-16x16.png">
+  <link rel="shortcut icon" href="https://sbabichenko.com/favicon.ico">
+  <link rel="apple-touch-icon" href="https://sbabichenko.com/apple-touch-icon.png">
+
+
+  <!-- Feeds -->
+  
+  <!---->
+  
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title="Atom"
+    href="https://sbabichenko.com/atom.xml"
+  />
+   
+  <!---->
+  
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https:&#x2F;&#x2F;sbabichenko.com&#x2F;gate&#x2F;deep&#x2F;" />
+
+  <!-- Head inject -->
+  <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="font" type="font/woff2" href="https://sbabichenko.com/fonts/newsreader-latin-opsz-normal.woff2" crossorigin>
+<link rel="stylesheet" href="https://sbabichenko.com/fonts/newsreader.css?h=76764bb675ec2845fffb">
+<link rel="stylesheet" href="https://sbabichenko.com/css/custom.css?h=f836d5c06c9f94dc466b">
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="https://sbabichenko.com/dissertation/opening.css?h=8b6665ade0e2839eb75c" />
+    <link rel="stylesheet" href="https://sbabichenko.com/mesh/gate-deep.css?h=f19afac370c3d207fd2e" />
+    <header
+  class="blur-header fixed top-0 z-40 mx-auto min-h-[3.5rem] w-full"
+>
+  <div class="mx-auto w-full max-w-4xl p-3 lg:flex lg:justify-between">
+    <div class="flex justify-between">
+      <div class="flex items-center">
+        <a class="text-2xl font-semibold" href="https://sbabichenko.com">Sam Babichenko</a>
+        <div
+          class="btn-dark ml-4 h-6 w-6 shrink-0 cursor-pointer text-[0px] [background:url(./icons/theme.svg)_left_center/cover_no-repeat] dark:[background-position:right] dark:invert"
+          role="button"
+          aria-label="Dark"
+        ></div>
+      </div>
+      
+      <div
+        class="btn-menu relative z-50 flex h-8 w-8 shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+        role="button"
+        aria-label="Menu"
+      ></div>
+      
+    </div>
+    <script>
+      // base
+      const htmlClass = document.documentElement.classList;
+      setTimeout(() => {
+        htmlClass.remove("not-ready");
+      }, 10);
+
+      // mobile menu
+      const btnMenu = document.querySelector(".btn-menu");
+      btnMenu?.addEventListener("click", () => {
+        htmlClass.toggle("open");
+      });
+
+      // dark theme
+      const setDark = (isDark) => {
+        if (isDark) {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
+          htmlClass.add("dark");
+        } else {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "light" }));
+          htmlClass.remove("dark");
+        }
+        localStorage.setItem("dark", isDark);
+      };
+
+      // init
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      if (htmlClass.contains("dark")) {
+        setDark(true);
+      } else {
+        const darkVal = localStorage.getItem("dark");
+        setDark(darkVal ? darkVal === "true" : darkScheme.matches);
+      }
+
+      // listen system
+      darkScheme.addEventListener("change", (event) => {
+        setDark(event.matches);
+      });
+
+      // manual switch
+      const btnDark = document.querySelector(".btn-dark");
+      btnDark.addEventListener("click", () => {
+        setDark(localStorage.getItem("dark") !== "true");
+      });
+    </script>
+    
+    <nav class="flex w-full items-center lg:w-auto">
+      <ul
+        class="nav-wrapper flex w-full flex-col py-2 lg:w-auto lg:flex-row lg:self-center lg:py-0"
+      >
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/writing"
+            >Writing</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/dissertation"
+            >Dissertation</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/cv"
+            >CV</a
+          >
+        </li>
+        
+      </ul>
+      <!-- Header Nav inject -->
+      
+    </nav>
+    
+  </div>
+</header>
+
+    <div class="progress" id="progress" aria-hidden="true"></div>
+
+    <main class="opening idea gatedeep" id="gatedeep" data-worker="https://sbabichenko.com/mesh/fit-worker.js?h=39b564800f1d7fc152da">
+      <section class="ideahead">
+        <p class="eyebrow"><a href="https://sbabichenko.com/mesh">Decision Mesh</a> &middot; <a href="https://sbabichenko.com/gate">The gate</a> &middot; in detail</p>
+        <h1>The Decision Mesh, in Detail</h1>
+        <p class="lede">The <a href="https://sbabichenko.com/gate/how">illustrated gate</a> follows one fit from start to
+          finish. This page goes one level down: how a triangle is split, how a height is stored, where a candidate&rsquo;s
+          score and its <i>z</i> come from, how the null is fitted, how candidates are admitted, and when the fit stops.
+          Both estimators run in your browser on coin flips drawn on this page. Drawings that are sketches say so.</p>
+        <div class="howbar">
+          <label>The odds <select id="truth"><option value="peaks" selected>Three peaks</option><option value="hills">Two hills</option><option value="ring">A ring</option></select></label>
+          <label>Coin effects, sd <input type="range" id="coinsd" min="0" max="1" step="0.05" value="0.25" /> <span class="val" id="coinsdval">0.25</span></label>
+          <button id="again" type="button">Flip again</button>
+          <span class="howstatus" id="howstatus">Fitting&hellip;</span>
+        </div>
+      </section>
+
+      <section class="story" id="story">
+        <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
+        <div class="steps">
+          <div class="step" data-scene="bisect">
+            <h2>Newest-Vertex Bisection</h2>
+            <p>Every face of the triangle mesh is a right triangle, and it can be split only one way: at the midpoint of
+              its longest edge. Both halves are right triangles again, and each half&rsquo;s longest edge is one of the old
+              triangle&rsquo;s short edges.</p>
+            <p class="small">A vertex asked for in the middle of a short edge forces the triangle to split its long edge
+              first, and that split can force a neighbour in turn. This chain is the <em>conformity closure</em>: it keeps
+              every vertex at a corner of each triangle around it, never in the middle of an edge. The run starts from the
+              square cut along one diagonal and split evenly to <span data-v="faces0">&hellip;</span> faces. The drawing
+              then asks for five splits near the run&rsquo;s deepest vertex, with the engine&rsquo;s rule computed on this
+              page; the <span class="warmword">orange</span> vertices are the ones the closure added, <span data-v="forced">&hellip;</span> in all. A vertex
+              added this way sits exactly at the average of its two parents, so it does not change the surface.</p>
+          </div>
+          <div class="step" data-scene="basis1d">
+            <h2>Parents, Surplus and Tents</h2>
+            <p>The surface is stored as corrections. A vertex that splits a segment has two parents, the segment&rsquo;s
+              ends. Its height is the average of its parents&rsquo; heights plus a number of its own, its
+              <em>surplus</em>.</p>
+            <p class="small">Changing one surplus moves that vertex and everything finer built on it. The surface changes by
+              the surplus times a <em>tent</em>: a function that is 1 at the vertex and falls linearly to 0 at the
+              neighbouring vertices of its level. Level by level, the tents add up to the whole surface, and on a smooth
+              surface the deep surpluses are small. That is why a prior can pull each surplus toward zero. This drawing is a
+              one-dimensional sketch.</p>
+          </div>
+          <div class="step" data-scene="basis2d">
+            <h2>The Same Sum in Two Dimensions</h2>
+            <p>In two dimensions a tent covers the faces around its vertex. In the triangle mesh it is a pyramid over the two
+              triangles that share the split edge; in the rectangle mesh it is a bilinear bump over the cells beside it.</p>
+            <p class="small">The drawing rebuilds the rectangle run&rsquo;s surface from its surpluses, adding one depth at a
+              time. A vertex&rsquo;s depth is the level of the segment it splits: the shorter the segment, the deeper the
+              vertex. Rebuilt this way, the heights agree with the engine&rsquo;s to within <span data-v="rebuild">&hellip;</span>
+              logits. Only free vertices carry a surplus; every other vertex sits at its parents&rsquo; average.</p>
+          </div>
+          <div class="step" data-scene="score">
+            <h2>Where the Score Comes From</h2>
+            <p>A candidate is a vertex whose surplus is still held at zero. Its score says which way the fit would like
+              that surplus to move: it is the slope of the log-likelihood as the surplus leaves zero.</p>
+            <p class="small">For a site with <i>n</i> flips, <i>k</i> heads and fitted probability <i>p</i>, the slope is the
+              tent&rsquo;s height at the site times <i>k</i> &minus; <i>np</i>, summed over the sites under the tent. Each
+              term has variance tent&sup2; &times; <i>np</i>(1 &minus; <i>p</i>): the site&rsquo;s Fisher information, which
+              measures how sharply its flips pin down its odds, weighted by the tent. The candidate drawn is the one with the
+              largest round-0 |<i>z</i>| among the centres of the starting squares. Its sites are drawn against the final fit
+              with the surface flattened across the square. With coin effects the engine replaces <i>k</i> &minus; <i>np</i>
+              by the site&rsquo;s residual after its coin effect is estimated, centred on its expected value, and
+              <i>np</i>(1 &minus; <i>p</i>) by that residual&rsquo;s information, which is smaller. A candidate with fewer
+              than 10 sites under its tent is not scored.</p>
+          </div>
+          <div class="step" data-scene="refit">
+            <h2>Taking Out What the Parents Can Fit</h2>
+            <p>Part of any tent can be made by coefficients already in the fit. If the data only need a steeper slope
+              between the parents, the candidate should not get credit for it.</p>
+            <p class="small">Write each coefficient&rsquo;s tent, evaluated at the sites, as a column. The candidate&rsquo;s
+              column <i>x</i> splits into the closest combination <i>Xa</i> of the existing columns, measured with the
+              sites&rsquo; weights and the prior, and a remainder <i>x</i> &minus; <i>Xa</i>. The remainder&rsquo;s weighted
+              squared length, <i>h</i>, is the information left for the candidate alone. For the square in the last step,
+              the tents at its four corners could absorb <span data-v="absorb">&hellip;</span> of its tent, computed here with
+              weights <i>np</i>(1 &minus; <i>p</i>) on the sites inside the square. The engine uses every site, its own
+              weights and the prior. The vector picture is a sketch.</p>
+          </div>
+          <div class="step" data-scene="bias">
+            <h2>Shrinkage Bias and the <i>z</i></h2>
+            <p>The prior pulls every surplus toward zero, so the fit falls a little short where the data want more. A
+              candidate nearby picks up that shortfall in its score even when no new vertex is needed.</p>
+            <p class="small">The engine estimates that part of the score as <i>c</i>&prime;<i>J</i><sup>&minus;1</sup><i>P&theta;</i>,
+              with <i>&theta;</i> the fitted coefficients and <i>P</i> the prior&rsquo;s precision, and subtracts it. Because
+              the fit sets <i>X</i>&prime;<i>s</i> = <i>P&theta;</i>, the corrected score is the score of the remainder,
+              (<i>x</i> &minus; <i>Xa</i>)&prime;<i>s</i>. Dividing by its standard deviation, built from each site&rsquo;s
+              variance the same way, gives the candidate&rsquo;s <i>z</i>. The surplus it proposes is <i>S</i>/(<i>h</i> +
+              <i>&lambda;</i>), with <i>S</i> the score and <i>&lambda;</i> the prior&rsquo;s precision at its depth. The top
+              of the drawing is a one-dimensional sketch; the numbers below it are the engine&rsquo;s.</p>
+          </div>
+          <div class="step" data-scene="lindsey">
+            <h2>Fitting the Null</h2>
+            <p>If none of a round&rsquo;s candidates mattered, their <i>z</i>&rsquo;s would follow one bell curve, the
+              <em>null</em>. The gate estimates that curve from the round&rsquo;s own scores, by Lindsey&rsquo;s method.</p>
+            <p class="small">The scores are counted into 72 bins, each score split between its two nearest bins. A Poisson
+              regression of the counts on a degree-6 polynomial in <i>z</i> gives a smooth log-density. A normal&rsquo;s
+              log-density is a parabola, and near zero the null dominates, so a parabola is fitted to the log-density over
+              |<i>z</i>| &le; 2 (central matching). Its peak gives the null&rsquo;s centre, its curvature the spread, and its
+              height <i>&pi;</i><sub>0</sub>, the share of candidates that are noise. Recomputed on this page from round
+              0&rsquo;s scores: <span data-v="lnull">&hellip;</span>. The engine&rsquo;s: <span data-v="enull">&hellip;</span>.
+              The spread is held between 0.35 and 6 (3 in the rectangle engine).</p>
+          </div>
+          <div class="step" data-scene="select">
+            <h2>Three Ways to Pick</h2>
+            <p>A candidate&rsquo;s local false discovery rate, <em>lfdr</em>, is the chance it is noise given its
+              <i>z</i>: <i>&pi;</i><sub>0</sub> times the null&rsquo;s density at <i>z</i>, divided by the fitted density.
+              The gate sorts by lfdr and takes the longest run from the top whose average lfdr stays at or below 10%.</p>
+            <p class="small">That average estimates the share of noise among those taken. On round 0&rsquo;s scores the
+              gate takes <span data-v="nLfdr">&hellip;</span>. Benjamini&ndash;Hochberg at the same 10%, against the textbook
+              null N(0, 1), would take <span data-v="nBH">&hellip;</span>, and |<i>z</i>| &gt; 1.96 would take
+              <span data-v="nNaive">&hellip;</span>. The gate falls back to Benjamini&ndash;Hochberg only when a round has
+              fewer than 50 candidates, or when the fitted density has no peak near zero to match.</p>
+          </div>
+          <div class="step" data-scene="rescore">
+            <h2>Admitting One at a Time</h2>
+            <p>Tents at neighbouring vertices overlap. If two candidates sit on the same bump in the data, both score well,
+              but once one is admitted the other has less left to explain.</p>
+            <p class="small">So the selected candidates are admitted one at a time, best first, and each is scored again
+              against the surface the earlier admissions left. The surplus committed is the one from the new score. In this
+              one-dimensional sketch, admitting A leaves B with <span data-v="skB">&hellip;</span> of its score.</p>
+          </div>
+          <div class="step" data-scene="overlap">
+            <h2>Overlapping Tents in the Run</h2>
+            <p>Round 0 of the run selected <span data-v="sel0">&hellip;</span> candidates. Their tents are outlined here,
+              numbered in the order they were admitted.</p>
+            <p class="small"><span data-v="ovl">&hellip;</span> A candidate is turned back only when its new score no longer
+              promises a gain, which in practice means its score is exactly zero or fewer than 10 sites remain under its
+              tent. Over the whole run the engine scored <span data-v="reprof">&hellip;</span> candidates again at admission
+              and turned back <span data-v="rejected">&hellip;</span>. Admission first adds the candidate&rsquo;s closure at
+              zero surplus; those vertices stay even if the candidate is turned back.</p>
+          </div>
+          <div class="step" data-scene="variance">
+            <h2>Two Variances</h2>
+            <p>The coin variance <i>v</i> is the spread of the coin effects around the surface. It is estimated again at the
+              start of every round, by matching the squared residuals to what <i>v</i> predicts once the fit is allowed
+              for.</p>
+            <p class="small">As the mesh takes up the pattern in the odds, <i>v</i> falls toward the true
+              <span data-v="truev">&hellip;</span>. The depth variance <i>&tau;</i>&sup2; sets the prior on the surpluses at
+              one depth, with precision <i>&lambda;</i> = 1/<i>&tau;</i>&sup2;. It is estimated by EM: the average, over that
+              depth&rsquo;s admitted vertices, of the surplus squared plus its posterior variance. A depth needs three
+              admitted vertices; with fewer it borrows from the nearest depth that has them. <i>&tau;</i> starts at 1 logit
+              and never goes below 0.005.</p>
+          </div>
+          <div class="step" data-scene="stop">
+            <h2>Stopping</h2>
+            <p>The rounds stop after three in a row select nothing, when no candidate can be scored, or when the mesh passes
+              its face budget: <span data-v="cap">&hellip;</span> faces here, the larger of 600 and one face per 24 sites.</p>
+            <p class="small">The whole surface is refitted at the start of every round and after every third round. After
+              the last round comes one more refit. Then any coefficient whose tent covers no training site is retired, fixed
+              at zero surplus: <span data-v="retired">&hellip;</span> here. Last comes a final refit with a tighter tolerance
+              and more accurate variance calculations. This run took <span data-v="nr">&hellip;</span> rounds.</p>
+          </div>
+          <div class="step" data-scene="rect">
+            <h2>The Rectangle Engine</h2>
+            <p>The rectangle engine runs the same gate on different cells. Each cell is a rectangle with a bilinear
+              surface, and it can be cut along either axis, so each cell offers both cuts as candidates and the gate
+              picks.</p>
+            <p class="small">It starts from an 8 &times; 8 grid with the corners and the two midlines free. Cutting a cell
+              leaves its neighbour with a vertex in the middle of an edge, a <em>hanging</em> vertex (orange). Its parents
+              are the ends of that edge, so it sits on the edge&rsquo;s line and the surface stays continuous without a
+              closure. <span data-v="hang">&hellip;</span> Its null&rsquo;s spread is capped at 3, and a round counts toward
+              the three that stop the fit whenever it admits nothing, not only when it selects nothing. On the held-out half
+              the mean deviance per site is <span data-v="devR">&hellip;</span> for the rectangles and
+              <span data-v="devT">&hellip;</span> for the triangles<span data-v="devV"></span>. A site&rsquo;s deviance is twice the log of how much
+              likelier its flips are under its own share of heads than under the fit.</p>
+          </div>
+        </div>
+      </section>
+
+      <a class="skip-pill" href="#more" data-from="#story">Skip to the end</a>
+      <section class="ideafoot" id="more">
+        <p>The same run, told as a story rather than taken apart, is on the <a href="https://sbabichenko.com/gate/how">illustrated gate</a>.</p>
+        <div class="cta">
+          <a class="primary" href="https://sbabichenko.com/gate#truth=drawing">Fit your own drawing</a>
+          <a href="https://sbabichenko.com/gate/how">The gate, step by step</a>
+        </div>
+        <p class="note">The runs: 6,000 sites on the unit square, each flipping a coin between 10 and 30 times, with odds
+          from the picture chosen above plus a normal effect per coin on the log-odds, fitted by
+          <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a> and
+          <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a> compiled to
+          WebAssembly, with half the sites held out. The scores, nulls, lfdrs, admissions, variances and meshes drawn are
+          the engines&rsquo; own. The null in the seventh step and the counts in the eighth are recomputed on the page from
+          the engine&rsquo;s scores. The splits in the first step are computed on the page with the engine&rsquo;s rule.
+          The second, fifth, sixth (top) and ninth drawings are sketches.</p>
+      </section>
+    </main>
+
+    
+<footer class="site-foot">
+  
+  <span>&copy; 2025&ndash;2026 Sam Babichenko</span>
+  <a href="https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by&#x2F;4.0&#x2F;deed.en" rel="noopener" target="_blank">CC BY 4.0</a>
+  <a href="https://sbabichenko.com/colophon">Colophon</a>
+  <a href="https://sbabichenko.com/atom.xml" title="New writing, in any feed reader">Feed</a>
+  <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
+</footer>
+<script src="https://sbabichenko.com/js/tally.js?h=4000db8cd9e27f8f27cd"></script>
+<link rel="stylesheet" href="https://sbabichenko.com/css/whimsy.css?h=47c637d7150a148c9bce" />
+<link rel="stylesheet" href="https://sbabichenko.com/css/fold.css?h=65a4ad70c1f9e810669b" />
+<script src="https://sbabichenko.com/js/whimsy.js?h=03baa37dd53e13046bb1"></script>
+<script src="https://sbabichenko.com/js/skip.js?h=8b0612be930eb6b54639" defer></script>
+<script src="https://sbabichenko.com/js/fold.js?h=c0b53bc8e268c5e50f1c"></script>
+
+    <script src="https://sbabichenko.com/mesh/gate-deep.js?h=82f0d1e9fd7a1295d3a7"></script>
+  </body>
+</html>

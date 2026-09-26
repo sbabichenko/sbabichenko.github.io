@@ -1,0 +1,204 @@
+@keyframes spin-configurable {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Accent color for links and interactive elements */
+:root {
+  --accent: #1f3fd0;
+  --accent-hover: #2c53ea;
+}
+.dark {
+  --accent: #8fb0ff;
+  --accent-hover: #b3caff;
+}
+
+/* the site's display face: headings and the header wordmark, as on the home page */
+:is(h1, h2, h3, .prose h1, .prose h2, .prose h3),
+header a[class*="text-2xl"] {
+  font-family: Newsreader, "Iowan Old Style", Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+header a[class*="text-2xl"] { font-size: 1.35rem; letter-spacing: -0.015em; }
+
+/* Style links in prose content with accent color */
+.prose a {
+  color: var(--accent) !important;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.prose a:hover {
+  color: var(--accent-hover) !important;
+  text-decoration: underline;
+}
+
+/* Project card improvements */
+.project-card {
+  padding: 1rem 1.5rem;
+  margin: 1.25rem 0;
+  gap: 0.25rem;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: 1px solid transparent;
+}
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.project-card .project-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+}
+.project-card .project-link:hover {
+  background: var(--accent);
+  color: #fff !important;
+  text-decoration: none;
+}
+
+.project-card a.project-link.project-link-primary {
+  background: var(--accent);
+  color: #fff !important;
+  padding: 3px 12px;
+  border-radius: 9999px;
+}
+.project-card a.project-link.project-link-primary:hover {
+  filter: brightness(1.1);
+}
+
+.project-card .project-tag {
+  font-size: 0.75em;
+  padding: 1px 8px;
+  border-radius: 9999px;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent);
+}
+.dark .project-card .project-tag {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--accent-hover);
+}
+
+/* Nav link accent on hover */
+header a:hover {
+  color: var(--accent-hover) !important;
+}
+
+/* Profile social icons accent on hover */
+.dark nav a:hover {
+  opacity: 0.7;
+}
+
+/* Smoother page transitions */
+main {
+  animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* project cards with a picture: the picture on the right on wide screens, on top on phones; one per theme */
+.project-card.has-image { flex-direction: column; }
+.project-card .project-image { display: block; border-radius: 0.5rem; overflow: hidden; margin: 0.25rem 0 0.75rem; aspect-ratio: 2 / 1; background: rgba(127,127,127,0.06); }
+.project-card .project-image img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+.project-card .project-image:hover img { transform: scale(1.03); }
+.project-card .img-dark { display: none !important; }
+.dark .project-card .img-dark { display: block !important; }
+.dark .project-card .img-light { display: none !important; }
+@media (min-width: 640px) {
+  .project-card.has-image { flex-direction: row-reverse; align-items: center; gap: 1.25rem; }
+  .project-card.has-image .project-image { flex: 0 0 200px; margin: 0; }
+  .project-card.has-image .project-body { flex: 1 1 auto; min-width: 0; }
+}
+
+/* Long-form pages read as a page of type: serif body at a comfortable measure, which also sits
+   better beside KaTeX's own faces. Code, tables and the UI stay in the sans. */
+.prose :is(p, li, blockquote, dd, figcaption) {
+  font-family: Newsreader, "Iowan Old Style", Georgia, serif;
+  font-size: 1.12rem;
+  line-height: 1.68;
+}
+.prose blockquote { font-style: italic; }
+.prose :is(code, pre, kbd, samp) { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92rem; font-style: normal; }
+.prose :is(h1, h2, h3, h4) { letter-spacing: -0.015em; }
+.prose h2 { font-size: 1.75rem; margin-top: 2.2em; }
+.prose h3 { font-size: 1.35rem; }
+
+/* ---------------------------------------------------------------- header and footer
+   The header is the page's own paper, frosted, with a hairline under it, rather than a grey band;
+   it spans the same measure as the home page. */
+header.blur-header { background-color: rgba(255, 255, 240, 0.82); border-bottom: 1px solid rgba(20, 20, 30, 0.07); }
+.dark header.blur-header { background-color: rgba(31, 32, 34, 0.82); border-bottom-color: rgba(255, 255, 255, 0.07); }
+header.blur-header > div { max-width: 1072px; padding-left: 16px; padding-right: 16px; }
+header .primary-link { font-size: 0.98rem; font-weight: 500; }
+@media (min-width: 1024px) { header .primary-link { padding-left: 0.7rem; padding-right: 0.7rem; } }
+
+footer.site-foot { width: min(1040px, calc(100% - 40px)); margin: 72px auto 0; padding: 18px 0 40px; font-size: 0.84rem;
+  display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; color: rgba(20, 20, 30, 0.55);
+  border-top: 1px solid rgba(20, 20, 30, 0.08); }
+.dark footer.site-foot { color: rgba(255, 255, 255, 0.5); border-top-color: rgba(255, 255, 255, 0.08); }
+footer.site-foot a { color: inherit; text-decoration: none; border-bottom: 1px solid currentColor; border-bottom-color: color-mix(in srgb, currentColor 35%, transparent); }
+footer.site-foot a:hover { color: var(--accent); }
+footer.site-foot .tally { margin-left: auto; font-variant-numeric: tabular-nums; }
+footer.site-foot .tally b { font-weight: 600; color: var(--accent); }
+@media (max-width: 640px) { footer.site-foot .tally { margin-left: 0; flex-basis: 100%; } }
+.cv-download { display: inline-block; padding: 6px 16px; border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--accent) !important; border-radius: 999px; text-decoration: none !important; font-size: 0.88em; font-family: ui-sans-serif, system-ui, sans-serif; }
+.cv-download:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+
+/* a display equation wider than the screen scrolls inside its own box instead of widening the page
+   (on a phone, a long line in the writing pieces pushed the whole page, and the menu button, sideways) */
+.prose .katex-display { position: relative; overflow-x: auto; overflow-y: hidden; padding-block: 0.2em; }   /* relative: KaTeX's hidden MathML copy is absolutely positioned and would still widen the page */
+
+/* the closing figure of a writing piece (templates/page.html), as the dissertation's chapters end */
+.fin { display: flex; justify-content: center; margin: 3rem 0 2rem; }
+.fin svg { width: 180px; height: 28px; overflow: visible; }
+.fin path { fill: none; stroke: #8a8a93; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.fin circle { fill: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .fin path { stroke-dasharray: 320; stroke-dashoffset: 320; }
+  .fin circle { opacity: 0; }
+  .fin.drawn path { transition: stroke-dashoffset 2.2s cubic-bezier(.3, .1, .3, 1); stroke-dashoffset: 0; }
+  .fin.drawn circle { transition: opacity 0.4s 2s; opacity: 1; }
+}
+.dark .fin path { stroke: #7c7d86; }
+/* a diagram drawn at a fixed width in a writing piece shrinks to the screen (KaTeX's own SVGs are not touched) */
+.prose section > svg { max-width: 100%; height: auto; }
+
+/* the eight schools, pooled as you drag tau (static/js/pooltoy.js, in the partial-pooling post) */
+.pooltoy { margin: 1.6em 0; }
+.pooltoy .pt-svg { width: 100%; height: auto; display: block; }
+.pooltoy .pt-grid { stroke: currentColor; opacity: 0.1; }
+.pooltoy .pt-tick, .pooltoy .pt-meanlab { font: 11px ui-sans-serif, system-ui, sans-serif; fill: currentColor; opacity: 0.6; }
+.pooltoy .pt-bar { stroke: currentColor; opacity: 0.25; stroke-width: 1.5; }
+.pooltoy .pt-raw { fill: none; stroke: currentColor; opacity: 0.55; stroke-width: 1.3; }
+.pooltoy .pt-pull { stroke: #1f3fd0; opacity: 0.45; stroke-width: 1.5; }
+.pooltoy .pt-dot { fill: #1f3fd0; }
+.pooltoy .pt-mean { stroke: #a8431c; stroke-dasharray: 4 4; stroke-width: 1.3; }
+.pooltoy .pt-meanlab { fill: #a8431c; opacity: 0.9; }
+.dark .pooltoy .pt-pull, .dark .pooltoy .pt-dot { stroke: #8fb0ff; fill: #8fb0ff; }
+.dark .pooltoy .pt-pull { fill: none; }
+.dark .pooltoy .pt-mean { stroke: #f0a27a; } .dark .pooltoy .pt-meanlab { fill: #f0a27a; }
+.pooltoy .pt-row { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; align-items: center; font: 0.85rem ui-sans-serif, system-ui, sans-serif; margin-top: 0.4rem; }
+.pooltoy .pt-row input { flex: 1; min-width: 10rem; }
+.pooltoy .pt-note { opacity: 0.6; font-size: 0.8rem; }
+
+/* the colophon ends on a strip of the site's mesh: right triangles, a few bisected */
+.colophon-mesh { height: 40px; margin-top: 2.5rem; opacity: 0.35; background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'><g fill='none' stroke='%23888' stroke-width='0.8'><path d='M0,0 H80 M0,40 H80 M0,0 V40 M40,0 V40 M80,0 V40 M0,0 L40,40 M80,0 L40,40 M20,20 L40,0 M60,20 L40,0 M20,20 L0,40'/></g></svg>") repeat-x left center;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+.dark .colophon-mesh { opacity: 0.5; }
+
+/* a quoted post from X, shown as a quote until someone asks for the embed (Partial-Pooling.md) */
+blockquote.twitter-tweet { margin: 1.4em 0 0.4em; padding: 0.9rem 1.1rem; border: 1px solid rgba(127, 127, 127, 0.3);
+  border-left: 3px solid #1f3fd0; border-radius: 0 8px 8px 0; font-style: normal; }
+blockquote.twitter-tweet p { margin: 0 0 0.5em; }
+.tweet-load { font: 0.8rem ui-sans-serif, system-ui, sans-serif; background: none; border: 1px solid rgba(127, 127, 127, 0.4);
+  border-radius: 999px; padding: 0.15em 0.8em; cursor: pointer; color: inherit; opacity: 0.75; margin-bottom: 1.2em; }
+.tweet-load:hover { opacity: 1; }

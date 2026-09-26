@@ -1,0 +1,338 @@
+
+<!doctype html>
+<html class="not-ready lg:text-base" lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Title -->
+  <title>Decision Mesh - Sam Babichenko</title>
+
+  <!-- Meta -->
+  <meta name="theme-color" />
+  <meta name="description" content="Coin flips on a square, fitted in your browser by the right-triangle and rectangular decision-mesh estimators: they cut only where a false-discovery gate says the data justify a cut, and the page shows the gate round by round." />
+  <meta name="author" content="" />
+  <!-- The Open Graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Decision Mesh" />
+  <meta property="og:site_name" content="Sam Babichenko" />
+  <meta property="og:description" content="Coin flips on a square, fitted in your browser by the right-triangle and rectangular decision-mesh estimators: they cut only where a false-discovery gate says the data justify a cut, and the page shows the gate round by round." />
+  <meta property="og:url" content="https:&#x2F;&#x2F;sbabichenko.com&#x2F;gate&#x2F;" />
+  <meta property="og:image" content="https://sbabichenko.com/images/og-gate.png" />
+
+  <!-- CSS & JS -->
+  <link rel="preload stylesheet" as="style" href="https://sbabichenko.com/main.css?h=f49bde0cf4c2681243a5" />
+  <style>
+    :root {
+      --bg: #FFFFF0;
+      --bg-dark: #1F2022;
+      --header: #e4e4e7;
+      --header-dark: #27272a;
+    }
+  </style>
+
+  
+
+  <!-- Dark Icon -->
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/theme.svg" />
+
+  <!-- Math -->
+  
+  <!---->
+
+  <!-- Mermaid -->
+  
+  <!---->
+
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://sbabichenko.com/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://sbabichenko.com/favicon-16x16.png">
+  <link rel="shortcut icon" href="https://sbabichenko.com/favicon.ico">
+  <link rel="apple-touch-icon" href="https://sbabichenko.com/apple-touch-icon.png">
+
+
+  <!-- Feeds -->
+  
+  <!---->
+  
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title="Atom"
+    href="https://sbabichenko.com/atom.xml"
+  />
+   
+  <!---->
+  
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https:&#x2F;&#x2F;sbabichenko.com&#x2F;gate&#x2F;" />
+
+  <!-- Head inject -->
+  <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="font" type="font/woff2" href="https://sbabichenko.com/fonts/newsreader-latin-opsz-normal.woff2" crossorigin>
+<link rel="stylesheet" href="https://sbabichenko.com/fonts/newsreader.css?h=76764bb675ec2845fffb">
+<link rel="stylesheet" href="https://sbabichenko.com/css/custom.css?h=f836d5c06c9f94dc466b">
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="https://sbabichenko.com/noisestate/explorer.css?h=2ac2492ab1ef399c423d" />
+    <link rel="stylesheet" href="https://sbabichenko.com/mesh/mesh.css?h=a8dea741136f40ed8eae" />
+    <header
+  class="blur-header fixed top-0 z-40 mx-auto min-h-[3.5rem] w-full"
+>
+  <div class="mx-auto w-full max-w-4xl p-3 lg:flex lg:justify-between">
+    <div class="flex justify-between">
+      <div class="flex items-center">
+        <a class="text-2xl font-semibold" href="https://sbabichenko.com">Sam Babichenko</a>
+        <div
+          class="btn-dark ml-4 h-6 w-6 shrink-0 cursor-pointer text-[0px] [background:url(./icons/theme.svg)_left_center/cover_no-repeat] dark:[background-position:right] dark:invert"
+          role="button"
+          aria-label="Dark"
+        ></div>
+      </div>
+      
+      <div
+        class="btn-menu relative z-50 flex h-8 w-8 shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+        role="button"
+        aria-label="Menu"
+      ></div>
+      
+    </div>
+    <script>
+      // base
+      const htmlClass = document.documentElement.classList;
+      setTimeout(() => {
+        htmlClass.remove("not-ready");
+      }, 10);
+
+      // mobile menu
+      const btnMenu = document.querySelector(".btn-menu");
+      btnMenu?.addEventListener("click", () => {
+        htmlClass.toggle("open");
+      });
+
+      // dark theme
+      const setDark = (isDark) => {
+        if (isDark) {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
+          htmlClass.add("dark");
+        } else {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "light" }));
+          htmlClass.remove("dark");
+        }
+        localStorage.setItem("dark", isDark);
+      };
+
+      // init
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      if (htmlClass.contains("dark")) {
+        setDark(true);
+      } else {
+        const darkVal = localStorage.getItem("dark");
+        setDark(darkVal ? darkVal === "true" : darkScheme.matches);
+      }
+
+      // listen system
+      darkScheme.addEventListener("change", (event) => {
+        setDark(event.matches);
+      });
+
+      // manual switch
+      const btnDark = document.querySelector(".btn-dark");
+      btnDark.addEventListener("click", () => {
+        setDark(localStorage.getItem("dark") !== "true");
+      });
+    </script>
+    
+    <nav class="flex w-full items-center lg:w-auto">
+      <ul
+        class="nav-wrapper flex w-full flex-col py-2 lg:w-auto lg:flex-row lg:self-center lg:py-0"
+      >
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/writing"
+            >Writing</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/dissertation"
+            >Dissertation</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/cv"
+            >CV</a
+          >
+        </li>
+        
+      </ul>
+      <!-- Header Nav inject -->
+      
+    </nav>
+    
+  </div>
+</header>
+
+
+    <main class="explorer mesh gate" id="gate" data-worker="https://sbabichenko.com/mesh/fit-worker.js?h=39b564800f1d7fc152da">
+      <div class="crumbs"><a href="https://sbabichenko.com#projects">Projects</a> &nbsp;/&nbsp; <a href="https://sbabichenko.com/mesh">Decision Mesh</a> &nbsp;/&nbsp; Live</div>
+      <h1>Decision Mesh</h1>
+      <p class="sub">The odds of a coin vary over this square. A few thousand sites each flip a coin a handful of
+        times. The estimator refines a mesh of right triangles or rectangles only where a false-discovery gate finds
+        support in the flips, and stops when no candidate passes. It separates the odds from each coin's own effect
+        and from the noise of the flips.</p>
+
+      <section class="panel">
+        <div class="meshbar">
+          <div class="ctl"><label for="engine"><span>Estimator</span></label><select id="engine">
+            <option value="tri" selected>Right triangles</option><option value="rect">Rectangles</option></select></div>
+          <div class="ctl"><label for="truth"><span>The odds</span></label><select id="truth"></select></div>
+          <div class="ctl"><label for="sites"><span>Sites</span></label><select id="sites">
+            <option value="3000">3,000</option><option value="6000" selected>6,000</option><option value="12000">12,000</option></select></div>
+          <div class="ctl"><label for="flips"><span>Flips per site</span></label><select id="flips">
+            <option value="5">about 5</option><option value="10">about 10</option><option value="20" selected>about 20</option>
+            <option value="40">about 40</option><option value="80">about 80</option><option value="160">about 160</option></select></div>
+          <div class="ctl"><label for="coinsd"><span>Coin effects, sd</span><span class="val" id="coinsdval"></span></label>
+            <input type="range" id="coinsd" min="0" max="1" step="0.05" value="0.25" /></div>
+          <div class="ctl"><label for="q"><span>False discovery rate, q</span><span class="val" id="qval"></span></label>
+            <input type="range" id="q" min="0.01" max="0.3" step="0.01" value="0.1" /></div>
+          <div class="ctl" id="drawtools" hidden><label><span>Brush</span></label>
+            <div class="brushrow"><label class="check"><input type="checkbox" id="lower" /> lower</label>
+              <button class="secondary small" id="clear">Clear</button></div></div>
+        </div>
+        <input type="hidden" id="seed" value="1" />
+      </section>
+
+      <div id="statusbar">
+        <span class="chip idle" id="chip">Ready</span>
+        <span id="statustext"></span>
+        <span class="buttons"><button class="secondary" id="newdata" title="Flip every coin again (hold to keep flipping)"><i class="mini-coin" aria-hidden="true"></i>Flip again</button><button class="secondary" id="ownback" hidden>Back to the coins</button></span>
+      </div>
+
+      <section class="panel">
+        <div class="stage">
+          <figure><div class="cv"><canvas id="cvtruth" width="320" height="320"></canvas></div>
+            <figcaption><b>The odds</b> <span class="muted">what the coins really do</span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvdata" width="320" height="320"></canvas></div>
+            <figcaption><b>The flips</b> <span class="muted">each site's share of heads</span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvfit" width="320" height="320"></canvas></div>
+            <figcaption><b>The fit</b> <span class="muted">dots: admitted, by round</span></figcaption></figure>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <label class="check"><input type="checkbox" id="showedges" checked /> Mesh lines</label>
+          <label class="check"><input type="checkbox" id="showadmit" checked /> Admitted vertices</label>
+          <span class="scale" id="scale"></span>
+        </div>
+      </section>
+
+      <p class="tries">Try giving <a href="#truth=hills&amp;flips=160">the two hills more flips</a> and watch the mesh fill
+        in around them; pick <a href="#truth=nothing&amp;flips=160">&ldquo;nothing at all&rdquo;</a>, which it leaves uncut at
+        any number of flips; pick <a href="#truth=drawing">&ldquo;your drawing&rdquo;</a> and paint on the odds (drag to
+        raise them, tick &ldquo;lower&rdquo; or hold shift to lower them).</p>
+
+      <section class="panel own" id="own">
+        <h2>Fit Your Own Data</h2>
+        <p class="caption">A CSV with a header row: two numeric columns for the position and a column of 0/1 outcomes, one
+          row per trial. If each row already counts several trials, give its trials and its successes instead. The file
+          is read in this browser and never uploaded. The <a href="https://sbabichenko.com/mesh/sample-flips.csv">sample file</a>
+          shows the format.</p>
+        <label class="drop" id="drop"><input type="file" id="file" accept=".csv,.txt,text/csv,text/plain" />
+          <span>Drop a CSV here, or <u>choose a file</u></span></label>
+        <div class="colpick" id="colpick" hidden>
+          <div class="ctl"><label for="colx"><span>Across</span></label><select id="colx"></select></div>
+          <div class="ctl"><label for="coly"><span>Up</span></label><select id="coly"></select></div>
+          <div class="ctl"><label for="colk"><span>Outcome or successes</span></label><select id="colk"></select></div>
+          <div class="ctl"><label for="coln"><span>Trials</span></label><select id="coln"></select></div>
+          <div class="buttons"><button class="primary" id="ownfit">Fit</button></div>
+        </div>
+        <p class="ownmsg" id="ownmsg" aria-live="polite"></p>
+      </section>
+
+      <div id="results" class="stale">
+        <section class="panel"><div class="cards" id="cards"></div></section>
+        <section class="panel">
+          <h2>Round-by-Round Results</h2>
+          <div class="tablewrap" id="rounds"></div>
+          <p class="caption">Each round scores every candidate vertex (the midpoints of the mesh's edges) by how much
+            it would improve the fit. If no candidate mattered, the scores would look like draws from one bell curve, the
+            null. The gate fits the density of all the scores, reads the null's centre and spread off the middle of it,
+            estimates the share &pi;<sub>0</sub> that are noise, and admits the candidates that stand out from that null
+            at a controlled false-discovery rate. When the scores have no central peak to read a null from, it falls
+            back to the textbook one. <span id="coinnote">Each coin also has an effect of its own on the log-odds, and the coin variance is
+            the estimator's estimate of their spread, fitted alongside the surface: as the mesh learns the odds, what it
+            can't explain shrinks toward the spread the slider set.</span><span id="sitenote" hidden>Each site also has an
+            effect of its own on the log-odds, and the site variance is the estimator's estimate of their spread, fitted
+            alongside the surface.</span>
+            <a href="https://sbabichenko.com/gate/how">The False-Discovery Gate, Step by Step</a> draws each of these steps from a live run, and <a href="https://sbabichenko.com/gate/deep">The Decision Mesh, in
+            Detail</a> goes one level further down.</p>
+        </section>
+      </div>
+
+      <div class="notes">
+        <p>The estimators are <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a>
+          and <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a>, compiled from
+          their C++ with Emscripten. Their dense linear algebra, which natively calls LAPACK, runs on Eigen here, and the
+          builds can write a trace of each round's candidates for the illustrated page; nothing else is changed, and on my
+          test designs the browser builds reproduce the native meshes to 1e-11. The two share
+          the gate and the model for the coin effects and differ in geometry: right triangles cut only through their hypotenuse, with a
+          plane in each; rectangles cut across either axis, with a bilinear fit in each. Half the sites are held out:
+          the mesh never sees them, and the deviance card scores the fit on them. A site&rsquo;s deviance is
+          2[<i>k</i>&thinsp;log(<i>k</i>&thinsp;/&thinsp;<i>n p</i>) + (<i>n</i>&minus;<i>k</i>)&thinsp;log((<i>n</i>&minus;<i>k</i>)&thinsp;/&thinsp;(<i>n</i>(1&minus;<i>p</i>)))],
+          with <i>k</i> heads in <i>n</i> flips and fitted odds <i>p</i>: zero when <i>p</i> is exactly the share of heads, and
+          larger the less likely the flips are under the fit. Even the true surface scores above zero, because each coin has
+          its own effect and flips are random, so it sets the floor. The coins are drawn on this page from
+          the odds you pick, plus a normal effect per coin on the log-odds, with the standard deviation on the slider
+          (0.25 to start). Set it to zero and the coins are plain binomial.</p>
+        <p>The <a href="https://sbabichenko.com/mesh">growing-mesh page</a> grows the same geometries by a simple greedy rule with no gate: freeform
+          triangles, right triangles, rectangles and a tree. The right triangles there are
+          this estimator's geometry.</p>
+      </div>
+      <details class="cite">
+        <summary>Cite it</summary>
+<pre>@software{triangular_decision_mesh,
+  author = {Babichenko, Sam},
+  title  = {triangular-decision-mesh: an adaptive right-triangle mesh regression with a false-discovery gate},
+  year   = {2026},
+  url    = {https://github.com/sbabichenko/triangular-decision-mesh}
+}
+
+@software{rectangular_decision_mesh,
+  author = {Babichenko, Sam},
+  title  = {rectangular-decision-mesh: an adaptive rectangular mesh regression with a false-discovery gate},
+  year   = {2026},
+  url    = {https://github.com/sbabichenko/rectangular-decision-mesh}
+}</pre>
+      </details>
+
+    </main>
+
+    
+<footer class="site-foot">
+  
+  <span>&copy; 2025&ndash;2026 Sam Babichenko</span>
+  <a href="https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by&#x2F;4.0&#x2F;deed.en" rel="noopener" target="_blank">CC BY 4.0</a>
+  <a href="https://sbabichenko.com/colophon">Colophon</a>
+  <a href="https://sbabichenko.com/atom.xml" title="New writing, in any feed reader">Feed</a>
+  <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
+</footer>
+<script src="https://sbabichenko.com/js/tally.js?h=4000db8cd9e27f8f27cd"></script>
+<link rel="stylesheet" href="https://sbabichenko.com/css/whimsy.css?h=47c637d7150a148c9bce" />
+<link rel="stylesheet" href="https://sbabichenko.com/css/fold.css?h=65a4ad70c1f9e810669b" />
+<script src="https://sbabichenko.com/js/whimsy.js?h=03baa37dd53e13046bb1"></script>
+<script src="https://sbabichenko.com/js/skip.js?h=8b0612be930eb6b54639" defer></script>
+<script src="https://sbabichenko.com/js/fold.js?h=c0b53bc8e268c5e50f1c"></script>
+
+    <script src="https://sbabichenko.com/mesh/gate.js?h=bfc58da3a2ff4c73c8b1"></script>
+  </body>
+</html>

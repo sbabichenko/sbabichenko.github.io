@@ -1,0 +1,32 @@
+[[project]]
+name = "Noise-State Calculus for Dynamic Games with Strategic Information"
+desc = "My dissertation. Each player keeps estimates of the primitive shocks instead of belief hierarchies, so beliefs, prices and policies are impulse responses and equilibrium is a fixed point in them. The information wedge prices changing an opponent's beliefs."
+tags = ["research", "dissertation"]
+detour = true
+image = "images/card-noisestate"
+links = [
+    { name = "dissertation", url = "$BASE_URL/dissertation/", primary = true },
+    { name = "pypi", url = "https://pypi.org/project/noisestate/" },
+    { name = "github", url = "https://github.com/sbabichenko/noisestate" }
+]
+
+[[project]]
+name = "Forecasting and Manipulating the Forecasts of Others"
+desc = "Solo-authored, 2026. Finite-player games in which actions both move payoffs and reshape what opponents learn. In a two-player benchmark, the information wedge explains why pooling gains are mostly strategic, why optimal precision allocation can starve an inefficient player of information, and why signal precision changes the policy rules themselves."
+tags = ["research", "game theory"]
+image = "images/card-noisestate"
+links = [
+    { name = "arxiv", url = "https://arxiv.org/abs/2603.12140", primary = true },
+    { name = "github", url = "https://github.com/sbabichenko/Noise-State-Games" }
+]
+
+[[project]]
+name = "Decision Mesh"
+desc = "Adaptive, continuous regression that refines the surface only where a false-discovery gate finds support, and decomposes the data into the surface, unit-level effects, and pure noise. The rectangular version splits one axis at a time, like a decision tree, so it scales to higher dimensions."
+tags = ["personal", "data science"]
+image = "images/card-mesh"
+links = [
+    { name = "triangular-decision-mesh", url = "https://github.com/sbabichenko/triangular-decision-mesh", primary = true },
+    { name = "rectangular-decision-mesh", url = "https://github.com/sbabichenko/rectangular-decision-mesh" },
+    { name = "Decision-Mesh", url = "https://github.com/sbabichenko/Decision-Mesh" }
+]

@@ -1,0 +1,356 @@
+
+<!doctype html>
+<html class="not-ready lg:text-base" lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Title -->
+  <title>How the Noise-State Solver Works - Sam Babichenko</title>
+
+  <!-- Meta -->
+  <meta name="theme-color" />
+  <meta name="description" content="The algorithm behind the noise-state game explorer, step by step: kernels on the causal triangle, spectral nodes, one best response, Anderson acceleration, the checks, stationary windows and regime changes, drawn from solves run in your browser." />
+  <meta name="author" content="" />
+  <!-- The Open Graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="How the Noise-State Solver Works" />
+  <meta property="og:site_name" content="Sam Babichenko" />
+  <meta property="og:description" content="The algorithm behind the noise-state game explorer, step by step: kernels on the causal triangle, spectral nodes, one best response, Anderson acceleration, the checks, stationary windows and regime changes, drawn from solves run in your browser." />
+  <meta property="og:url" content="https:&#x2F;&#x2F;sbabichenko.com&#x2F;noisestate&#x2F;how&#x2F;" />
+  <meta property="og:image" content="https://sbabichenko.com/images/og-noisestate.png" />
+
+  <!-- CSS & JS -->
+  <link rel="preload stylesheet" as="style" href="https://sbabichenko.com/main.css?h=f49bde0cf4c2681243a5" />
+  <style>
+    :root {
+      --bg: #FFFFF0;
+      --bg-dark: #1F2022;
+      --header: #e4e4e7;
+      --header-dark: #27272a;
+    }
+  </style>
+
+  
+
+  <!-- Dark Icon -->
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/theme.svg" />
+
+  <!-- Math -->
+  
+  <!---->
+
+  <!-- Mermaid -->
+  
+  <!---->
+
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://sbabichenko.com/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://sbabichenko.com/favicon-16x16.png">
+  <link rel="shortcut icon" href="https://sbabichenko.com/favicon.ico">
+  <link rel="apple-touch-icon" href="https://sbabichenko.com/apple-touch-icon.png">
+
+
+  <!-- Feeds -->
+  
+  <!---->
+  
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title="Atom"
+    href="https://sbabichenko.com/atom.xml"
+  />
+   
+  <!---->
+  
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https:&#x2F;&#x2F;sbabichenko.com&#x2F;noisestate&#x2F;how&#x2F;" />
+
+  <!-- Head inject -->
+  <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="font" type="font/woff2" href="https://sbabichenko.com/fonts/newsreader-latin-opsz-normal.woff2" crossorigin>
+<link rel="stylesheet" href="https://sbabichenko.com/fonts/newsreader.css?h=76764bb675ec2845fffb">
+<link rel="stylesheet" href="https://sbabichenko.com/css/custom.css?h=f836d5c06c9f94dc466b">
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="https://sbabichenko.com/dissertation/opening.css?h=8b6665ade0e2839eb75c" />
+    <header
+  class="blur-header fixed top-0 z-40 mx-auto min-h-[3.5rem] w-full"
+>
+  <div class="mx-auto w-full max-w-4xl p-3 lg:flex lg:justify-between">
+    <div class="flex justify-between">
+      <div class="flex items-center">
+        <a class="text-2xl font-semibold" href="https://sbabichenko.com">Sam Babichenko</a>
+        <div
+          class="btn-dark ml-4 h-6 w-6 shrink-0 cursor-pointer text-[0px] [background:url(./icons/theme.svg)_left_center/cover_no-repeat] dark:[background-position:right] dark:invert"
+          role="button"
+          aria-label="Dark"
+        ></div>
+      </div>
+      
+      <div
+        class="btn-menu relative z-50 flex h-8 w-8 shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+        role="button"
+        aria-label="Menu"
+      ></div>
+      
+    </div>
+    <script>
+      // base
+      const htmlClass = document.documentElement.classList;
+      setTimeout(() => {
+        htmlClass.remove("not-ready");
+      }, 10);
+
+      // mobile menu
+      const btnMenu = document.querySelector(".btn-menu");
+      btnMenu?.addEventListener("click", () => {
+        htmlClass.toggle("open");
+      });
+
+      // dark theme
+      const setDark = (isDark) => {
+        if (isDark) {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
+          htmlClass.add("dark");
+        } else {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "light" }));
+          htmlClass.remove("dark");
+        }
+        localStorage.setItem("dark", isDark);
+      };
+
+      // init
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      if (htmlClass.contains("dark")) {
+        setDark(true);
+      } else {
+        const darkVal = localStorage.getItem("dark");
+        setDark(darkVal ? darkVal === "true" : darkScheme.matches);
+      }
+
+      // listen system
+      darkScheme.addEventListener("change", (event) => {
+        setDark(event.matches);
+      });
+
+      // manual switch
+      const btnDark = document.querySelector(".btn-dark");
+      btnDark.addEventListener("click", () => {
+        setDark(localStorage.getItem("dark") !== "true");
+      });
+    </script>
+    
+    <nav class="flex w-full items-center lg:w-auto">
+      <ul
+        class="nav-wrapper flex w-full flex-col py-2 lg:w-auto lg:flex-row lg:self-center lg:py-0"
+      >
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/writing"
+            >Writing</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/dissertation"
+            >Dissertation</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/cv"
+            >CV</a
+          >
+        </li>
+        
+      </ul>
+      <!-- Header Nav inject -->
+      
+    </nav>
+    
+  </div>
+</header>
+
+    <div class="progress" id="progress" aria-hidden="true"></div>
+
+    <main class="opening idea" data-worker="https://sbabichenko.com/noisestate/worker.js?h=169a485f4e2f382123a1" id="solverpage">
+      <section class="ideahead">
+        <p class="eyebrow"><a href="https://sbabichenko.com/noisestate">Noise-State Game Explorer</a> &middot; illustrated</p>
+        <h1>How the Noise-State Solver Works</h1>
+        <p class="lede">The algorithm behind the <a href="https://sbabichenko.com/noisestate">explorer</a>, one step at a
+          time. Most drawings are solved as you read, by the explorer&rsquo;s own solver, on games from Chapters 1 and 3 of
+          the dissertation. <span class="solvestate" id="solvestate">Loading the solver&hellip;</span></p>
+      </section>
+
+      <section class="story" id="story">
+        <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
+        <div class="steps">
+          <div class="step" data-scene="triangle">
+            <p>An equilibrium of these games is a set of kernels. A kernel <i>D</i>&sup1;<sub><i>W</i>,<i>t</i></sub>(<i>s</i>) is how
+              much player 1&rsquo;s action at date <i>t</i> moves per unit of a shock that struck at an earlier date
+              <i>s</i>. The pairs with <i>s</i> &le; <i>t</i> make up the causal triangle, and each kernel is a function
+              on it, one for every control and every shock.</p>
+            <p class="small">The solver&rsquo;s unknowns are the control kernels. The state&rsquo;s kernel and every
+              player&rsquo;s beliefs follow from them by linear solves. The drawing is player 1&rsquo;s kernel for the
+              state shock <i>w</i>&#8304; in the tracking game of Chapter 1: each curve fixes a date <i>t</i> and shows the
+              response at <i>t</i> to a unit shock at time <i>s</i>.</p>
+          </div>
+          <div class="step" data-scene="estimates">
+            <p>The kernels in these drawings are responses to the primitive shocks. The dissertation writes a strategy
+              differently, as a rule on the player&rsquo;s noise-state: the estimates
+              <i>&Wcirc;</i>&sup1;<sub><i>t</i></sub>(<i>u</i>) = E[<i>W<sub>u</sub></i> | F&sup1;<sub><i>t</i></sub>] of
+              the past shocks, revised as new signals arrive. The strategy kernel <i>D</i>&sup1;<sub><i>t</i></sub>(<i>u</i>)
+              weights those estimates. Running the estimates back to the shocks gives the primitive-control response
+              <i>D</i>&sup1;<sub><i>W</i>,<i>t</i></sub>(<i>s</i>).</p>
+            <p class="small">The drawing is player 1 in the tracking game of Chapter 1 at date <i>t</i> = 0.5, both kernels
+              read off the solve. By Remark 1.13 player 1 acts on its estimate of the state price,
+              <i>D</i>&sup1;<sub><i>t</i></sub> = &minus;E[<i>H</i><sub><i>t</i></sub> | F&sup1;<sub><i>t</i></sub>]/(2<i>r</i><sub>1</sub>),
+              so the strategy kernel is the state price&rsquo;s kernel, <i>D</i>&sup1;<sub><i>t</i></sub>(<i>u</i>) =
+              &minus;<i>H</i><sub><i>t</i></sub>(<i>u</i>)/(2<i>r</i><sub>1</sub>). The solver stores the kernel of the
+              first-order condition, 2<i>r</i><sub>1</sub><i>D</i>&sup1;<sub><i>W</i></sub> + <i>H</i>, and the drawing
+              reads <i>H</i> off it. A shock that has just struck is not yet learned, so the
+              action does not respond to it even though the weight on its estimate is largest. Player 1 sees its own
+              noise in its signal at once and responds to it strongly; it responds little to player 2&rsquo;s.</p>
+          </div>
+          <div class="step" data-scene="nodes">
+            <p>A kernel is stored by its values at a few points, its nodes. The triangle is mapped onto a square (a Duffy
+              map), and 12 Chebyshev nodes go along each side, bunched toward the edges: 144 values per kernel. Between
+              the nodes the kernel is the polynomial through them.</p>
+            <p class="small">The kernels are smooth on the triangle, so 12 nodes per side give the Chapter 1 costs to
+              about nine digits and the kernels to about five. The representation error in the drawing checks one requirement: a strategy must be
+              a rule applied to what the player has seen. The solver rewrites each action kernel as such a rule and
+              measures how far the rule&rsquo;s action is from the kernel.</p>
+          </div>
+          <div class="step" data-scene="loop">
+            <p>Solving the game means finding a fixed point. A candidate profile of strategies fixes what each player&rsquo;s
+              signals reveal, and so everyone&rsquo;s beliefs. The beliefs fix each player&rsquo;s best response. An
+              equilibrium is a profile that is its own best response.</p>
+            <p class="small">In the dissertation&rsquo;s words: each map determines the other, so the profile must be
+              solved as a fixed point.</p>
+          </div>
+          <div class="step" data-scene="passive">
+            <p>Take one best response. Hold player 2&rsquo;s strategy fixed and switch player 1&rsquo;s off. What is left is
+              player 1&rsquo;s passive world. Player 1&rsquo;s own actions move its signals in a known way, so subtracting
+              them leaves signals with the same information that do not depend on player 1&rsquo;s strategy.</p>
+            <p class="small">Written as kernels on those signals, player 1&rsquo;s action enters its first-order
+              condition linearly. The passive world is solved forward in time. The value of a push at date <i>t</i> adds
+              up its effects from <i>t</i> to the end, which is the shadow price of the dissertation&rsquo;s backward
+              equations. The best response is then a single linear solve, with no inner iteration.</p>
+          </div>
+          <div class="step" data-scene="split">
+            <p>The first-order condition sets the cost of effort against the value of a push, as far as player 1&rsquo;s
+              signals can tell it. The value has two parts. The physical part runs through the state. The information
+              wedge runs through player 2: the push shows up in player 2&rsquo;s signal, and player 2 revises their
+              forecast and acts on it.</p>
+            <p class="small">In the backward equation for the shadow price the wedge is one extra term
+              (<a href="https://sbabichenko.com/dissertation/chapter-1#thm:wedge-adjoints">Theorem 1.8</a>). The drawing
+              shows both parts at every node, for the state shock <i>w</i>&#8304;.</p>
+          </div>
+          <div class="step" data-scene="anderson">
+            <p>The fixed point is found by iterating the best-response map <i>G</i>. The residual is the size of
+              <i>G</i>(<i>D</i>) &minus; <i>D</i> relative to <i>D</i>. The plain update moves halfway from <i>D</i> to
+              <i>G</i>(<i>D</i>). Anderson acceleration remembers the last fifteen steps and their residuals and takes the
+              combination of them with the smallest residual, fitted by least squares.</p>
+            <p class="small">A small ridge term in that fit (Tikhonov regularisation) keeps repeated or zero directions
+              from breaking it. If an accelerated step more than doubles the residual, the memory is cleared and a plain
+              step is taken. If Anderson stalls, a Newton&ndash;Krylov polish (Newton&rsquo;s method with its linear
+              systems solved iteratively) takes over. Both runs in the drawing start
+              from zero kernels.</p>
+          </div>
+          <div class="step" data-scene="coarse">
+            <p>The explorer does not start the iteration from zero. The solver first solves the same game at half the nodes, 6 per side,
+              then interpolates that equilibrium onto the 12-node grid and carries on from there.</p>
+            <p class="small">Evaluations on the coarse grid are cheap: the package&rsquo;s notes put the whole coarse
+              solve at the cost of a few fine evaluations.</p>
+          </div>
+          <div class="step" data-scene="checks">
+            <p>Every solve carries a list of checks on the answer, each a measured number against a threshold. The second-order check asks whether a player&rsquo;s
+              loss, as a quadratic in its own strategy, curves up in every direction, so that the first-order condition
+              found a minimum. Refinement solves again with 1.5 times the nodes and compares.</p>
+            <p class="small">Stability is the spectral radius of the best-response map at the equilibrium, the factor by
+              which a small deviation shrinks per round of best responses. Below 1,
+              players who kept best-responding to each other would find it. <span id="refineline"></span></p>
+          </div>
+          <div class="step" data-scene="quadrant">
+            <p>In a stationary game the calendar drops out and only ages remain: a kernel depends on how long ago the shock
+              struck. The
+              causal triangle becomes a lag quadrant, the quarter plane of two nonnegative ages: the age of the shock and
+              the age of the belief about it.</p>
+            <p class="small">The solver cuts the quadrant at a window <i>L</i> and stores kernels at Chebyshev nodes on
+              [0,&nbsp;<i>L</i>], 32 of them here.</p>
+          </div>
+          <div class="step" data-scene="window">
+            <p>Cutting at <i>L</i> solves a slightly different game, one in which shocks older than <i>L</i> are
+              forgotten. The window check measures how much a kernel still moves over the last tenth of the window,
+              relative to its peak. Above 2% the window is too short.</p>
+            <p class="small">The drawing solves the stationary game of Chapter 3 at three windows. A discount rate
+              &rho; on future losses changes the equilibrium but does not shorten these kernels: at a window of 2 the
+              tail grows with &rho;. In the Kyle&ndash;Back game of Chapter 4 a discount is what makes the stationary
+              problem well posed at all.</p>
+          </div>
+          <div class="step" data-scene="transition">
+            <p>A transition is a change of regime. The game has run in the old stationary equilibrium, and at date 0 player
+              1&rsquo;s signal precision jumps from 1 to 6. Before 0 the old kernels hold, and shocks from before 0 are
+              still remembered. On [0,&nbsp;<i>T</i>] the kernels are solved on the triangle. After <i>T</i> comes a
+              buffer one window long, where strategies are frozen at the new stationary equilibrium.</p>
+            <p class="small">The settled check measures, over the last window before <i>T</i>, how far the solved
+              strategies still are from the new stationary ones, relative to their peak. Instead of fixing <i>T</i>, the
+              solver can march: solve at <i>T</i> = <i>L</i>, lengthen <i>T</i> one window at a time with the earlier
+              strategies held fixed, and stop once the settled check passes.</p>
+          </div>
+        </div>
+      </section>
+
+      <a class="skip-pill" href="#more" data-from="#story">Skip to the end</a>
+      <section class="ideafoot" id="more">
+        <p>The method is written up in the <a href="https://github.com/sbabichenko/noisestate">noisestate package</a>
+          (docs/method.md and docs/guards.md). The computation sections of <a href="https://sbabichenko.com/dissertation/chapter-1#sec:ex_computation">Chapter 1</a>
+          and <a href="https://sbabichenko.com/dissertation/chapter-3#app:stationary-computation">Chapter 3</a> describe the
+          schemes the dissertation&rsquo;s figures were made with.</p>
+        <div class="cta">
+          <a class="primary" href="https://sbabichenko.com/noisestate">Open the explorer</a>
+          <a href="https://sbabichenko.com/dissertation/wedge">The information wedge</a>
+          <a href="https://pypi.org/project/noisestate/">noisestate on PyPI</a>
+        </div>
+        <p class="note">The finite game: <i>dX</i> = (<i>D</i>&sup1; + <i>D</i>&sup2;) <i>dt</i> + <i>dW</i>&#8304;, player <i>i</i>
+          sees <i>dY</i><sup><i>i</i></sup> = &radic;<i>p</i><sub><i>i</i></sub> <i>X dt</i> + <i>dW</i><sup><i>i</i></sup> and
+          minimises <i>E</i>&int;<sub>0</sub><sup>1</sup>[(<i>X</i> &minus; <i>b</i><sub><i>i</i></sub>)&sup2; + <i>r</i><sub><i>i</i></sub>(<i>D</i><sup><i>i</i></sup>)&sup2;]<i>dt</i>
+          with <i>p</i><sub>1</sub> = <i>p</i><sub>2</sub> = 9, <i>r</i><sub>1</sub> = <i>r</i><sub>2</sub> = 0.1, <i>b</i> = &plusmn;1, 12 nodes per side.
+          The stationary game: the same state and signals with <i>p</i><sub>1</sub> = 3, <i>p</i><sub>2</sub> = 10, flow loss
+          &frac12;<i>X</i>&sup2; + &frac12;<i>r</i><sub><i>i</i></sub>(<i>D</i><sup><i>i</i></sup>)&sup2;, <i>r</i><sub>1</sub> = <i>r</i><sub>2</sub> = 1.
+          The transition is the explorer&rsquo;s regime-change preset: mean reversion <i>a</i> = 1, <i>T</i> = 6, window 3,
+          8 nodes. Every number marked as solved is computed in your browser when the page opens.</p>
+      </section>
+    </main>
+
+    
+<footer class="site-foot">
+  
+  <span>&copy; 2025&ndash;2026 Sam Babichenko</span>
+  <a href="https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by&#x2F;4.0&#x2F;deed.en" rel="noopener" target="_blank">CC BY 4.0</a>
+  <a href="https://sbabichenko.com/colophon">Colophon</a>
+  <a href="https://sbabichenko.com/atom.xml" title="New writing, in any feed reader">Feed</a>
+  <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
+</footer>
+<script src="https://sbabichenko.com/js/tally.js?h=4000db8cd9e27f8f27cd"></script>
+<link rel="stylesheet" href="https://sbabichenko.com/css/whimsy.css?h=47c637d7150a148c9bce" />
+<link rel="stylesheet" href="https://sbabichenko.com/css/fold.css?h=65a4ad70c1f9e810669b" />
+<script src="https://sbabichenko.com/js/whimsy.js?h=03baa37dd53e13046bb1"></script>
+<script src="https://sbabichenko.com/js/skip.js?h=8b0612be930eb6b54639" defer></script>
+<script src="https://sbabichenko.com/js/fold.js?h=c0b53bc8e268c5e50f1c"></script>
+
+    <script src="https://sbabichenko.com/noisestate/solver-how.js?h=9aaa1e531ef3e8de41f1"></script>
+  </body>
+</html>

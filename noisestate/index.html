@@ -1,0 +1,355 @@
+<!doctype html>
+<html class="not-ready lg:text-base" lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Title -->
+  <title>Noise-State Game Explorer - Sam Babichenko</title>
+
+  <!-- Meta -->
+  <meta name="theme-color" />
+  <meta name="description" content="The games of my dissertation, solved in your browser: linear-quadratic-Gaussian games with dispersed private information, where actions teach others what you know. Shock responses, information wedges, sample paths and regime changes, computed live." />
+  <meta name="author" content="" />
+  <!-- The Open Graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Noise-State Game Explorer" />
+  <meta property="og:site_name" content="Sam Babichenko" />
+  <meta property="og:description" content="The games of my dissertation, solved in your browser: linear-quadratic-Gaussian games with dispersed private information, where actions teach others what you know. Shock responses, information wedges, sample paths and regime changes, computed live." />
+  <meta property="og:url" content="https:&#x2F;&#x2F;sbabichenko.com&#x2F;noisestate&#x2F;" />
+  <meta property="og:image" content="https://sbabichenko.com/images/og-noisestate.png" />
+
+  <!-- CSS & JS -->
+  <link rel="preload stylesheet" as="style" href="https://sbabichenko.com/main.css?h=f49bde0cf4c2681243a5" />
+  <style>
+    :root {
+      --bg: #FFFFF0;
+      --bg-dark: #1F2022;
+      --header: #e4e4e7;
+      --header-dark: #27272a;
+    }
+  </style>
+
+  
+
+  <!-- Dark Icon -->
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/theme.svg" />
+
+  <!-- Math -->
+  
+  <!---->
+
+  <!-- Mermaid -->
+  
+  <!---->
+
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://sbabichenko.com/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://sbabichenko.com/favicon-16x16.png">
+  <link rel="shortcut icon" href="https://sbabichenko.com/favicon.ico">
+  <link rel="apple-touch-icon" href="https://sbabichenko.com/apple-touch-icon.png">
+
+
+  <!-- Feeds -->
+  
+  <!---->
+  
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title="Atom"
+    href="https://sbabichenko.com/atom.xml"
+  />
+   
+  <!---->
+  
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https:&#x2F;&#x2F;sbabichenko.com&#x2F;noisestate&#x2F;" />
+
+  <!-- Head inject -->
+  <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="font" type="font/woff2" href="https://sbabichenko.com/fonts/newsreader-latin-opsz-normal.woff2" crossorigin>
+<link rel="stylesheet" href="https://sbabichenko.com/fonts/newsreader.css?h=76764bb675ec2845fffb">
+<link rel="stylesheet" href="https://sbabichenko.com/css/custom.css?h=f836d5c06c9f94dc466b">
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white"><script src="https://sbabichenko.com/noisestate/coi-serviceworker.js"></script>
+    <link rel="stylesheet" href="https://sbabichenko.com/noisestate/explorer.css?h=2ac2492ab1ef399c423d" />
+    <link rel="stylesheet" href="https://sbabichenko.com/dissertation/katex/katex.min.css?h=f0dbfcc2940b4d788c80" />
+    <script defer src="https://sbabichenko.com/dissertation/katex/katex.min.js?h=e6bfe5deebd4c7ccd272"></script>
+    <header
+  class="blur-header fixed top-0 z-40 mx-auto min-h-[3.5rem] w-full"
+>
+  <div class="mx-auto w-full max-w-4xl p-3 lg:flex lg:justify-between">
+    <div class="flex justify-between">
+      <div class="flex items-center">
+        <a class="text-2xl font-semibold" href="https://sbabichenko.com">Sam Babichenko</a>
+        <div
+          class="btn-dark ml-4 h-6 w-6 shrink-0 cursor-pointer text-[0px] [background:url(./icons/theme.svg)_left_center/cover_no-repeat] dark:[background-position:right] dark:invert"
+          role="button"
+          aria-label="Dark"
+        ></div>
+      </div>
+      
+      <div
+        class="btn-menu relative z-50 flex h-8 w-8 shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+        role="button"
+        aria-label="Menu"
+      ></div>
+      
+    </div>
+    <script>
+      // base
+      const htmlClass = document.documentElement.classList;
+      setTimeout(() => {
+        htmlClass.remove("not-ready");
+      }, 10);
+
+      // mobile menu
+      const btnMenu = document.querySelector(".btn-menu");
+      btnMenu?.addEventListener("click", () => {
+        htmlClass.toggle("open");
+      });
+
+      // dark theme
+      const setDark = (isDark) => {
+        if (isDark) {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
+          htmlClass.add("dark");
+        } else {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "light" }));
+          htmlClass.remove("dark");
+        }
+        localStorage.setItem("dark", isDark);
+      };
+
+      // init
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      if (htmlClass.contains("dark")) {
+        setDark(true);
+      } else {
+        const darkVal = localStorage.getItem("dark");
+        setDark(darkVal ? darkVal === "true" : darkScheme.matches);
+      }
+
+      // listen system
+      darkScheme.addEventListener("change", (event) => {
+        setDark(event.matches);
+      });
+
+      // manual switch
+      const btnDark = document.querySelector(".btn-dark");
+      btnDark.addEventListener("click", () => {
+        setDark(localStorage.getItem("dark") !== "true");
+      });
+    </script>
+    
+    <nav class="flex w-full items-center lg:w-auto">
+      <ul
+        class="nav-wrapper flex w-full flex-col py-2 lg:w-auto lg:flex-row lg:self-center lg:py-0"
+      >
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/writing"
+            >Writing</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/dissertation"
+            >Dissertation</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/cv"
+            >CV</a
+          >
+        </li>
+        
+      </ul>
+      <!-- Header Nav inject -->
+      
+    </nav>
+    
+  </div>
+</header>
+
+    <div class="progress" id="progress" data-auto aria-hidden="true"></div>
+
+    <main class="explorer">
+      <div class="crumbs"><a href="https://sbabichenko.com#projects">Projects</a> &nbsp;/&nbsp; Noise-State Calculus for Dynamic Games with Strategic Information</div>
+      <h1>Noise-State Game Explorer</h1>
+      <p class="sub">Dynamic games with dispersed private information look hard, even when linearized, because each player
+        needs forecasts of others' forecasts, without end. The regress comes from a loop: actions move the state, the
+        state generates observations, observations update beliefs, and beliefs determine actions. <a href="https://sbabichenko.com/dissertation">My dissertation</a> builds
+        a calculus that keeps the loop intact. Pick one of its games, move a slider, and the equilibrium is solved again
+        in your browser. New here? Start with <a href="https://sbabichenko.com/dissertation/idea">the noise-state, explained</a>.</p>
+
+      <ul class="facts">
+        <li class="pip"><button type="button" class="copy" data-copy="pip install noisestate" title="Copy the command"><code>pip install noisestate</code></button></li>
+        <li class="plain"><a href="https://pypi.org/project/noisestate/">PyPI</a></li>
+      </ul>
+
+      <details class="howto idea">
+        <summary>How it works</summary>
+        <div class="ideagrid">
+          <figure><svg class="loopfig" viewBox="-4 0 350 190" role="img" aria-label="The loop: actions move the state, the state generates observations, observations update beliefs, beliefs determine actions; a direct channel runs from actions to observations">
+            <defs><marker id="lh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+            <g fill="none" stroke="currentColor" stroke-width="1.3" marker-end="url(#lh)">
+              <path d="M62,82 L128,40"/><path d="M192,40 L256,82"/><path d="M256,112 L192,152"/><path d="M128,152 L62,112"/>
+            </g>
+            <path d="M78,97 L236,97" fill="none" stroke="var(--accent)" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#lh)" style="color:var(--accent)"/>
+            <g font-size="13" text-anchor="middle" fill="currentColor">
+              <text x="40" y="101">actions</text><text x="160" y="32">state</text><text x="290" y="101">observations</text><text x="160" y="170">beliefs</text>
+            </g>
+            <text x="157" y="90" font-size="10" text-anchor="middle" fill="var(--accent)">direct channel</text>
+          </svg>
+            <figcaption>The feedback loop of dispersed information, and the chord: an action can set what others observe
+              directly.</figcaption></figure>
+          <div>
+            <p><b>The loop, and the cuts.</b> Every tractable approach beyond the Kyle line severs the loop somewhere: on the
+              privacy of beliefs, on what actions can teach, on the weight of one player, on the flow from observations to
+              beliefs, or on time itself. Cutting it tends to hand back the separation principle, where learning and acting
+              can be treated apart, and with it removes the interaction between information and incentives the model set
+              out to study.</p>
+            <p><b>The noise-state.</b> (<a href="https://sbabichenko.com/dissertation/idea">illustrated</a>) Each player keeps estimates of the primitive shocks instead of belief hierarchies about
+              the endogenous state. Every linear quantity is a deterministic mean plus an impulse-response kernel against
+              those shocks, and taking a player's expectation changes the integrator and nothing else, so the tower of
+              expectations closes. Under perfect information the estimates are the shocks themselves and the kernels are the
+              model's ordinary impulse responses.</p>
+            <p><b>The information wedge.</b> (<a href="https://sbabichenko.com/dissertation/wedge">illustrated</a>) The shadow price of changing another player's beliefs. It breaks separation and
+              vanishes when the loop is cut. In the plots it is the part of a player's first-order condition that exists only
+              because the others read its actions in their signals.</p>
+            <p><b>The solver.</b> Equilibrium is a deterministic fixed point in the kernels. It iterates best responses, with
+              Anderson acceleration, on piecewise Chebyshev nodes in shock age, or on a triangle of dates and shock times for
+              a finite horizon, until the kernels stop moving.</p>
+            <p><b>The games.</b> The tabs follow the chapters: the finite-horizon baseline (1), the stationary game (3),
+              Kyle&ndash;Back trading with several informed traders (4) and a cycle of local markets (5). Chapter 2, on
+              delayed signals, and Chapter 6, on monitored deviations, have no tab yet; the model editor takes any game the
+              solver supports.</p>
+          </div>
+        </div>
+      </details>
+
+      <div class="tabs" role="tablist" id="tabs"></div>
+
+      <section class="panel" id="modelpanel">
+        <h2 id="gametitle"></h2>
+        <div id="gamedesc"></div>
+        <div class="controls" id="controls"></div>
+        <div id="editor" hidden>
+          <div class="row">
+            <label for="example" class="small muted">Start from</label>
+            <select id="example"></select>
+            <button class="secondary" id="loadexample">Load</button>
+          </div>
+          <div class="tabs codetabs" role="tablist"><button type="button" class="tab" role="tab" data-pane="yaml" aria-selected="true">YAML</button><button type="button" class="tab" role="tab" data-pane="python" aria-selected="false">Python</button></div>
+          <div class="pane" data-pane="yaml"><textarea id="yaml" spellcheck="false" aria-label="Model file (YAML)"></textarea></div>
+          <div class="pane nopython" data-pane="python" hidden><p>No way am I executing wild code</p></div>
+          <p class="hint">The model file format of noisestate: shocks, states, agents with controls, signal rows and losses, a
+            horizon (<code>stationary</code> with a <code>window</code>, <code>finite</code> with <code>T</code>, or
+            <code>transition</code> with a past) and numerics.</p>
+          <div class="controls" id="paramcontrols"></div>
+          <div class="controls" id="paramopts"></div>
+          <div class="row" style="margin-top:12px"><button class="primary" id="solvecustom">Solve this model</button>
+            <button class="secondary" id="saveyaml" title="Save the model file; noisestate solve model.yaml runs it in Python">Save as .yaml</button>
+            <span class="small error" id="yamlerror"></span></div>
+        </div>
+      </section>
+
+      <div id="statusbar">
+        <span class="chip idle" id="chip">Loading</span>
+        <svg class="rally" id="rally" viewBox="0 0 40 14" aria-hidden="true"><title>Best-response rounds</title>
+          <line class="bat" x1="3" y1="3" x2="3" y2="11" /><line class="bat" x1="37" y1="3" x2="37" y2="11" />
+          <circle class="ball" id="rallyball" cx="20" cy="7" r="2" /></svg>
+        <svg class="settle" id="settle" viewBox="0 0 56 14" aria-hidden="true"><title>Residual after each round, log scale, down to the tolerance</title>
+          <line class="tol" x1="0" y1="12.5" x2="56" y2="12.5" /><polyline id="settleline" points="" /></svg>
+        <span id="statustext">Loading the solver.</span>
+        <span class="buttons">
+          <button class="secondary" id="savebtn" title="Download the model file and the solver's output of this solve as JSON" disabled>Save JSON</button>
+          <button class="secondary" id="sharebtn" title="Copy a link that reproduces this solve">Copy link</button>
+          <button class="secondary" id="stopbtn" disabled>Stop</button>
+          <button class="primary" id="solvebtn" disabled>Solve again</button>
+        </span>
+      </div>
+
+      <div id="results"></div>
+
+      <section class="panel" id="sweeppanel" hidden>
+        <h2>Parameter Sweep</h2>
+        <div class="row">
+          <label for="sweepkey" class="small muted">Vary</label><select id="sweepkey"></select>
+          <button class="secondary" id="sweepbtn">Sweep</button>
+          <span class="small muted" id="sweepnote">Eleven solves across the slider's range, the others held where they are.</span>
+        </div>
+        <div class="plot tall" id="psweep"></div>
+        <p class="caption" id="sweepcap"></p>
+      </section>
+
+      <div class="notes">
+        <p>The solver is a C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a> 1.0.1 (MIT licence)
+          with the same equations and algorithms: the stationary, spectral and cell engines, transitions with their past,
+          band, buffer and march in T, and the refinement and stability checks. On its test grid its costs,
+          kernels, loss paths and first-order-condition terms agree with the Python package to 1e-10 or better.</p>
+        <p>To solve games yourself, the Python package is on <a href="https://pypi.org/project/noisestate/">PyPI</a>:
+          <code>pip install noisestate</code> (source on <a href="https://github.com/sbabichenko/noisestate">GitHub</a>).
+          A model saved from the &ldquo;Your model&rdquo; tab runs there as <code>noisestate solve model.yaml</code>.</p>
+        <p>Where the browser allows it (the page reloads once on a first visit to turn it on), the solver runs agents' best
+          responses on their own threads; a solve after a parameter change starts from the last equilibrium, and the page
+          address keeps the game and its parameters, so a link reproduces a solve. Plots by Plotly, YAML by js-yaml.</p>
+        <p><a href="https://sbabichenko.com/noisestate/how">How the Noise-State Solver Works</a> draws each step of a solve,
+          from the kernels on the grid to the checks.</p>
+        <p>Also on this site: <a href="https://sbabichenko.com/gate">the Decision Mesh on coin flips</a>, and
+          <a href="https://sbabichenko.com/mesh">four mesh geometries compared</a> on the same noisy surface.</p>
+      </div>
+      <details class="cite">
+        <summary>Cite it</summary>
+<pre>@misc{Babichenko2026Forecasting,
+  author = {Babichenko, Sam},
+  title  = {Forecasting and Manipulating the Forecasts of Others},
+  year   = {2026},
+  eprint = {2603.12140},
+  archivePrefix = {arXiv},
+  url    = {https://arxiv.org/abs/2603.12140}
+}
+
+@software{noisestate,
+  author  = {Babichenko, Sam},
+  title   = {noisestate: equilibrium solver for linear-quadratic-Gaussian games with private information},
+  version = {1.0.1},
+  year    = {2026},
+  url     = {https://pypi.org/project/noisestate/}
+}</pre>
+      </details>
+
+    </main>
+
+    
+<footer class="site-foot">
+  
+  <span>&copy; 2025&ndash;2026 Sam Babichenko</span>
+  <a href="https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by&#x2F;4.0&#x2F;deed.en" rel="noopener" target="_blank">CC BY 4.0</a>
+  <a href="https://sbabichenko.com/colophon">Colophon</a>
+  <a href="https://sbabichenko.com/atom.xml" title="New writing, in any feed reader">Feed</a>
+  <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
+</footer>
+<script src="https://sbabichenko.com/js/tally.js?h=4000db8cd9e27f8f27cd"></script>
+<link rel="stylesheet" href="https://sbabichenko.com/css/whimsy.css?h=47c637d7150a148c9bce" />
+<link rel="stylesheet" href="https://sbabichenko.com/css/fold.css?h=65a4ad70c1f9e810669b" />
+<script src="https://sbabichenko.com/js/whimsy.js?h=03baa37dd53e13046bb1"></script>
+<script src="https://sbabichenko.com/js/skip.js?h=8b0612be930eb6b54639" defer></script>
+<script src="https://sbabichenko.com/js/fold.js?h=c0b53bc8e268c5e50f1c"></script>
+<script src="https://sbabichenko.com/noisestate/js-yaml.min.js?h=45dc3dd03dc07a06705a"></script>
+    <script src="https://sbabichenko.com/noisestate/explorer.js?h=26b4913c948ebaba24ff" data-plotly="https://sbabichenko.com/noisestate/vendor/plotly-cartesian-2.35.2.min.js?h=72409fd95b505d17772f"></script>
+  </body>
+</html>

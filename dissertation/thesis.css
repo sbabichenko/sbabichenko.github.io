@@ -1,0 +1,457 @@
+/* The dissertation, read in the browser: a sheet of paper for the text, a contents rail beside it, and the
+   typography of the printed thesis carried over (Newsreader for the text, KaTeX's Computer Modern for the math). */
+
+.thesis {
+  --paper: #fffdf7;
+  --page: #fffff0;
+  --ink: #1b1b20;
+  --ink-2: #4a4a55;
+  --ink-3: #8a8a93;
+  --rule: rgba(20, 20, 30, 0.1);
+  --rule-2: rgba(20, 20, 30, 0.055);
+  --accent: #1f3fd0;
+  --accent-soft: rgba(31, 63, 208, 0.07);
+  --warm: #a8431c;
+  --warm-soft: rgba(168, 67, 28, 0.06);
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.2  0 0 0 0.07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  display: grid;
+  grid-template-columns: 17rem minmax(0, 46rem);
+  gap: 2.5rem;
+  justify-content: center;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 6.5rem 20px 0;
+  color: var(--ink);
+}
+.dark .thesis {
+  --paper: #232427;
+  --page: #1f2022;
+  --ink: #e9eaee;
+  --ink-2: #b0b1ba;
+  --ink-3: #7c7d86;
+  --rule: rgba(255, 255, 255, 0.12);
+  --rule-2: rgba(255, 255, 255, 0.06);
+  --accent: #8fb0ff;
+  --accent-soft: rgba(143, 176, 255, 0.09);
+  --warm: #e5875c;
+  --warm-soft: rgba(229, 135, 92, 0.08);
+  --grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.035 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* ---------------------------------------------------------------- the reading progress line */
+.progress { position: fixed; top: 0; left: 0; height: 2px; width: 0; background: #1f3fd0; z-index: 60; transition: width 0.1s linear; }
+.dark .progress { background: #8fb0ff; }
+
+/* ---------------------------------------------------------------- the contents rail */
+.rail { position: sticky; top: 5rem; align-self: start; max-height: calc(100vh - 6rem); overflow-y: auto; font-size: 0.86rem;
+  padding-right: 6px; scrollbar-width: thin; font-family: ui-sans-serif, system-ui, sans-serif; }
+.rail .book { display: block; font-family: Newsreader, Georgia, serif; font-size: 1.05rem; line-height: 1.3; color: var(--ink);
+  text-decoration: none; margin-bottom: 1rem; }
+.rail ol { list-style: none; margin: 0; padding: 0; }
+.rail .toc > li > a { display: flex; gap: 0.6rem; padding: 0.32rem 0.5rem; border-radius: 6px; color: var(--ink-2); text-decoration: none; line-height: 1.35; }
+.rail .toc > li > a:hover { background: var(--rule-2); color: var(--ink); }
+.rail .toc > li.here > a { color: var(--ink); font-weight: 600; background: var(--accent-soft); }
+.rail .lab { font-variant-numeric: tabular-nums; color: var(--ink-3); min-width: 1.4rem; flex: none; }
+.rail .here .lab { color: var(--accent); }
+.rail .secs { margin: 0.2rem 0 0.5rem 0.5rem; border-left: 1px solid var(--rule); }
+.rail .secs a { display: flex; gap: 0.5rem; padding: 0.22rem 0.6rem; color: var(--ink-3); text-decoration: none; line-height: 1.35; font-size: 0.82rem;
+  border-left: 2px solid transparent; margin-left: -1px; }
+.rail .secs a:hover { color: var(--ink); }
+.rail .secs a.on { color: var(--accent); border-left-color: var(--accent); }
+.rail .secs .lab { min-width: 2.2rem; }
+.rail .pdf { display: inline-block; margin: 1.2rem 0 1rem; color: var(--accent); text-decoration: none; font-size: 0.84rem; }
+.rail .maplink { display: block; margin-bottom: 0; }
+
+/* ---------------------------------------------------------------- the sheet */
+.paper { position: relative; background: var(--paper) var(--grain); border: 1px solid var(--rule-2); border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02), 0 12px 40px -18px rgba(40, 30, 10, 0.18); padding: 3.2rem 3.4rem 2.6rem; min-width: 0; }
+.dark .paper { box-shadow: 0 12px 40px -18px rgba(0, 0, 0, 0.6); }
+.kicker { font: 0.72rem ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 2.2rem; }
+.kicker a { color: inherit; text-decoration: none; }
+.kicker a:hover { color: var(--accent); }
+
+.body { font-family: Newsreader, "Iowan Old Style", Georgia, serif; font-size: 1.14rem; line-height: 1.68; color: var(--ink);
+  hyphens: auto; -webkit-hyphens: auto; font-optical-sizing: auto; }
+.body p { margin: 0 0 1.05em; }
+.body a { color: var(--accent); text-decoration: none; }
+.body a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.body h1, .body h2, .body h3, .body h4 { font-family: Newsreader, Georgia, serif; font-weight: 500; color: var(--ink); scroll-margin-top: 5rem; }
+.body h1 { font-size: clamp(2rem, 4.2vw, 2.85rem); line-height: 1.08; letter-spacing: -0.02em; margin: 0 0 2rem; }
+.body h1 .secnum { display: block; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.8rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--accent); font-weight: 600; margin-bottom: 0.9rem; }
+.body section.level1 + section.level1 { margin-top: 4.5rem; padding-top: 3rem; border-top: 1px solid var(--rule); }
+.body h2 { font-size: 1.62rem; line-height: 1.2; margin: 3rem 0 1rem; letter-spacing: -0.01em; }
+.body h3 { font-size: 1.28rem; margin: 2.2rem 0 0.7rem; }
+.body h4 { font-size: 1.1rem; margin: 1.6rem 0 0.5rem; font-style: italic; }
+.body .secnum { color: var(--ink-3); font-variant-numeric: tabular-nums; margin-right: 0.6em; font-weight: 400; }
+.body h2 .secnum, .body h3 .secnum { font-size: 0.8em; }
+.body [id] { scroll-margin-top: 5.5rem; }
+.body em { font-style: italic; }
+.body strong { font-weight: 600; }
+.body ul, .body ol { padding-left: 1.4em; margin: 0 0 1.05em; }
+.body li { margin: 0.25em 0; }
+.body blockquote { margin: 1.2em 0; padding: 0.2em 0 0.2em 1.1em; border-left: 2px solid var(--rule); color: var(--ink-2); }
+.body hr { border: 0; border-top: 1px solid var(--rule); margin: 2rem 0; }
+
+/* the mathematics */
+.body .math.display { display: block; overflow-x: auto; overflow-y: hidden; padding: 0.35em 0.1em; margin: 0.2em 0; scrollbar-width: thin; }
+.body .math.display .katex-display { margin: 0.35em 0; }
+.body .katex { font-size: 1.06em; }
+.body .math.display:target, .body :target > .math.display { background: var(--accent-soft); border-radius: 6px; }
+
+/* theorems, definitions, remarks, proofs */
+.body .thm { margin: 1.6em 0; padding: 0.95em 1.15em 0.2em; border-left: 3px solid var(--accent); background: var(--accent-soft); border-radius: 0 6px 6px 0; }
+.body .thm-definition, .body .thm-assumption, .body .thm-example, .body .thm-problem { border-left-color: var(--warm); background: var(--warm-soft); }
+.body .thm-remark, .body .thm-question { border-left-color: var(--rule); background: transparent; }
+.body .thm > p:first-child > strong:first-child { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.8rem; letter-spacing: 0.08em;
+  text-transform: uppercase; font-weight: 700; color: var(--accent); margin-right: 0.25em; }
+.body .thm-definition > p:first-child > strong:first-child, .body .thm-assumption > p:first-child > strong:first-child { color: var(--warm); }
+.body .thm-remark > p:first-child > strong:first-child { color: var(--ink-3); }
+.body .thm:target { box-shadow: 0 0 0 2px var(--accent); }
+.body .proof { margin: -0.4em 0 1.6em; color: var(--ink-2); font-size: 1.05rem; }
+.body .proof > p:first-child > em:first-child { font-family: ui-sans-serif, system-ui, sans-serif; font-style: normal; font-size: 0.78rem; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-3); margin-right: 0.35em; }
+
+/* figures and tables */
+.body figure { margin: 2em -1.2rem; padding: 1.2rem 1.2rem 0.9rem; background: #fff; border: 1px solid var(--rule-2); border-radius: 4px; }
+.dark .body figure { background: #f6f4ee; }
+.dark .body figure figcaption { color: #3e3e46; }
+.body figure img { display: block; width: 100%; height: auto; margin: 0 auto; }
+.body figure img[src$=".svg"] { max-width: 34rem; }
+.body figcaption { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.84rem; line-height: 1.5; color: var(--ink-2); margin-top: 0.9rem; }
+.body .fignum { font-weight: 700; color: var(--ink); }
+.dark .body .fignum { color: #1b1b20; }
+.body figure figure { margin: 0.4rem 0; padding: 0; border: 0; }
+/* under the caption: how the figure was computed, and a link to solve its game in the explorer (thesis.js) */
+.body figure .figsrc { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.74rem; line-height: 1.45; color: var(--ink-3, #77777f); margin: 0.45rem 0 0; }
+.body figure .figsrc a { white-space: nowrap; }
+.body .tablewrap { overflow-x: auto; margin: 1.2em 0; }
+#vita td[style*="text-align: right"] { white-space: nowrap; }   /* keep the vita's years (2021–2026) on one line */
+.body table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+.body th, .body td { padding: 0.4em 0.6em; border-bottom: 1px solid var(--rule-2); text-align: left; vertical-align: top; }
+.body thead th { border-bottom: 1px solid var(--rule); font-weight: 600; }
+.body caption { caption-side: top; text-align: left; font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.84rem; color: var(--ink-2); padding-bottom: 0.5rem; }
+
+/* cross-references and citations */
+.body a.xref { font-variant-numeric: tabular-nums; }
+.body a[href*="/references/#ref-"] { font-variant-numeric: tabular-nums; }
+
+/* footnotes */
+.body aside.footnotes { font-size: 0.92rem; color: var(--ink-2); margin-top: 3rem; }
+.body aside.footnotes hr { margin: 0 0 1rem; width: 6rem; }
+.body .footnote-ref { font-size: 0.75em; vertical-align: super; line-height: 0; }
+
+/* the references page */
+.body .refs .bib { list-style: none; padding: 0; font-size: 1rem; }
+.body .refs .bib li { position: relative; padding: 0.45em 0 0.45em 3rem; border-bottom: 1px solid var(--rule-2); scroll-margin-top: 5.5rem; }
+.body .refs .bib li:target { background: var(--accent-soft); }
+.body .refs .bn { position: absolute; left: 0; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+/* the front matter's notation tables */
+.body section#notation table td:first-child { white-space: nowrap; }
+
+/* ---------------------------------------------------------------- the pager */
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 3.5rem; padding-top: 1.6rem; border-top: 1px solid var(--rule); font-family: ui-sans-serif, system-ui, sans-serif; }
+.pager a { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.9rem 1rem; border: 1px solid var(--rule); border-radius: 8px; text-decoration: none; color: var(--ink); }
+.pager a:hover { border-color: var(--accent); }
+.pager span { font-size: 0.78rem; color: var(--ink-3); }
+.pager b { font-family: Newsreader, Georgia, serif; font-weight: 500; font-size: 1.05rem; line-height: 1.3; }
+.pager .next { text-align: right; grid-column: 2; }
+
+/* ---------------------------------------------------------------- the reference preview */
+.peek { position: absolute; z-index: 70; width: min(34rem, calc(100vw - 24px)); max-height: 22rem; overflow: auto; background: var(--paper, #fffdf7);
+  border: 1px solid rgba(20, 20, 30, 0.14); border-radius: 8px; box-shadow: 0 18px 50px -12px rgba(20, 20, 40, 0.35); padding: 0.9rem 1.1rem;
+  font-family: Newsreader, Georgia, serif; font-size: 1rem; line-height: 1.55; color: #1b1b20; }
+.dark .peek { background: #26272b; color: #e9eaee; border-color: rgba(255, 255, 255, 0.14); }
+.peek .where { font: 0.7rem ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #8a8a93; margin-bottom: 0.4rem; }
+.peek .thm { margin: 0; border: 0; padding: 0; background: transparent; }
+.peek p { margin: 0 0 0.6em; }
+.peek h1, .peek h2, .peek h3, .peek h4 { font-family: Newsreader, Georgia, serif; font-weight: 500; font-size: 1.15rem; line-height: 1.3; margin: 0 0 0.5rem; }
+.peek .secnum { color: #8a8a93; margin-right: 0.5em; font-size: 0.9em; }
+.peek .math.display { display: block; overflow-x: auto; }
+.peek figure { margin: 0; padding: 0.4rem; background: #fff; border-radius: 4px; }
+.peek figure img { width: 100%; }
+.peek figcaption { font: 0.78rem ui-sans-serif, system-ui, sans-serif; color: #55555e; }
+
+/* ---------------------------------------------------------------- narrow screens */
+@media (max-width: 1060px) {
+  .thesis { grid-template-columns: minmax(0, 46rem); padding-top: 5rem; }
+  .rail { position: static; max-height: none; overflow: visible; border-bottom: 1px solid var(--rule); padding-bottom: 0.6rem; }
+  .rail .toc { display: none; }
+  .rail.open .toc { display: block; }
+  .rail .book::after { content: " \25BE"; color: var(--ink-3); font-size: 0.8rem; }
+  .rail .pdf { margin: 0.4rem 0 0; }
+}
+@media (max-width: 640px) {
+  .thesis { padding-left: 0; padding-right: 0; gap: 1rem; }
+  .rail { padding: 0 16px 0.6rem; }
+  .paper { border-radius: 0; border-left: 0; border-right: 0; padding: 2rem 18px 2rem; }
+  .body { font-size: 1.06rem; }
+  .body figure { margin-left: -6px; margin-right: -6px; padding: 0.7rem; }
+  .body .thm { padding: 0.8em 0.85em 0.1em; }
+  .pager { grid-template-columns: 1fr; }
+  .pager .next { grid-column: 1; }
+}
+
+/* ---------------------------------------------------------------- chapter vignettes (vignettes.js) */
+.vignette-wrap { margin: -0.4rem 0 1.4rem; }
+.vignette { display: block; width: 100%; max-width: 36rem; height: auto; overflow: visible; color: var(--ink); }
+.vignette .v-line { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; opacity: 0.85; }
+.vignette .v-line.soft { opacity: 0.35; }
+.vignette .v-line.dash { stroke-dasharray: 4 5; }
+.vignette .v-line.acc { stroke: var(--accent); opacity: 1; }
+.vignette .v-line.warm { stroke: var(--warm); opacity: 1; }
+.vignette .v-dot { fill: currentColor; opacity: 0.75; }
+.vignette .v-dot.acc { fill: var(--accent); opacity: 1; }
+.vignette .v-bar { fill: currentColor; opacity: 0.25; }
+.vignette .v-bar.acc { fill: var(--accent); opacity: 0.85; }
+.vignette .v-fill.acc { fill: var(--accent); opacity: 0.07; }
+.vignette .v-text { fill: currentColor; font: 15px Newsreader, Georgia, serif; }
+.vignette .v-text.small { font: 10.5px ui-monospace, Menlo, monospace; fill: var(--ink-3); letter-spacing: 0.03em; }
+.vignette .v-text.acc { fill: var(--accent); }
+.vignette .v-text.warm { fill: var(--warm); }
+
+/* ---------------------------------------------------------------- "in pictures" cards on the intro and Chapter 1 */
+.pictures { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: 12px; margin: 0 0 2.2rem; }
+.pictures a { display: flex; flex-direction: column; gap: 0.2rem; padding: 0.8rem 1rem; border: 1px solid var(--rule); border-radius: 8px; text-decoration: none;
+  color: var(--ink); background: color-mix(in srgb, var(--accent) 4%, transparent); font-family: ui-sans-serif, system-ui, sans-serif; }
+.pictures a:hover { border-color: var(--accent); }
+.pictures span { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.pictures b { font-family: Newsreader, Georgia, serif; font-weight: 500; font-size: 1.08rem; }
+
+/* a pencil tick beside the sections already read */
+.rail .secs a { position: relative; }
+.rail .secs a.read::after { content: ""; position: absolute; right: 0.15rem; top: 0.4rem; width: 0.7rem; height: 0.6rem; opacity: 0.7;
+  background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 12'%3E%3Cpath d='M1.5 6.5 Q3.5 8 5 10.5 Q8 4.5 12.8 1.2' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  animation: tick-in 0.4s ease-out both; }
+@keyframes tick-in { from { opacity: 0; transform: scale(0.4) rotate(-20deg); } to { opacity: 0.7; transform: none; } }
+
+/* the end of a page: a shock, dying out */
+.fin { display: flex; justify-content: center; margin: 3rem 0 -1.5rem; }
+.fin svg { width: 180px; height: 28px; overflow: visible; }
+.fin path { fill: none; stroke: var(--ink-3); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.fin circle { fill: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .fin path { stroke-dasharray: 320; stroke-dashoffset: 320; }
+  .fin circle { opacity: 0; }
+  .fin.drawn path { transition: stroke-dashoffset 2.2s cubic-bezier(.3, .1, .3, 1); stroke-dashoffset: 0; }
+  .fin.drawn circle { transition: opacity 0.4s 2s; opacity: 1; }
+}
+
+/* the bookmark ribbon (bookmark.js): hangs on the chapter where the reader stopped */
+.rail .toc > li > a.ribbon { position: relative; }
+.rail .toc > li > a.ribbon::after { content: ""; position: absolute; top: -3px; right: 10px; width: 9px; height: 20px;
+  background: #b8322a; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 74%, 0 100%); pointer-events: none; }
+
+/* figures re-rendered for the web (tools/dissertation/webfigs.py): a light and a dark version, each with a
+   phone layout, drawn on the page's own paper instead of the white box the print figures need */
+.wf-dark { display: none; }
+.dark .wf-light { display: none; }
+.dark .wf-dark { display: block; }
+.body figure.webfig { background: none; border: 0; padding: 0.3rem 0 0; margin: 2em 0; }
+.body figure.webfig img { max-width: 100%; }
+.dark .body figure.webfig figcaption { color: var(--ink-2); }
+.dark .body figure.webfig .fignum { color: var(--ink); }
+.peek figure.webfig { background: none; }
+
+/* phones: figures too wide to read in place open full screen (thesis.js) */
+.body figure.zoomable { position: relative; cursor: zoom-in; }
+.body figure.zoomable::after { content: "\2922  tap to enlarge"; position: absolute; top: 0; right: 0; transform: translateY(-120%);
+  font: 0.68rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); background: var(--paper); padding: 1px 6px;
+  border: 1px solid var(--rule-2); border-radius: 999px; pointer-events: none; }
+.figzoom { position: fixed; inset: 0; z-index: 100; background: var(--paper, #fffdf7); display: flex; flex-direction: column; }
+.figzoom .fz-bar { display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  padding: calc(env(safe-area-inset-top, 0px) + 6px) 8px 6px 16px; border-bottom: 1px solid var(--rule-2);
+  font: 0.8rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); }
+.figzoom button { font: 1.7rem/1 ui-sans-serif, system-ui, sans-serif; border: 0; background: none; color: var(--ink); padding: 6px 12px; cursor: pointer; }
+.figzoom .fz-scroll { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; display: flex; align-items: center;
+  padding-bottom: env(safe-area-inset-bottom, 0px); }
+.figzoom img { display: block; width: max(100%, 58rem); max-width: none; height: auto; margin: auto; padding: 0 16px; box-sizing: content-box; }
+.figzoom img.print { background: #fff; padding: 12px 16px; }
+
+/* proofs fold to a line (proofs.js) */
+.body .proof.foldable { margin: -0.5em 0 1.6em; }
+.body .proof-toggle { display: flex; align-items: baseline; gap: 0; width: 100%; text-align: left; background: none; border: 0;
+  border-top: 1px dashed var(--rule); padding: 0.55em 0 0.45em; cursor: pointer; color: var(--ink-3);
+  font: 0.78rem ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; }
+.body .proof-toggle .pt-word { text-transform: uppercase; font-weight: 600; color: var(--ink-2); }
+.body .proof-toggle .pt-len { text-transform: none; letter-spacing: 0; }
+.body .proof-toggle .pt-arrow { margin-left: auto; width: 0.5em; height: 0.5em; border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor; transform: rotate(45deg); transition: transform 0.18s; align-self: center; }
+.body .proof.open > .proof-toggle .pt-arrow { transform: rotate(-135deg); }
+.body .proof-toggle:hover .pt-word, .body .proof-toggle:focus-visible .pt-word { color: var(--accent); }
+.body .proof.foldable > .proof-body { display: none; }
+.body .proof.foldable.open > .proof-body, .body .proof.print-open > .proof-body { display: block; }
+.body .proof.foldable .proof-opening { display: none; }
+.body .proof .qed { color: inherit; text-decoration: none; border-bottom: 1px dotted var(--rule); }
+.body .proof .qed:hover { color: var(--accent); }
+.proofs-bar { display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; align-items: baseline; margin: 0 0 1.4em;
+  font: 0.8rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.proofs-bar button { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+@media print {
+  .body .proof.foldable > .proof-body { display: block !important; }
+  .body .proof-toggle, .proofs-bar, .thm-links, .wayback, .trace-note { display: none !important; }
+  .body .proof.foldable .proof-opening { display: inline !important; }
+}
+
+/* what a result is used in, what it rests on, and tracing an assumption (proofs.js) */
+.body .thm-links { display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; margin: -0.1em 0 0.85em; font: 0.76rem/1.5 ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.body .thm-links a { color: var(--ink-2); }
+.body .thm-links a:hover { color: var(--accent); }
+.body .thm-links .tl-path { margin-left: auto; }
+.body .thm-links .tl-trace { font: inherit; color: var(--warm); background: none; border: 1px solid currentColor; border-radius: 999px; padding: 0 0.6em; cursor: pointer; }
+.body .thm-links .tl-trace[aria-pressed="true"] { background: var(--warm); color: var(--paper); }
+.body.tracing .thm, .body.tracing .proof { transition: opacity 0.2s; }
+.body.tracing .thm:not(.relies):not(.traced), .body.tracing .proof:not(.relies) { opacity: 0.38; }
+.body .relies { box-shadow: -3px 0 0 var(--warm); }
+.body .thm.relies { box-shadow: none; border-left-color: var(--warm); }
+.trace-note, .wayback { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); z-index: 60;
+  display: flex; gap: 0.7rem; align-items: center; max-width: calc(100vw - 32px); padding: 0.55rem 0.6rem 0.55rem 1rem;
+  background: var(--paper); border: 1px solid var(--rule); border-radius: 999px; box-shadow: 0 8px 28px -12px rgba(0, 0, 0, 0.35);
+  font: 0.82rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); }
+.trace-note a, .wayback a { color: var(--accent); }
+.trace-note button, .wayback button { font: inherit; background: none; border: 0; color: var(--ink-3); cursor: pointer; padding: 0 0.3rem; }
+.wayback .wb-x { font-size: 1.1rem; line-height: 1; }
+
+/* the map of what rests on what, and one result's path (graph.js) */
+.thesis.graphpage { display: block; max-width: 86rem; }
+.thesis.graphpage .paper { max-width: none; }
+.graphpage .body h1 { margin-top: 0.4em; }
+.graph-wait { color: var(--ink-3); font: 0.85rem ui-sans-serif, system-ui, sans-serif; }
+.gctl { display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; align-items: center; margin: 1.2rem 0 0.8rem;
+  font: 0.78rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.gctl label { display: inline-flex; gap: 0.35rem; align-items: center; cursor: pointer; color: var(--ink-2); }
+.glegend i { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 3px; margin: 0 0.3em 0 0.6em; vertical-align: -0.05em; }
+.glegend .k-def, .gnode.k-def { --k: var(--warm); }
+.glegend .k-res, .gnode.k-res { --k: var(--accent); }
+.glegend .k-eq, .gnode.k-eq { --k: var(--ink-3); }
+.glegend .k-def, .glegend .k-res, .glegend .k-eq { background: var(--k); opacity: 0.8; }
+.glegend .k-anc { background: var(--accent); } .glegend .k-desc { background: var(--warm); }
+.gmap { position: relative; overflow-x: auto; padding: 0.4rem 0 1rem; -webkit-overflow-scrolling: touch; }
+.gcols { position: relative; display: flex; gap: 4.2rem; align-items: flex-start; width: max-content; padding-right: 3rem; }
+.gedges { position: absolute; left: 0; top: 0.4rem; pointer-events: none; overflow: visible; }
+.gcol { display: flex; flex-direction: column; gap: 0.3rem; width: 6.2rem; position: relative; z-index: 1; }
+.gch { font: 600 0.7rem ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3);
+  height: 2.2em; display: flex; align-items: flex-end; margin-bottom: 0.3rem; }
+.gnode { font: 0.74rem/1.2 ui-sans-serif, system-ui, sans-serif; text-align: left; padding: 0.2rem 0.5rem; border-radius: 5px; cursor: pointer;
+  color: var(--ink); background: var(--paper); border: 1px solid color-mix(in srgb, var(--k) 55%, transparent);
+  box-shadow: inset 3px 0 0 var(--k); transition: opacity 0.15s, background 0.15s; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.gnode.k-eq { font-size: 0.68rem; color: var(--ink-2); padding: 0.1rem 0.45rem; box-shadow: none; border-style: dashed; }
+.gnode.lonely { opacity: 0.55; }
+.gnode:hover { background: color-mix(in srgb, var(--k) 12%, var(--paper)); }
+.gnode.sel { background: var(--ink); color: var(--paper); border-color: var(--ink); opacity: 1; }
+.gnode.anc { background: color-mix(in srgb, var(--accent) 18%, var(--paper)); border-color: var(--accent); opacity: 1; }
+.gnode.desc { background: color-mix(in srgb, var(--warm) 18%, var(--paper)); border-color: var(--warm); opacity: 1; }
+.gnode.dim { opacity: 0.22; }
+.gcols.no-eq .gnode.k-eq { display: none; }
+.ge { fill: none; stroke: var(--ink-3); stroke-opacity: 0.35; stroke-width: 1; }
+.ge-anc { stroke: var(--accent); stroke-opacity: 0.9; stroke-width: 1.6; }
+.ge-desc { stroke: var(--warm); stroke-opacity: 0.9; stroke-width: 1.6; }
+.ge-dim { stroke-opacity: 0.08; }
+.gpanel { position: sticky; bottom: 0; z-index: 5; margin-top: 0.6rem; padding: 0.9rem 1.1rem; background: var(--paper); border: 1px solid var(--rule);
+  border-radius: 8px; box-shadow: 0 -10px 30px -22px rgba(0, 0, 0, 0.4); font-size: 0.98rem; }
+.gpanel .gp-hint { margin: 0; color: var(--ink-3); font: 0.82rem ui-sans-serif, system-ui, sans-serif; }
+.gpanel .gp-head b { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.gpanel .gp-head em { float: right; font: 0.75rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); font-style: normal; }
+.gpanel p { margin: 0.4em 0 0; }
+.gpanel .gp-meta, .gpanel .gp-links { font: 0.8rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.gpanel .gp-links a { margin-right: 1rem; color: var(--accent); }
+.gp-lede { color: var(--ink-2); }
+.path-ch { font-size: 1.25rem; margin: 2em 0 0.4em; }
+.path-item { margin: 0 0 1.4rem; }
+.path-item > div > .thm { margin-bottom: 0.4em; }
+.path-target .thm { box-shadow: 0 0 0 2px var(--accent); }
+.path-src { display: block; text-align: right; font: 0.75rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.path-proof { margin: 0 0 0.6em; }
+.path-proof summary { cursor: pointer; font: 600 0.78rem ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-2); }
+.path-proof .proof { margin-top: 0.3em; }
+.gpanel .gp-stmt { max-height: 13rem; overflow: auto; margin-top: 0.5rem; }
+.gpanel .gp-stmt .thm { margin: 0; }
+
+/* phones: a displayed equation wider than the screen scrolls sideways, and its number drops to its own line on the
+   right instead of sitting over the end of the equation */
+@media (max-width: 700px) {
+  .body .katex-display { overflow-x: auto; overflow-y: hidden; padding-bottom: 2px; }
+  .body .katex-display > .katex > .katex-html > .tag { position: static; display: block; text-align: right; margin-top: 0.15em; }
+}
+
+/* dark mode, figures with no dark version of their own (the TikZ diagrams, the print-only plots): inverted, with
+   the hues turned back so blue stays blue, on the page's own ground instead of a white box */
+.dark .body figure:not(.webfig) { background: none; border-color: var(--rule); }
+.dark .body figure:not(.webfig) img, .dark .figzoom img.print { filter: invert(0.87) hue-rotate(180deg) saturate(1.3); }
+.dark .figzoom img.print { background: #fff; }
+.dark .body figure:not(.webfig) figcaption { color: var(--ink-2); }
+.dark .body figure:not(.webfig) .fignum { color: var(--ink); }
+.dark .peek figure:not(.webfig) { background: none; }
+.dark .peek figure:not(.webfig) img { filter: invert(0.87) hue-rotate(180deg) saturate(1.3); }
+
+/* live links, citation counts, stepping through a proof, proofs beside the text (proofs.js) */
+.body .thm-links .tl-live { color: var(--accent); }
+.body .eqcite { display: block; text-align: right; margin: -0.5em 0 0.6em; font: 0.7rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.body .proof-steps { display: flex; gap: 0.8rem; align-items: center; justify-content: flex-end; margin: 0.2em 0 0.4em;
+  font: 0.76rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.body .proof-steps button { font: inherit; color: var(--accent); background: none; border: 1px solid var(--rule); border-radius: 999px; padding: 0.1em 0.7em; cursor: pointer; }
+.body .proof-steps button:disabled { color: var(--ink-3); cursor: default; opacity: 0.5; }
+.body .proof.stepping .step-later { opacity: 0.12; transition: opacity 0.25s; }
+.body .proof.stepping .step-now { background: var(--accent-soft); border-radius: 6px; box-shadow: 0 0 0 6px var(--accent-soft); }
+.proofs-bar .proofs-side { margin-left: auto; }
+@media (min-width: 1500px) {
+  .thesis.beside { grid-template-columns: 15rem minmax(0, 44rem) 24rem; max-width: 1560px; }
+  .thesis.beside .body { position: relative; }
+  .thesis.beside .body .proof.side { position: absolute; left: calc(100% + 3.4rem + 2.5rem); width: 24rem; margin: 0;
+    font-size: 0.92rem; padding: 0.6rem 0.9rem 0.4rem; background: var(--paper); border: 1px solid var(--rule-2); border-radius: 6px;
+    box-shadow: 0 8px 30px -22px rgba(0, 0, 0, 0.4); max-height: none; }
+  .thesis.beside .body .proof.side .proof-toggle { border-top: 0; padding-top: 0.2em; }
+  .thesis.beside .body .proof.side .katex-display { overflow-x: auto; overflow-y: hidden; }
+}
+.lean { margin-top: 3rem; }
+.lean h2 { font-size: 1.35rem; }
+.lean-lede { color: var(--ink-2); }
+.lean-list { list-style: none; padding: 0; columns: 2 22rem; column-gap: 2.5rem; }
+.lean-list li { break-inside: avoid; margin: 0 0 0.9rem; }
+.lean-list b { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.85rem; }
+.lean-n { font: 0.75rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.lean-t { display: block; font-size: 0.92rem; color: var(--ink-2); }
+@media (min-width: 1500px) { .thesis.beside .body .katex-display { overflow-x: auto; overflow-y: hidden; } }
+.proofs-bar .pb-map { color: var(--accent); }
+
+/* long chapters: the browser skips laying out sections until they near the screen (Chapter 1 has ~66,000 elements
+   of typeset maths; this cuts its load from about 950 ms to 190). Beside mode measures every proof's height, so there
+   everything is laid out. */
+.body section.level2 { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+.thesis.beside .body section.level2 { content-visibility: visible; }
+@media print { .body section.level2 { content-visibility: visible; } }
+
+/* a figure's Inspect panel (thesis.js): the code that draws it and the model it solves, numbered line by line */
+.body figure .figsrc .inspect { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; white-space: nowrap; }
+.body figure .figsrc .inspect:hover { text-decoration: underline; text-underline-offset: 3px; }
+.body figure .inspector { margin: 0.7rem 0 0; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); text-align: left; overflow: hidden; }
+.inspector .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--rule); font: 0.8rem ui-sans-serif, system-ui, sans-serif; }
+.inspector .tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 0.5rem 0.9rem; color: var(--ink-2, #55555f); cursor: pointer; font: inherit; }
+.inspector .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.inspector .bar { display: flex; align-items: center; gap: 0.9rem; padding: 0.35rem 0.8rem; font: 0.74rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3, #77777f); border-bottom: 1px solid var(--rule); }
+.inspector .bar .file { font-family: ui-monospace, Menlo, monospace; margin-right: auto; }
+.inspector .bar button { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; }
+.inspector pre.code { margin: 0; padding: 0.6rem 0; overflow-x: auto; font: 0.78rem/1.55 ui-monospace, Menlo, monospace; color: var(--ink); counter-reset: ln; max-height: 34rem; }
+.inspector pre.code .ln { display: block; padding: 0 0.9rem 0 0; white-space: pre; }
+.inspector pre.code .ln::before { counter-increment: ln; content: counter(ln); display: inline-block; width: 2.4em; margin-right: 0.9em; text-align: right; color: var(--ink-3, #9a9aa3); opacity: 0.7; user-select: none; }
+.inspector .pane[data-k="run"] { padding: 0.2rem 0.9rem 0.6rem; font: 0.86rem/1.5 ui-sans-serif, system-ui, sans-serif; color: var(--ink-2, #55555f); }
+.inspector .pane[data-k="run"] pre.code { border: 1px solid var(--rule); border-radius: 6px; margin: 0.4rem 0; }
+.inspector .k { color: #8a3ab9; } .inspector .s { color: #0f7b3f; } .inspector .c { color: #7a7a84; font-style: italic; } .inspector .n { color: #b3540f; }
+.dark .inspector .k { color: #d0a0ff; } .dark .inspector .s { color: #8fd6a4; } .dark .inspector .c { color: #9a9aa6; } .dark .inspector .n { color: #f0a870; }
+@media print { .inspector, .figsrc .inspect { display: none !important; } }
+
+/* Formulas are set as native MathML (tools/dissertation/prerender.js), in a Latin Modern Math subset that keeps its
+   OpenType MATH table (tools/dissertation/subset_math_font.py), sized like KaTeX's 1.21em.  Wide displays scroll. */
+@font-face { font-family: 'LM Math'; src: url(lm-math.woff2) format('woff2'); font-display: swap; }
+.katex math { font-family: 'LM Math', math; font-size: 1.1em; }
+.katex math[display="block"] mtd, .katex math[display="block"] mtd * { math-style: normal; }
+.katex math[display="block"] { display: block math; margin: 0.6em 0; overflow-x: auto; overflow-y: hidden; }
+.katex math mtable[width="100%"] { width: 100%; }
+.katex math mtd[width="50%"] { width: 50%; }
+/* the multi-row numbered displays that stay KaTeX HTML (see prerender.js): a formula wider than the column scrolls,
+   and its numbers ride at the formula's right end instead of lying over it */
+.body .math.display .katex-display { overflow-x: auto; overflow-y: hidden; }
+.body .math.display .katex-display > .katex > .katex-html { display: inline-block; min-width: 100%; padding-right: 5.5em; box-sizing: border-box; }
+

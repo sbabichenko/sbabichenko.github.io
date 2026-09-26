@@ -1,0 +1,30 @@
+/* the dissertation's search box and its results (search.js) */
+/* the chapter pages have no --sheet of their own: the box sits on their paper */
+.thesis { --sheet: var(--paper); }
+/* the results panel hangs off <body>, outside the pages' token scopes, so it carries its own */
+.dsearch-panel { --sheet: #fffdf6; --ink: #1b1b20; --ink-2: #4a4a55; --ink-3: #8a8a93; --rule: rgba(20, 20, 30, 0.1); --accent: #1f3fd0; color: var(--ink); }
+.dark .dsearch-panel { --sheet: #25262a; --ink: #ecedf1; --ink-2: #b0b1ba; --ink-3: #7c7d86; --rule: rgba(255, 255, 255, 0.12); --accent: #8fb0ff; }
+.dsearch { display: block; width: 100%; box-sizing: border-box; margin: 0 0 0.9rem; padding: 0.45rem 0.7rem; font: 0.85rem ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink); background: var(--sheet, #fff); border: 1px solid var(--rule); border-radius: 8px; }
+.dsearch:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.dsearch::placeholder { color: var(--ink-3); }
+.dsearch-panel { position: fixed; z-index: 80; max-height: min(70vh, 560px); overflow-y: auto; padding: 6px; border-radius: 10px;
+  background: var(--sheet, #fff); border: 1px solid var(--rule); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14); font-family: ui-sans-serif, system-ui, sans-serif; }
+.dsearch-panel .hit { display: block; padding: 0.5rem 0.65rem; border-radius: 7px; text-decoration: none; color: var(--ink); }
+.dsearch-panel .hit.on, .dsearch-panel .hit:hover { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.dsearch-panel .where { display: block; font-size: 0.74rem; color: var(--accent); margin-bottom: 0.15rem; }
+.dsearch-panel .what { display: block; font: 0.9rem/1.45 Newsreader, Georgia, serif; color: var(--ink-2); }
+.dsearch-panel mark, mark.dsearch-hit { background: rgba(255, 214, 90, 0.6); color: inherit; border-radius: 2px; padding: 0 1px; }
+.dark .dsearch-panel mark, .dark mark.dsearch-hit { background: rgba(143, 176, 255, 0.35); }
+mark.dsearch-hit { transition: background 1.2s; }
+mark.dsearch-hit.fade { background: transparent; }
+.dsearch-panel .none { margin: 0.6rem; font-size: 0.85rem; color: var(--ink-3); }
+.contents .dsearch { max-width: 26rem; margin: 0 0 2rem; font-size: 0.95rem; padding: 0.6rem 0.9rem; }
+
+/* nothing found: three lines try to get through, and turn back at the band (search.js) */
+.none-detour { display: block; width: 160px; height: 44px; margin: 0.2rem 0 0.6rem; color: var(--ink-3, #8a8a93); }
+.none-detour .nd-band { fill: currentColor; opacity: 0.12; }
+.none-detour .nd-way { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1;
+  animation: nd-draw 1.1s ease-out forwards; }
+@keyframes nd-draw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .none-detour .nd-way { animation: none; stroke-dashoffset: 0; } }

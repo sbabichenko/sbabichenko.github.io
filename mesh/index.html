@@ -1,0 +1,331 @@
+<!doctype html>
+<html class="not-ready lg:text-base" lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Title -->
+  <title>Decision Mesh - Sam Babichenko</title>
+
+  <!-- Meta -->
+  <meta name="theme-color" />
+  <meta name="description" content="Four fits grow in your browser on the same noisy data: freeform triangles, right triangles, rectangles and a regression tree, matched on free parameters." />
+  <meta name="author" content="" />
+  <!-- The Open Graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Decision Mesh" />
+  <meta property="og:site_name" content="Sam Babichenko" />
+  <meta property="og:description" content="Four fits grow in your browser on the same noisy data: freeform triangles, right triangles, rectangles and a regression tree, matched on free parameters." />
+  <meta property="og:url" content="https:&#x2F;&#x2F;sbabichenko.com&#x2F;mesh&#x2F;" />
+  <meta property="og:image" content="https://sbabichenko.com/images/og-mesh.png" />
+
+  <!-- CSS & JS -->
+  <link rel="preload stylesheet" as="style" href="https://sbabichenko.com/main.css?h=f49bde0cf4c2681243a5" />
+  <style>
+    :root {
+      --bg: #FFFFF0;
+      --bg-dark: #1F2022;
+      --header: #e4e4e7;
+      --header-dark: #27272a;
+    }
+  </style>
+
+  
+
+  <!-- Dark Icon -->
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/theme.svg" />
+
+  <!-- Math -->
+  
+  <!---->
+
+  <!-- Mermaid -->
+  
+  <!---->
+
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://sbabichenko.com/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://sbabichenko.com/favicon-16x16.png">
+  <link rel="shortcut icon" href="https://sbabichenko.com/favicon.ico">
+  <link rel="apple-touch-icon" href="https://sbabichenko.com/apple-touch-icon.png">
+
+
+  <!-- Feeds -->
+  
+  <!---->
+  
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title="Atom"
+    href="https://sbabichenko.com/atom.xml"
+  />
+   
+  <!---->
+  
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https:&#x2F;&#x2F;sbabichenko.com&#x2F;mesh&#x2F;" />
+
+  <!-- Head inject -->
+  <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="font" type="font/woff2" href="https://sbabichenko.com/fonts/newsreader-latin-opsz-normal.woff2" crossorigin>
+<link rel="stylesheet" href="https://sbabichenko.com/fonts/newsreader.css?h=76764bb675ec2845fffb">
+<link rel="stylesheet" href="https://sbabichenko.com/css/custom.css?h=f836d5c06c9f94dc466b">
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="https://sbabichenko.com/noisestate/explorer.css?h=2ac2492ab1ef399c423d" />
+    <link rel="stylesheet" href="https://sbabichenko.com/mesh/mesh.css?h=a8dea741136f40ed8eae" />
+    <header
+  class="blur-header fixed top-0 z-40 mx-auto min-h-[3.5rem] w-full"
+>
+  <div class="mx-auto w-full max-w-4xl p-3 lg:flex lg:justify-between">
+    <div class="flex justify-between">
+      <div class="flex items-center">
+        <a class="text-2xl font-semibold" href="https://sbabichenko.com">Sam Babichenko</a>
+        <div
+          class="btn-dark ml-4 h-6 w-6 shrink-0 cursor-pointer text-[0px] [background:url(./icons/theme.svg)_left_center/cover_no-repeat] dark:[background-position:right] dark:invert"
+          role="button"
+          aria-label="Dark"
+        ></div>
+      </div>
+      
+      <div
+        class="btn-menu relative z-50 flex h-8 w-8 shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+        role="button"
+        aria-label="Menu"
+      ></div>
+      
+    </div>
+    <script>
+      // base
+      const htmlClass = document.documentElement.classList;
+      setTimeout(() => {
+        htmlClass.remove("not-ready");
+      }, 10);
+
+      // mobile menu
+      const btnMenu = document.querySelector(".btn-menu");
+      btnMenu?.addEventListener("click", () => {
+        htmlClass.toggle("open");
+      });
+
+      // dark theme
+      const setDark = (isDark) => {
+        if (isDark) {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
+          htmlClass.add("dark");
+        } else {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "light" }));
+          htmlClass.remove("dark");
+        }
+        localStorage.setItem("dark", isDark);
+      };
+
+      // init
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      if (htmlClass.contains("dark")) {
+        setDark(true);
+      } else {
+        const darkVal = localStorage.getItem("dark");
+        setDark(darkVal ? darkVal === "true" : darkScheme.matches);
+      }
+
+      // listen system
+      darkScheme.addEventListener("change", (event) => {
+        setDark(event.matches);
+      });
+
+      // manual switch
+      const btnDark = document.querySelector(".btn-dark");
+      btnDark.addEventListener("click", () => {
+        setDark(localStorage.getItem("dark") !== "true");
+      });
+    </script>
+    
+    <nav class="flex w-full items-center lg:w-auto">
+      <ul
+        class="nav-wrapper flex w-full flex-col py-2 lg:w-auto lg:flex-row lg:self-center lg:py-0"
+      >
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/writing"
+            >Writing</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/dissertation"
+            >Dissertation</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/cv"
+            >CV</a
+          >
+        </li>
+        
+      </ul>
+      <!-- Header Nav inject -->
+      
+    </nav>
+    
+  </div>
+</header>
+
+    <div class="progress" id="progress" data-auto aria-hidden="true"></div>
+
+    <main class="explorer mesh">
+      <div class="crumbs"><a href="https://sbabichenko.com#projects">Projects</a> &nbsp;/&nbsp; Decision Mesh</div>
+      <h1>Decision Mesh</h1>
+      <p class="sub">A regression tree cuts the plane into boxes and predicts a constant in each, so its fit is a
+        staircase. A decision mesh cuts the plane into pieces that share their corners and predicts across each piece
+        from those corner heights, so its fit is continuous. Below, four fits
+        grow on the same noisy data, each given the same number of free parameters. None of them uses the
+        false-discovery gate: each grows by the same greedy rule, so the only difference is the geometry.</p>
+
+      <details class="howto">
+        <summary>How each mesh cuts</summary>
+        <p><b>Freeform triangles.</b> Every edge carries a candidate vertex at its midpoint; activating it splits the
+          one or two triangles on that edge through their opposite corners. Any edge can be cut, so the mesh can turn
+          to follow a feature in any direction, at the price of thin triangles, which the aspect limit keeps in check.</p>
+        <p><b>Right triangles.</b> Every triangle is right isosceles and is only ever cut through the midpoint of its
+          hypotenuse, which gives two smaller right isosceles triangles. If the triangle across that hypotenuse would be
+          left with a vertex hanging in its side, it is cut first (the completion step), so the mesh never has hanging
+          vertices and its triangles never get thin, however long it grows. It cannot turn to follow a feature; it can
+          only get finer where the feature is.</p>
+        <p><b>Rectangles.</b> Every cell can be cut across either axis, so the refinement can follow anisotropy that
+          lines up with the axes; inside a cell the fit is bilinear, which carries the interaction of the two
+          coordinates that a flat triangle cannot. A vertex left hanging in the middle of a coarser cell's edge takes
+          that edge's endpoints as its parents, which keeps the surface continuous with no constraints to store.</p>
+        <p>In the right triangles and the rectangles, a vertex's height is its parents' average plus a surplus of its
+          own, and a new vertex costs a parameter only once the rule frees its surplus. In all three, each candidate
+          knows the least-squares change it would make with everything else held fixed and how much squared error that
+          would save; each step takes the largest saving. The tree is ordinary best-first CART. All four are grown to
+          the same number of free parameters: one height or surplus per free vertex, one mean per tree leaf.</p>
+      </details>
+
+      <section class="panel">
+        <div class="meshbar">
+          <div class="ctl"><label for="surface"><span>Surface</span></label><select id="surface"></select></div>
+          <div class="ctl"><label for="npts"><span>Points</span></label><select id="npts">
+            <option value="2000">2,000</option><option value="5000" selected>5,000</option><option value="10000">10,000</option><option value="20000">20,000</option></select></div>
+          <div class="ctl"><label for="noise"><span>Noise &sigma;</span><span class="val" id="noiseval"></span></label><input type="range" id="noise" min="0" max="1.5" step="0.05" value="0.5" /></div>
+          <div class="ctl"><label for="eps"><span>Explore &epsilon;</span><span class="val" id="epsval"></span></label><input type="range" id="eps" min="0" max="0.5" step="0.01" value="0.1" /></div>
+          <div class="ctl"><label for="aspect"><span>Aspect limit</span><span class="val" id="aspectval"></span></label><input type="range" id="aspect" min="2" max="12" step="0.5" value="5" /></div>
+          <div class="ctl"><label for="minpts" title="the fewest points a new piece may hold; 0 is the published triangular algorithm, 3 stops a vertex being fitted to one or two points"><span>Min points</span><span class="val" id="minptsval"></span></label><input type="range" id="minpts" min="0" max="10" step="1" value="3" /></div>
+          <div class="ctl"><label for="refresh" title="Refit the candidate splits around a vertex whose height was refitted (off is the algorithm as published)"><span>Refresh fits<sup>&#9651;</sup></span><input type="checkbox" id="refresh" class="box" /></label><div class="hint">after each refit</div></div>
+        </div>
+      </section>
+
+      <div id="statusbar">
+        <span class="chip idle" id="chip">Ready</span>
+        <svg class="glass" id="glass" viewBox="0 0 14 20" aria-hidden="true"><title>Step budget left</title>
+          <clipPath id="glass-top"><path d="M2.6,2 H11.4 L7,10 Z" /></clipPath><clipPath id="glass-bot"><path d="M7,10 L11.4,18 H2.6 Z" /></clipPath>
+          <rect class="sand" id="sand-top" clip-path="url(#glass-top)" x="0" y="2" width="14" height="8" />
+          <rect class="sand" id="sand-bot" clip-path="url(#glass-bot)" x="0" y="18" width="14" height="0" />
+          <line class="stream" id="sand-stream" x1="7" y1="9.6" x2="7" y2="18" />
+          <path class="frame" d="M1.5,1 H12.5 M1.5,19 H12.5 M2.6,1.5 L7,10 L2.6,18.5 M11.4,1.5 L7,10 L11.4,18.5" />
+        </svg>
+        <span id="statustext">Starting when the meshes come into view.</span>
+        <span class="buttons">
+          <button class="secondary" id="resetbtn" title="New data and a fresh mesh">New data</button>
+          <button class="secondary" id="stepbtn" title="One step">Step</button>
+          <button class="primary" id="playbtn">Play</button>
+        </span>
+      </div>
+
+      <section class="panel">
+        <div class="stage">
+          <figure><div class="cv"><canvas id="cvmesh" width="320" height="320"></canvas></div>
+            <figcaption><b>Freeform triangles</b> <span id="capmesh"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvright" width="320" height="320"></canvas></div>
+            <figcaption><b>Right triangles</b> <span id="capright"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvrect" width="320" height="320"></canvas></div>
+            <figcaption><b>Rectangles</b> <span id="caprect"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvtree" width="320" height="320"></canvas></div>
+            <figcaption><b>Regression tree</b> <span id="captree"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvtruth" width="320" height="320"></canvas></div>
+            <figcaption><b>Truth</b> <span class="muted">the surface under the noise</span></figcaption></figure>
+          <figure class="boardfig"><div class="board" id="board"></div></figure>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <label class="check"><input type="checkbox" id="showedges" checked /> Mesh and tree lines</label>
+          <label class="check"><input type="checkbox" id="showpts" /> Data points</label>
+          <span class="scopenote"><sup>&#9651;</sup> freeform triangles only</span>
+          <label class="check speedctl" for="speed">Speed <input type="range" id="speed" min="1" max="40" step="1" value="1" /> <span class="val" id="speedval"></span> a frame</label>
+          <span class="scale" id="scale"></span>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Error Against the Truth</h2>
+        <div class="cv wide"><canvas id="cvcurve" width="900" height="220"></canvas></div>
+        <p class="caption">Root-mean-square distance from the true surface over the square, against the number of free
+          parameters; the dashed line is the noise &sigma;. Over a whole run, on all six surfaces the right triangles get closest to the
+          truth.</p>
+        <div class="tablewrap best"><table class="diag">
+          <thead><tr><th>Best RMSE over a run</th><th>Freeform</th><th>Right</th><th>Rectangles</th><th>Tree</th></tr></thead>
+          <tbody>
+            <tr><td><a href="#surface=cliff">Diagonal cliff</a></td><td class="mono">0.161</td><td class="mono"><b>0.130</b></td><td class="mono">0.170</td><td class="mono">0.217</td></tr>
+            <tr><td><a href="#surface=bump">Two hills</a></td><td class="mono">0.127</td><td class="mono"><b>0.091</b></td><td class="mono">0.123</td><td class="mono">0.152</td></tr>
+            <tr><td><a href="#surface=saddle">Saddle</a></td><td class="mono">0.099</td><td class="mono"><b>0.075</b></td><td class="mono">0.120</td><td class="mono">0.229</td></tr>
+            <tr><td><a href="#surface=disk">Disk (a jump)</a></td><td class="mono">0.329</td><td class="mono"><b>0.277</b></td><td class="mono">0.284</td><td class="mono">0.303</td></tr>
+            <tr><td><a href="#surface=ripples">Ripples</a></td><td class="mono">0.578</td><td class="mono"><b>0.464</b></td><td class="mono">0.485</td><td class="mono">0.495</td></tr>
+            <tr><td><a href="#surface=waves">Slow waves</a></td><td class="mono">0.206</td><td class="mono"><b>0.162</b></td><td class="mono">0.164</td><td class="mono">0.232</td></tr>
+          </tbody>
+        </table></div>
+        <p class="caption">Their lead is largest early, at fifty parameters. Late in a run every mesh starts fitting noise and the curves turn up. A minimum of 3 points per
+          piece is the default (0 is the published freeform algorithm), and "refresh fits" refits the freeform
+          candidates around a vertex whose height has just moved, which the published algorithm leaves stale.</p>
+      </section>
+
+      <div class="notes">
+<p>The freeform engine is a line-for-line JavaScript port of my
+          <a href="https://github.com/sbabichenko/Decision-Mesh">Decision Mesh</a>, matching the Python's squared error
+          to 1e-12 over the first 400 steps. The right-triangle and rectangular engines are written for this page: they
+          are the geometries of <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a>
+          (newest-vertex bisection with completion) and
+          <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a> (dyadic
+          bisection, two parents per vertex, bilinear cells), grown by the same greedy rule as the freeform triangles, so
+          the panels differ only in their geometry. Data, cuts and pictures are all computed on this page.</p>
+        <p>None of these four has a stopping rule: they grow until the page runs out of budget. The estimator I actually
+          use chooses its cuts with an empirical-null false-discovery gate and stops by itself;
+          <a href="https://sbabichenko.com/gate">it runs here too</a>, compiled from its C++, and
+          <a href="https://sbabichenko.com/gate/how">The False-Discovery Gate, Step by Step</a> walks through one of its fits.</p>
+        <p>Also on this site: the <a href="https://sbabichenko.com/noisestate">noise-state game explorer</a>, which solves the games of my dissertation in your browser.</p>
+      </div>
+    </main>
+
+    
+<footer class="site-foot">
+  
+  <span>&copy; 2025&ndash;2026 Sam Babichenko</span>
+  <a href="https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by&#x2F;4.0&#x2F;deed.en" rel="noopener" target="_blank">CC BY 4.0</a>
+  <a href="https://sbabichenko.com/colophon">Colophon</a>
+  <a href="https://sbabichenko.com/atom.xml" title="New writing, in any feed reader">Feed</a>
+  <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
+</footer>
+<script src="https://sbabichenko.com/js/tally.js?h=4000db8cd9e27f8f27cd"></script>
+<link rel="stylesheet" href="https://sbabichenko.com/css/whimsy.css?h=47c637d7150a148c9bce" />
+<link rel="stylesheet" href="https://sbabichenko.com/css/fold.css?h=65a4ad70c1f9e810669b" />
+<script src="https://sbabichenko.com/js/whimsy.js?h=03baa37dd53e13046bb1"></script>
+<script src="https://sbabichenko.com/js/skip.js?h=8b0612be930eb6b54639" defer></script>
+<script src="https://sbabichenko.com/js/fold.js?h=c0b53bc8e268c5e50f1c"></script>
+
+    <script src="https://sbabichenko.com/mesh/decision-mesh.js?h=d07d0c0efc14a06f4c01"></script>
+    <script src="https://sbabichenko.com/mesh/right-mesh.js?h=80a1269d22c06cd96da2"></script>
+    <script src="https://sbabichenko.com/mesh/rect-mesh.js?h=74b43edc6dba00958ea6"></script>
+    <script src="https://sbabichenko.com/mesh/mesh-demo.js?h=6bce4b6fc975ba322ed8"></script>
+  </body>
+</html>

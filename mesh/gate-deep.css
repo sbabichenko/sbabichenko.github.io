@@ -1,0 +1,41 @@
+/* /gate/deep: the decision mesh one level down. Layout and inks come from dissertation/opening.css; this adds the
+   controls, the step headings and the colours the runs are drawn in (the same as /gate/how). */
+.gatedeep .howbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: 2rem 0 0; font: 0.9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); }
+.gatedeep .howbar label { display: inline-flex; align-items: center; gap: 8px; }
+.gatedeep .howbar select, .gatedeep .howbar button { font: inherit; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px; padding: 0.35rem 0.8rem; }
+.gatedeep .howbar button { cursor: pointer; }
+.gatedeep .howbar button:hover { border-color: var(--accent); }
+.gatedeep .howbar input[type=range] { width: 120px; accent-color: var(--accent); }
+.gatedeep .howbar .val { font: 0.8rem ui-monospace, Menlo, monospace; color: var(--ink); min-width: 2.2em; }
+.gatedeep .howstatus { font: 0.78rem ui-monospace, Menlo, monospace; letter-spacing: 0.06em; color: var(--ink-3); }
+.gatedeep .howstatus.busy::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 7px; animation: deeppulse 1s infinite ease-in-out; }
+@keyframes deeppulse { 50% { opacity: 0.2; } }
+.gatedeep .ideahead .lede a { color: var(--accent); text-decoration: none; }
+.gatedeep [data-v] { font-variant-numeric: tabular-nums; }
+.gatedeep .step h2 { font: 600 0.74rem ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0 0 0.9rem; }
+.gatedeep .step h2 i { text-transform: none; }
+.gatedeep .step em { font-style: italic; }
+.gatedeep .step sub, .gatedeep .step sup { font-size: 0.65em; line-height: 0; }
+.gatedeep .warmword { color: var(--warm); }
+@media (max-width: 820px) {
+  .gatedeep .step h2 { background: color-mix(in srgb, var(--paper) 92%, transparent); padding: 0.3rem 0.2rem; border-radius: 4px; align-self: flex-start; }
+}
+#stage .pos { fill: var(--accent); }
+#stage .neg { fill: var(--warm); }
+#stage .posS { stroke: var(--accent); }
+#stage .negS { stroke: var(--warm); }
+#stage .ink { fill: currentColor; }
+#stage .frame { fill: none; stroke: var(--rule); stroke-width: 1; }
+#stage .meshline { fill: none; stroke: currentColor; stroke-width: 0.6; stroke-opacity: 0.3; }
+#stage .meshdark { fill: none; stroke: currentColor; stroke-width: 0.9; stroke-opacity: 0.6; }
+#stage .shade { fill: var(--accent); fill-opacity: 0.13; }
+#stage .shadew { fill: var(--warm); fill-opacity: 0.16; }
+#stage .shadeink { fill: currentColor; fill-opacity: 0.07; }
+#stage .ring { fill: none; stroke: currentColor; stroke-width: 1.4; }
+#stage text.small { font-size: 12px; }
+#stage text.tiny { font: 10px ui-monospace, Menlo, monospace; fill: var(--ink-3); }
+#stage text.tiny.acc { fill: var(--accent); }
+#stage text.tiny.halo { paint-order: stroke; stroke: var(--paper); stroke-width: 4px; stroke-linejoin: round; }
+#stage text.formula { font: italic 17px Newsreader, Georgia, serif; fill: currentColor; }
+#stage text.num { font: 13px ui-monospace, Menlo, monospace; fill: currentColor; }
+#stage .stagebusy { font: 12px ui-monospace, Menlo, monospace; letter-spacing: 0.08em; fill: var(--ink-3); }
