@@ -8,9 +8,10 @@
     <link rel="stylesheet" href="{{ get_url(path='noisestate/explorer.css', cachebust=true) }}" />
     <link rel="stylesheet" href="{{ get_url(path='mesh/mesh.css', cachebust=true) }}" />
     {% include "partials/header.html" %}
+    <div class="progress" id="progress" data-auto aria-hidden="true"></div>
 
     <main class="explorer mesh">
-      <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; Decision Mesh</div>
+      <div class="crumbs"><a href="{{ get_url(path='') }}#projects">Projects</a> &nbsp;/&nbsp; Decision Mesh</div>
       <h1>Decision Mesh</h1>
       <p class="sub">A regression tree cuts the plane into boxes and predicts a constant in each, so its fit is a
         staircase. A decision mesh cuts the plane into pieces that share their corners and predicts across each piece

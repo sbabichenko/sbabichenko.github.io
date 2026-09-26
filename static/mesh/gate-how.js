@@ -368,7 +368,7 @@
       const projL = el("path", { d: P(proj), class: "pencil warm", "stroke-width": 1.6, fill: "none", "stroke-dasharray": "5 4" }, B);
       const remA = el("path", { d: P(rem) + ` L${X(U[n - 1])},${By} L${X(U[0])},${By} Z`, class: "shade" }, B);
       const remL = el("path", { d: P(rem), class: "pencil accent", "stroke-width": 2, fill: "none" }, B);
-      const lb = [text(B, X(0.5) + 10, By - Bs * hat[n >> 1] - 4, "the tent", "tiny", "start"), text(B, X(0.93), By - Bs * proj[n - 2] - 10, "the parents' share", "tiny", "end"), text(B, X(0.5), By + 20, "what only the candidate can do", "tiny")];
+      const lb = [text(B, X(0.5) + 10, By - Bs * hat[n >> 1] - 4, "the tent", "tiny", "start"), text(B, X(0.8), By - Bs * proj[n - 2] - 8, "the parents' share", "tiny", "start"), text(B, X(0.5), By + 20, "what only the candidate can do", "tiny")];
       // panel c: the result
       const C = el("g", {}, g);
       text(C, 70, 462, "3 · remove the shrinkage bias, divide by the standard deviation", "mono", "start");
@@ -474,10 +474,11 @@
         const q = el("g", {}, g), cx = 70 + (i % cols) * cw, cy = 110 + Math.floor(i / cols) * (ch + 50);
         const zs = byRound(r), c = cal.find((u) => u.round === r);
         text(q, cx, cy - 12, `round ${r}`, "mono", "start");
-        histogram(q, zs, c, { x: cx + 4, y: cy, w: cw - 18, h: ch - 60 }, { bare: true, bw: 1 });
+        histogram(q, zs, c, { x: cx + 4, y: cy, w: cw - 18, h: ch - 74 }, { bare: true, bw: 1 });
         const sel = zs.filter((u) => u.selected).length, adm = zs.filter((u) => u.admitted).length;
-        text(q, cx, cy + ch - 34, `${zs.length} scored`, "tiny", "start");
-        text(q, cx, cy + ch - 20, `${sel} selected · ${adm} admitted`, "tiny " + (adm ? "acc" : ""), "start");
+        text(q, cx, cy + ch - 48, `${zs.length} scored`, "tiny", "start");
+        text(q, cx, cy + ch - 34, `${sel} selected`, "tiny", "start");
+        text(q, cx, cy + ch - 20, `${adm} admitted`, "tiny " + (adm ? "acc" : ""), "start");
         if (c) text(q, cx, cy + ch - 6, `null spread ${fmt(c.nullSd)}`, "tiny", "start");
         panels.push(q);
       });

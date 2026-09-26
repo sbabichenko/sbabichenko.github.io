@@ -1,13 +1,15 @@
 /* The CV: a header that only appears on paper, and the page as a one-column resume when printed
-   (tools/make_cv_pdf.js prints it to static/Resume_Samuel_Babichenko.pdf). */
+   (tools/make_cv_pdf.js prints it to static/CV_Samuel_Babichenko.pdf). */
 .cv-print-head { display: none; }
 article.cv-gutter { padding-left: 34px; }   /* cvwalk.js on a phone: room for the walk */
+article .nw { white-space: nowrap; }
 @media print {
   @page { size: letter; margin: 0.45in 0.6in; }
   html, body { background: #fff !important; color: #111 !important; }
   body > header, .site-foot, .cvwalk, .cv-download, .whimsy-coin, .whimsy-doodle, .progress, article > header { display: none !important; }
   main, .prose, article, article section { padding: 0 !important; max-width: none !important; min-height: 0 !important; width: auto !important; }
-  article, .prose article { font-family: Newsreader, Georgia, serif; font-size: 10pt !important; line-height: 1.3 !important; }
+  article, .prose article { font-family: 'Newsreader Print', Georgia, serif; font-size: 10pt !important; line-height: 1.3 !important; }
+  article *:not(.c), .cv-print-head .n { font-family: 'Newsreader Print', Georgia, serif !important; }
   .cv-print-head { display: block; margin: 0 0 6pt; }
   .cv-print-head p { margin: 0 !important; }
   .cv-print-head .n { font-size: 20pt; line-height: 1.1; letter-spacing: -0.01em; }
@@ -19,6 +21,7 @@ article.cv-gutter { padding-left: 34px; }   /* cvwalk.js on a phone: room for th
   article li p { margin: 0 !important; }
   article ul { margin: 0 0 4pt !important; padding-left: 14pt !important; break-before: avoid; break-inside: avoid; }
   article p:has(+ ul) { break-after: avoid; }
+  #experience + p { break-after: avoid; }   /* keep the two roles on one page */
   article a, .prose article a { color: inherit !important; text-decoration: none !important; font-weight: inherit !important; }
   article code { font: inherit !important; color: inherit !important; }
   article code::before, article code::after { content: none !important; }

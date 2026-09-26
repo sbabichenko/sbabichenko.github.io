@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css', cachebust=true) }}" />
     <link rel="stylesheet" href="{{ get_url(path='dissertation/search.css', cachebust=true) }}" />
     {% include "partials/header.html" %}
+    <div class="progress" id="progress" data-auto aria-hidden="true"></div>
 
     <main class="opening" id="opening">
       <section class="cover">
@@ -89,11 +90,17 @@
       <section class="story" id="story2">
         <div class="stage" aria-hidden="true"><svg id="stage2" viewBox="0 0 600 600"></svg></div>
         <div class="steps">
+          <div class="step" data-scene="attempt">
+            <p>This dissertation is my attempt to allow the field to build the models it set out to build.</p>
+          </div>
           <div class="step" data-scene="moore">
-            <p>Art Moore, my linear algebra professor in community college, once explained that PDEs are so much harder to analyze
-              because they can describe so much more.</p>
+            <p>Art Moore, my linear algebra professor in community college, who inspired me to do this PhD, once explained the difference
+              between ordinary and partial differential equations by saying that PDEs are so much harder to analyze because they can
+              describe so much more.</p>
             <p class="small">A language capable of describing complex phenomena necessarily carries some of that complexity in its own
-              structure. The resulting mathematics may be complex, but it is the simplest machinery I know that keeps the loop intact.</p>
+              structure. My ambition for the dissertation&rsquo;s central device, the noise-state, is to give economists a tractable way to
+              write down that complexity. The resulting mathematics may be complex, but it is the simplest machinery I know that keeps
+              the loop intact.</p>
           </div>
           <div class="step" data-scene="noise">
             <p>Each player keeps estimates of the primitive shocks instead of belief hierarchies about the endogenous state.
@@ -105,8 +112,7 @@
             <p class="small">Every manipulation channel passes through it.</p>
           </div>
           <div class="step" data-scene="finale">
-            <p>This dissertation is my attempt to allow the field to build the models it set out to build.</p>
-            <p class="small">I hope that the stories told through Hayek&rsquo;s &ldquo;The Use of Knowledge in Society&rdquo; and Leonard
+            <p>I hope that the stories told through Hayek&rsquo;s &ldquo;The Use of Knowledge in Society&rdquo; and Leonard
               Read&rsquo;s &ldquo;I, Pencil&rdquo; can be put to paper more fully, and that I can someday enjoy reading the papers of a
               field that has kept its heart.</p>
           </div>
@@ -151,14 +157,37 @@
         </ol>
         <details class="cite">
           <summary>Cite it</summary>
-<pre>@phdthesis{Babichenko2026Dissertation,
+          <p>Babichenko, Samuel. 2026. <i>Noise-State Calculus for Dynamic Games with Strategic Information.</i> PhD dissertation,
+            University of California, Santa Barbara.</p>
+          <p>The core of the dissertation is also a paper: Babichenko, Sam. 2026. &ldquo;Forecasting and Manipulating the Forecasts of Others.&rdquo;
+            arXiv:2603.12140.</p>
+          <button type="button" class="cite-copy" data-for="cite-bib">Copy BibTeX</button>
+<pre id="cite-bib">@phdthesis{Babichenko2026Dissertation,
   author = {Babichenko, Samuel},
   title  = {Noise-State Calculus for Dynamic Games with Strategic Information},
   school = {University of California, Santa Barbara},
   year   = {2026},
   url    = {https://sbabichenko.com/dissertation/}
+}
+
+@misc{Babichenko2026Forecasting,
+  author        = {Babichenko, Sam},
+  title         = {Forecasting and Manipulating the Forecasts of Others},
+  year          = {2026},
+  eprint        = {2603.12140},
+  archivePrefix = {arXiv},
+  primaryClass  = {math.OC},
+  url           = {https://arxiv.org/abs/2603.12140}
 }</pre>
         </details>
+        <script>
+          document.querySelectorAll(".cite-copy").forEach((b) => b.addEventListener("click", () => {
+            const t = document.getElementById(b.dataset.for).textContent;
+            (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(
+              () => { b.textContent = "Copied"; setTimeout(() => { b.textContent = "Copy BibTeX"; }, 1600); },
+              () => { b.textContent = "Select the text below to copy"; });
+          }));
+        </script>
       </section>
     </main>
 

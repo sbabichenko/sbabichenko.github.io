@@ -15,7 +15,7 @@ const PRESETS = {
       <p class="small muted" style="margin:0">p<sub>i</sub> is signal precision. Reported costs include the constant b<sub>i</sub><sup>2</sup>T.</p>`,
     yaml: `name: ch1_tracking_with_targets
 params: {p1: 9.0, p2: 9.0, r1: 0.1, r2: 0.1, b1: 1.0, b2: -1.0, sigma: 1.0, T: 1.0}
-channels: [w0, w1, w2]
+shocks: [w0, w1, w2]
 states:
   X: {drift: {D1: 1.0, D2: 1.0}, noise: {w0: sigma}}
 agents:
@@ -52,21 +52,22 @@ numerics: {nodes: 12}
       Responses are kernels in shock age: how a unit shock of a given age still moves the state or a control.</p>
       <div class="eq"><div class="tex" data-tex="dX = (D^1 + D^2)\\,dt + dW^0">dX = (D<sup>1</sup> + D<sup>2</sup>) dt + dW<sup>0</sup></div>
       <div class="tex" data-tex="dY^i = \\sqrt{p_i}\\,X\\,dt + dW^i">dY<sup>i</sup> = &radic;p<sub>i</sub> X dt + dW<sup>i</sup></div>
-      <div class="tex" data-tex="\\text{player } i \\text{ minimises the average of } \\tfrac12 X^2 + \\tfrac12 r_i\\,(D^i)^2">player i minimises the average of &frac12; X<sup>2</sup> + &frac12; r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup></div></div>`,
+      <div class="tex" data-tex="\\text{player } i \\text{ minimises the average of } \\tfrac12 (X - b_i)^2 + \\tfrac12 r_i\\,(D^i)^2">player i minimises the average of &frac12; (X &minus; b<sub>i</sub>)<sup>2</sup> + &frac12; r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup></div></div>
+      <p class="small muted" style="margin:0">b<sub>i</sub> is player i&rsquo;s target. Reported costs include the constant &frac12; b<sub>i</sub><sup>2</sup>.</p>`,
     yaml: `name: ch3_stationary_tracking
-params: {p1: 3.0, p2: 10.0, r1: 1.0, r2: 1.0}
-channels: [w0, w1, w2]
+params: {p1: 3.0, p2: 10.0, r1: 1.0, r2: 1.0, b1: 1.0, b2: -1.0}
+shocks: [w0, w1, w2]
 states:
   X: {drift: {D1: 1.0, D2: 1.0}, noise: {w0: 1.0}}
 agents:
   player1:
     controls: [D1]
     signals: {y1: {drift: {X: "sqrt(p1)"}, noise: {w1: 1.0}}}
-    loss: [[0.5, X, X], ["0.5*r1", D1, D1]]
+    loss: [[0.5, X, X], ["-b1", X], ["0.5*r1", D1, D1]]
   player2:
     controls: [D2]
     signals: {y2: {drift: {X: "sqrt(p2)"}, noise: {w2: 1.0}}}
-    loss: [[0.5, X, X], ["0.5*r2", D2, D2]]
+    loss: [[0.5, X, X], ["-b2", X], ["0.5*r2", D2, D2]]
 horizon: {kind: stationary, discount: 0.0, window: 8.0}
 numerics: {nodes: 32}
 `,
@@ -75,7 +76,14 @@ numerics: {nodes: 32}
       { key: "p2", label: "p₂ precision, player 2", min: 0.1, max: 100, log: true },
       { key: "r1", label: "r₁ effort cost, player 1", min: 0.1, max: 10, log: true },
       { key: "r2", label: "r₂ effort cost, player 2", min: 0.1, max: 10, log: true },
+      { key: "b1", label: "b₁ target, player 1", min: -2, max: 2, step: 0.1 },
+      { key: "b2", label: "b₂ target, player 2", min: -2, max: 2, step: 0.1 },
     ],
+    constCost: (p) => ({ player1: 0.5 * p.b1 * p.b1, player2: 0.5 * p.b2 * p.b2 }),
+    constNote: (res) => res.cost_kind,
+    nodes: { def: 32, options: [[16, "16: quick"], [32, "32: the default"], [48, "48: fine, slower"]] },
+    window: { key: "window", check: "window", label: "Lag window", def: 8, options: [[8, "8: the default"], [12, "12: longer"], [16, "16: long, slower"]],
+      hint: "A longer window holds slow-decaying responses; it costs time.", apply: (d, v) => { d.horizon.window = v; } },
   },
   ch4: {
     tab: "Kyle–Back market",
@@ -91,7 +99,7 @@ numerics: {nodes: 32}
       fixed point hard to reach; the status bar says when a solve did not converge.</p>`,
     yaml: `name: ch4_kyle_back
 params: {eps: 0.2, rho: 0.5, gamma1: 1.0, sigma_V: 1.0, sigma_Z: 1.0}
-channels: [wV, wZ, w1]
+shocks: [wV, wZ, w1]
 states:
   V: {drift: {}, noise: {wV: sigma_V}}
 agents:
@@ -119,6 +127,9 @@ numerics: {nodes: 16}
     ],
     defaultVar: "P", defaultCtl: "D1",
     channelNames: { wV: "value shock", wZ: "noise-trader flow shock", w1: "trader's signal noise" },
+    nodes: { def: 16, options: [[12, "12: quick"], [16, "16: the default"], [24, "24: fine, slower"]] },
+    window: { key: "window", check: "window", label: "Lag window", def: 8, options: [[8, "8: the default"], [12, "12: longer"], [16, "16: long, slower"]],
+      hint: "A longer window holds slow-decaying responses; it costs time.", apply: (d, v) => { d.horizon.window = v; } },
   },
   ch5: {
     tab: "Supply-chain cycle",
@@ -134,7 +145,7 @@ numerics: {nodes: 16}
     yaml: `name: ch5_cycle_market
 params: {theta: 4.0, xi: 0.15, zeta: 0.5, kappa: 0.3, m: 1.0, r: 0.2, rP: 0.0, c: 0.2, sigma_u: 1.0, theta_a: 0.5,
   sigma_a: 1.0, theta_eta: 0.5, sigma_eta: 1.0, s1: 2.5, s2: 0.3, s3: 0.3, s4: 2.0, tau: 0.5}
-channels: [w_q, w_a0, w_eta0, w_0_0, w_0_1, w_0_2, w_0_3, w_a1, w_eta1, w_1_0, w_1_1, w_1_2, w_1_3, w_a2, w_eta2,
+shocks: [w_q, w_a0, w_eta0, w_0_0, w_0_1, w_0_2, w_0_3, w_a1, w_eta1, w_1_0, w_1_1, w_1_2, w_1_3, w_a2, w_eta2,
   w_2_0, w_2_1, w_2_2, w_2_3]
 states:
   q:
@@ -294,7 +305,8 @@ numerics: {nodes: 8, unit: 0.5, unit_range: 4.0}
       { key: "s1", label: "s₁ sales-signal noise", min: 0.3, max: 8, log: true },
       { key: "s4", label: "s₄ upstream-order noise", min: 0.3, max: 8, log: true },
     ],
-    grid: { key: "window", label: "Lag window", options: [[10, "10: quick, a few seconds"], [24, "24: the dissertation's, about 30 s"]],
+    nodes: { def: 8, max: 12, options: [[8, "8: the default"], [12, "12: fine, slow"]] },
+    grid: { key: "window", check: "window", label: "Lag window", options: [[10, "10: quick, a few seconds"], [24, "24: the dissertation's, about 30 s"]],
       apply: (d, v) => { d.horizon.window = v; d.numerics.unit_range = v >= 16 ? 8 : 4; } },
     defaultVar: "P0", defaultCtl: "P0",
     channelNames: {"w_q": "aggregate demand shock", "w_a0": "cost shock, firm 0", "w_eta0": "demand shock, firm 0", "w_0_0": "sales-signal noise, firm 0", "w_0_1": "price-signal noise, firm 0", "w_0_2": "order-book noise, firm 0", "w_0_3": "upstream-order noise, firm 0", "w_a1": "cost shock, firm 1", "w_eta1": "demand shock, firm 1", "w_1_0": "sales-signal noise, firm 1", "w_1_1": "price-signal noise, firm 1", "w_1_2": "order-book noise, firm 1", "w_1_3": "upstream-order noise, firm 1", "w_a2": "cost shock, firm 2", "w_eta2": "demand shock, firm 2", "w_2_0": "sales-signal noise, firm 2", "w_2_1": "price-signal noise, firm 2", "w_2_2": "order-book noise, firm 2", "w_2_3": "upstream-order noise, firm 2"},
@@ -308,42 +320,43 @@ numerics: {nodes: 8, unit: 0.5, unit_range: 4.0}
       so the players move from the old equilibrium toward the new one. After T the new stationary equilibrium takes over.</p>
       <div class="eq"><div class="tex" data-tex="dX = (-aX + D^1 + D^2)\\,dt + dW^0">dX = (&minus;a X + D<sup>1</sup> + D<sup>2</sup>) dt + dW<sup>0</sup></div>
       <div class="tex" data-tex="dY^i = \\sqrt{p_i(t)}\\,X\\,dt + dW^i, \\qquad p_1(t) = p_1^{\\text{before}} \\text{ for } t &lt; 0,\\ p_1 \\text{ after}">dY<sup>i</sup> = &radic;p<sub>i</sub>(t) X dt + dW<sup>i</sup>, &nbsp; p<sub>1</sub>(t) = p<sub>1</sub><sup>before</sup> for t &lt; 0, p<sub>1</sub> after</div>
-      <div class="tex" data-tex="\\text{player } i \\text{ minimises } \\mathbb{E}\\int_0^T \\big[\\tfrac12 X^2 + \\tfrac12 r_i\\,(D^i)^2\\big]\\,dt, \\text{ then the new stationary flow}">player i minimises E &int;<sub>0</sub><sup>T</sup> [ &frac12; X<sup>2</sup> + &frac12; r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup> ] dt, then the new stationary flow</div></div>
+      <div class="tex" data-tex="\\text{player } i \\text{ minimises } \\mathbb{E}\\int_0^T \\big[\\tfrac12 (X - b_i)^2 + \\tfrac12 r_i\\,(D^i)^2\\big]\\,dt, \\text{ then the new stationary flow}">player i minimises E &int;<sub>0</sub><sup>T</sup> [ &frac12; (X &minus; b<sub>i</sub>)<sup>2</sup> + &frac12; r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup> ] dt, then the new stationary flow</div></div>
+      <p class="small muted" style="margin:0">b<sub>i</sub> is player i&rsquo;s target, the same before and after 0. Reported costs leave out the constant &frac12; b<sub>i</sub><sup>2</sup> per unit time, which no strategy changes.</p>
       <p class="small muted" style="margin:0">The strip carries the old shocks on a band of depth L = 3 below s = 0.
       "Until settled" lets the solver pick T: it marches T = 0, 3, 6, &hellip; until the best-response rules on the last window are within 2% of the new stationary ones.</p>`,
     yaml: `name: regime_change
-params: {p1: 6.0, p2: 3.0, r1: 1.0, r2: 1.0, a: 1.0, T: 6.0}
-channels: [w0, w1, w2]
+params: {p1: 6.0, p2: 3.0, r1: 1.0, r2: 1.0, a: 1.0, T: 6.0, b1: 1.0, b2: -1.0}
+shocks: [w0, w1, w2]
 states:
   X: {drift: {X: "-a", D1: 1.0, D2: 1.0}, noise: {w0: 1.0}}
 agents:
   player1:
     controls: [D1]
     signals: {y1: {drift: {X: "sqrt(p1)"}, noise: {w1: 1.0}}}
-    loss: [[0.5, X, X], ["0.5*r1", D1, D1]]
+    loss: [[0.5, X, X], ["-b1", X], ["0.5*r1", D1, D1]]
   player2:
     controls: [D2]
     signals: {y2: {drift: {X: "sqrt(p2)"}, noise: {w2: 1.0}}}
-    loss: [[0.5, X, X], ["0.5*r2", D2, D2]]
+    loss: [[0.5, X, X], ["-b2", X], ["0.5*r2", D2, D2]]
 horizon:
   kind: transition
   T: T
   past:
     model:
       name: before
-      params: {p1: 1.0, p2: 3.0, r1: 1.0, r2: 1.0, a: 1.0}
-      channels: [w0, w1, w2]
+      params: {p1: 1.0, p2: 3.0, r1: 1.0, r2: 1.0, a: 1.0, b1: 1.0, b2: -1.0}
+      shocks: [w0, w1, w2]
       states:
         X: {drift: {X: "-a", D1: 1.0, D2: 1.0}, noise: {w0: 1.0}}
       agents:
         player1:
           controls: [D1]
           signals: {y1: {drift: {X: "sqrt(p1)"}, noise: {w1: 1.0}}}
-          loss: [[0.5, X, X], ["0.5*r1", D1, D1]]
+          loss: [[0.5, X, X], ["-b1", X], ["0.5*r1", D1, D1]]
         player2:
           controls: [D2]
           signals: {y2: {drift: {X: "sqrt(p2)"}, noise: {w2: 1.0}}}
-          loss: [[0.5, X, X], ["0.5*r2", D2, D2]]
+          loss: [[0.5, X, X], ["-b2", X], ["0.5*r2", D2, D2]]
       horizon: {kind: stationary, window: 3.0}
       numerics: {nodes: 12}
   continuation: stationary
@@ -356,9 +369,14 @@ numerics: {nodes: 8, continuation_nodes: 12}
       { key: "r1", where: "both", label: "r₁ effort cost, player 1", min: 0.1, max: 10, log: true },
       { key: "r2", where: "both", label: "r₂ effort cost, player 2", min: 0.1, max: 10, log: true },
       { key: "a", where: "both", label: "a mean reversion", min: 0.3, max: 3, step: 0.05 },
+      { key: "b1", where: "both", label: "b₁ target, player 1", min: -2, max: 2, step: 0.1 },
+      { key: "b2", where: "both", label: "b₂ target, player 2", min: -2, max: 2, step: 0.1 },
       { key: "T", label: "T end of the transition", min: 3, max: 12, step: 0.5, march: false },
     ],
-    nodes: { def: 8, options: [[5, "5: fastest, rough"], [6, "6: quick"], [8, "8: about a second"], [10, "10: fine, a few seconds"]] },
+    nodes: { def: 8, max: 18, options: [[5, "5: fastest, rough"], [6, "6: quick"], [8, "8: about a second"], [10, "10: fine, a few seconds"]] },
+    window: { key: "pastwindow", check: "past window", label: "Past window (band depth L)", def: 3, options: [[3, "3: the default"], [4.5, "4.5: longer"], [6, "6: long"]],
+      hint: "How far back the old regime's shocks are carried. A longer band leaves less of [0, T] past T - L.",
+      apply: (d, v) => { d.horizon.past.model.horizon.window = v; } },
     march: true,
     defaultVar: "D1", defaultCtl: "D1",
     meansCaption: "",
@@ -367,7 +385,7 @@ numerics: {nodes: 8, continuation_nodes: 12}
     tab: "Your model",
     title: "Your model",
     desc: `<p class="small muted" style="margin:0">Write or paste a model file, or start from one of the examples of the noisestate package.
-      The solver takes any model the package's grammar allows: stationary, finite (spectral or cells engine) and transition
+      The solver takes any model the package's grammar allows: stationary, finite and transition
       horizons, with the past model written inline under horizon.past.model and an optional horizon.settle for the march in T.</p>`,
   },
 };
@@ -380,7 +398,7 @@ const EXAMPLES = {
 # loads on the state and player 2 sees it at once; player 1 is myopic.
 name: tr_short
 params: {p1: 10.0, p2: 3.0, r1: 1.0, r2: 1.0}
-channels: [w0, w1, w2]
+shocks: [w0, w1, w2]
 states:
   X: {drift: {X: -0.2, D1: 1.0, D2: 1.0}, noise: {w0: 1.0}}
 agents:
@@ -402,7 +420,7 @@ horizon:
     model:
       name: tr_short_past
       params: {p1: 3.0, p2: 3.0, r1: 1.0, r2: 1.0}
-      channels: [w0, w1, w2]
+      shocks: [w0, w1, w2]
       states:
         X: {drift: {X: -0.2, D1: 1.0, D2: 1.0}, noise: {w0: 1.0}}
       agents:
@@ -427,7 +445,7 @@ numerics: {nodes: 5, continuation_nodes: 10}
 # Draw sample paths: each draw's price P walks toward its own V by T.
 name: kyle_back_prior
 params: {eps: 0.2, Sigma0: 1.0, sigma_Z: 1.0}
-channels: [wZ]
+shocks: [wZ]
 states:
   V: {drift: {}, noise: {}}
 agents:
@@ -452,11 +470,10 @@ horizon:
       - {name: v0, loads: {V: "sqrt(Sigma0)"}, rows: {trader1.flow: 1.0}}
   continuation: end
 `,
-  "tracking game on the cells engine (Ch. 1)": PRESETS.ch1.yaml.replace("numerics: {nodes: 12}", "numerics: {engine: cells, nodes: 24}"),
   "delayed control and observation (Ch. 1), a few seconds": `# Finite-horizon two-player game with a control delay and a delayed observation.
 name: ch1_delayed_finite
 params: {p1: 3.0, p2: 3.0, r1: 0.1, r2: 0.1, sigma: 1.0, tau: 0.25}
-channels: [w0, w1, w2]
+shocks: [w0, w1, w2]
 states:
   X: {drift: {"D1@tau": 1.0, "D2@tau": 1.0}, noise: {w0: sigma}}
 agents:
@@ -473,7 +490,7 @@ numerics: {nodes: 8}
 `,
   "mean reversion, constant drift and initial state": `name: finite_means
 params: {p1: 4.0, p2: 1.0, r1: 0.2, r2: 0.5, b1: 1.0, b2: -0.5, x0: 0.7, k: 0.4}
-channels: [w0, w1, w2]
+shocks: [w0, w1, w2]
 states:
   X: {drift: {X: -0.3, D1: 1.0, D2: 1.0, const: k}, noise: {w0: 0.8}, initial: x0}
 agents:
@@ -498,7 +515,8 @@ const AGENT_LABEL = { player1: "Player 1", player2: "Player 2", market_maker: "M
 // State
 let game = "ch1";
 const values = {};              // preset -> {slider key: value, nodes}
-const opts = { refine: false, stability: false, engine: "spectral", march: false };
+const opts = { refine: false, stability: false, march: false };
+const MAX_NODES = 96, MAX_WINDOW = 96;   // how far a "solve again with" button, or a link, may take the grid and the window
 const lastStart = {};
 let solverThreads = 1;
 let prevResult = null;            // the result before the last change, drawn faintly for comparison
@@ -538,39 +556,41 @@ const py = {
   num: (v) => (typeof v === "number" ? (Number.isInteger(v) ? v.toFixed(1) : String(v)) : String(v)),
   params(p, names) {
     const k = names || Object.keys(p);
-    return `${k.join(", ")}${k.length === 1 ? "," : ""} = Param.many(${k.map((n) => `${n}=${py.num(p[n])}`).join(", ")})`;
+    return `${k.join(", ")}${k.length === 1 ? "," : ""} = ns.params(${k.map((n) => `${n}=${py.num(p[n])}`).join(", ")})`;
   },
   horizon(h, past) {
     const d = h.discount !== undefined && h.discount !== 0 && h.discount !== "0" ? `, discount=${py.num(h.discount)}` : "";
     if (h.kind === "finite") return `ns.Finite(T=${py.num(h.T)}${d})`;
     if (h.kind === "stationary") return `ns.Stationary(window=${py.num(h.window)}${d})`;
     const T = h.T !== undefined ? h.T : 6.0;
-    return `ns.Transition(T=${py.num(T)}, past=${past}, continuation="${h.continuation || "stationary"}"${d})`;
+    const cont = (h.continuation || "stationary") === "stationary" ? "" : `, continuation="${h.continuation}"`;
+    return `ns.Transition(T=${py.num(T)}, past=${past}${cont}${d})`;
   },
   numerics(n) {
     // node counts are whole numbers (nodes=12, as the package's examples write them); the rest as the model has them
     return `ns.Numerics(${Object.entries(n).map(([k, v]) => `${k}=${k === "engine" ? JSON.stringify(v) : /nodes$/.test(k) ? String(v) : py.num(v)}`).join(", ")})`;
   },
-  head: (extra = "") => `import noisestate as ns\nfrom noisestate import Param, State, Control, Signal, Agent, shocks, sqrt${extra}\n`,
+  head: (extra = "") => `import noisestate as ns\nfrom noisestate import dt, sqrt${extra}\n`,
 };
-const tracking = (loss1, loss2, drift = "D1 + D2 + sigma * w.w0") => `w = shocks("w0", "w1", "w2")
-X = State("X")
-D1, D2 = Control("D1"), Control("D2")
-X.drift = ${drift}
-player1 = Agent("player1", controls=[D1], signals=[Signal("y1", sqrt(p1) * X + w.w1)],
-                loss=${loss1})
-player2 = Agent("player2", controls=[D2], signals=[Signal("y2", sqrt(p2) * X + w.w2)],
-                loss=${loss2})`;
-const kyleBack = `w = shocks("wV", "wZ", "w1")
-V = State("V")
-P, D1 = Control("P"), Control("D1")
-V.drift = sigma_V * w.wV
-market_maker = Agent("market_maker", controls=[P], myopic=True,
-                     signals=[Signal("flow", D1 + sigma_Z * w.wZ)],
-                     loss=P**2 - 2 * P * V)
-trader1 = Agent("trader1", controls=[D1],
-                signals=[Signal("y1", gamma1 * V - gamma1 * P + w.w1), Signal("flow", sigma_Z * w.wZ)],
-                loss=-D1 * V + D1 * P + eps * D1**2)`;
+// the tracking games: one state X pushed by both players, each seeing X through its own noise
+const tracking = (loss1, loss2, drift = "D1 + D2", noise = "sigma * dw0") => `dw0, dw1, dw2 = ns.shocks("w0", "w1", "w2")
+X = ns.State("X")
+D1, D2 = ns.Control("D1"), ns.Control("D2")
+X.d = (${drift}) * dt + ${noise}
+player1 = ns.Agent("player1", controls=D1, observes={"y1": sqrt(p1) * X * dt + dw1},
+                   loss=${loss1})
+player2 = ns.Agent("player2", controls=D2, observes={"y2": sqrt(p2) * X * dt + dw2},
+                   loss=${loss2})`;
+const kyleBack = `dwV, dwZ, dw1 = ns.shocks("wV", "wZ", "w1")
+V = ns.State("V")
+P, D1 = ns.Control("P"), ns.Control("D1")
+V.d = sigma_V * dwV
+market_maker = ns.Agent("market_maker", controls=P, myopic=True,
+                        observes={"flow": D1 * dt + sigma_Z * dwZ},
+                        loss=P**2 - 2 * P * V)
+trader1 = ns.Agent("trader1", controls=D1,
+                   observes={"y1": (gamma1 * V - gamma1 * P) * dt + dw1, "flow": sigma_Z * dwZ},
+                   loss=-D1 * V + D1 * P + eps * D1**2)`;
 // the model panel under the results: the model file and the same model in Python, one shown at a time
 let codeTab = "yaml", modelOpen = false;
 function codeTabs(on) {
@@ -597,33 +617,33 @@ const PYTHON = {
   ch1: (d) => `${py.head()}
 ${py.params(d.params)}
 ${tracking("X**2 - 2 * b1 * X + r1 * D1**2", "X**2 - 2 * b2 * X + r2 * D2**2")}
-game = ns.Model("${d.name}", states=[X], agents=[player1, player2],
-                horizon=${py.horizon(d.horizon)}, numerics=${py.numerics(d.numerics)})
+game = ns.Game(X, [player1, player2], horizon=${py.horizon(d.horizon)},
+               name="${d.name}", numerics=${py.numerics(d.numerics)})
 eq = game.solve()`,
   ch3: (d) => `${py.head()}
 ${py.params(d.params)}
-${tracking("0.5 * X**2 + 0.5 * r1 * D1**2", "0.5 * X**2 + 0.5 * r2 * D2**2", "D1 + D2 + w.w0")}
-game = ns.Model("${d.name}", states=[X], agents=[player1, player2],
-                horizon=${py.horizon(d.horizon)}, numerics=${py.numerics(d.numerics)})
+${tracking("0.5 * X**2 + 0.5 * r1 * D1**2", "0.5 * X**2 + 0.5 * r2 * D2**2", "D1 + D2", "dw0")}
+game = ns.Game(X, [player1, player2], horizon=${py.horizon(d.horizon)},
+               name="${d.name}", numerics=${py.numerics(d.numerics)})
 eq = game.solve()`,
   ch4: (d) => `${py.head()}
 ${py.params(d.params)}
 ${kyleBack}
-game = ns.Model("${d.name}", states=[V], agents=[market_maker, trader1],
-                horizon=${py.horizon(d.horizon)}, numerics=${py.numerics(d.numerics)})
+game = ns.Game(V, [market_maker, trader1], horizon=${py.horizon(d.horizon)},
+               name="${d.name}", numerics=${py.numerics(d.numerics)})
 eq = game.solve()`,
   ch5: (d) => `${py.head(", define")}
 N = 3                                                    # firms on the cycle
-theta, xi, zeta, kappa, m, r, rP, c = Param.many(${["theta", "xi", "zeta", "kappa", "m", "r", "rP", "c"].map((n) => `${n}=${py.num(d.params[n])}`).join(", ")})
-sigma_u, theta_a, sigma_a, theta_eta, sigma_eta = Param.many(${["sigma_u", "theta_a", "sigma_a", "theta_eta", "sigma_eta"].map((n) => `${n}=${py.num(d.params[n])}`).join(", ")})
-s1, s2, s3, s4, tau = Param.many(${["s1", "s2", "s3", "s4", "tau"].map((n) => `${n}=${py.num(d.params[n])}`).join(", ")})
-w = shocks("w_q", *[n for v in range(N) for n in (f"w_a{v}", f"w_eta{v}", *[f"w_{v}_{k}" for k in range(4)])])
-q = State("q"); q.drift = sigma_u * w.w_q
+theta, xi, zeta, kappa, m, r, rP, c = ns.params(${["theta", "xi", "zeta", "kappa", "m", "r", "rP", "c"].map((n) => `${n}=${py.num(d.params[n])}`).join(", ")})
+sigma_u, theta_a, sigma_a, theta_eta, sigma_eta = ns.params(${["sigma_u", "theta_a", "sigma_a", "theta_eta", "sigma_eta"].map((n) => `${n}=${py.num(d.params[n])}`).join(", ")})
+s1, s2, s3, s4, tau = ns.params(${["s1", "s2", "s3", "s4", "tau"].map((n) => `${n}=${py.num(d.params[n])}`).join(", ")})
+dw = ns.shocks("w_q", *[n for v in range(N) for n in (f"w_a{v}", f"w_eta{v}", *[f"w_{v}_{k}" for k in range(4)])])
+q = ns.State("q"); q.d = sigma_u * dw.w_q
 a, eta, P, o = [], [], [], []
 for v in range(N):
-    a.append(State(f"a{v}")); a[v].drift = -theta_a * a[v] + sigma_a * w[f"w_a{v}"]
-    eta.append(State(f"eta{v}")); eta[v].drift = -theta_eta * eta[v] + sigma_eta * w[f"w_eta{v}"]
-    P.append(Control(f"P{v}")); o.append(Control(f"o{v}"))
+    a.append(ns.State(f"a{v}")); a[v].d = -theta_a * a[v] * dt + sigma_a * dw[f"w_a{v}"]
+    eta.append(ns.State(f"eta{v}")); eta[v].d = -theta_eta * eta[v] * dt + sigma_eta * dw[f"w_eta{v}"]
+    P.append(ns.Control(f"P{v}")); o.append(ns.Control(f"o{v}"))
 Pidx = define("Pidx", sum(P[v].lag(tau) for v in range(N)) / N)          # the price index in force
 Pnext = define("Pnext", sum(P[v] for v in range(N)) / N)                 # the quotes' mean
 defs = [Pidx, Pnext]; pi, i, d, yH = [], [], [], []
@@ -644,13 +664,12 @@ for v in range(N):
     defs += [dev, mis, bill, quote_gap]
     loss = (dev**2 - 2 * kappa * d[v] - 2 * kappa * yH[v] + m * mis**2 + r * o[v]**2 + rP * quote_gap**2
             + 2 * c * o[v] * bill)
-    firms.append(Agent(f"firm{v}", controls=[P[v], o[v]], loss=loss, signals=[
-        Signal("sales", yH[v] + s1 * w[f"w_{v}_0"]), Signal("trans_price", P[sup] + s2 * w[f"w_{v}_1"]),
-        Signal("order_book", o[cus] + s3 * w[f"w_{v}_2"]), Signal("upstream_order", o[sup] + s4 * w[f"w_{v}_3"]),
-        Signal("own_prod", w[f"w_a{v}"])]))
-game = ns.Model("${d.name}", states=[q] + [x for v in range(N) for x in (a[v], eta[v])], agents=firms,
-                definitions=defs, ties=[firms],
-                horizon=${py.horizon(d.horizon)}, numerics=${py.numerics(d.numerics)})
+    firms.append(ns.Agent(f"firm{v}", controls=[P[v], o[v]], loss=loss, observes={
+        "sales": yH[v] * dt + s1 * dw[f"w_{v}_0"], "trans_price": P[sup] * dt + s2 * dw[f"w_{v}_1"],
+        "order_book": o[cus] * dt + s3 * dw[f"w_{v}_2"], "upstream_order": o[sup] * dt + s4 * dw[f"w_{v}_3"],
+        "own_prod": dw[f"w_a{v}"]}))
+game = ns.Game([q] + [x for v in range(N) for x in (a[v], eta[v])], firms, definitions=defs, ties=[firms],
+               horizon=${py.horizon(d.horizon)}, name="${d.name}", numerics=${py.numerics(d.numerics)})
 eq = game.solve()`,
   tr: (d) => {
     const b = d.horizon.past.model, march = d.horizon.settle !== undefined;
@@ -658,16 +677,16 @@ eq = game.solve()`,
     return `${py.head()}
 def tracking(name, horizon, numerics, **values):
     """The stationary tracking game with a mean-reverting state, at the given parameter values."""
-    ${now.join(", ")} = Param.many(**{k: values[k] for k in (${now.map((k) => `"${k}"`).join(", ")})})
-    ${tracking("0.5 * X**2 + 0.5 * r1 * D1**2", "0.5 * X**2 + 0.5 * r2 * D2**2", "-a * X + D1 + D2 + w.w0").replace(/\n/g, "\n    ")}
-    return ns.Model(name, states=[X], agents=[player1, player2], horizon=horizon, numerics=numerics)
+    ${now.join(", ")} = ns.params(**{k: values[k] for k in (${now.map((k) => `"${k}"`).join(", ")})})
+    ${tracking("0.5 * X**2 + 0.5 * r1 * D1**2", "0.5 * X**2 + 0.5 * r2 * D2**2", "-a * X + D1 + D2", "dw0").replace(/\n/g, "\n    ")}
+    return ns.Game(X, [player1, player2], horizon=horizon, name=name, numerics=numerics)
 
 # before the change: the stationary game at the old values
 before = tracking("${b.name}", ${py.horizon(b.horizon)}, ${py.numerics(b.numerics)},
                   ${Object.keys(b.params).map((k) => `${k}=${py.num(b.params[k])}`).join(", ")})
-${march ? `# The explorer is marching in T (horizon.settle ${d.horizon.settle} in the model file); the equations form has no
-# argument for that, so this solves to the fixed T below.
-` : ""}T = ${march ? "6.0" : `Param("T", ${py.num(d.params.T)})`}
+${march ? `# The explorer is marching in T (settle: ${d.horizon.settle} in the model file); the Python here solves to the
+# fixed T below.
+` : ""}T = ${march ? "6.0" : `ns.params(T=${py.num(d.params.T)})[0]`}
 game = tracking("${d.name}", ${py.horizon({ ...d.horizon, T: "T" }, "before")}, ${py.numerics(d.numerics)},
                 ${now.map((k) => `${k}=${py.num(d.params[k])}`).join(", ")})
 eq = game.solve()`;
@@ -696,10 +715,11 @@ function readHash() {
     const m = presetModel(g);
     values[g] = { nodes: m.numerics.nodes };
     if (PRESETS[g].grid) values[g][PRESETS[g].grid.key] = PRESETS[g].grid.options[0][0];
+    if (PRESETS[g].window) values[g][PRESETS[g].window.key] = PRESETS[g].window.def;
     for (const s of PRESETS[g].sliders) values[g][s.key] = sliderParams(m, s)[0][s.param || s.key];
   }
   opts.refine = h.get("refine") === "1"; opts.stability = h.get("stability") === "1";
-  opts.engine = h.get("engine") === "cells" ? "cells" : "spectral"; opts.march = h.get("march") === "1";
+  opts.march = h.get("march") === "1";
   customYaml = PRESETS.ch1.yaml;
   if (game === "custom" && h.get("model")) {
     try { customYaml = b64decode(h.get("model")); } catch (e) { /* keep the default */ }
@@ -709,9 +729,12 @@ function readHash() {
       if (isFinite(v)) values[game][s.key] = Math.min(s.max, Math.max(s.min, v));
     }
     const n = parseInt(h.get("nodes"));
-    if (PRESETS[game].nodes && PRESETS[game].nodes.options.some((o) => o[0] === n)) values[game].nodes = n;
-    const G = PRESETS[game].grid;
-    if (G) { const w = parseFloat(h.get(G.key)); if (G.options.some((o) => o[0] === w)) values[game][G.key] = w; }
+    if (PRESETS[game].nodes && n >= 2 && n <= (PRESETS[game].nodes.max || MAX_NODES)) values[game].nodes = n;
+    for (const G of [PRESETS[game].grid, PRESETS[game].window]) {
+      if (!G) continue;
+      const w = parseFloat(h.get(G.key));
+      if (w > 0 && w <= MAX_WINDOW) values[game][G.key] = w;
+    }
   }
 }
 function writeHash() {
@@ -723,11 +746,11 @@ function writeHash() {
     const v = {}; for (const s of PRESETS[game].sliders) v[s.key] = values[game][s.key];
     if (PRESETS[game].nodes) v.nodes = values[game].nodes;
     if (PRESETS[game].grid) v[PRESETS[game].grid.key] = values[game][PRESETS[game].grid.key];
+    if (PRESETS[game].window) v[PRESETS[game].window.key] = values[game][PRESETS[game].window.key];
     h = new URLSearchParams({ game, ...v });
   }
   if (opts.refine) h.set("refine", "1");
   if (opts.stability) h.set("stability", "1");
-  if (opts.engine === "cells" && game === "ch1") h.set("engine", "cells");
   if (opts.march && PRESETS[game].march) h.set("march", "1");
   history.replaceState(null, "", "#" + h.toString());
 }
@@ -756,7 +779,7 @@ function renderTabs() {
     b.onclick = () => {
       if (g === game) return;
       game = g; renderAll(); writeHash(); lastResult = null; $("results").innerHTML = ""; $("savebtn").disabled = true;
-      if (g !== "custom") requestSolve(0); else setStatus("idle", "Ready", "Edit the model and press Solve.");
+      if (g !== "custom") requestSolve(0); else customReady();
     };
     tabs.appendChild(b);
   }
@@ -788,34 +811,29 @@ function renderControls() {
       writeHash(); requestSolve(500);
     });
   }
-  if (def.grid) {
-    const G = def.grid, wrap = document.createElement("div"); wrap.className = "ctl";
-    wrap.innerHTML = `<label for="ctl-grid"><span>${G.label}</span></label><select id="ctl-grid">${G.options.map((o) => `<option value="${o[0]}">${o[1]}</option>`).join("")}</select>
-      <div class="hint">A longer window resolves the slow-decaying responses; it costs time.</div>`;
-    box.appendChild(wrap);
-    const sel = wrap.querySelector("select"); sel.value = values[game][G.key];
-    sel.addEventListener("change", () => { values[game][G.key] = +sel.value; writeHash(); requestSolve(0); });
-  }
-  if (def.nodes) {
+  // a numerics choice: its listed options, and the current value as one more when a "solve again" button went past them
+  const numSelect = (id, label, hint, options, key) => {
+    const v = values[game][key], opts_ = options.some((o) => o[0] === v) ? options : options.concat([[v, `${v}: as the solver asked`]]).sort((a, b) => a[0] - b[0]);
     const wrap = document.createElement("div"); wrap.className = "ctl";
-    wrap.innerHTML = `<label for="ctl-nodes"><span>Grid (nodes per side)</span></label><select id="ctl-nodes">${def.nodes.options.map((o) => `<option value="${o[0]}">${o[1]}</option>`).join("")}</select>
-      <div class="hint">More nodes are more accurate and slower.</div>`;
+    wrap.innerHTML = `<label for="${id}"><span>${label}</span></label><select id="${id}">${opts_.map((o) => `<option value="${o[0]}">${o[1]}</option>`).join("")}</select>
+      <div class="hint">${hint}</div>`;
     box.appendChild(wrap);
-    const sel = wrap.querySelector("select"); sel.value = values[game].nodes;
-    sel.addEventListener("change", () => { values[game].nodes = +sel.value; writeHash(); requestSolve(0); });
-  }
+    const sel = wrap.querySelector("select"); sel.value = v;
+    sel.addEventListener("change", () => { values[game][key] = +sel.value; writeHash(); requestSolve(0); });
+  };
+  if (def.grid) numSelect("ctl-grid", def.grid.label, "A longer window resolves the slow-decaying responses; it costs time.", def.grid.options, def.grid.key);
+  if (def.window) numSelect("ctl-window", def.window.label, def.window.hint, def.window.options, def.window.key);
+  if (def.nodes) numSelect("ctl-nodes", "Grid (nodes per side)", "More nodes are more accurate and slower.", def.nodes.options, "nodes");
   renderOptions(box);
 }
 
-// solver options: the end of a transition, the engine of the finite game, and the after-solve checks
+// solver options: the end of a transition and the after-solve checks
 function renderOptions(box) {
   const def = PRESETS[game];
   const wrap = document.createElement("div"); wrap.className = "ctl opts";
   let html = "";
   if (def.march) html += `<label class="pick"><span>End of the transition</span><select id="opt-march">
       <option value="0">Fixed T (the slider)</option><option value="1">Until settled (march in T)</option></select></label>`;
-  if (game === "ch1") html += `<label class="pick"><span>Engine</span><select id="opt-engine">
-      <option value="spectral">Spectral (triangle grid)</option><option value="cells">Cells (forward march)</option></select></label>`;
   html += `<label class="check" title="Re-solve on a grid 1.5 times finer and report how much costs and kernels move"><input type="checkbox" id="opt-refine"> Refinement check</label>
       <label class="check" title="The spectral radius of the best-response map"><input type="checkbox" id="opt-stability"> Stability</label>
       <span class="hint">Checks run after the solve and add time.</span>`;
@@ -823,8 +841,6 @@ function renderOptions(box) {
   const on = (id, f) => { const e = wrap.querySelector("#" + id); if (e) e.addEventListener("change", () => { f(e); writeHash(); requestSolve(0); }); return e; };
   const m = on("opt-march", (e) => { opts.march = e.value === "1"; renderControls(); });
   if (m) m.value = opts.march ? "1" : "0";
-  const g = on("opt-engine", (e) => { opts.engine = e.value; });
-  if (g) g.value = opts.engine;
   on("opt-refine", (e) => { opts.refine = e.checked; }).checked = opts.refine;
   on("opt-stability", (e) => { opts.stability = e.checked; }).checked = opts.stability;
 }
@@ -841,7 +857,7 @@ function customModel() {
   let d;
   try { d = jsyaml.load($("yaml").value); }
   catch (e) { throw new Error("The model file is not valid YAML: " + e.message.split("\n")[0]); }
-  if (!d || typeof d !== "object") throw new Error("The model file must be a mapping (name, channels, states, agents, horizon).");
+  if (!d || typeof d !== "object") throw new Error("The model file must be a mapping (name, shocks, states, agents, horizon).");
   return d;
 }
 
@@ -942,6 +958,8 @@ function rallyPlay() {
 
 // ---------------------------------------------------------------------------------------------
 // Worker
+// the model tab waits for Solve rather than solving on load, so the button has to be pressable
+function customReady() { setStatus("idle", "Ready", "Edit the model and press Solve."); if (!inFlight) $("solvebtn").disabled = false; }
 function startWorker() {
   workerReady = false;
   try { worker = new Worker("worker.js"); }
@@ -952,7 +970,7 @@ function startWorker() {
       workerReady = true; solverThreads = m.threads || 1;
       const tf = document.getElementById("threadfact");
       if (tf) tf.textContent = solverThreads > 1 ? `${solverThreads} threads in this browser` : "single-threaded in this browser";
-      if (game === "custom" && !inFlight && !lastResult) setStatus("idle", "Ready", "Edit the model and press Solve.");
+      if (game === "custom" && !inFlight && !lastResult) customReady();
       else requestSolve(0);
     } else if (m.type === "progress") {
       if (inFlight && m.id === inFlight.id) { progress = m; rallyProgress(); settleAdd(m.residual); }
@@ -981,13 +999,25 @@ function typesetEquations(root) {
   }
 }
 
+// The in-browser solver is a C++ port of noisestate 1.0.1, whose model files name the shocks "channels"; the page
+// writes the current key, shocks, and renames it only on the way to the solver (an older file with channels passes).
+function forSolver(d) {
+  if (!d || typeof d !== "object") return d;
+  const out = { ...d };
+  if (out.shocks !== undefined && out.channels === undefined) { out.channels = out.shocks; delete out.shocks; }
+  if (out.horizon && out.horizon.past && out.horizon.past.model && typeof out.horizon.past.model === "object")
+    out.horizon = { ...out.horizon, past: { ...out.horizon.past, model: forSolver(out.horizon.past.model) } };
+  return out;
+}
 function currentModel() {
   if (game === "custom") return customModel();
   const def = PRESETS[game], d = presetModel(game);
   for (const s of def.sliders) for (const P of sliderParams(d, s)) P[s.param || s.key] = values[game][s.key];
   if (def.nodes) d.numerics.nodes = values[game].nodes;
+  // a transition's continuation on the same grid: unequal grids leave a floor under the settled check that no T removes
+  if (def.nodes && d.numerics.continuation_nodes !== undefined) d.numerics.continuation_nodes = values[game].nodes;
   if (def.grid) def.grid.apply(d, values[game][def.grid.key]);
-  if (game === "ch1" && opts.engine === "cells") { d.numerics.engine = "cells"; d.numerics.nodes = 2 * values[game].nodes; }
+  if (def.window) def.window.apply(d, values[game][def.window.key]);
   if (def.march && opts.march) { delete d.horizon.T; delete d.params.T; d.horizon.settle = 0.02; }
   return d;
 }
@@ -1007,6 +1037,7 @@ function sendSolve() {
   try { model = currentModel(); }
   catch (e) { $("yamlerror").textContent = e.message; setStatus("bad", "Error", e.message); return; }
   $("yamlerror").textContent = "";
+  if ($("statusfix")) $("statusfix").innerHTML = "";
   inFlight = { id: ++reqId, game, key: JSON.stringify([model, currentRequest()]) };
   pending = false;
   $("solvebtn").disabled = true; $("stopbtn").disabled = false;
@@ -1018,10 +1049,10 @@ function sendSolve() {
   // naive_observers is withdrawn: it did not compute Chapter 6's naive or privy equilibria (a fix is in progress)
   if (game === "custom" && model.naive_observers) { model = { ...model }; delete model.naive_observers; }
   const hk = model.horizon && model.horizon.kind;
-  if (!(model.numerics && model.numerics.engine === "cells")) request.path_grid = hk === "stationary" ? 150 : hk === "transition" ? 48 : 60;
+  request.path_grid = hk === "stationary" ? 150 : hk === "transition" ? 48 : 60;
   if (lastStart[game]) request.start = lastStart[game];
-  else if (!(model.numerics && model.numerics.engine === "cells")) request.start_policy = "coarse";   // a cold solve starts from the same model on a coarser grid (the cell engine has none)
-  worker.postMessage({ type: "solve", id: inFlight.id, model, request });
+  else request.start_policy = "coarse";   // a cold solve starts from the same model on a coarser grid
+  worker.postMessage({ type: "solve", id: inFlight.id, model: forSolver(model), request });
 }
 function onSolved(m) {
   const req = inFlight; inFlight = null; stopTimer();
@@ -1055,11 +1086,67 @@ function onSolved(m) {
   $("results").classList.remove("stale");
   const failed = res.checks.filter((d) => d.ok === false && d.name !== "converged");
   const t = m.wall < 0.1 ? "under 0.1" : m.wall.toFixed(1), how = res.warm_start ? " from the last equilibrium" : "";
+  const accuracy = failed.filter((d) => ACCURACY_CHECKS.has(d.name)), other = failed.filter((d) => !ACCURACY_CHECKS.has(d.name));
   if (!res.converged) setStatus("bad", "Not converged", `The fixed point did not converge (residual ${fmtE(res.residual)} after ${res.evaluations} rounds). Try a finer grid or less extreme parameters.`);
-  else if (failed.length && failed.every((d) => d.name === "resolution"))
-    setStatus("warn", "Solved, coarse grid", `Solved in ${t} s${how}. The grid is coarse for these parameters (representation error ${fmtE(failed[0].value)}): costs are good to a few digits; more nodes give more.`);
-  else if (failed.length) setStatus("warn", "Converged, with warnings", `Solved in ${t} s${how}. Failed: ${failed.map((d) => d.name).join(", ")}; the Diagnostics table says what to raise.`);
+  else if (failed.length && !other.length)
+    setStatus("warn", "Solved, approximate", `Solved in ${t} s${how}. ${cap(accuracy.map(accuracyNote).join("; "))}. Costs are good to a few digits.`);
+  else if (failed.length) setStatus("warn", "Converged, with warnings", `Solved in ${t} s${how}. Failed: ${failed.map((d) => checkName(d.name)).join(", ")}; the Diagnostics table says what each means.`);
   else setStatus("ok", "Solved", `Solved in ${t} s${how}, ${res.evaluations} best-response rounds, residual ${fmtE(res.residual)}. All checks passed.`);
+  showFixes(res.converged ? accuracy : failed.filter((d) => d.name === "resolution"));
+}
+
+// Checks that measure numerical accuracy (the grid, the windows, whether a transition has settled), as against
+// findings about the equilibrium (a saddle, unstable best responses). Only these grade a solve "approximate".
+const ACCURACY_CHECKS = new Set(["resolution", "window", "past window", "continuation window", "settled"]);
+const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
+function accuracyNote(d) {
+  const pct = (x) => (100 * x).toFixed(x < 0.01 ? 2 : 1) + "%";
+  if (d.name === "resolution") return `the grid represents the strategies to ${fmtE(d.value)} (target ${fmtE(d.threshold)})`;
+  if (d.name === "settled") return `the transition's last window is ${fmtE(d.value)} of its peak from the new stationary rules (target ${fmtE(d.threshold)})`;
+  const which = d.name === "window" ? "" : d.name === "past window" ? "the old regime's " : "the new regime's ";
+  return `${which}kernels still move by ${pct(d.value)} of their peak at the end of the window (target ${pct(d.threshold)})`;
+}
+// For each failed check whose remedy is a setting on this page, a button that raises it by half and solves again,
+// past the listed choices if need be.
+function fixesFor(checks) {
+  if (game === "custom") return [];
+  const def = PRESETS[game], out = [], seen = new Set();
+  for (const d of checks) {
+    let fix = null;
+    if (d.name === "settled") {
+      // not settled by T: the remedy is a longer transition, not a finer grid
+      const S = (def.sliders || []).find((s) => s.key === "T");
+      const t = values[game].T;
+      if (S && t !== undefined) {
+        const next = Math.min(S.max, Math.round(t * 1.5 * 2) / 2);
+        if (next > t) fix = { key: "T", value: next, label: `Solve again with T = ${next}` };
+      }
+    } else if (d.name === "resolution" && def.nodes) {
+      // a transition's grid grows in two dimensions and memory runs out past its max (27 nodes: out of memory)
+      const n = values[game].nodes, next = Math.min(def.nodes.max || MAX_NODES, Math.max(n + 2, Math.round(n * 1.5)));
+      if (next > n) fix = { key: "nodes", value: next, label: `Solve again with ${next} nodes` };
+    } else {
+      const W = [def.window, def.grid].find((G) => G && G.check === d.name);
+      if (W) {
+        const w = values[game][W.key], next = Math.min(MAX_WINDOW, Math.round(w * 1.5 * 2) / 2);
+        if (next > w) fix = { key: W.key, value: next, label: `Solve again with ${d.name === "past window" ? "a past window" : "a window"} of ${next}` };
+      }
+    }
+    if (fix && !seen.has(fix.key)) { seen.add(fix.key); out.push(fix); }
+  }
+  return out;
+}
+function showFixes(checks) {
+  let box = $("statusfix");
+  if (!box) { box = document.createElement("span"); box.id = "statusfix"; $("statustext").after(box); }
+  box.innerHTML = "";
+  for (const f of fixesFor(checks)) {
+    const b = document.createElement("button");
+    b.className = "secondary fix"; b.type = "button"; b.textContent = f.label;
+    b.title = "The solver asked for this; it goes past the listed choices if need be, and takes longer";
+    b.onclick = () => { values[game][f.key] = f.value; writeHash(); renderControls(); box.innerHTML = ""; requestSolve(0); };
+    box.appendChild(b);
+  }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -1120,7 +1207,23 @@ function glide(el, data, layout, cfg) {
   }).catch(() => { el.style.visibility = ""; return Plotly.newPlot(el, data, layout, cfg); });
 }
 
+// Plotly loads in idle time after the page (the template passes its URL); a plot asked for before it arrives waits for it.
+// Once it is loaded, plotly() draws synchronously, as it always did.
+const PLOTLY_SRC = (document.currentScript && document.currentScript.dataset.plotly) || "vendor/plotly-cartesian-2.35.2.min.js";
+let plotlyLoading = null;
+function ensurePlotly() {
+  if (window.Plotly) return Promise.resolve();
+  if (!plotlyLoading) plotlyLoading = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = PLOTLY_SRC; s.onload = resolve; s.onerror = () => { plotlyLoading = null; reject(new Error("Plotly failed to load")); };
+    document.head.appendChild(s);
+  });
+  return plotlyLoading;
+}
+window.addEventListener("load", () => (window.requestIdleCallback || ((f) => setTimeout(f, 200)))(() => ensurePlotly().catch(() => {})));
+
 function plotly(method, id, data, layout, cfg) {
+  if (!window.Plotly) return ensurePlotly().then(() => plotly(method, id, data, layout, cfg));
   const el = typeof id === "string" ? document.getElementById(id) : id;
   if (el && el.clientWidth && el.clientWidth < 520 && layout) {
     layout = { ...layout };
@@ -1156,7 +1259,7 @@ function renderResults(res) {
   const cards = Object.entries(res.costs).map(([a, v]) => {
     let shown = v, note = res.cost_kind;
     const extra = def.constCost ? def.constCost(values[game])[a] : 0;
-    if (def.constCost) { shown = v + extra; note = "expected cost over [0, T]"; }
+    if (def.constCost) { shown = v + extra; note = def.constNote ? def.constNote(res) : "expected cost over [0, T]"; }
     const parts = res.cost_parts[a];
     const split = parts && Math.abs(parts.mean) > 1e-12 ? `variance ${fmt(parts.variance, 3)}, mean ${fmt(parts.mean + extra, 3)}` : "";
     const before = prevResult && prevResult.costs[a] !== undefined ? prevResult.costs[a] + extra : null;
@@ -1212,6 +1315,7 @@ function renderFinite(res, out, keepVar, keepCtl) {
   };
   const ksel = out.querySelector("#kvar"); ksel.value = kv; ksel.onchange = () => drawK(ksel.value); drawK(kv);
   renderFoc(res, out, keepCtl, `Split at t = ${fmt(T / 2, 2)} across shock times s${res.kind === "transition" ? ", old shocks included" : ""}. The physical part is what the first-order condition would be if nobody reacted to the player's deviation; the information wedge is the rest, which comes from the other agents revising their forecasts.`, "shock time s");
+  if (res.kind !== "transition") renderStrategy(res, out, keepCtl, "shock time s");
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -1252,7 +1356,7 @@ function renderNaive(res, out) {
 
 // ---------------------------------------------------------------------------------------------
 // Sample paths: the solver returns every primary's kernel on a regular grid (res.paths); the shocks are drawn here,
-// so a new draw is instant.  X(t) = mean + sum over channels and shock cells of K(t, s) dW(s), dW ~ N(0, h).
+// so a new draw is instant.  X(t) = mean + sum over shocks and shock cells of K(t, s) dW(s), dW ~ N(0, h).
 function rng(seed) {
   let a = seed >>> 0;
   const u = () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -1430,6 +1534,7 @@ function renderStationary(res, out, keepVar, keepCtl) {
   };
   const ksel = out.querySelector("#kvar"); ksel.value = kv; ksel.onchange = () => drawK(ksel.value); drawK(kv);
   renderFoc(res, out, keepCtl, "Split by shock age. The physical part is what the first-order condition would be if nobody reacted to the agent's deviation; the information wedge is the rest, which comes from the other agents revising their forecasts.", "shock age");
+  renderStrategy(res, out, keepCtl, "shock age");
 }
 
 function renderFoc(res, out, keepCtl, caption, xlabel) {
@@ -1459,6 +1564,64 @@ function renderFoc(res, out, keepCtl, caption, xlabel) {
   const fsel = out.querySelector("#fctl"); fsel.value = kc; fsel.onchange = () => drawF(fsel.value); drawF(kc);
 }
 
+// ---------------------------------------------------------------------------------------------
+// The same action as a rule on the player's noise-state (Remark 1.13): the first-order condition makes the action
+// the player's estimate of -(G^DD)^-1 (G^DX X + B' H), so its weight on the estimate of the shock at u is
+// D_t(u) = D_W,t(u) - phi_t(u) / G^DD, where D_W is the response to the shocks and phi the first-order-condition
+// kernel (both from the solve) and G^DD the Hessian of the player's loss in its own control. Shown only where that
+// identity holds: an agent with one control and no delays or leads anywhere in the model.
+function lossHessian(model, ctl) {
+  const agent = Object.values(model.agents || {}).find((a) => (a.controls || []).includes(ctl));
+  if (!agent || agent.controls.length !== 1) return null;
+  if (/"(delay|lag|lead|leads|lags|delays)"\s*:\s*(?!0(\.0*)?\s*[,}\]])/.test(JSON.stringify(model))) return null;
+  const P = model.params || {};
+  const val = (c) => { if (typeof c === "number") return c; try { return Number(new Function("P", "with (Math) { with (P) { return (" + String(c).replace(/\^/g, "**") + "); } }")(P)); } catch (e) { return NaN; } };
+  let g = 0;
+  for (const term of agent.loss || []) {
+    if (!Array.isArray(term) || term.length !== 3) continue;
+    const [c, a, b] = term;
+    if (typeof a !== "string" || typeof b !== "string" || /[\[(]/.test(a + b)) { if (String(a) + String(b) !== "" && (String(a).includes(ctl) || String(b).includes(ctl))) return null; continue; }
+    if (a === ctl && b === ctl) g += 2 * val(c);
+  }
+  return isFinite(g) && g > 0 ? g : null;
+}
+function renderStrategy(res, out, keepCtl, xlabel) {
+  const F = res.samples.foc; if (!F) return;
+  let model; try { model = currentModel(); } catch (e) { return; }
+  const stat = res.kind === "stationary";
+  const ok = Object.keys(F).filter((c) => lossHessian(model, c) && F[c].channels && (stat || (res.samples.kernels[c] && res.samples.kernels[c][res.channels[0]].some((q) => Math.abs(q.t - F[c].t) < 1e-9))));
+  if (!ok.length) return;
+  const kc = ok.includes(keepCtl) ? keepCtl : ok[0];
+  const at = stat ? "" : ` at t = ${fmt(F[kc].t, 2)}`;
+  out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>The same action as a rule on the player's estimates</h2>
+    <div class="row"><label for="sctl" class="small muted">Control</label><select id="sctl">${ok.map((c) => `<option value="${esc(c)}">${esc(label(c))} (${esc(AGENT_LABEL[F[c].agent] || F[c].agent)})</option>`).join("")}</select></div>
+    <div class="grid3" id="sgrid"></div>
+    <p class="caption" id="scap"></p></section>`);
+  const interp = (xs, ys, x) => { let k = 1; while (k < xs.length - 1 && xs[k] < x) ++k; const w = (x - xs[k - 1]) / ((xs[k] - xs[k - 1]) || 1); return ys[k - 1] + w * (ys[k] - ys[k - 1]); };
+  const drawS = (ctl) => {
+    const box = out.querySelector("#sgrid"); box.innerHTML = "";
+    const f = F[ctl], g = lossHessian(model, ctl);
+    out.querySelector("#scap").innerHTML = `Solid: the action${stat ? "" : at} as a response to each primitive shock, D<sub>W</sub>, the kernel plotted above. Dashed: the weight the action puts on the player's estimate of that shock, D, the strategy on the noise-state of Chapter 1. By Remark 1.13 the action is the player's estimate of its own shadow price, so D = D<sub>W</sub> &minus; &phi; / G<sup>DD</sup>, with &phi; the first-order-condition kernel above and G<sup>DD</sup> = ${fmt(g, 4)} the curvature of the player's loss in its own action.`;
+    const xs = stat ? res.samples.age : f.s;
+    for (const c of (res.shocks || res.channels)) {
+      const d = f.channels[c]; if (!d || !d.foc || d.foc.length !== xs.length) continue;
+      let dw;
+      if (stat) dw = res.samples.kernels[ctl][c];
+      else { const q = (res.samples.kernels[ctl][c] || []).find((z) => Math.abs(z.t - f.t) < 1e-9); if (!q) continue; dw = xs.map((x) => interp(q.s, q.v, x)); }
+      if (!dw || dw.length !== xs.length) continue;
+      const dn = dw.map((v, i) => v - d.foc[i] / g);
+      if (!nonzero(dw) && !nonzero(dn)) continue;
+      const div = document.createElement("div"); div.className = "plot"; box.appendChild(div);
+      plotly("newPlot", div, [
+        line(xs, dw, "response to the shock, D<sub>W</sub>", css("--c1")),
+        line(xs, dn, "weight on its estimate, D", css("--c2"), { line: { color: css("--c2"), width: 2, dash: "dash" } }),
+      ], baseLayout({ title: titleOf(chLabel(res, c)), xaxis: { ...baseLayout().xaxis, title: { text: xlabel } } }), plotCfg);
+    }
+    if (!box.children.length) box.innerHTML = `<p class="small muted">${esc(label(ctl))} responds to no shock.</p>`;
+  };
+  const ssel = out.querySelector("#sctl"); ssel.value = kc; ssel.onchange = () => drawS(ssel.value); drawS(kc);
+}
+
 const CHECK_MEANING = {
   converged: "Whether the fixed-point iteration on the best-response map reached its tolerance.",
   resolution: "Whether the strategies are represented accurately on this grid (representation error against its threshold).",
@@ -1475,6 +1638,44 @@ function checkValue(d) {
     return `costs ${fmtE(d.value.cost_change)} / ${fmtE(d.threshold.cost_change)}<br>kernels ${fmtE(d.value.kernel_change)} / ${fmtE(d.threshold.kernel_change)}<br>at ${d.value.nodes} nodes`;
   return (d.value === null ? "–" : fmtE(d.value)) + (d.threshold === null ? "" : " / " + fmtE(d.threshold));
 }
+// The best-response map's leading eigenvalues on the complex plane, with the unit circle. Where an eigenvalue sits
+// matters, not only how far out: past -1 on the real axis the iteration overshoots with the sign flipped each round,
+// and averaging each response with the last (damping by a = 1/2, which sends lambda to 1/2 + lambda/2) brings it
+// inside; past +1 it runs the same way every round, and no damping helps. The words follow noisestate's
+// diagnostics.classify, and describe best-response iteration near this point, not the equilibrium's stability.
+function spectrumPanel(st) {
+  const ev = (st.eigenvalues || []).map(([re, im]) => ({ re, im, r: Math.hypot(re, im), dre: 0.5 + 0.5 * re, dim: 0.5 * im }));
+  if (!ev.length) return `<p class="small" style="margin:10px 0 0">Stability: spectral radius of the best-response map ${fmt(st.radius, 4)} (${esc(st.method)}, ${st.evaluations} evaluations).</p>`;
+  const dom = ev.reduce((m, e) => (e.r > m.r ? e : m), ev[0]);
+  const realDom = Math.abs(dom.im) <= 1e-8 * Math.max(1, Math.abs(dom.re));
+  const full = st.radius < 1 ? "converges" : realDom && dom.re < -1 ? "oscillates" : "diverges";
+  const sampled = Math.max(...ev.map((e) => Math.hypot(e.dre, e.dim))), minR = Math.min(...ev.map((e) => e.r));
+  const bound = st.radius < 1 ? Math.max(sampled, 0.5 + 0.5 * st.radius) : st.method === "arnoldi" && minR < 1 ? Math.max(sampled, 0.5 + 0.5 * minR) : null;
+  const damped = sampled >= 1 ? "diverges" : bound !== null && bound < 1 ? "converges" : "not certified";
+  // the picture: a square view about the origin that holds the unit circle, every eigenvalue and its damped image
+  const R = Math.max(1.25, ...ev.map((e) => 1.1 * e.r), ...ev.map((e) => 1.1 * Math.hypot(e.dre, e.dim)));
+  const W = 260, c = W / 2, k = (W / 2 - 14) / R, X = (x) => c + k * x, Y = (y) => c - k * y;
+  const tick = (v) => `<line x1="${X(v)}" y1="${c - 4}" x2="${X(v)}" y2="${c + 4}" stroke="currentColor" opacity="0.5"/><text x="${X(v)}" y="${c + 16}" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.7">${v}</text>`;
+  const pts = ev.map((e) => {
+    const out = e.r >= 1, col = out ? "var(--warn)" : "var(--accent)";
+    return `<line x1="${X(e.re)}" y1="${Y(e.im)}" x2="${X(e.dre)}" y2="${Y(e.dim)}" stroke="${col}" stroke-dasharray="2 3" opacity="0.6"/>
+      <circle cx="${X(e.dre)}" cy="${Y(e.dim)}" r="4" fill="none" stroke="${col}" stroke-width="1.5"><title>damped: ${fmt(e.dre, 4)} ${e.dim < 0 ? "-" : "+"} ${fmt(Math.abs(e.dim), 4)}i</title></circle>
+      <circle cx="${X(e.re)}" cy="${Y(e.im)}" r="4.5" fill="${col}"><title>${fmt(e.re, 4)} ${e.im < 0 ? "-" : "+"} ${fmt(Math.abs(e.im), 4)}i, modulus ${fmt(e.r, 4)}</title></circle>`;
+  }).join("");
+  const svg = `<svg viewBox="0 0 ${W} ${W}" width="${W}" height="${W}" role="img" aria-label="Leading eigenvalues of the best-response map, with the unit circle" style="flex:none;color:var(--ink-3, #777)">
+    <line x1="6" y1="${c}" x2="${W - 6}" y2="${c}" stroke="currentColor" opacity="0.35"/><line x1="${c}" y1="6" x2="${c}" y2="${W - 6}" stroke="currentColor" opacity="0.35"/>
+    <circle cx="${c}" cy="${c}" r="${k}" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    ${tick(-1)}${tick(1)}<text x="${W - 8}" y="${c - 6}" text-anchor="end" font-size="10" fill="currentColor" opacity="0.7">Re</text><text x="${c + 6}" y="14" font-size="10" fill="currentColor" opacity="0.7">Im</text>
+    ${pts}</svg>`;
+  const list = ev.map((e) => `${fmt(e.re, 4)}${Math.abs(e.im) > 1e-12 ? ` ${e.im < 0 ? "&minus;" : "+"} ${fmt(Math.abs(e.im), 4)}i` : ""} (|&lambda;| ${fmt(e.r, 4)})`).join(", ");
+  return `<div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;margin-top:12px">${svg}
+    <div class="small" style="flex:1;min-width:220px">
+      <p style="margin:0 0 6px"><b>Stability.</b> Spectral radius of the best-response map ${fmt(st.radius, 4)}. Near this point, best-response iteration <b>${full}</b>;
+        damped by a = &frac12; it ${damped === "converges" ? `<b>converges</b> (radius at most ${fmt(bound, 4)})` : damped === "diverges" ? "<b>still diverges</b>" : "is <b>not certified</b> to converge: the eigenvalues shown move inside the circle, but the ones Arnoldi did not return cannot be bounded"}.</p>
+      <p style="margin:0 0 6px">Leading eigenvalues (${esc(st.method)}, ${st.evaluations} evaluations): ${list}. Filled points are the eigenvalues, hollow ones their images &frac12; + &frac12;&lambda; under damping.</p>
+      <p class="muted" style="margin:0">Inside the unit circle a round of best responses shrinks a deviation. Past &minus;1 on the real axis each round overshoots with the sign flipped, and damping pulls it inside; past +1 each round pushes the same way, and damping cannot. ${st.method === "arnoldi" ? "Arnoldi returns the largest eigenvalues in modulus; the others are smaller." : ""}</p>
+    </div></div>`;
+}
 function renderDiagnostics(res, out) {
   const rows = res.checks.map((d) => `<tr><td>${esc(checkName(d.name))}</td><td><span class="chip ${d.ok === false ? "warn" : "ok"}">${d.ok === false ? "failed" : "passed"}</span></td>
     <td class="mono">${checkValue(d)}</td>
@@ -1483,8 +1684,7 @@ function renderDiagnostics(res, out) {
     <p class="small muted" style="margin-top:0">${esc(res.version)}${solverThreads > 1 ? ` · ${solverThreads} threads` : ""} · ${esc(res.message)} · solve ${fmt(res.seconds, 2)} s.
     A failed check means the numbers may be off in the digits shown here; the row says what to raise.</p>
     <div class="tablewrap"><table class="diag"><thead><tr><th>Check</th><th>Status</th><th>Value / threshold</th><th>What it means</th></tr></thead><tbody>${rows}</tbody></table></div>
-    ${res.stability ? `<p class="small" style="margin:10px 0 0">Stability: spectral radius of the best-response map ${fmt(res.stability.radius, 4)}
-      (${res.stability.stable ? "below 1, so the equilibrium is locally stable under best-response iteration" : "1 or more, so best-response iteration moves away from it"}; ${esc(res.stability.method)}, ${res.stability.evaluations} evaluations).</p>` : ""}
+    ${res.stability ? spectrumPanel(res.stability) : ""}
     ${res.refinement ? `<p class="small" style="margin:6px 0 0">Refinement: re-solved at ${res.refinement.nodes} nodes in ${fmt(res.refinement.seconds, 1)} s; costs moved ${fmtE(res.refinement.cost_change)}, kernels ${fmtE(res.refinement.kernel_change)}.</p>` : ""}
     ${game !== "custom" ? modelPanel(currentModel()) : ""}</section>`);
 }
@@ -1529,7 +1729,7 @@ window.addEventListener("hashchange", () => {
   readHash(); renderAll();
   // a new game starts from a clean page; new settings for the same game (a link in a caption) re-solve in place
   if (game !== before) { lastResult = null; $("results").innerHTML = ""; $("savebtn").disabled = true; $("tabs").scrollIntoView({ block: "nearest" }); }
-  if (game !== "custom") requestSolve(0); else setStatus("idle", "Ready", "Edit the model and press Solve.");
+  if (game !== "custom") requestSolve(0); else customReady();
 });
 
 // ---------------------------------------------------------------------------------------------
@@ -1588,9 +1788,8 @@ function nextSweep() {
   const model = modelWith({ [S.key]: S.xs[S.i] });
   const request = { ...currentRequest(), refine: false, stability: false, return_start: true };
   if (def.naive) request.naive_compare = def.naive;
-  const cells = model.numerics && model.numerics.engine === "cells";
-  if (S.start) request.start = S.start; else if (!cells) request.start_policy = "coarse";
-  sweepWorker.postMessage({ type: "solve", id: S.id + S.i, model, request });
+  if (S.start) request.start = S.start; else request.start_policy = "coarse";
+  sweepWorker.postMessage({ type: "solve", id: S.id + S.i, model: forSolver(model), request });
   updateSweepPanel();
 }
 function onSweepResult(m) {

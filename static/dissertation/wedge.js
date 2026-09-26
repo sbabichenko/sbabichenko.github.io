@@ -1,6 +1,7 @@
 // /dissertation/wedge: the information wedge, in steps. Four diagrams, then three drawings solved live by the
 // explorer's solver (static/noisestate/worker.js) on the Chapter 1 tracking game: player 1's first-order condition split into
-// its physical part and the wedge; the wedge shrinking as player 2's signal is blurred; and information starvation.
+// its physical part and the wedge; the wedge shrinking as player 2's signal is blurred; and information starvation. Then
+// the game of chicken, drawn.
 (function () {
   "use strict";
   const NS = "http://www.w3.org/2000/svg";
@@ -123,25 +124,85 @@
 
   // ------------------------------------------------------------------ 3. the shadow price of the state
   scenes.stateprice = (() => {
+    // top: the expected future cost against the state, a valley. The slope where the player stands is the shadow price H;
+    // a push moves the state a little and the cost falls by about the slope times the push.
+    // bottom: the saving |H| x push against the effort cost (1/2) G push^2; the best push is where the gap is widest,
+    // D = -H / G, the formula beside the drawing (the player acts on its estimate of H)
     const g = group("stateprice");
-    const V = (x) => 330 - 150 * Math.exp(-((x - 330) ** 2) / 26000) + 0.0009 * (x - 330) ** 2;
-    const pts = []; for (let x = 70; x <= 530; x += 8) pts.push([x, V(x)]);
+    const C = (x) => 300 - (0.0022 * (x - 360) ** 2 + 20), dC = (x) => 0.0044 * (x - 360);   // screen y; cost slope
+    const axes = el("g", {}, g);
+    el("line", { x1: 80, y1: 300, x2: 520, y2: 300, class: "pencil soft", "stroke-width": 1 }, axes);
+    el("line", { x1: 80, y1: 300, x2: 80, y2: 92, class: "pencil soft", "stroke-width": 1 }, axes);
+    text(axes, 520, 318, "state", "mono", "end"); text(axes, 88, 88, "expected future cost", "mono", "start");
+    const pts = []; for (let x = 84; x <= 520; x += 8) pts.push([x, C(x)]);
     const curve = stroke(g, pencil(pts, 5, 0.3), "", 2);
-    const x0 = 210, slope = (V(x0 + 1) - V(x0 - 1)) / 2;
-    const tan = el("line", { x1: x0 - 90, y1: V(x0) - 90 * slope, x2: x0 + 90, y2: V(x0) + 90 * slope, class: "pencil accent", "stroke-width": 2 }, g);
-    const ball = el("circle", { cx: x0, cy: V(x0) - 11, r: 11, class: "fillacc" }, g);
-    const nudge = stroke(g, pencil([[x0 + 14, V(x0) - 34], [x0 + 60, V(x0 + 46) - 34]], 7, 0.6), "warm", 2);
-    const lab = text(g, x0 + 100, V(x0) + 100 * slope - 10, "slope: the shadow price H", "label acc", "start");
-    const lv = text(g, 300, 520, "the value of the future, as a function of the state", "mono");
+    const x0 = 170, x1 = 230, y0 = C(x0), y1 = C(x1), m = -dC(x0);          // screen slope of the tangent
+    const tan = el("line", { x1: x0 - 70, y1: y0 - 70 * m, x2: x0 + 70, y2: y0 + 70 * m, class: "pencil accent", "stroke-width": 2 }, g);
+    const lab = text(g, x0 - 58, y0 - 70 * m - 26, "slope: the shadow price H", "label acc", "start");
+    const push = el("g", {}, g);
+    const pa = stroke(push, pencil([[x0, y0 - 30], [x1, y0 - 30]], 7, 0.3), "warm", 2.2);
+    const ph = arrowHead(push, x1, y0 - 30, 0, "warm");
+    const pl = text(push, (x0 + x1) / 2, y0 - 40, "a push", "label warmt");
+    const drop = el("g", {}, g);
+    el("line", { x1: x1 + 14, y1: y0, x2: x1 + 14, y2: y1, class: "pencil", "stroke-width": 1.6, "stroke-dasharray": "3 3" }, drop);
+    el("line", { x1: x0 + 6, y1: y0, x2: x1 + 20, y2: y0, class: "pencil soft", "stroke-width": 1, "stroke-dasharray": "2 4" }, drop);
+    text(drop, x1 + 22, (y0 + y1) / 2 + 5, "the future cost falls", "label", "start");
+    const ball = el("circle", { r: 10, class: "fillacc" }, g);
+    // bottom panel: push size u in [0, 400] px; saving u/2, effort u^2/800, widest gap at u = 200
+    const B = el("g", {}, g), X = (u) => 100 + u, Y = (v) => 560 - v;
+    el("line", { x1: X(0), y1: Y(0), x2: X(410), y2: Y(0), class: "pencil soft", "stroke-width": 1 }, B);
+    text(B, X(410), Y(0) + 18, "push", "mono", "end");
+    const save = stroke(B, pencil([[X(0), Y(0)], [X(400), Y(200)]], 11, 0.2), "accent", 2);
+    const eff = []; for (let u = 0; u <= 400; u += 10) eff.push([X(u), Y(u * u / 800)]);
+    const effort = stroke(B, pencil(eff, 12, 0.2), "warm", 2);
+    const bl = [text(B, X(250), Y(125) - 12, "saving: |H| × push", "label acc", "end"), text(B, X(395), Y(196) + 30, "effort: ½ G × push²", "label warmt", "end")];
+    const best = el("g", {}, B);
+    el("line", { x1: X(200), y1: Y(0), x2: X(200), y2: Y(100), class: "pencil", "stroke-width": 1.4, "stroke-dasharray": "3 4" }, best);
+    el("circle", { cx: X(200), cy: Y(0), r: 4.5, class: "fillacc" }, best);
+    text(best, X(200), Y(0) + 20, "best push", "label");
     return { g, update(t) {
-      curve.set(seg(t, 0, 0.35)); fade(lv, seg(t, 0.2, 0.35)); fade(ball, seg(t, 0.3, 0.4));
-      fade(tan, seg(t, 0.45, 0.6)); fade(lab, seg(t, 0.5, 0.65)); nudge.set(seg(t, 0.6, 0.8));
+      fade(axes, seg(t, 0, 0.1)); curve.set(seg(t, 0, 0.22));
+      fade(tan, seg(t, 0.2, 0.3)); fade(lab, seg(t, 0.24, 0.32));
+      pa.set(seg(t, 0.32, 0.42)); fade(ph, seg(t, 0.4, 0.43)); fade(pl, seg(t, 0.34, 0.42));
+      const u = seg(t, 0.42, 0.52), bx = x0 + (x1 - x0) * u;
+      ball.setAttribute("cx", bx); ball.setAttribute("cy", C(bx) - 10); fade(ball, seg(t, 0.14, 0.2));
+      fade(drop, seg(t, 0.5, 0.58));
+      fade(B, seg(t, 0.58, 0.64)); save.set(seg(t, 0.6, 0.72)); effort.set(seg(t, 0.64, 0.76));
+      bl.forEach((l, k) => fade(l, seg(t, 0.68 + 0.04 * k, 0.76 + 0.04 * k))); fade(best, seg(t, 0.8, 0.9));
     } };
   })();
 
   // ------------------------------------------------------------------ 4. the backward equation, and the wedge in it
   scenes.wedge = (() => {
+    // what the shadow price prices, as two routes out of one push. Across the top, the physical part: the push moves the
+    // state, the state moves your cost. Below, the information wedge: the push shows up in player 2's signal, player 2's
+    // noise-state moves, player 2 acts on it, and that moves the state again. Pulses run both routes; the backward
+    // equation sits underneath with the wedge's term tinted.
     const g = group("wedge");
+    const top = el("g", {}, g), TY = 112;
+    const nPush = box(top, 100, TY, "your push"), nX = box(top, 300, TY, "state X"), nCost = box(top, 500, TY, "your cost");
+    const phys = [stroke(g, pencil([[152, TY], [252, TY]], 31, 0.4), "", 2), stroke(g, pencil([[348, TY], [446, TY]], 32, 0.4), "", 2)];
+    const physH = [arrowHead(g, 252, TY, 0, ""), arrowHead(g, 446, TY, 0, "")];
+    const physL = text(g, 300, 72, "physical part", "label");
+    // the loop through player 2, on an ellipse under the state
+    const CX = 300, CY = 236, RX = 158, RY = 110, E = (a) => [CX + RX * Math.cos(a), CY + RY * Math.sin(a)];
+    const at = { X: -Math.PI / 2, sig: 0, ns: Math.PI / 2, act: Math.PI };
+    const loopN = el("g", {}, g);
+    box(loopN, ...E(at.sig), "2's signal"); box(loopN, ...E(at.ns), "2's noise-state"); box(loopN, ...E(at.act), "2's action");
+    // each leg leaves and reaches a box clear of it; the noise-state box is the widest, so its gaps are larger
+    const legs = [["X", "sig", 0.42, 0.42], ["sig", "ns", 0.42, 0.74], ["ns", "act", 0.74, 0.42], ["act", "X", 0.42, 0.42]].map(([a, b, g0, g1], k) => {
+      let a0 = at[a] + g0, a1 = at[b] - g1; if (a1 < a0) a1 += 2 * Math.PI;
+      const pts = []; for (let q = 0; q <= 16; ++q) pts.push(E(a0 + (a1 - a0) * q / 16));
+      const s_ = stroke(g, pencil(pts, 40 + k, 0.6), "accent", 2);
+      const [ex, ey] = pts[16], [px, py] = pts[14];
+      return { s: s_, h: arrowHead(g, ex, ey, Math.atan2(ey - py, ex - px), "accent"), a0, a1 };
+    });
+    g.appendChild(loopN);                                           // the boxes over the lines
+    const wl = text(g, CX, CY + RY + 42, "information wedge", "label acc");
+    // pulses: black along the top, blue round the loop
+    const pb = el("circle", { r: 5, class: "fillacc" }, g); pb.style.fill = "currentColor";
+    const pw = el("circle", { r: 5.5, class: "fillacc" }, g);
+    // the equation, small, underneath
     const f = el("g", {}, g);
     const put = (key, x, y, W) => {
       const src = window.WEDGE_FX && window.WEDGE_FX[key]; if (!src) return null;
@@ -150,13 +211,24 @@
       n.setAttribute("width", W); n.setAttribute("height", H); n.setAttribute("x", x); n.setAttribute("y", y - H / 2); n.removeAttribute("style"); n.style.color = "var(--ink)";
       f.appendChild(n); return { x, y, W, H };
     };
-    put("backward1", 40, 250, 470);
-    const b2 = put("backward2", 150, 370, 330);
-    const hl = b2 ? el("rect", { x: b2.x - 14, y: b2.y - b2.H / 2 - 10, width: b2.W + 28, height: b2.H + 20, rx: 10, class: "fillacc" }, g) : null;
+    const eqL = text(g, 300, 422, "the backward equation for the shadow price", "mono");
+    put("backward1", 95, 462, 410);
+    const b2 = put("backward2", 175, 540, 250);
+    const hl = b2 ? el("rect", { x: b2.x - 12, y: b2.y - b2.H / 2 - 8, width: b2.W + 24, height: b2.H + 16, rx: 10, class: "fillacc" }, g) : null;
     if (hl) g.insertBefore(hl, f);
-    const note = text(g, 300, 170, "the shadow price of the state, run backward in time", "mono");
-    const w = text(g, 315, 470, "the information wedge", "label acc");
-    return { g, update(t) { fade(note, seg(t, 0, 0.15)); fade(f, seg(t, 0.05, 0.25)); if (hl) fade(hl, seg(t, 0.45, 0.6) * 0.12); fade(w, seg(t, 0.5, 0.65)); } };
+    return { g, update(t, now) {
+      fade(top, seg(t, 0, 0.1));
+      phys.forEach((p, k) => p.set(seg(t, 0.06 + 0.06 * k, 0.16 + 0.06 * k))); physH.forEach((h, k) => fade(h, seg(t, 0.15 + 0.06 * k, 0.18 + 0.06 * k)));
+      fade(physL, seg(t, 0.14, 0.24)); fade(loopN, seg(t, 0.24, 0.34));
+      legs.forEach((l, k) => { l.s.set(seg(t, 0.3 + 0.06 * k, 0.4 + 0.06 * k)); fade(l.h, seg(t, 0.39 + 0.06 * k, 0.42 + 0.06 * k)); });
+      fade(wl, seg(t, 0.52, 0.6));
+      // the black pulse crosses the top in 2.2 s; the blue one goes round the loop in 4.4 s, pausing at each box
+      const u = (now / 2200) % 1, xb = u < 0.5 ? 152 + (252 - 152) * (u / 0.5) : 348 + (446 - 348) * ((u - 0.5) / 0.5);
+      pb.setAttribute("cx", xb); pb.setAttribute("cy", TY); fade(pb, seg(t, 0.2, 0.26) * (reduced ? 0 : 1));
+      const v = (now / 4400) % 1, k = Math.floor(v * 4), w = Math.min(1, (v * 4 - k) / 0.8), L = legs[k], [wx, wy] = E(L.a0 + (L.a1 - L.a0) * w);
+      pw.setAttribute("cx", wx); pw.setAttribute("cy", wy); fade(pw, seg(t, 0.55, 0.62) * (reduced ? 0 : 1));
+      fade(eqL, seg(t, 0.64, 0.74)); fade(f, seg(t, 0.66, 0.8)); if (hl) fade(hl, seg(t, 0.8, 0.9) * 0.14);
+    } };
   })();
 
   // ------------------------------------------------------------------ plotting helpers for the solved drawings
@@ -275,6 +347,47 @@
       n = R.starve.length;
     }
     return { g, update(t) { if (R.starve.length !== n) draw(); fade(wait, R.starve.length ? 0 : 1); fade(live, seg(t, 0.05, 0.25)); } };
+  })();
+
+  // ------------------------------------------------------------------ 8. chicken: the wheel goes out the window
+  scenes.chicken = (() => {
+    const g = group("chicken"), GY = 330;
+    g.setAttribute("transform", "translate(300 300) scale(1.25) translate(-300 -300)");
+    const road = stroke(g, pencil([[70, GY], [540, GY]], 70, 0.4), "soft", 1.4);
+    const dashes = el("g", {}, g);
+    for (let x = 84; x < 530; x += 44) el("line", { x1: x, y1: GY + 16, x2: x + 18, y2: GY + 16, class: "pencil soft", "stroke-width": 1.2 }, dashes);
+    // a car in profile, facing right, standing on (0, 0); the right-hand one is the same car mirrored
+    function car(seed, cls) {
+      const c = el("g", {}, g);
+      el("path", { d: pencil([[-65, -20], [-66, -44], [-36, -49], [-22, -76], [18, -76], [36, -49], [62, -45], [66, -22], [-65, -20]], seed, 0.8), class: "box pencil " + cls, "stroke-width": 1.8 }, c);
+      el("path", { d: pencil([[-17, -70], [13, -70], [27, -51], [-28, -51], [-17, -70]], seed + 1, 0.6), class: "pencil soft", "stroke-width": 1.3 }, c);
+      el("circle", { cx: -2, cy: -60, r: 7, class: "box pencil", "stroke-width": 1.4 }, c);
+      for (const x of [-38, 38]) { el("circle", { cx: x, cy: -13, r: 13, class: "box pencil", "stroke-width": 1.8 }, c); el("circle", { cx: x, cy: -13, r: 3, class: "pencil", "stroke-width": 1.4 }, c); }
+      return c;
+    }
+    const left = car(71, ""), right = car(75, "warm");
+    const hands = el("g", {}, right);
+    for (const [x0, x1] of [[-8, -16], [6, 12]]) {
+      el("path", { d: pencil([[x0, -68], [x0 - 1, -84], [x1, -100]], 80 + x0, 0.5), class: "pencil warm", "stroke-width": 2 }, hands);
+      el("circle", { cx: x1, cy: -106, r: 6, class: "box pencil warm", "stroke-width": 1.6 }, hands);
+    }
+    const wheel = el("g", {}, g);
+    el("circle", { r: 14, class: "box pencil warm", "stroke-width": 2.2 }, wheel);
+    for (const a of [-90, 30, 150]) el("line", { x1: 0, y1: 0, x2: 13 * Math.cos((a * Math.PI) / 180), y2: 13 * Math.sin((a * Math.PI) / 180), class: "pencil warm", "stroke-width": 1.6 }, wheel);
+    const lWheel = text(g, 530, GY + 36, "steering wheel", "mono", "end"), lHands = text(g, 418, 214, "hands out", "mono warmt", "start"), lSwerve = text(g, 205, GY + 82, "swerve", "mono");
+    return { g, update(t) {
+      road.set(seg(t, 0, 0.12)); fade(dashes, seg(t, 0.05, 0.15));
+      const drive = seg(t, 0.05, 0.6), lx = 100 + 120 * drive, rx = 500 - 110 * drive;
+      const sw = seg(t, 0.7, 0.88);
+      left.setAttribute("transform", `translate(${lx + 10 * sw} ${GY + 34 * sw}) rotate(${14 * sw})`);
+      right.setAttribute("transform", `translate(${rx} ${GY}) scale(-1 1)`);
+      fade(left, seg(t, 0.02, 0.1)); fade(right, seg(t, 0.02, 0.1));
+      const u = seg(t, 0.3, 0.62), x0 = rx - 2, y0 = GY - 60, x1 = 525, y1 = GY - 14;
+      wheel.setAttribute("transform", `translate(${x0 + (x1 - x0) * u} ${y0 + (y1 - y0) * u - 4 * 150 * u * (1 - u)}) rotate(${540 * u})`);
+      fade(wheel, t > 0.3 ? 1 : 0); fade(lWheel, seg(t, 0.6, 0.7));
+      fade(hands, seg(t, 0.55, 0.68)); fade(lHands, seg(t, 0.6, 0.7));
+      fade(lSwerve, seg(t, 0.78, 0.88));
+    } };
   })();
 
   // ------------------------------------------------------------------ scroll to scene, and the progress line

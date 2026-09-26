@@ -15,7 +15,8 @@ are current). The script
   5. writes content/dissertation/*.md (front matter only) and the page bodies as HTML fragments that the
      templates include, plus the figures under static/dissertation/.
 
-Every formula is then typeset with KaTeX at build time (prerender.js), which also lists any it cannot typeset.
+Every formula is then typeset with KaTeX at build time as native MathML (prerender.js), which also lists any it cannot
+typeset, and the math font is subset to the characters used (subset_math_font.py).
 Needs pandoc 3, pdftocairo (poppler), Pillow, BeautifulSoup and `npm install` in this folder.
 """
 import html
@@ -620,6 +621,7 @@ def main():
                                                      "math = false", 'slug = "references"', 'short = "References"', 'label = ""', "+++", ""]))
     (frag / "manifest.json").write_text(json.dumps(manifest, indent=1))
     subprocess.run(["node", str(Path(__file__).parent / "prerender.js")], check=True)
+    subprocess.run([sys.executable, str(Path(__file__).parent / "subset_math_font.py")], check=True)
     import time
     STAMP.write_text(json.dumps({"tex": sha, "built": time.time(), "source": str(SRC)}) + "\n")
     # figures re-rendered for the web replace their print conversions (tools/dissertation/webfigs.py)
