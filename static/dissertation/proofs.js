@@ -188,7 +188,6 @@
     "prop:stationary_verification": [`${ROOT}noisestate/#game=ch3`, "This chapter’s game, solved in the explorer"],
     "thm:stationary-best-response": [`${ROOT}noisestate/#game=ch4`, "This chapter’s market, solved in the explorer"],
     "cor:graph_unique_equilibrium": [`${ROOT}noisestate/#game=ch5`, "This chapter’s game, solved in the explorer"],
-    "prop:gain_reduction": [`${ROOT}noisestate/#game=ch6`, "This chapter’s game, solved in the explorer"],
   };
   fetch(BASE + "deps.json").then((r) => r.json()).then(({ nodes, edges, cites }) => {
     const byId = new Map(nodes.map((n) => [n.id, n]));

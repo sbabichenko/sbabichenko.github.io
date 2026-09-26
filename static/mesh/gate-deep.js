@@ -253,8 +253,13 @@
       setV("faces0", String(T.rounds.length ? T.rounds[0].faces : faces0));
       setV("forced", String(forced));
       if (T.rounds.length && T.rounds[0].faces !== faces0) console.warn("gate-deep: page pre-refinement", faces0, "faces, engine", T.rounds[0].faces);
-      return { g, update(t) {
+      // the scroll sets how many vertices should show; the drawing walks there one vertex at a time, so a single
+      // turn of the wheel plays as a short sequence rather than a jump of several
+      const RATE = 8;            // vertices per second
+      let shown = 0, lastNow = 0;
+      return { g, update(t, now) {
         let e = 0;
+        const dt = lastNow ? Math.min(0.1, (now - lastNow) / 1000) : 0; lastNow = now;
         const u = seg(t, 0.32, 0.42), z = 1 + (ZF - 1) * u, c = [Qs[0] + (cen[0] - Qs[0]) * u, Qs[1] + (cen[1] - Qs[1]) * u];
         zg.setAttribute("transform", `translate(${c[0].toFixed(2)},${c[1].toFixed(2)}) scale(${z.toFixed(4)}) translate(${-Qs[0]},${-Qs[1]})`);
         dots.forEach((d, i) => d.setAttribute("r", dotR(events[i]) / z)); ring.setAttribute("r", 9 / z);
@@ -263,8 +268,11 @@
           mesh.setAttribute("d", pre[i]);
           const nf = [2, 8, 32, 128][i] || faces0;
           lab.textContent = i === pre.length - 1 ? `the starting mesh: ${faces0} faces` : `pre-refinement, pass ${i}: ${nf} faces`;
-        } else {
-          e = Math.min(events.length, Math.floor(lin(t, 0.34, 0.92) * events.length + 1e-9));
+        }
+        const want = t < 0.32 ? 0 : Math.min(events.length, Math.floor(lin(t, 0.34, 0.92) * events.length + 1e-9));
+        shown = reduced ? want : shown + Math.sign(want - shown) * Math.min(Math.abs(want - shown), RATE * dt);
+        if (t >= 0.32) {
+          e = Math.round(shown);
           mesh.setAttribute("d", e ? events[e - 1].d : pre[pre.length - 1]);
           lab.textContent = `enlarged ${ZF}×: five requested splits, ${e} of ${events.length} new vertices`;
         }
@@ -705,7 +713,7 @@
         const q = el("g", {}, g), X = sx(d.m[0]), Y = sy(d.m[1]);
         if (tAdm(d.c)) el("circle", { cx: X, cy: Y, r: 3, class: "ink" }, q);
         else { line(q, X - 5, Y - 5, X + 5, Y + 5, "", 2); line(q, X - 5, Y + 5, X + 5, Y - 5, "", 2); }
-        text(q, X > 560 ? X - 5 : X + 5, Y - 5, String(i + 1), "tiny", X > 560 ? "end" : "start");
+        text(q, X > 560 ? X - 5 : X + 5, Y - 5, String(i + 1), "tiny halo", X > 560 ? "end" : "start");
         return q;
       });
       const na = sel.filter(tAdm).length;

@@ -249,11 +249,15 @@
     const p1 = el("g", {}, g), p2 = el("g", {}, g);
     head(p1, 110, 500, 0.62, false, "Alice (1)"); head(p2, 490, 500, 0.62, true, "Bob (2)");
     const levels = ["t1", "t2", "t3", "t4"].map((k, i) => {
-      const lg = el("g", {}, g), y = 430 - i * 92, w = 150 + i * 62, x = 300 + (i % 2 ? 30 : -30);
-      el("rect", { x: x - w / 2 - 18, y: y - 32, width: w + 36, height: 64, rx: 30, class: "box pencil", "stroke-width": 1.4 }, lg);
-      formula(k, x, y, w, lg, "middle");
-      // the thought dots from player 1
-      for (let d = 0; d < 3; ++d) el("circle", { cx: 120 + (x - w / 2 - 120) * (0.25 + d * 0.22), cy: 455 - (455 - y - 32) * (0.25 + d * 0.22), r: 3 + d, class: "pencil soft", "stroke-width": 1.2 }, lg);
+      const lg = el("g", {}, g), y = 430 - i * 92, x = 300 + (i % 2 ? 30 : -30);
+      // the deeper formulas are tall for their width: shrink any that would not fit a pill 64 high, then size the pill to it
+      let w = 150 + i * 62, f = formula(k, x, y, w, lg, "middle");
+      const fh = +f.getAttribute("height");
+      if (fh > 44) { w *= 44 / fh; f.remove(); f = formula(k, x, y, w, lg, "middle"); }
+      const left = x - w / 2 - 18;
+      lg.insertBefore(el("rect", { x: left, y: y - 32, width: w + 36, height: 64, rx: 30, class: "box pencil", "stroke-width": 1.4 }), f);
+      // a short trail of thought bubbles off the pill's own left end, so no trail crosses another pill
+      for (let d = 0; d < 3; ++d) el("circle", { cx: left - 34 + d * 11, cy: y + 26 - d * 9, r: 2 + d, class: "pencil soft", "stroke-width": 1.2 }, lg);
       return lg;
     });
     const counts = ["1", "n", "n²", "n³"].map((c, i) => text(g, 28, 436 - i * 92, c, "label acc", "start"));
@@ -342,24 +346,45 @@
 
   // ------------------------------------------------------------------ 4. responses add up to the path
   scenes.superpose = (() => {
+    // L_t = mean(t) + sum over s <= t of L(t, s) dW_s, at one date t that sweeps across with the scroll: the shocks; the
+    // kernel's row at t (the weight on each shock, sliding with t); their products; and the path, which at t is the mean
+    // plus the sum of the products. A dot product, one date at a time, with the mean shifting the level.
     const g = group("superpose");
-    el("line", { x1: 50, y1: 500, x2: 560, y2: 500, class: "pencil soft", "stroke-width": 1 }, g);
-    el("line", { x1: 50, y1: 260, x2: 560, y2: 260, class: "pencil soft", "stroke-width": 1 }, g);
-    const b = bars(g, w, 500, 16, "fillwarm");
-    const copies = w.map((v, j) => {
-      const pts = []; for (let k = j; k < N; ++k) pts.push([TX(k), 260 - 22 * v * K(k, j)]);
-      return el("path", { d: pencil(pts.length > 1 ? pts : [pts[0], pts[0]], 40 + j, 0.2), class: "pencil", "stroke-width": 1 }, g);
-    });
-    const truth = el("path", { d: pencil(X.map((v, k) => [TX(k), 260 - 22 * v]), 9, 0.1), class: "pencil soft", "stroke-width": 1.2, "stroke-dasharray": "4 5" }, g);
-    const sum = el("path", { class: "pencil accent", "stroke-width": 2.6 }, g);
-    const cap = text(g, 300, 570, "each shock's response, scaled; their sum is the path", "mono");
+    const MEAN = (k) => 2.2 * (1 - Math.exp(-k / 10));                  // an illustrative mean, drifting to a level
+    const rows = { w: 128, L: 262, p: 342, out: 505 }, WS = 13, LS = 60, OS = 12;
+    for (const y of [rows.w, rows.L, rows.p, rows.out]) el("line", { x1: 50, y1: y, x2: 560, y2: y, class: "pencil soft", "stroke-width": 1 }, g);
+    text(g, 50, 96, "the shocks dW", "mono", "start");
+    text(g, 50, 182, "L(t, s): the weight at t on the shock at s", "mono acc", "start");
+    text(g, 50, 290, "shock × weight", "mono", "start");
+    text(g, 50, 396, "Lₜ: the mean plus the sum of the products", "mono", "start");
+    const shock = bars(g, w, rows.w, WS, "fillwarm", 5);
+    const wt = w.map((_, j) => el("rect", { x: TX(j) - 2.5, width: 5, class: "fillacc" }, g));
+    const pr = w.map((_, j) => { const r = el("rect", { x: TX(j) - 2.5, width: 5 }, g); r.style.fill = "currentColor"; return r; });
+    const meanL = el("path", { d: pencil(X.map((_, k) => [TX(k), rows.out - OS * MEAN(k)]), 21, 0.1), class: "pencil", "stroke-width": 1.3, "stroke-dasharray": "5 5" }, g);
+    const meanT = text(g, TX(3), rows.out - OS * MEAN(N - 1) - 12, "the mean L̄(t)", "mono", "start");
+    const path = el("path", { class: "pencil accent", "stroke-width": 2.4 }, g);
+    const sumSeg = el("line", { class: "pencil accent", "stroke-width": 3.2 }, g);
+    const dot = el("circle", { r: 4.5, class: "fillacc" }, g);
+    const sumT = text(g, 0, 0, "the sum", "label acc", "start");
+    const now = el("line", { y1: 108, y2: 580, class: "pencil warm", "stroke-width": 1.4, "stroke-dasharray": "3 4" }, g);
+    const nowT = text(g, 0, 100, "now, t", "label warmt");
     return { g, update(t) {
-      const J = Math.floor(seg(t, 0.05, 0.85) * N);
-      b.forEach((r, k) => fade(r, k < J ? 0.85 : 0.15));
-      copies.forEach((c, j) => { c.style.opacity = j < J ? (j === J - 1 ? 0.7 : 0.16) : 0; });
-      const pts = X.map((_, k) => { let s = 0; for (let j = 0; j < Math.min(J, k + 1); ++j) s += K(k, j) * w[j]; return [TX(k), 260 - 22 * s]; });
-      sum.setAttribute("d", pencil(pts, 11, 0.1)); fade(sum, J > 0 ? 1 : 0);
-      fade(truth, seg(t, 0.02, 0.1) * 0.8); fade(cap, seg(t, 0.4, 0.55));
+      const k = Math.min(N - 1, 3 + Math.floor(seg(t, 0.08, 0.92) * (N - 3))), x = TX(k), on = seg(t, 0.04, 0.12);
+      shock.forEach((r, j) => fade(r, j <= k ? 0.9 : 0.15));
+      w.forEach((v, j) => {
+        const kk = K(k, j), h = LS * kk, pv = v * kk * WS;
+        wt[j].setAttribute("y", rows.L - h); wt[j].setAttribute("height", h); fade(wt[j], j <= k ? on : 0);
+        pr[j].setAttribute("y", pv >= 0 ? rows.p - pv : rows.p); pr[j].setAttribute("height", Math.abs(pv)); fade(pr[j], j <= k ? 0.7 * on : 0);
+      });
+      const val = (i) => rows.out - OS * (MEAN(i) + X[i]);
+      path.setAttribute("d", pencil(X.slice(0, k + 1).map((_, i) => [TX(i), val(i)]), 11, 0.1));
+      sumSeg.setAttribute("x1", x); sumSeg.setAttribute("x2", x); sumSeg.setAttribute("y1", rows.out - OS * MEAN(k)); sumSeg.setAttribute("y2", val(k));
+      dot.setAttribute("cx", x); dot.setAttribute("cy", val(k));
+      const left = k > 0.72 * N;
+      sumT.setAttribute("x", left ? x - 8 : x + 8); sumT.setAttribute("text-anchor", left ? "end" : "start"); sumT.setAttribute("y", (rows.out - OS * MEAN(k) + val(k)) / 2 + 5);
+      now.setAttribute("x1", x); now.setAttribute("x2", x); nowT.setAttribute("x", x);
+      [path, sumSeg, dot, sumT, now, nowT].forEach((n) => fade(n, on));
+      fade(meanL, seg(t, 0.02, 0.1) * 0.7); fade(meanT, seg(t, 0.06, 0.14));
     } };
   })();
 

@@ -4,6 +4,8 @@ weight = 4
 path = "dissertation/chapter-2"
 template = "thesis.html"
 [extra]
+pdf_page = 79
+pdf_pp = "63–79"
 math = false
 slug = "chapter-2"
 short = "Delayed Public Signals and Asynchronous Learning"

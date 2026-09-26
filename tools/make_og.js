@@ -23,7 +23,7 @@ const CARDS = [
     sub: "Freeform triangles, right triangles, rectangles and a regression tree fit the same noisy surface." },
   { out: "og-gate.png", art: "image", src: "/images/card-gate-light.webp",
     eyebrow: "sbabichenko.com/gate",
-    title: "Decision Mesh, Live",
+    title: "Decision Mesh",
     sub: "Coin flips fitted in your browser by an estimator that cuts only where a false-discovery gate allows." },
   { out: "og-idea.png", art: "image", fit: "contain", src: "/images/card-idea.webp",
     eyebrow: "sbabichenko.com/dissertation/idea",

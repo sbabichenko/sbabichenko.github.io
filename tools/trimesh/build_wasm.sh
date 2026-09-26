@@ -22,7 +22,7 @@ em++ -std=c++17 -O3 -ffp-contract=off -fwasm-exceptions -msimd128 -msse2 -Wno-un
   $(for f in $FILES; do echo $SRC/$f; done) $(dirname "$0")/numeric_portable.cpp $TMP/main.o $(dirname "$0")/entry.cpp \
   -sMODULARIZE=1 -sEXPORT_NAME=DecisionMeshEngine -sINVOKE_RUN=0 -sEXIT_RUNTIME=0 \
   -sALLOW_MEMORY_GROWTH=1 -sMAXIMUM_MEMORY=2GB -sFORCE_FILESYSTEM=1 \
-  -sEXPORTED_FUNCTIONS=_dm_run -sEXPORTED_RUNTIME_METHODS=ccall,FS,ENV -sENVIRONMENT=web,worker,node -sSINGLE_FILE=1 \
+  -sEXPORTED_FUNCTIONS=_dm_run -sEXPORTED_RUNTIME_METHODS=ccall,FS,ENV -sENVIRONMENT=web,worker,node \
   -o $OUT/$NAME.js
-ls -la $OUT/$NAME.js
+ls -la $OUT/$NAME.js $OUT/$NAME.wasm   # a separate .wasm: 25% smaller than SINGLE_FILE base64, streams
 echo done

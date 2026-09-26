@@ -11,6 +11,8 @@ og_image = "images/og-cv.png"
 <p class="c">sam@sbabichenko.com &middot; sbabichenko.com &middot; github.com/sbabichenko &middot; Charlotte, NC</p>
 </div>
 
+<a class="cv-download" href="/CV_Samuel_Babichenko.pdf" download>Download as PDF</a>
+
 ---
 
 ## Education
@@ -26,13 +28,14 @@ Dean's Undergraduate Excellence Award (top 0.5%, Physical Sciences).
 
 ## Research
 
-**Noise-State Calculus for Dynamic Games with Strategic Information** &middot; PhD dissertation, 2026 &middot; [sbabichenko.com/dissertation](/dissertation/)\
-Dynamic games in which players learn from each other's actions and can shape what others believe: continuous-time linear-quadratic-Gaussian games with any finite number of players. Each player keeps estimates of the primitive shocks instead of belief hierarchies, so beliefs, prices and policies are impulse responses and equilibrium is a fixed point in them, checked against arbitrary deviations. The information wedge, the shadow price of changing an opponent's beliefs, explains where these games depart from their full-information versions. Applications to Kyle&ndash;Back markets with several informed traders, networks of local markets, delayed public signals, and deviations that only some players can detect.
+**Noise-State Calculus for Dynamic Games with Strategic Information**\
+PhD dissertation, 2026 &middot; [sbabichenko.com/dissertation](/dissertation/)\
+Dynamic games in which players learn from each other's actions and can shape what others believe: continuous-time linear-quadratic-Gaussian games with any finite number of players. The information wedge, the shadow price of changing an opponent's beliefs, explains where these games depart from their full-information versions. Applications to Kyle&ndash;Back markets with several informed traders, networks of local markets, delayed public signals, and deviations that only some players can detect.
 
 **Forecasting and Manipulating the Forecasts of Others** &middot; [arXiv: 2603.12140](https://arxiv.org/abs/2603.12140)\
-Solo-authored, submitted March 2026. The two-player core of the dissertation. Splits the cost of dispersed information into an estimation part and a strategic part, and finds cases where more precise private information raises total cost.
+Solo-authored, submitted March 2026. The core of the dissertation. In a two-player benchmark, splits the cost of dispersed information into an estimation part and a strategic part, and finds cases where more precise private information raises total cost.
 
-**Software.** The noisestate solver in C++, about 10 ms per equilibrium, also compiled to WebAssembly for the browser explorer at [sbabichenko.com/noisestate](/noisestate/). Python package: [pip install noisestate](https://pypi.org/project/noisestate/).
+**Software.** noisestate, a Python package that solves these games from a model description: <span class="nw">[pip install noisestate](https://pypi.org/project/noisestate/)</span>. A C++ version runs in the browser explorer at [sbabichenko.com/noisestate](/noisestate/).
 
 **Talks.** "Forecasting and Manipulating the Forecasts of Others," Southern California Quantitative Finance Forum (SCQF), UC Santa Barbara, April 2026. "Mean Field Games and Interacting Particle Systems" (following Daniel Lacker), UCSD Stochastic Systems Seminar, January 2021.
 
@@ -40,12 +43,12 @@ Solo-authored, submitted March 2026. The two-player core of the dissertation. Sp
 
 ## Experience
 
-**Wells Fargo**, Charlotte, NC &middot; *Quantitative Researcher, rotational program* &middot; Jul 2026 &ndash; present
+**Wells Fargo**, Charlotte, NC &middot; *Quantitative Researcher, rotational program* &middot; <span class="nw">Jul 2026 &ndash; present</span>
 
-**Wells Fargo**, Charlotte, NC &middot; *Quantitative Researcher Intern, Mortgage Model Development* &middot; Jun &ndash; Aug 2025
+**Wells Fargo**, Charlotte, NC &middot; *Quantitative Researcher Intern, Mortgage Model Development* &middot; <span class="nw">Jun &ndash; Aug 2025</span>
 
 - Built tree-based segmentation of mortgage pools, with diagnostic tools.
-- Statistical modeling of loan-level prepayment.
+- Modeled loan-level prepayment.
 
 ---
 
@@ -70,7 +73,7 @@ Reimplemented BehaviorGPT, a decoder-only transformer with agent&ndash;agent att
 ---
 
 <div style="text-align:center; margin:24px 0 8px;">
-<a class="cv-download" href="/Resume_Samuel_Babichenko.pdf" download>Download as PDF</a>
+<a class="cv-download" href="/CV_Samuel_Babichenko.pdf" download>Download as PDF</a>
 </div>
 
 Last updated: **September 2026**

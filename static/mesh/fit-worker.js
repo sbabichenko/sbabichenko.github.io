@@ -32,7 +32,7 @@ function csv(text) {
 const num = (a) => Float64Array.from(a, Number);
 
 onmessage = async (ev) => {
-  const { id, design, seed } = ev.data, kind = ev.data.engine === "rect" ? "rect" : "tri";
+  const { id, design, seed } = ev.data, q = +ev.data.q, kind = ev.data.engine === "rect" ? "rect" : "tri";
   let engine;
   try { engine = await load(kind); } catch (e) { postMessage({ id, type: "error", message: "engine failed to load: " + e }); return; }
   log = [];
@@ -43,7 +43,7 @@ onmessage = async (ev) => {
   let rc;
   try {
     rc = engine.ccall("dm_run", "number", ["number", "string"],
-      [seed, "DMESH_DATA=/w/design.csv\nDMESH_DUMP=/w/run\nDMESH_SPLIT=1" + (ev.data.detail ? "\nDMESH_TRACE=/w/run_trace.csv" : "")]);
+      [seed, "DMESH_DATA=/w/design.csv\nDMESH_DUMP=/w/run\nDMESH_SPLIT=1\nDMESH_Q=" + (q > 0 && q < 1 ? q : "") + (ev.data.detail ? "\nDMESH_TRACE=/w/run_trace.csv" : "")]);
   } catch (e) {
     postMessage({ id, type: "error", message: String(e), log });
     return;

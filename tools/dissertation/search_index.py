@@ -51,6 +51,9 @@ def main():
                 anchor = el["id"]
             if el.name == "span" and "display" in classes and el.get("id"):
                 tag = el.select_one(".katex-html .tag")
+                if tag is None:                          # MathML: the number is the last cell's text, "(1.2.3)"
+                    cells = [m for m in el.select("mtd > mtext") if re.fullmatch(r"\([\w.\s\u200b]+\)", m.get_text())]
+                    tag = cells[-1] if cells else None
                 if tag:
                     num = re.sub(r"[\s\u200b]+", "", tag.get_text())
                     block = el.find_parent(BLOCKS) or el.parent

@@ -5,6 +5,8 @@
 // noisestate, or PYTHONPATH=path/to/noisestate), and the site
 // served locally:
 //     node tools/check_explorer_python.js [http://127.0.0.1:8770] [cases per game]
+// Build with the local address as the base URL (zola build --base-url http://127.0.0.1:8770 --output-dir ...):
+// without it the page loads explorer.js from the live site, and the check silently tests the published file.
 const { chromium } = require("playwright");
 const { execFileSync } = require("child_process");
 
@@ -66,13 +68,12 @@ sys.exit(1 if bad else 0)
           values[g][s.key] = s.log ? +(s.min * Math.pow(s.max / s.min, u)).toPrecision(3) : +(s.min + (s.max - s.min) * u).toFixed(2);
         }
         if (def.nodes && c > 0) values[g].nodes = def.nodes.options[c % def.nodes.options.length][0];
-        opts.engine = g === "ch1" && c === 2 ? "cells" : "spectral";
         opts.march = !!def.march && c === 3;
         const d = currentModel();
-        out.push({ label: `${g} case ${c}${opts.engine === "cells" ? " (cells)" : ""}${opts.march ? " (march)" : ""}`, model: d, code: PYTHON[g](d) });
+        out.push({ label: `${g} case ${c}${opts.march ? " (march)" : ""}`, model: d, code: PYTHON[g](d) });
       }
     }
-    opts.engine = "spectral"; opts.march = false;
+    opts.march = false;
     return out;
   }, PER_GAME);
   await b.close();

@@ -34,6 +34,9 @@
           {%- endfor %}
         </ol>
         <a class="pdf maplink" href="{{ get_url(path='dissertation/map/') }}">What rests on what: the map of results &rarr;</a>
+        {%- if page.extra.pdf_page %}
+        <a class="pdf" href="{{ get_url(path='dissertation/babichenko-dissertation.pdf') }}#page={{ page.extra.pdf_page }}">In the PDF: pp. {{ page.extra.pdf_pp }} &darr;</a>
+        {%- endif %}
         <a class="pdf" href="{{ get_url(path='dissertation/babichenko-dissertation.pdf') }}">The whole thing as a PDF &darr;</a>
       </aside>
 
@@ -64,6 +67,8 @@
     <div class="peek" id="peek" role="tooltip" hidden></div>
 
     {% include "partials/footer.html" %}
+    {#- under a figure: how it was computed, and a link that solves its game in the explorer (thesis.js) -#}
+    <script type="application/json" id="fignotes" data-explorer="{{ get_url(path='noisestate/') }}">{{ load_data(path="data/dissertation/figure_notes.json") | json_encode() | safe }}</script>
     <script src="{{ get_url(path='dissertation/thesis.js', cachebust=true) }}"></script>
     <script src="{{ get_url(path='dissertation/search.js', cachebust=true) }}"></script>
     <script src="{{ get_url(path='dissertation/proofs.js', cachebust=true) }}"></script>

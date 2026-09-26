@@ -6,13 +6,40 @@
   const paper = document.getElementById("paper");
   if (!paper) return;
 
-  // ---- progress through this page's text
+  // ---- progress through this page's text, counted in characters rather than pixels: sections off screen are
+  // not laid out (content-visibility in thesis.css) and grow to their real height as you reach them, so a
+  // fraction of the page's height would slide backwards. The section under the middle of the screen is laid
+  // out, so its own share is read from its height; every block above it counts in full. The blocks are the
+  // chapter's top-level pieces (paragraphs, displays, figures and sections), each worth at least a short
+  // paragraph so that a figure counts.
   const bar = document.getElementById("progress");
+  const secs = [...paper.querySelectorAll(".body > section.level1")].flatMap((s) => [...s.children]);
+  const weight = secs.map((s) => Math.max(200, s.textContent.length)), total = weight.reduce((a, w) => a + w, 0);
+  let lastY = -1, lastF = 0;
   const onScroll = () => {
-    const r = paper.getBoundingClientRect(), h = r.height - window.innerHeight;
-    bar.style.width = (h > 0 ? Math.min(1, Math.max(0, -r.top / h)) * 100 : 100) + "%";
+    const vh = window.innerHeight, doc = document.documentElement;
+    let f;
+    if (!total) { const r = paper.getBoundingClientRect(), h = r.height - vh; f = h > 0 ? -r.top / h : 1; }
+    else if (window.scrollY + vh >= doc.scrollHeight - 2) f = 1;
+    else {
+      const line = vh / 2;
+      let done = 0;
+      for (let i = 0; i < secs.length; ++i) {
+        const r = secs[i].getBoundingClientRect();
+        if (r.bottom <= line) { done += weight[i]; continue; }
+        if (r.top < line && r.height > 0) done += weight[i] * (line - r.top) / r.height;
+        break;
+      }
+      f = done / total;
+    }
+    // the section being read can still settle as it is laid out; scrolling down never moves the line back
+    f = Math.min(1, Math.max(0, f));
+    if (window.scrollY > lastY && f < lastF) f = lastF;
+    lastY = window.scrollY; lastF = f;
+    bar.style.width = f * 100 + "%";
   };
   window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
   onScroll();
 
   // ---- the end of the page draws itself when it comes into view
@@ -20,6 +47,111 @@
   if (fin && "IntersectionObserver" in window) {
     const fo = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { fin.classList.add("drawn"); fo.disconnect(); } });
     fo.observe(fin);
+  }
+
+  // ---- under a figure's caption: how it was computed (solver, grid, script), and, where the explorer has the game,
+  // a link that solves it there at the figure's parameters (data/dissertation/figure_notes.json)
+  const notesEl = document.getElementById("fignotes");
+  if (notesEl) {
+    let notes = {};
+    try { notes = JSON.parse(notesEl.textContent); } catch (e) { /* no notes */ }
+    for (const [id, n] of Object.entries(notes)) {
+      const fig = document.getElementById(id), cap = fig && fig.querySelector(":scope > figcaption");
+      if (!cap || fig.querySelector(":scope > .figsrc")) continue;
+      const p = document.createElement("p");
+      p.className = "figsrc";
+      if (n.note) p.append(n.note);
+      if (n.code) {
+        const c = document.createElement("a");
+        c.href = n.code.url; c.textContent = n.code.label + " →";
+        if (n.note) p.append(" ");
+        p.append(c);
+      }
+      if (n.inspect) {
+        const b = document.createElement("button");
+        b.type = "button"; b.className = "inspect"; b.textContent = "Inspect the code";
+        b.setAttribute("aria-expanded", "false");
+        b.addEventListener("click", () => inspect(fig, p, n.inspect, b));
+        if (n.note) p.append(" ");
+        p.append(b);
+      }
+      if (n.explorer) {
+        const a = document.createElement("a");
+        a.href = notesEl.dataset.explorer + "#" + n.explorer.hash;
+        a.textContent = n.explorer.label + " →";
+        if (n.note || n.code || n.inspect) p.append(n.code || n.inspect ? " · " : " ");
+        p.append(a);
+      }
+      cap.after(p);
+    }
+  }
+
+  // ---- a figure's Inspect panel: the code that draws it and the model it solves, line by line
+  // (static/dissertation/figcode/, copied there by tools/figures/render.sh from the files it ran)
+  const FIGCODE = "/dissertation/figcode/";
+  const escHtml = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  const PY_KW = new Set("import from as def return for in if elif else while with and or not None True False lambda class try except raise yield".split(" "));
+  // a small highlighter: comments, strings, numbers and keywords (Python), keys (YAML); enough to read by, not a parser
+  function highlight(src, lang) {
+    const out = [];
+    const re = lang === "py"
+      ? /("""[\s\S]*?"""|r?"(?:[^"\\\n]|\\.)*"|r?'(?:[^'\\\n]|\\.)*')|(#[^\n]*)|(\b\d+(?:\.\d+)?(?:e-?\d+)?\b)|([A-Za-z_]\w*)|([\s\S])/g
+      : /(#[^\n]*)|("(?:[^"\\\n]|\\.)*"|'[^'\n]*')|(^[ \t-]*[\w.]+(?=:))|(\b-?\d+(?:\.\d+)?\b)|([\s\S])/gm;
+    let m;
+    while ((m = re.exec(src))) {
+      if (lang === "py") {
+        if (m[1]) out.push(`<span class="s">${escHtml(m[1])}</span>`);
+        else if (m[2]) out.push(`<span class="c">${escHtml(m[2])}</span>`);
+        else if (m[3]) out.push(`<span class="n">${m[3]}</span>`);
+        else if (m[4]) out.push(PY_KW.has(m[4]) ? `<span class="k">${m[4]}</span>` : m[4]);
+        else out.push(escHtml(m[5]));
+      } else {
+        if (m[1]) out.push(`<span class="c">${escHtml(m[1])}</span>`);
+        else if (m[2]) out.push(`<span class="s">${escHtml(m[2])}</span>`);
+        else if (m[3]) out.push(`<span class="k">${escHtml(m[3])}</span>`);
+        else if (m[4]) out.push(`<span class="n">${m[4]}</span>`);
+        else out.push(escHtml(m[5]));
+      }
+    }
+    // one row per line, numbered by the stylesheet; a highlighted span never crosses a line except a docstring,
+    // which is split and re-opened on each line
+    const lines = out.join("").split("\n");
+    let open = null;
+    return lines.map((ln) => {
+      let h = (open ? `<span class="${open}">` : "") + ln;
+      const opens = (h.match(/<span class="(\w)">/g) || []).length, closes = (h.match(/<\/span>/g) || []).length;
+      if (opens > closes) { open = h.match(/<span class="(\w)">(?![\s\S]*<span)/)?.[1] || open || "s"; h += "</span>"; } else open = null;
+      return `<span class="ln">${h || " "}</span>`;
+    }).join("");
+  }
+  function inspect(fig, after, files, btn) {
+    let panel = fig.querySelector(":scope > .inspector");
+    if (panel) { const hide = !panel.hidden; panel.hidden = hide; btn.setAttribute("aria-expanded", String(!hide)); btn.textContent = hide ? "Inspect the code" : "Hide the code"; return; }
+    panel = document.createElement("div");
+    panel.className = "inspector";
+    const tabs = [["code", "Code", files.code, "py"], ["model", "Model", files.model, "yaml"], ["run", "Run it", null, null]];
+    panel.innerHTML = `<div class="tabs" role="tablist">${tabs.map(([k, l], i) => `<button type="button" role="tab" data-k="${k}" aria-selected="${i === 0}">${l}</button>`).join("")}</div>`
+      + tabs.map(([k, , f], i) => `<div class="pane" data-k="${k}"${i ? " hidden" : ""}>${f ? `<div class="bar"><span class="file">${escHtml(f)}</span><button type="button" class="copy">Copy</button><a href="${FIGCODE}${f}" download>Download</a></div><pre class="code"><code>Loading…</code></pre>` : ""}</div>`).join("");
+    after.after(panel);
+    const run = panel.querySelector('.pane[data-k="run"]');
+    run.innerHTML = `<p>Put <a href="${FIGCODE}${files.code}" download>${escHtml(files.code)}</a> and <a href="${FIGCODE}${files.model}" download>${escHtml(files.model)}</a> in one folder, then:</p>
+      <pre class="code"><code><span class="ln">pip install "noisestate&gt;=2" matplotlib</span><span class="ln">python ${escHtml(files.code)}</span></code></pre>
+      <p>It solves the game and writes the figure as a PDF next to the script. Change the numbers in the model to see how the figure moves.</p>`;
+    panel.querySelectorAll('[role="tab"]').forEach((t) => t.addEventListener("click", () => {
+      panel.querySelectorAll('[role="tab"]').forEach((u) => u.setAttribute("aria-selected", String(u === t)));
+      panel.querySelectorAll(".pane").forEach((p) => { p.hidden = p.dataset.k !== t.dataset.k; });
+    }));
+    for (const [k, , f, lang] of tabs) {
+      if (!f) continue;
+      const pane = panel.querySelector(`.pane[data-k="${k}"]`), code = pane.querySelector("code");
+      fetch(FIGCODE + f).then((r) => (r.ok ? r.text() : Promise.reject(r.status))).then((src) => {
+        code.innerHTML = highlight(src.replace(/\n$/, ""), lang);
+        pane.querySelector(".copy").addEventListener("click", (ev) => {
+          navigator.clipboard.writeText(src).then(() => { ev.target.textContent = "Copied"; setTimeout(() => { ev.target.textContent = "Copy"; }, 1400); }, () => {});
+        });
+      }).catch(() => { code.textContent = "The file could not be loaded."; });
+    }
+    btn.setAttribute("aria-expanded", "true"); btn.textContent = "Hide the code";
   }
 
   // ---- the rail: the section on screen is marked; on narrow screens the contents fold under the title

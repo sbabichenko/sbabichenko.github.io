@@ -11,9 +11,10 @@
     <link rel="stylesheet" href="{{ get_url(path='dissertation/katex/katex.min.css', cachebust=true) }}" />
     <script defer src="{{ get_url(path='dissertation/katex/katex.min.js', cachebust=true) }}"></script>
     {% include "partials/header.html" %}
+    <div class="progress" id="progress" data-auto aria-hidden="true"></div>
 
     <main class="explorer">
-      <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; Noise-State Calculus for Dynamic Games with Strategic Information</div>
+      <div class="crumbs"><a href="{{ get_url(path='') }}#projects">Projects</a> &nbsp;/&nbsp; Noise-State Calculus for Dynamic Games with Strategic Information</div>
       <h1>Noise-State Game Explorer</h1>
       <p class="sub">Dynamic games with dispersed private information look hard, even when linearized, because each player
         needs forecasts of others' forecasts, without end. The regress comes from a loop: actions move the state, the
@@ -60,9 +61,9 @@
               Anderson acceleration, on piecewise Chebyshev nodes in shock age, or on a triangle of dates and shock times for
               a finite horizon, until the kernels stop moving.</p>
             <p><b>The games.</b> The tabs follow the chapters: the finite-horizon baseline (1), the stationary game (3),
-              Kyle&ndash;Back trading with several informed traders (4), a cycle of local markets (5), and monitored
-              deviations, naive against privy (6). Chapter 2, on delayed signals, has no tab yet; the model editor takes any
-              game the solver supports.</p>
+              Kyle&ndash;Back trading with several informed traders (4) and a cycle of local markets (5). Chapter 2, on
+              delayed signals, and Chapter 6, on monitored deviations, have no tab yet; the model editor takes any game the
+              solver supports.</p>
           </div>
         </div>
       </details>
@@ -82,10 +83,9 @@
           <div class="tabs codetabs" role="tablist"><button type="button" class="tab" role="tab" data-pane="yaml" aria-selected="true">YAML</button><button type="button" class="tab" role="tab" data-pane="python" aria-selected="false">Python</button></div>
           <div class="pane" data-pane="yaml"><textarea id="yaml" spellcheck="false" aria-label="Model file (YAML)"></textarea></div>
           <div class="pane nopython" data-pane="python" hidden><p>No way am I executing wild code</p></div>
-          <p class="hint">The model file format of noisestate: channels, states, agents with controls, signal rows and losses, a
+          <p class="hint">The model file format of noisestate: shocks, states, agents with controls, signal rows and losses, a
             horizon (<code>stationary</code> with a <code>window</code>, <code>finite</code> with <code>T</code>, or
-            <code>transition</code> with a past) and numerics. A top-level <code>naive_observers</code> makes some agents'
-            strategies ignore another agent's deviations (Chapter 6).</p>
+            <code>transition</code> with a past) and numerics.</p>
           <div class="controls" id="paramcontrols"></div>
           <div class="controls" id="paramopts"></div>
           <div class="row" style="margin-top:12px"><button class="primary" id="solvecustom">Solve this model</button>
@@ -126,7 +126,7 @@
       <div class="notes">
         <p>The solver is a C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a> 1.0.1 (MIT licence)
           with the same equations and algorithms: the stationary, spectral and cell engines, transitions with their past,
-          band, buffer and march in T, naive observers, and the refinement and stability checks. On its test grid its costs,
+          band, buffer and march in T, and the refinement and stability checks. On its test grid its costs,
           kernels, loss paths and first-order-condition terms agree with the Python package to 1e-10 or better.</p>
         <p>To solve games yourself, the Python package is on <a href="https://pypi.org/project/noisestate/">PyPI</a>:
           <code>pip install noisestate</code> (source on <a href="https://github.com/sbabichenko/noisestate">GitHub</a>).
@@ -163,9 +163,9 @@
 
     {% include "partials/footer.html" %}
 
-    {#- Plotly's cartesian build (line, scatter and heatmap are all the explorer draws), served from the site -#}
-    <script src="{{ get_url(path='noisestate/vendor/plotly-cartesian-2.35.2.min.js', cachebust=true) }}"></script>
+    {#- Plotly's cartesian build (line, scatter and heatmap are all the explorer draws), served from the site. It is loaded
+        by explorer.js in idle time after the page loads, not up front: 435 KB compressed off the page's critical path -#}
     <script src="{{ get_url(path='noisestate/js-yaml.min.js', cachebust=true) }}"></script>
-    <script src="{{ get_url(path='noisestate/explorer.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='noisestate/explorer.js', cachebust=true) }}" data-plotly="{{ get_url(path='noisestate/vendor/plotly-cartesian-2.35.2.min.js', cachebust=true) }}"></script>
   </body>
 </html>

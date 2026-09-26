@@ -112,15 +112,15 @@
   function makePencil(name, finale) {
     const g = group(name);
     const parts = [
-      { name: "cedar", from: [-170, -160], lx: 150, ly: 150, build(pg) {
+      { name: "cedar", from: [-170, -160], lx: 150, ly: 150, tx: 236, ty: 283, build(pg) {
           return [stroke(pg, pencil([[170, 283], [440, 283]], 1), "", 2), stroke(pg, pencil([[170, 327], [440, 327]], 2), "", 2),
                   stroke(pg, pencil([[170, 305], [440, 305]], 3), "soft", 1)]; } },
-      { name: "graphite", from: [170, -170], lx: 480, ly: 170, build(pg) {
+      { name: "graphite", from: [170, -170], lx: 480, ly: 170, tx: 490, ty: 301, build(pg) {
           return [stroke(pg, pencil([[440, 283], [500, 305], [440, 327]], 4), "", 2), stroke(pg, pencil([[484, 299], [500, 305], [484, 311]], 5), "accent", 2.4)]; } },
-      { name: "lacquer", from: [-160, 170], lx: 150, ly: 470, build(pg) {
+      { name: "lacquer", from: [160, 170], lx: 470, ly: 440, tx: 392, ty: 326, build(pg) {
           const f = el("rect", { x: 171, y: 284, width: 268, height: 42, class: "fillacc", opacity: 0.1 }, pg);
           return [{ set: (t) => fade(f, t * 0.16) }, stroke(pg, pencil([[176, 294], [434, 294]], 6), "accent soft", 1)]; } },
-      { name: "rubber", from: [170, 170], lx: 470, ly: 470, build(pg) {
+      { name: "rubber", from: [-170, 170], lx: 130, ly: 440, tx: 118, ty: 318, build(pg) {
           return [stroke(pg, pencil([[170, 283], [140, 283], [140, 327], [170, 327]], 7), "", 2),
                   stroke(pg, pencil([[150, 283], [150, 327]], 8), "soft", 1), stroke(pg, pencil([[160, 283], [160, 327]], 9), "soft", 1),
                   stroke(pg, pencil([[140, 286], [116, 288], [112, 305], [116, 322], [140, 324]], 10), "warm", 2)]; } },
@@ -162,8 +162,10 @@
           p.g.setAttribute("transform", `translate(${p.from[0] * (1 - k)},${p.from[1] * (1 - k)})`);
           p.lines.forEach((l) => l.set(seg(t, 0.02 + 0.1 * i, 0.3 + 0.1 * i)));
           fade(p.label, seg(t, 0.02 + 0.1 * i, 0.2 + 0.1 * i));
-          const cx = (p.ly < 300 ? 305 : 305) + p.from[0] * (1 - k) * 0.4;
-          p.lead.setAttribute("x2", p.lx + (cx - p.lx) * 0.35); p.lead.setAttribute("y2", p.ly + (305 - p.ly) * 0.45);
+          // the leader runs from the label to its own part, following the part in, and stops just short of it
+          const x1 = +p.lead.getAttribute("x1"), y1 = +p.lead.getAttribute("y1");
+          const tx = p.tx + p.from[0] * (1 - k), ty = p.ty + p.from[1] * (1 - k), L = Math.hypot(tx - x1, ty - y1) || 1;
+          p.lead.setAttribute("x2", tx - (tx - x1) / L * 7); p.lead.setAttribute("y2", ty - (ty - y1) / L * 7);
           fade(p.lead, seg(t, 0.2, 0.5) * 0.8);
         });
         tag.setAttribute("transform", `rotate(${Math.sin(performance.now() / 700) * 3} 310 370)`);
@@ -300,23 +302,36 @@
     const pulses = el("g", {}, g), live = [];
     let lastWave = 0;
     const lab = text(g, 300, 578, "prices carry what the rest of the world needs them to know", "mono");
+    // a price moves at one person and spreads, link by link, to everyone
+    function wave(src, now) {
+      lastWave = now;
+      const seen = new Set([src]);
+      let front = [src], depth = 0;
+      while (front.length) {
+        const next = [];
+        for (const i of front) for (const j of adj[i]) if (!seen.has(j)) { seen.add(j); next.push(j); live.push({ i, j, t0: now + depth * 420 }); }
+        front = next; depth++;
+      }
+      nodes[src].hit = now;
+    }
+    // unannounced: a click on a person starts a price change there. The targets are live only while this drawing shows.
+    const hits = el("g", {}, g);
+    hits.style.pointerEvents = "none";
+    nodes.forEach((n, i) => {
+      const h = el("circle", { cx: n.x, cy: n.y, r: 24, fill: "transparent" }, hits);
+      h.style.cursor = "pointer";
+      h.addEventListener("pointerdown", (ev) => { ev.preventDefault(); wave(i, performance.now()); });
+    });
+    // only the showing drawing is updated each frame, so the targets are also switched off here when it is hidden
+    new MutationObserver(() => { if (+g.style.opacity < 0.5) hits.style.pointerEvents = "none"; }).observe(g, { attributes: true, attributeFilter: ["style"] });
     return {
       g,
       update(t, now) {
         lines.forEach((l, k) => l.set(seg(t, 0.02 + (k % 10) * 0.02, 0.35 + (k % 10) * 0.02)));
         nodes.forEach((n, i) => { fade(n.ring, seg(t, 0, 0.2) * 0.8); fade(n.dot, seg(t, 0, 0.15)); });
         fade(lab, seg(t, 0.3, 0.5));
-        if (t > 0.3 && now - lastWave > 1600) {                    // a price moves somewhere, and spreads
-          lastWave = now;
-          const src = Math.floor(Math.random() * nodes.length), seen = new Set([src]);
-          let front = [src], depth = 0;
-          while (front.length) {
-            const next = [];
-            for (const i of front) for (const j of adj[i]) if (!seen.has(j)) { seen.add(j); next.push(j); live.push({ i, j, t0: now + depth * 420 }); }
-            front = next; depth++;
-          }
-          nodes[src].hit = now;
-        }
+        hits.style.pointerEvents = t > 0.3 && +g.style.opacity > 0.5 ? "auto" : "none";
+        if (t > 0.3 && now - lastWave > 1600) wave(Math.floor(Math.random() * nodes.length), now);   // a price moves somewhere, and spreads
         pulses.innerHTML = "";
         for (let k = live.length - 1; k >= 0; --k) {
           const q = live[k], u = (now - q.t0) / 420;
@@ -373,6 +388,13 @@
 
   scenes.loop = (() => {
     const g = group("loop"), d = loopDrawing(g, 40), tok = token(g);
+    let ang = Math.PI;
+    return { g, update(t, now, dt) { d.set(t); fade(tok, seg(t, 0.62, 0.7)); ang += dt * 1.1; tokenAt(tok, ang); } };
+  })();
+
+  // -- the models the field set out to build: the loop again, whole, chord and all
+  scenes.attempt = (() => {
+    const g = group("attempt"), d = loopDrawing(g, 41), tok = token(g);
     let ang = Math.PI;
     return { g, update(t, now, dt) { d.set(t); fade(tok, seg(t, 0.62, 0.7)); ang += dt * 1.1; tokenAt(tok, ang); } };
   })();

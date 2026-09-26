@@ -48,8 +48,8 @@
         <div class="demos">
           <a class="demo" href="{{ get_url(path='noisestate/') }}">
             <div class="shot">
-              <img class="img-light" src="{{ get_url(path='images/card-noisestate-light.webp') }}" alt="" width="480" height="240" />
-              <img class="img-dark" src="{{ get_url(path='images/card-noisestate-dark.webp') }}" alt="" width="480" height="240" />
+              <img class="img-light" loading="lazy" decoding="async" src="{{ get_url(path='images/card-noisestate-light.webp') }}" alt="" width="480" height="240" />
+              <img class="img-dark" loading="lazy" decoding="async" src="{{ get_url(path='images/card-noisestate-dark.webp') }}" alt="" width="480" height="240" />
             </div>
             <div class="body">
               <h3>Noise-State Game Explorer</h3>
@@ -61,11 +61,11 @@
           </a>
           <a class="demo" href="{{ get_url(path='gate/') }}">
             <div class="shot">
-              <img class="img-light" src="{{ get_url(path='images/card-gate-light.webp') }}" alt="" width="480" height="240" />
-              <img class="img-dark" src="{{ get_url(path='images/card-gate-dark.webp') }}" alt="" width="480" height="240" />
+              <img class="img-light" loading="lazy" decoding="async" src="{{ get_url(path='images/card-gate-light.webp') }}" alt="" width="480" height="240" />
+              <img class="img-dark" loading="lazy" decoding="async" src="{{ get_url(path='images/card-gate-dark.webp') }}" alt="" width="480" height="240" />
             </div>
             <div class="body">
-              <h3>Decision Mesh, Live</h3>
+              <h3>Decision Mesh</h3>
               <p>Thousands of coins, each flipped a few times, and odds that change somewhere on the square.
                 The estimator adds detail only where a false-discovery gate says the flips justify it, then
                 stops on its own. It separates the odds from each coin's own effect and from the noise of the flips.
@@ -103,6 +103,14 @@
               <span class="go">See the wedge solved <span class="arrow">&rarr;</span></span>
             </div>
           </a>
+          <a class="demo slim" href="{{ get_url(path='noisestate/how/') }}">
+            <div class="body">
+              <h3>How the Noise-State Solver Works</h3>
+              <p>What the explorer does when it solves a game: kernels on a grid, one best response, the fixed point and
+                its acceleration, the checks, drawn from solves run in your browser.</p>
+              <span class="go">Watch a solve <span class="arrow">&rarr;</span></span>
+            </div>
+          </a>
           <a class="demo slim" href="{{ get_url(path='gate/how/') }}">
             <div class="body">
               <h3>The False-Discovery Gate, Step by Step</h3>
@@ -119,18 +127,10 @@
               <span class="go">Go through the algorithm <span class="arrow">&rarr;</span></span>
             </div>
           </a>
-          <a class="demo slim" href="{{ get_url(path='noisestate/how/') }}">
-            <div class="body">
-              <h3>How the Noise-State Solver Works</h3>
-              <p>What the explorer does when it solves a game: kernels on a grid, one best response, the fixed point and
-                its acceleration, the checks, drawn from solves run in your browser.</p>
-              <span class="go">Watch a solve <span class="arrow">&rarr;</span></span>
-            </div>
-          </a>
         </div>
       </section>
 
-      <section>
+      <section id="projects">
         <h2>Projects</h2>
         <div class="work">
           {% for project in data.project %}
