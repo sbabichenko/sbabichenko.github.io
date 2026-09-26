@@ -104,6 +104,9 @@
 .card .d { font-size: 0.9rem; line-height: 1.5; color: var(--ink-2); }
 .cite { margin-top: 2.2rem; font: 0.9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); }
 .cite summary { cursor: pointer; }
+.cite p { margin: 0.7rem 0 0; line-height: 1.5; }
+.cite .cite-copy { margin-top: 0.8rem; font: inherit; font-size: 0.82rem; padding: 4px 11px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); color: var(--ink); cursor: pointer; }
+.cite .cite-copy:hover { border-color: var(--accent); }
 .cite pre { background: var(--sheet); border: 1px solid var(--rule); border-radius: 4px; padding: 0.9rem 1rem; overflow-x: auto; font-size: 0.8rem; margin-top: 0.8rem; }
 
 /* ---------------------------------------------------------------- phones: the drawing on top, the text scrolls under it */

@@ -24,6 +24,8 @@
 #stage .shadew { fill: var(--warm); fill-opacity: 0.13; }
 #stage text.small { font-size: 12px; }
 #stage text.tiny { font: 10px ui-monospace, Menlo, monospace; fill: var(--ink-3); }
+#stage text.tiny.acc { fill: var(--accent); }
+#stage text.tiny.halo { paint-order: stroke; stroke: var(--paper); stroke-width: 4px; stroke-linejoin: round; }
 #stage .stagebusy { font: 12px ui-monospace, Menlo, monospace; letter-spacing: 0.08em; fill: var(--ink-3); }
 .gatehow .howbar input[type=range] { width: 120px; accent-color: var(--accent); }
 .gatehow .howbar .val { font: 0.8rem ui-monospace, Menlo, monospace; color: var(--ink); min-width: 2.2em; }

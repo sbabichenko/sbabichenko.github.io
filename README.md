@@ -19,6 +19,11 @@ assets live under `static/`, so `zola serve` shows them like any other page.
 Presets in the explorer are model files in `PRESETS` at the top of `explorer.js`, each with its sliders; a new tab is
 a new entry there.
 
+`node tools/check_explorer_python.js` runs the explorer's Python tab through noisestate and checks that it builds each
+preset's model.  It needs the site built and served locally with the local address as the base URL
+(`zola build --base-url http://127.0.0.1:8770 --output-dir <dir>`, then serve `<dir>` on that port).  A build with the
+default base URL loads `explorer.js` from the live site, so the check would silently test the published file.
+
 ## The social card
 
 `static/images/og.png` (the `og:image`) is rendered, not drawn: `tools/make_og.js` runs the mesh

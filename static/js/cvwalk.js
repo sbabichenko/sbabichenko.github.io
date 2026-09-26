@@ -42,11 +42,6 @@
     // where along the walk each pin sits (the walk only moves down, so its height finds the length)
     pinLen = ys.map((y) => { let lo = 0, hi = len; for (let k = 0; k < 30; ++k) { const m = (lo + hi) / 2; if (path.getPointAtLength(m).y < y) lo = m; else hi = m; } return hi; });
     walker = el("circle", { r: wide ? 2.6 : 2.2, fill: "currentColor", opacity: 0 }, svg);
-    // the caption: centred over the walk in a wide margin, else under the last stop's pin, reading off to the right
-    const cy = wide ? ys[0] - 14 : ys[ys.length - 1] + 16, cx = wide ? x0 : x0 - 3, anchor = wide ? "middle" : "start";
-    const t = el("text", { x: cx, y: cy, "text-anchor": anchor, "font-size": 9, fill: "currentColor", opacity: 0.5, "font-family": "ui-monospace, Menlo, monospace" }, svg);
-    t.textContent = "a random walk,"; const t2 = el("text", { x: cx, y: cy + 11, "text-anchor": anchor, "font-size": 9, fill: "currentColor", opacity: 0.5, "font-family": "ui-monospace, Menlo, monospace" }, svg);
-    t2.textContent = "pinned at each stop";
     draw();
   }
   function draw() {

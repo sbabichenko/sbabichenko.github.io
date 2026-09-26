@@ -10,8 +10,8 @@
     {% include "partials/header.html" %}
 
     <main class="explorer mesh gate" id="gate" data-worker="{{ get_url(path='mesh/fit-worker.js', cachebust=true) }}">
-      <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; <a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &nbsp;/&nbsp; Live</div>
-      <h1>Decision Mesh, Live</h1>
+      <div class="crumbs"><a href="{{ get_url(path='') }}#projects">Projects</a> &nbsp;/&nbsp; <a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &nbsp;/&nbsp; Live</div>
+      <h1>Decision Mesh</h1>
       <p class="sub">The odds of a coin vary over this square. A few thousand sites each flip a coin a handful of
         times. The estimator refines a mesh of right triangles or rectangles only where a false-discovery gate finds
         support in the flips, and stops when no candidate passes. It separates the odds from each coin's own effect
@@ -29,6 +29,8 @@
             <option value="40">about 40</option><option value="80">about 80</option><option value="160">about 160</option></select></div>
           <div class="ctl"><label for="coinsd"><span>Coin effects, sd</span><span class="val" id="coinsdval"></span></label>
             <input type="range" id="coinsd" min="0" max="1" step="0.05" value="0.25" /></div>
+          <div class="ctl"><label for="q"><span>False discovery rate, q</span><span class="val" id="qval"></span></label>
+            <input type="range" id="q" min="0.01" max="0.3" step="0.01" value="0.1" /></div>
           <div class="ctl" id="drawtools" hidden><label><span>Brush</span></label>
             <div class="brushrow"><label class="check"><input type="checkbox" id="lower" /> lower</label>
               <button class="secondary small" id="clear">Clear</button></div></div>
@@ -39,7 +41,7 @@
       <div id="statusbar">
         <span class="chip idle" id="chip">Ready</span>
         <span id="statustext"></span>
-        <span class="buttons"><button class="secondary" id="newdata" title="Flip every coin again (hold to keep flipping)"><i class="mini-coin" aria-hidden="true"></i>Flip again</button></span>
+        <span class="buttons"><button class="secondary" id="newdata" title="Flip every coin again (hold to keep flipping)"><i class="mini-coin" aria-hidden="true"></i>Flip again</button><button class="secondary" id="ownback" hidden>Back to the coins</button></span>
       </div>
 
       <section class="panel">
@@ -63,6 +65,24 @@
         any number of flips; pick <a href="#truth=drawing">&ldquo;your drawing&rdquo;</a> and paint on the odds (drag to
         raise them, tick &ldquo;lower&rdquo; or hold shift to lower them).</p>
 
+      <section class="panel own" id="own">
+        <h2>Fit Your Own Data</h2>
+        <p class="caption">A CSV with a header row: two numeric columns for the position and a column of 0/1 outcomes, one
+          row per trial. If each row already counts several trials, give its trials and its successes instead. The file
+          is read in this browser and never uploaded. The <a href="{{ get_url(path='mesh/sample-flips.csv') }}">sample file</a>
+          shows the format.</p>
+        <label class="drop" id="drop"><input type="file" id="file" accept=".csv,.txt,text/csv,text/plain" />
+          <span>Drop a CSV here, or <u>choose a file</u></span></label>
+        <div class="colpick" id="colpick" hidden>
+          <div class="ctl"><label for="colx"><span>Across</span></label><select id="colx"></select></div>
+          <div class="ctl"><label for="coly"><span>Up</span></label><select id="coly"></select></div>
+          <div class="ctl"><label for="colk"><span>Outcome or successes</span></label><select id="colk"></select></div>
+          <div class="ctl"><label for="coln"><span>Trials</span></label><select id="coln"></select></div>
+          <div class="buttons"><button class="primary" id="ownfit">Fit</button></div>
+        </div>
+        <p class="ownmsg" id="ownmsg" aria-live="polite"></p>
+      </section>
+
       <div id="results" class="stale">
         <section class="panel"><div class="cards" id="cards"></div></section>
         <section class="panel">
@@ -73,9 +93,11 @@
             null. The gate fits the density of all the scores, reads the null's centre and spread off the middle of it,
             estimates the share &pi;<sub>0</sub> that are noise, and admits the candidates that stand out from that null
             at a controlled false-discovery rate. When the scores have no central peak to read a null from, it falls
-            back to the textbook one. Each coin also has an effect of its own on the log-odds, and the coin variance is
+            back to the textbook one. <span id="coinnote">Each coin also has an effect of its own on the log-odds, and the coin variance is
             the estimator's estimate of their spread, fitted alongside the surface: as the mesh learns the odds, what it
-            can't explain shrinks toward the spread the slider set.
+            can't explain shrinks toward the spread the slider set.</span><span id="sitenote" hidden>Each site also has an
+            effect of its own on the log-odds, and the site variance is the estimator's estimate of their spread, fitted
+            alongside the surface.</span>
             <a href="{{ get_url(path='gate/how/') }}">The False-Discovery Gate, Step by Step</a> draws each of these steps from a live run, and <a href="{{ get_url(path='gate/deep/') }}">The Decision Mesh, in
             Detail</a> goes one level further down.</p>
         </section>

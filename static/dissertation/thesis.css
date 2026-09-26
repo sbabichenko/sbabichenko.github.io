@@ -122,6 +122,9 @@
 .body .fignum { font-weight: 700; color: var(--ink); }
 .dark .body .fignum { color: #1b1b20; }
 .body figure figure { margin: 0.4rem 0; padding: 0; border: 0; }
+/* under the caption: how the figure was computed, and a link to solve its game in the explorer (thesis.js) */
+.body figure .figsrc { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.74rem; line-height: 1.45; color: var(--ink-3, #77777f); margin: 0.45rem 0 0; }
+.body figure .figsrc a { white-space: nowrap; }
 .body .tablewrap { overflow-x: auto; margin: 1.2em 0; }
 #vita td[style*="text-align: right"] { white-space: nowrap; }   /* keep the vita's years (2021–2026) on one line */
 .body table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
@@ -419,3 +422,36 @@
 .body section.level2 { content-visibility: auto; contain-intrinsic-size: auto 900px; }
 .thesis.beside .body section.level2 { content-visibility: visible; }
 @media print { .body section.level2 { content-visibility: visible; } }
+
+/* a figure's Inspect panel (thesis.js): the code that draws it and the model it solves, numbered line by line */
+.body figure .figsrc .inspect { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; white-space: nowrap; }
+.body figure .figsrc .inspect:hover { text-decoration: underline; text-underline-offset: 3px; }
+.body figure .inspector { margin: 0.7rem 0 0; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); text-align: left; overflow: hidden; }
+.inspector .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--rule); font: 0.8rem ui-sans-serif, system-ui, sans-serif; }
+.inspector .tabs button { background: none; border: 0; border-bottom: 2px solid transparent; padding: 0.5rem 0.9rem; color: var(--ink-2, #55555f); cursor: pointer; font: inherit; }
+.inspector .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.inspector .bar { display: flex; align-items: center; gap: 0.9rem; padding: 0.35rem 0.8rem; font: 0.74rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3, #77777f); border-bottom: 1px solid var(--rule); }
+.inspector .bar .file { font-family: ui-monospace, Menlo, monospace; margin-right: auto; }
+.inspector .bar button { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; }
+.inspector pre.code { margin: 0; padding: 0.6rem 0; overflow-x: auto; font: 0.78rem/1.55 ui-monospace, Menlo, monospace; color: var(--ink); counter-reset: ln; max-height: 34rem; }
+.inspector pre.code .ln { display: block; padding: 0 0.9rem 0 0; white-space: pre; }
+.inspector pre.code .ln::before { counter-increment: ln; content: counter(ln); display: inline-block; width: 2.4em; margin-right: 0.9em; text-align: right; color: var(--ink-3, #9a9aa3); opacity: 0.7; user-select: none; }
+.inspector .pane[data-k="run"] { padding: 0.2rem 0.9rem 0.6rem; font: 0.86rem/1.5 ui-sans-serif, system-ui, sans-serif; color: var(--ink-2, #55555f); }
+.inspector .pane[data-k="run"] pre.code { border: 1px solid var(--rule); border-radius: 6px; margin: 0.4rem 0; }
+.inspector .k { color: #8a3ab9; } .inspector .s { color: #0f7b3f; } .inspector .c { color: #7a7a84; font-style: italic; } .inspector .n { color: #b3540f; }
+.dark .inspector .k { color: #d0a0ff; } .dark .inspector .s { color: #8fd6a4; } .dark .inspector .c { color: #9a9aa6; } .dark .inspector .n { color: #f0a870; }
+@media print { .inspector, .figsrc .inspect { display: none !important; } }
+
+/* Formulas are set as native MathML (tools/dissertation/prerender.js), in a Latin Modern Math subset that keeps its
+   OpenType MATH table (tools/dissertation/subset_math_font.py), sized like KaTeX's 1.21em.  Wide displays scroll. */
+@font-face { font-family: 'LM Math'; src: url(lm-math.woff2) format('woff2'); font-display: swap; }
+.katex math { font-family: 'LM Math', math; font-size: 1.1em; }
+.katex math[display="block"] mtd, .katex math[display="block"] mtd * { math-style: normal; }
+.katex math[display="block"] { display: block math; margin: 0.6em 0; overflow-x: auto; overflow-y: hidden; }
+.katex math mtable[width="100%"] { width: 100%; }
+.katex math mtd[width="50%"] { width: 50%; }
+/* the multi-row numbered displays that stay KaTeX HTML (see prerender.js): a formula wider than the column scrolls,
+   and its numbers ride at the formula's right end instead of lying over it */
+.body .math.display .katex-display { overflow-x: auto; overflow-y: hidden; }
+.body .math.display .katex-display > .katex > .katex-html { display: inline-block; min-width: 100%; padding-right: 5.5em; box-sizing: border-box; }
+

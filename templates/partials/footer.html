@@ -8,6 +8,9 @@
   <a href="{{ get_url(path='atom.xml') }}" title="New writing, in any feed reader">Feed</a>
   <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
 </footer>
+{%- if current_path and current_path is starting_with("/writing/") and current_path != "/writing/" and not current_path is starting_with("/writing/tags") and not current_path is starting_with("/writing/archive") %}
+<div class="progress" id="progress" data-auto aria-hidden="true"></div>
+{%- endif %}
 <script src="{{ get_url(path='js/tally.js', cachebust=true) }}"></script>
 <link rel="stylesheet" href="{{ get_url(path='css/whimsy.css', cachebust=true) }}" />
 <link rel="stylesheet" href="{{ get_url(path='css/fold.css', cachebust=true) }}" />

@@ -162,7 +162,7 @@
       const [x, y] = vertical ? P(uT, vEdge - 0.02) : P(uT, 1 - vEdge + 0.02);
       const tx = vertical ? x - 8 : x + 6;
       const t = el("text", { x: tx, y: vertical ? y - 4 : y + 56, class: "lab accl", "text-anchor": "end" }, g);
-      t.innerHTML = `<tspan class="who">2026</tspan><tspan x="${tx}" dy="14">this dissertation</tspan>`;
+      t.innerHTML = `<tspan class="who">2026</tspan><tspan x="${tx}" dy="14">noise-state calculus</tspan>`;
       parts.push({ set: (q) => { t.style.opacity = q; }, w: [0.8, 0.83] });
     }
     // and then each line's own way in

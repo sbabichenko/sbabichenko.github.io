@@ -24,7 +24,7 @@
       document.documentElement.classList.add("inking");
       const t = document.startViewTransition(() => { passing = true; btn.click(); passing = false; });
       t.ready.then(() => document.documentElement.animate({ clipPath: frames },
-        { duration: 520, easing: "linear", fill: "both", pseudoElement: "::view-transition-new(root)" })).catch(() => {});
+        { duration: 728, easing: "linear", fill: "both", pseudoElement: "::view-transition-new(root)" })).catch(() => {});
       t.finished.finally(() => document.documentElement.classList.remove("inking"));
     }, true);
   }
@@ -292,7 +292,22 @@
   (function progressLine() {
     const bar = document.getElementById("progress");
     if (!bar) return;
-    const mode = /^\/gate(\/|$)/.test(location.pathname) ? "mesh" : "walk";
+    const mode = /^\/(gate|mesh)(\/|$)/.test(location.pathname) ? "mesh" : "walk";
+    // pages without their own reading script: the share of the page scrolled, never sliding back while scrolling
+    // down (figures that load late make the page taller under the reader)
+    if (bar.hasAttribute("data-auto")) {
+      let lastY = -1, lastF = 0;
+      const auto = () => {
+        const h = document.documentElement.scrollHeight - window.innerHeight;
+        let f = h > 0 ? Math.min(1, Math.max(0, window.scrollY / h)) : 0;
+        if (window.scrollY > lastY && f < lastF) f = lastF;
+        lastY = window.scrollY; lastF = f;
+        bar.style.width = (100 * f).toFixed(2) + "%";
+      };
+      window.addEventListener("scroll", auto, { passive: true });
+      window.addEventListener("resize", auto);
+      auto();
+    }
     bar.classList.add("bar-" + mode);
     const NS = "http://www.w3.org/2000/svg", H = 10;
     const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };

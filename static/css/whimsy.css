@@ -18,7 +18,9 @@ p a:hover, article li a:hover, .lede a:hover, figcaption a:hover {
 }
 nav li a:hover, .rail li a:hover, .toc li a:hover { text-decoration-line: none; }
 
-/* the reading-progress line, drawn for the page (static/js/whimsy.js): the pages set its width, which uncovers the drawing */
+/* the reading-progress line, drawn for the page (static/js/whimsy.js): the pages set its width, which uncovers the drawing;
+   a line marked data-auto has its width set by whimsy.js from the scroll */
+.progress[data-auto] { position: fixed; top: 0; left: 0; width: 0; z-index: 60; }
 .progress.bar-walk, .progress.bar-mesh { height: 10px !important; background: none !important; overflow: hidden; pointer-events: none; }
 .progress .bar-art { position: absolute; left: 0; top: 0; display: block; overflow: visible; }
 .progress .bar-ink { fill: none; stroke: #1f3fd0; stroke-width: 1.3; stroke-linejoin: round; }
