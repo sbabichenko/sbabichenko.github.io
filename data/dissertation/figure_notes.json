@@ -1,0 +1,196 @@
+{
+ "fig:impulse_w0_first": {
+  "note": "Computed with the noisestate package at 24 nodes.",
+  "explorer": {
+   "hash": "game=ch1&p1=3&p2=10&r1=0.1&r2=0.1&b1=1&b2=-1&sigma=1&T=1",
+   "label": "Solve this game in the explorer"
+  },
+  "inspect": {
+   "code": "fig1_2.py",
+   "model": "fig1_2.yaml"
+  }
+ },
+ "fig:mean_response_precision": {
+  "note": "Computed with spec_ch1, the spectral solver for this chapter, at 12 × 16 nodes (16 × 24 at p = 10⁴).",
+  "explorer": {
+   "hash": "game=ch1&p1=10&p2=10&r1=0.1&r2=0.1&b1=1&b2=-1&sigma=1&T=1",
+   "label": "Solve this game in the explorer, at p = 10"
+  },
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/ch1_mean_spectral_2026-08-27",
+   "label": "The code"
+  }
+ },
+ "fig:costs_private_vs_pooled": {
+  "note": "Computed with spec_ch1 at 12 × 16 nodes.",
+  "code": {
+   "url": "https://github.com/sbabichenko/Forecasting-And-Manipulating-The-Forecasts-Of-Others/blob/main/spectral_ch1/fig12_sweep.py",
+   "label": "The code"
+  }
+ },
+ "fig:precision_decomposition": {
+  "note": "Computed with the finite-difference solver (lqg_solver.cpp) on grids of 40 and 79 points and Richardson-extrapolated.",
+  "explorer": {
+   "hash": "game=ch1&p1=10&p2=10&r1=0.05&r2=0.2&b1=1&b2=-1&sigma=0.5&T=1",
+   "label": "Solve this game in the explorer, at an even split"
+  },
+  "code": {
+   "url": "https://github.com/sbabichenko/Forecasting-And-Manipulating-The-Forecasts-Of-Others/blob/main/generate_figures.cpp",
+   "label": "The code"
+  }
+ },
+ "fig:stationary-filter": {
+  "note": "Computed with solve_spectral at 32 Chebyshev nodes per side.",
+  "explorer": {
+   "hash": "game=ch3&p1=3&p2=3&r1=0.1&r2=0.1&b1=0&b2=0",
+   "label": "Solve this game in the explorer"
+  },
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary",
+   "label": "The code"
+  }
+ },
+ "fig:stationary-adjoint": {
+  "note": "Computed with solve_spectral at 32 Chebyshev nodes per side.",
+  "explorer": {
+   "hash": "game=ch3&p1=3&p2=3&r1=0.1&r2=0.1&b1=0&b2=0",
+   "label": "Solve this game in the explorer"
+  },
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary",
+   "label": "The code"
+  }
+ },
+ "fig:stationary-precision": {
+  "note": "Two sweeps of 200 equilibria with solve_spectral at 24 nodes per side.",
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary",
+   "label": "The code"
+  }
+ },
+ "fig:stationary-hankel": {
+  "note": "Computed with solve_spectral at 32 Chebyshev nodes per side.",
+  "explorer": {
+   "hash": "game=ch3&p1=3&p2=3&r1=0.1&r2=0.1&b1=0&b2=0",
+   "label": "Solve this game in the explorer"
+  },
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary",
+   "label": "The code"
+  }
+ },
+ "fig:stationary-refinement": {
+  "note": "Finite differences (solve_stationary) at N = 500, 1000, 2000 and 4000; solve_spectral at 8 to 24 nodes per side.",
+  "explorer": {
+   "hash": "game=ch3&p1=3&p2=3&r1=0.1&r2=0.1&b1=0&b2=0",
+   "label": "Solve this game in the explorer"
+  },
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary",
+   "label": "The code"
+  }
+ },
+ "fig:stationary-pinn": {
+  "note": "Stored solutions: a 256 × 5 neural network and a Wiener–Hopf solver on 1000 points.",
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/stationary",
+   "label": "The code"
+  }
+ },
+ "fig:kb-kernels": {
+  "note": "Computed with kb_spectral at 64 and 128 nodes, on windows of 8 and 32.",
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback",
+   "label": "The code"
+  }
+ },
+ "fig:kb-multiasset": {
+  "note": "Computed with kb_spectral_q at 48 nodes on a window of 8.",
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback",
+   "label": "The code"
+  }
+ },
+ "fig:kb-impact-decomp": {
+  "note": "Computed with the grid solver kb_multi.py, 100 cells on a window of 8.",
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback",
+   "label": "The code"
+  }
+ },
+ "fig:kb-wedge-decomp": {
+  "note": "Computed from kb_multi.py solutions, 100 cells on a window of 8.",
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback",
+   "label": "The code"
+  }
+ },
+ "fig:kb-rho-ladder": {
+  "note": "Computed with kb_spectral at 64, 96 and 128 nodes for windows of 8, 16 and 32.",
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/kyleback",
+   "label": "The code"
+  }
+ },
+ "fig:ch5-logdev": {
+  "note": "An illustrative simulated path.",
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle",
+   "label": "The code"
+  }
+ },
+ "fig:ch5-schematic": {
+  "note": "Drawn with a plotting script.",
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle",
+   "label": "The code"
+  }
+ },
+ "fig:ch5-levels": {
+  "note": "Computed with spectral_market.",
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle",
+   "label": "The code"
+  }
+ },
+ "fig:ch5-transmission": {
+  "note": "Computed with spectral_market.",
+  "explorer": {
+   "hash": "game=ch5&window=24",
+   "label": "Solve this game in the explorer, at σᵤ = 1"
+  },
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle",
+   "label": "The code"
+  }
+ },
+ "fig:ch5-idiosyncratic": {
+  "note": "Computed with spectral_market.",
+  "explorer": {
+   "hash": "game=ch5&window=24",
+   "label": "Solve this game in the explorer, at σᵤ = 1"
+  },
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle",
+   "label": "The code"
+  }
+ },
+ "fig:ch5-kernels": {
+  "note": "Computed with spectral_market at 8 and 12 nodes per panel on a window of 24.",
+  "explorer": {
+   "hash": "game=ch5&window=24",
+   "label": "Solve this game in the explorer"
+  },
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/finite_cycle",
+   "label": "The code"
+  }
+ },
+ "fig:mm-stationary": {
+  "note": "Computed with mm_stationary.py and mm_opaque.py on the grid solver of Chapter 4, 60 cells on a window of 8.",
+  "code": {
+   "url": "https://github.com/sbabichenko/dissertation-numerics/tree/main/monitored_deviations",
+   "label": "The code"
+  }
+ }
+}

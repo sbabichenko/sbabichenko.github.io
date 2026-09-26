@@ -37,3 +37,17 @@ fig13) keep their print conversions.
 `build.py` records a fingerprint of the LaTeX it built from in `data/dissertation/source.json` and refuses to
 overwrite the pages from different LaTeX that is no newer, or when there is no record at all (the pages online
 in September 2026 were built from another machine's copy). Compare the copies, then pass `--force`.
+
+## Checking for drift
+
+The pages on the site have been edited after they were built, and the LaTeX has been edited since, so before
+regenerating from the LaTeX, see where the two differ:
+
+    PANDOC_DIR=/path/to/pandoc-3/bin python3 tools/dissertation/drift.py ~/dissertation --out drift.txt
+
+It builds the LaTeX into a scratch copy of the site (never into the site itself) and reports, page by page, the
+paragraphs, headings and captions that differ, with a word-level diff (`[-site-] {+LaTeX+}`), and any that exist on
+only one side. Formulas are compared by the glyphs KaTeX drew for them. Carry the site's wording back into the LaTeX
+wherever it is the newer one, and only then run `build.py --force`. `--built DIR` reuses a scratch copy kept with
+`--keep`; `--only chapter-1,chapter-2` limits the report.
+

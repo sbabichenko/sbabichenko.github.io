@@ -243,8 +243,13 @@
 .home .dstill .acc { stroke: var(--accent); }
 @media (max-width: 640px) { .home .item.with-still { grid-template-columns: 1fr; } .home .dstill { grid-column: 1; grid-row: auto; margin-top: 0.9rem; max-width: 300px; } }
 
-/* three illustrated explanations in a row */
-@media (min-width: 801px) { .home .demos.stories { grid-template-columns: repeat(3, 1fr); } }
+/* three illustrated explanations in a row; a short last row splits its width instead of leaving a hole */
+@media (min-width: 801px) {
+  .home .demos.stories { grid-template-columns: repeat(6, 1fr); }
+  .home .demos.stories > .demo { grid-column: span 2; }
+  .home .demos.stories > .demo:nth-child(3n+1):nth-last-child(2),
+  .home .demos.stories > .demo:nth-child(3n+2):last-child { grid-column: span 3; }
+}
 
 /* the hero's mesh runs out to both edges of the window whenever there is room beside the column (heroink.js
    notices and draws to fit; on a phone the canvas is the column's width anyway) */

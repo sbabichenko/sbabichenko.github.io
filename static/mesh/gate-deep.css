@@ -34,6 +34,8 @@
 #stage .ring { fill: none; stroke: currentColor; stroke-width: 1.4; }
 #stage text.small { font-size: 12px; }
 #stage text.tiny { font: 10px ui-monospace, Menlo, monospace; fill: var(--ink-3); }
+#stage text.tiny.acc { fill: var(--accent); }
+#stage text.tiny.halo { paint-order: stroke; stroke: var(--paper); stroke-width: 4px; stroke-linejoin: round; }
 #stage text.formula { font: italic 17px Newsreader, Georgia, serif; fill: currentColor; }
 #stage text.num { font: 13px ui-monospace, Menlo, monospace; fill: currentColor; }
 #stage .stagebusy { font: 12px ui-monospace, Menlo, monospace; letter-spacing: 0.08em; fill: var(--ink-3); }

@@ -32,3 +32,11 @@
   src: url(./newsreader-latin-opsz-italic.woff2) format('woff2-variations');
   unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
+
+/* Static instances of the same font (the default optical size, 18, which is what Chrome printed the variable font at) for printing the CV: Chrome embeds a variable font in a PDF as
+   Type 3 glyphs, which resume parsers and some readers handle badly; static TrueType embeds as ordinary fonts.
+   Only the CV's print stylesheet names this family, so the web pages never download these files. */
+@font-face { font-family: 'Newsreader Print'; font-style: normal; font-weight: 400; src: url(./newsreader-print-400.ttf) format('truetype'); }
+@font-face { font-family: 'Newsreader Print'; font-style: normal; font-weight: 500; src: url(./newsreader-print-500.ttf) format('truetype'); }
+@font-face { font-family: 'Newsreader Print'; font-style: normal; font-weight: 600; src: url(./newsreader-print-600.ttf) format('truetype'); }
+@font-face { font-family: 'Newsreader Print'; font-style: italic; font-weight: 400; src: url(./newsreader-print-400-italic.ttf) format('truetype'); }

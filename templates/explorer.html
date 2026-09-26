@@ -11,9 +11,10 @@
     <link rel="stylesheet" href="{{ get_url(path='dissertation/katex/katex.min.css', cachebust=true) }}" />
     <script defer src="{{ get_url(path='dissertation/katex/katex.min.js', cachebust=true) }}"></script>
     {% include "partials/header.html" %}
+    <div class="progress" id="progress" data-auto aria-hidden="true"></div>
 
     <main class="explorer">
-      <div class="crumbs"><a href="{{ get_url(path='') }}">Projects</a> &nbsp;/&nbsp; Noise-State Calculus for Dynamic Games with Strategic Information</div>
+      <div class="crumbs"><a href="{{ get_url(path='') }}#projects">Projects</a> &nbsp;/&nbsp; Noise-State Calculus for Dynamic Games with Strategic Information</div>
       <h1>Noise-State Game Explorer</h1>
       <p class="sub">Dynamic games with dispersed private information look hard, even when linearized, because each player
         needs forecasts of others' forecasts, without end. The regress comes from a loop: actions move the state, the
@@ -82,7 +83,7 @@
           <div class="tabs codetabs" role="tablist"><button type="button" class="tab" role="tab" data-pane="yaml" aria-selected="true">YAML</button><button type="button" class="tab" role="tab" data-pane="python" aria-selected="false">Python</button></div>
           <div class="pane" data-pane="yaml"><textarea id="yaml" spellcheck="false" aria-label="Model file (YAML)"></textarea></div>
           <div class="pane nopython" data-pane="python" hidden><p>No way am I executing wild code</p></div>
-          <p class="hint">The model file format of noisestate: channels, states, agents with controls, signal rows and losses, a
+          <p class="hint">The model file format of noisestate: shocks, states, agents with controls, signal rows and losses, a
             horizon (<code>stationary</code> with a <code>window</code>, <code>finite</code> with <code>T</code>, or
             <code>transition</code> with a past) and numerics.</p>
           <div class="controls" id="paramcontrols"></div>
@@ -162,9 +163,9 @@
 
     {% include "partials/footer.html" %}
 
-    {#- Plotly's cartesian build (line, scatter and heatmap are all the explorer draws), served from the site -#}
-    <script src="{{ get_url(path='noisestate/vendor/plotly-cartesian-2.35.2.min.js', cachebust=true) }}"></script>
+    {#- Plotly's cartesian build (line, scatter and heatmap are all the explorer draws), served from the site. It is loaded
+        by explorer.js in idle time after the page loads, not up front: 435 KB compressed off the page's critical path -#}
     <script src="{{ get_url(path='noisestate/js-yaml.min.js', cachebust=true) }}"></script>
-    <script src="{{ get_url(path='noisestate/explorer.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='noisestate/explorer.js', cachebust=true) }}" data-plotly="{{ get_url(path='noisestate/vendor/plotly-cartesian-2.35.2.min.js', cachebust=true) }}"></script>
   </body>
 </html>

@@ -6,8 +6,9 @@
 // under the mesh on screen and adds a cloud of samples around it; the mesh then refines only where the bump is,
 // by the engine's own steps, so it stays one mesh (every split cuts the triangles on both sides of its edge) and
 // nothing else in the picture moves. A mouse drag across empty background (not across text, which keeps its
-// selection) raises a ridge along the path; the mesh takes it up from the start of the path to its end, and a
-// dotted trace of the path stays. Pressing and holding keeps collecting samples under the pointer, so the mesh
+// selection) raises a ridge along the path; the mesh takes it up from the start of the path to its end, and the
+// drawn line fades away from its start to its end as the mesh catches up. A click leaves a small ring that fades
+// as its cuts come in. Pressing and holding keeps collecting samples under the pointer, so the mesh
 // gets finer there the longer you hold (moving while holding paints). Cuts made by pokes keep a good shape (no
 // sliver past 4 to 1) and stop at about 14 pixels, and shorter edges are drawn lighter, so a poked patch reads as
 // finer texture rather than a tangle. A poked picture lasts a minute; a double-click starts a new one.
@@ -47,7 +48,7 @@
   // after a poke: where it landed (a disk, or a tube along a drag that is uncovered from its start), the steps left
   // to spend there, and the bumps raised so far (new samples are drawn from the field with all of them added)
   let pxPerUnit = 150;                              // screen pixels per unit of the field, set on every draw
-  let region = null, budget = 0, spare = 0, pokes = 0, lastPoke = 0, pokeId = 1, bumps = [];
+  let region = null, planFront = 1, pokes = 0, lastPoke = 0, pokeId = 1, bumps = [];
   // squared distance from (x, y) to a polyline
   function ridgeD2(pts, x, y) {
     let best = Infinity;
@@ -70,14 +71,15 @@
     }
     return { in: best < R.r * R.r, idx: at / Math.max(1, P.length - 1) };
   }
-  const front = (now) => (region && region.pts ? Math.min(1, (now - region.t0) / region.dur) : 1);
+  // every poke runs on its own clock, R.T0 to R.T0 + R.D, which ends at its last cut; its line or ring fades on it
+  const progress = (R, now) => Math.min(1, Math.max(0, (now - R.T0) / R.D));
 
   // a new surface: a fresh field, fresh samples, the mesh grown from its start
   function start() {
     seed = (seed * 1103515245 + 12345) >>> 0;
     rng = mulberry32(seed);
     field = FIELDS[seed % FIELDS.length]; target = TARGET;
-    region = null; budget = 0; pokes = 0; bumps = []; trace = null;
+    region = null; pokes = 0; bumps = []; trace = null; marks = [];
     const X = new Float64Array(2 * N), Y = new Float64Array(N);
     for (let i = 0; i < N; ++i) {
       const x = LO + (HI - LO) * rng(), y = LO + (HI - LO) * rng();
@@ -175,11 +177,8 @@
     }
     for (const f of addData(pts)) touched.add(f);
     rescore(touched);
-    // the budget counts cuts (refits, which move no edge, draw on a separate allowance)
-    region = R; budget = R.pts ? 180 : 70; spare = 3000; ++pokes; lastPoke = performance.now();
-    phase = "grow"; fade = 1;
-    // the first cuts land at once, so the click is answered on the spot (a drag is taken up along its path instead)
-    if (!R.pts) for (let k = 0, guard = 0; k < 12 && guard < 200; ++guard) { const did = localStep(lastPoke); if (!did) break; if (did === "split") { ++k; --budget; } }
+    ++pokes; lastPoke = performance.now();
+    plan(R, R.pts ? 180 : 70, R.pts ? Math.min(9000, R.dur + 4000) : 3500);
   }
   // pressing and holding: more samples under the pointer (no new bump), and a few more cuts there, again and again
   function collect(x, y) {
@@ -190,8 +189,36 @@
       pts.push([px_, py_, valueAt(px_, py_) + 0.45 * gauss(r)]);
     }
     rescore(addData(pts));
-    region = { x, y, r: 0.55 }; budget = Math.max(budget, 0) + 10; spare = 3000; lastPoke = performance.now();
-    phase = "grow"; fade = 1;
+    lastPoke = performance.now();
+    plan({ x, y, r: 0.55 }, 10, 600);
+  }
+  // A poke's cuts are all worked out at once, then shown on a schedule: cut i of n appears at T0 + D (1 - sqrt(1 -
+  // (i + 1) / n)), quick at first and easing off, the last exactly at T0 + D, where the poke's clock (R.D) ends. An edge
+  // gets the time it is to appear: a new chord its cut's time, the two halves of a split edge the time of the edge they
+  // came from (the line was already there). On a drag the cuts are taken in order along the path.
+  function plan(R, want, D) {
+    region = R; phase = "grow"; fade = 1;
+    const cuts = [];
+    let pf = R.pts ? 0.15 : 1, guard = 0;
+    while (cuts.length < want && guard++ < want * 4) {
+      planFront = R.pts ? Math.min(1, Math.max(pf, 0.15 + 1.1 * (cuts.length + 1) / want)) : 1;
+      const did = localStep();
+      if (!did) { if (pf < 1 && R.pts) { pf = Math.min(1, planFront + 0.1); continue; } break; }
+      cuts.push(did);
+    }
+    planFront = 1;
+    const T0 = performance.now(), n = cuts.length;
+    let last = T0;
+    cuts.forEach((c, i) => {
+      // on schedule, but never before a line it attaches to (a cut still pending from an earlier poke may be one)
+      let t = T0 + D * (1 - Math.sqrt(Math.max(0, 1 - (i + 1) / n)));
+      for (const e of c.deps) { const te = drawn.get(e); if (te !== undefined && te >= t) t = te + 1; }
+      last = Math.max(last, t);
+      // the halves keep the split edge's time (the line was already there); the chords are the new lines
+      const tg = drawn.has(c.pe) ? drawn.get(c.pe) : T0 - 5000;
+      for (const e of c.born) drawn.set(e, e === c.pe.sub["0"] || e === c.pe.sub["1"] ? tg : t);
+    });
+    R.T0 = T0; R.D = n ? last - T0 : 600;                  // the clock ends at the last cut
   }
   // a cut is taken only if no new triangle is thinner than 4 to 1 and no new edge is shorter than about 14 pixels
   function shapely(v) {
@@ -203,13 +230,16 @@
     }
     return true;
   }
-  // one step of the engine, taken from the best candidates inside the poked region (the part uncovered so far)
-  function localStep(now) {
+  // the engine's best cut inside the poked region (on a drag, the part planned so far); returns the edges it
+  // creates, or null. Refits, which move no line, are left to the engine's own growth.
+  function localStep() {
     let best = null, bp = -1e-12;
-    for (const [v, p] of mesh.heap) if (p < bp) { const m = hit(v.x, v.y, region); if (m.in && m.idx <= front(now) && shapely(v)) { bp = p; best = v; } }
+    for (const [v, p] of mesh.heap) if (p < bp && !v.active) { const m = hit(v.x, v.y, region); if (m.in && m.idx <= planFront && shapely(v)) { bp = p; best = v; } }
     if (!best) return null;
-    if (best.active) { best.updateHeight(); return "refit"; }
-    best.activate(); return "split";
+    const pe = best.parentEdge, deps = [];
+    for (const side of ["+", "-"]) if (pe.faces[side]) deps.push(...pe.faces[side].edges);   // the lines the cut attaches to
+    best.activate();
+    return { pe, deps, born: [pe.sub["0"], pe.sub["1"], pe.sub["+"], pe.sub["-"]].filter((e) => e && e.active) };
   }
 
   // the engine's starting mesh: the square cut along its diagonal and bisected evenly, 128 right triangles
@@ -298,6 +328,7 @@
     for (const e of mesh.activeEdges) {
       let t = drawn.get(e);
       if (t === undefined) { t = now; drawn.set(e, t); }
+      if (t > now) continue;                              // a planned cut not yet due
       edge(e.v0.x, e.v0.y, e.v1.x, e.v1.y, t);
     }
     // the ridge being drawn; after the release it dims to a faint trace that stays while the picture does
@@ -305,14 +336,32 @@
       ctx.strokeStyle = `rgba(${glow},0.45)`; ctx.lineWidth = 1.5 * dpr;
       ctx.beginPath(); stroke.pts.forEach((q, i) => (i ? ctx.lineTo(q.cx, q.cy) : ctx.moveTo(q.cx, q.cy))); ctx.stroke();
     }
-    for (const tr of trace || []) {
-      // solid as drawn, then dotted, so the path reads as yours and not as one more edge of the mesh
-      const k = Math.min(1, (now - tr.t) / 1200), al = (0.45 - 0.05 * k) * fade;
-      ctx.strokeStyle = `rgba(${glow},${al})`; ctx.lineWidth = (1.5 + 0.5 * k) * dpr;
-      ctx.setLineDash(k < 1 ? [] : [0.1, 5 * dpr]);
-      ctx.beginPath(); tr.pts.forEach((q, i) => (i ? ctx.lineTo(px(q.x), py(q.y)) : ctx.moveTo(px(q.x), py(q.y)))); ctx.stroke();
-      ctx.setLineDash([]);
+    // a released ridge fades from its start to its end on the ridge's clock, gone when its cuts are done
+    if (trace) {
+      ctx.lineWidth = 1.5 * dpr;
+      for (const tr of trace) {
+        tr.f = progress(tr.R, now);
+        const n = tr.pts.length;
+        for (let i = 1; i < n; ++i) {
+          // each piece fades over a fifth of the clock, starting in order along the path, the last ending at D
+          const u = (i - 0.5) / (n - 1), k = Math.min(1, Math.max(0, 1 - (tr.f - 0.8 * u) / 0.2));
+          if (k <= 0) continue;
+          ctx.strokeStyle = `rgba(${glow},${0.45 * k * fade})`;
+          ctx.beginPath(); ctx.moveTo(px(tr.pts[i - 1].x), py(tr.pts[i - 1].y)); ctx.lineTo(px(tr.pts[i].x), py(tr.pts[i].y)); ctx.stroke();
+        }
+      }
+      trace = trace.filter((tr) => tr.f < 1);
     }
+    // a click's ring: it stays while the cuts come in and fades and tightens as they finish
+    ctx.lineWidth = 1.3 * dpr;
+    for (const m of marks) {
+      m.f = progress(m.R, now);
+      const k = Math.max(0, 1 - m.f);
+      if (k <= 0) continue;
+      ctx.strokeStyle = `rgba(${glow},${0.6 * Math.sqrt(k) * fade})`;
+      ctx.beginPath(); ctx.arc(px(m.x), py(m.y), (5 + 6 * k) * dpr, 0, 2 * Math.PI); ctx.stroke();
+    }
+    marks = marks.filter((m) => m.f < 1);
     if (nothing) drawRejections(now, G, dark);
     if (stroke && stroke.holding && holdRing) {        // a hold: a small ring breathing under the pointer
       const k = 0.5 + 0.5 * Math.sin((now - holdRing.t) / 90);
@@ -326,7 +375,7 @@
       ctx.beginPath(); ctx.arc(ripple.x, ripple.y, (8 + 70 * age) * dpr, 0, 2 * Math.PI); ctx.stroke();
     }
   }
-  let ripple = null, stroke = null, trace = null, holdRing = null;   // trace: the ridges drawn into this picture
+  let ripple = null, stroke = null, trace = null, holdRing = null, marks = [];   // trace: drawn ridges; marks: clicks
 
   // 404: candidate midpoints light up and are turned down, one after another
   const rejections = [];
@@ -385,6 +434,7 @@
     const now = performance.now();
     pointer = p; lensAt = now; ripple = { x: p.x, y: p.y, t: now };
     poke({ x, y, r: 1.05 }, pokes % 2 ? -3.2 : 3.2, 0.3, 750, 0.55);
+    marks.push({ x, y, R: region, f: 0 });
   });
   // is the pointer on a line of text (not merely inside a text block's box, which runs the column's width)?
   function overText(ev) {
@@ -438,9 +488,9 @@
       }
       if (pts.length < 2) return;
       const path = pts.slice(0, 80), now = performance.now();
-      (trace = trace || []).push({ pts: path, t: now });
       ripple = null;
       poke({ pts: path, r: 0.55, t0: now + 150, dur: Math.min(3600, 1000 + 110 * path.length) }, 2.8, 0.12, 1400, 0.35);
+      (trace = trace || []).push({ pts: path, R: region, f: 0 });
     });
   }
 
@@ -474,17 +524,9 @@
         const every = region ? 30 : 120;
         while (acc > every) {
           acc -= every;
-          if (region) {
-            let k = region.pts ? 2 : 1;
-            // refits move no edge and cost little: take them as they come (at most 40 a frame), count only the cuts
-            let refits = 40;
-            while (k > 0 && budget > 0) {
-              const did = localStep(now);
-              if (did === "split") { --budget; --k; }
-              else if (did === "refit") { if (--spare <= 0) budget = 0; if (--refits <= 0) break; }
-              else { if (front(now) >= 1) budget = 0; break; }
-            }
-            if (budget <= 0) { phase = "hold"; acc = 0; break; }
+          if (region) {                                   // a poke's cuts are planned: wait for the last to show
+            if (progress(region, now) >= 1) { phase = "hold"; acc = 0; }
+            break;
           } else if (mesh.activeFaces.size >= target || mesh.step(0.08) === "none") { phase = "hold"; acc = 0; break; }
         }
         draw(now);
@@ -492,7 +534,7 @@
         acc += dt;
         if (pokes ? now - lastPoke > 60000 : acc > 6500) { phase = "out"; acc = 0; }
         // once the last cut's glow has faded there is nothing new to draw, unless the lens is moving
-        if (acc < 2200 || lensy || stroke || (trace && trace.some((tr) => now - tr.t < 1300))) draw(now);
+        if (acc < 2200 || lensy || stroke || (trace && trace.length) || marks.length) draw(now);
       } else {
         acc += dt;
         fade = Math.max(0, 1 - acc / 1600);

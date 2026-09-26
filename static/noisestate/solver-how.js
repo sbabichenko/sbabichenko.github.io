@@ -137,7 +137,7 @@
     const res = R.base, X = (t) => 110 + 210 * t, Y = (s) => 250 - 210 * s;
     triangleOutline(g, X, Y, 3);
     text(g, X(0.5), Y(0) + 26, "date t", "label"); text(g, X(1) + 14, Y(0.5), "shock date s", "label", "start");
-    text(g, X(0.68), Y(0.25) + 5, "s ≤ t", "mono");
+    text(g, X(0.625), Y(0.18) + 5, "s ≤ t", "mono");
     const sl = res.samples.kernels.D1.w0, ops = [0.35, 0.55, 0.75, 1];
     sl.forEach((q, j) => { el("line", { x1: X(q.t), x2: X(q.t), y1: Y(0), y2: Y(q.t), class: "pencil accent", "stroke-width": 2.2, opacity: ops[j] }, g); });
     const lo = Math.min(0, ...sl.flatMap((q) => q.v)), hi = Math.max(0, ...sl.flatMap((q) => q.v)), pad = 0.08 * (hi - lo || 1);

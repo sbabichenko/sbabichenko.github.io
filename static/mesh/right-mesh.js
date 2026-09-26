@@ -17,12 +17,22 @@
   const S = 1 << 20;                                 // the dyadic lattice over the square
 
   let SEQ = 0;
+  let EPOCH = 0;                                    // bumped by every surplus change (TVertex/RVertex height cache)
   class TVertex {
     constructor(ix, iy, p0, p1) {
       this.id = SEQ++; this.ix = ix; this.iy = iy; this.p0 = p0; this.p1 = p1;
       this.free = false; this.surplus = 0;
     }
-    get height() { return (this.p0 ? 0.5 * (this.p0.height + this.p1.height) : 0) + this.surplus; }
+    // a height is its parents' mean plus its surplus, recursively: cached until any surplus changes (EPOCH), which
+    // turns the exponential recursion into one pass per change, with the same arithmetic in the same order
+    get surplus() { return this._s; }
+    set surplus(x) { this._s = x; EPOCH++; }
+    get height() {
+      if (this._hv === EPOCH) return this._h;
+      const h = (this.p0 ? 0.5 * (this.p0.height + this.p1.height) : 0) + this._s;
+      this._h = h; this._hv = EPOCH;
+      return h;
+    }
     ancestors() {
       if (this.anc) return this.anc;
       const m = new Map([[this, 1]]);

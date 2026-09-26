@@ -12,18 +12,17 @@ links = [
 
 [[project]]
 name = "Forecasting and Manipulating the Forecasts of Others"
-desc = "Exact equilibrium characterization of finite-player continuous-time LQG games with endogenous signals"
+desc = "Solo-authored, 2026. Finite-player games in which actions both move payoffs and reshape what opponents learn. In a two-player benchmark, the information wedge explains why pooling gains are mostly strategic, why optimal precision allocation can starve an inefficient player of information, and why signal precision changes the policy rules themselves."
 tags = ["research", "game theory"]
 image = "images/card-noisestate"
 links = [
     { name = "arxiv", url = "https://arxiv.org/abs/2603.12140", primary = true },
-    { name = "pypi", url = "https://pypi.org/project/noisestate/" },
     { name = "github", url = "https://github.com/sbabichenko/Noise-State-Games" }
 ]
 
 [[project]]
 name = "Decision Mesh"
-desc = "Adaptive, continuous regression that makes grounded, systematic decisions about where to refine the surface, and decomposes the data into the surface, unit-level effects, and pure noise. The rectangular version splits one axis at a time, like a decision tree, so it scales to higher dimensions. It's also very interpretable, so it's easy to tinker with."
+desc = "Adaptive, continuous regression that refines the surface only where a false-discovery gate finds support, and decomposes the data into the surface, unit-level effects, and pure noise. The rectangular version splits one axis at a time, like a decision tree, so it scales to higher dimensions."
 tags = ["personal", "data science"]
 image = "images/card-mesh"
 links = [
