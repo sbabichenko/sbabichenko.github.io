@@ -74,3 +74,13 @@
 .explorer.gate .cv .ax { position: absolute; font: 0.72rem ui-monospace, Menlo, monospace; color: var(--text); background: color-mix(in srgb, var(--panel-2) 78%, transparent); padding: 1px 5px; border-radius: 4px; pointer-events: none; white-space: nowrap; max-width: 92%; overflow: hidden; text-overflow: ellipsis; }
 .explorer.gate .cv .ax.x { left: 50%; bottom: 4px; transform: translateX(-50%); }
 .explorer.gate .cv .ax.y { left: 4px; top: 50%; transform: translateY(-50%) rotate(180deg); writing-mode: vertical-rl; max-width: none; max-height: 92%; }
+/* the error chart's key, above the canvas; on a phone the Best-RMSE table fits the width */
+.explorer.mesh #curvekey { flex-wrap: wrap; gap: 4px 16px; margin: 0 0 8px; }
+@media (max-width: 600px) { .explorer.mesh .best table.diag { font-size: 0.8rem; } .explorer.mesh .best table.diag th, .explorer.mesh .best table.diag td { padding: 6px 4px; } }
+/* /gate: rounds that admitted nothing, greyed (gate.js report) */
+.explorer.gate #rounds tr.none td { color: var(--faint); }
+.explorer.gate #rounds tr.none td b { font-weight: 400; }
+.explorer.gate #rounds tr.none i.dot { opacity: 0.35; }
+/* /gate: a label or heading with a gloss in its title is marked, so the tooltip can be found */
+.explorer.gate .meshbar label[title] > span:first-child, .explorer.gate #rounds [title] { text-decoration: underline dotted; text-decoration-color: var(--faint); text-underline-offset: 3px; cursor: help; }
+.explorer.gate .meshbar { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }

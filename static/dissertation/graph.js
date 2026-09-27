@@ -13,6 +13,12 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const SHORT = { assumption: "Asm", definition: "Def", lemma: "Lem", proposition: "Prop", theorem: "Thm", corollary: "Cor", conjecture: "Conj" };
   const short = (n) => n.kind === "equation" ? n.label.replace(/^Equation\s*/, "") : `${SHORT[n.kind] || n.kind} ${n.label.split(" ").pop()}`;
+  // the chapter pages, fetched once: statements and equations are shown as they are typeset there
+  const pages = new Map();
+  const page = (slug) => {
+    if (!pages.has(slug)) pages.set(slug, fetch(`${BASE}${slug}/`).then((r) => r.text()).then((t) => new DOMParser().parseFromString(t, "text/html")));
+    return pages.get(slug);
+  };
 
   fetch(BASE + "deps.json").then((r) => r.json()).then(({ nodes, edges, lean }) => {
     const byId = new Map(nodes.map((n, i) => [n.id, Object.assign(n, { i })]));
@@ -39,14 +45,34 @@
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "gedges");
     wrap.append(svg, cols);
-    const panel = el("div", "gpanel", '<p class="gp-hint">Tap a result.</p>');
+    // the selection panel, docked at the foot of the screen; it folds down to one line so the map shows through
+    const panel = el("div", "gpanel");
+    const bar = el("div", "gp-bar", '<span class="gp-sum"></span>');
+    const fold = el("button", "gp-fold", "Hide");
+    fold.type = "button";
+    fold.setAttribute("aria-expanded", "true");
+    bar.appendChild(fold);
+    const body = el("div", "gp-body", '<p class="gp-hint">Tap a result.</p>');
+    panel.append(bar, body);
     out.append(controls, wrap, panel);
+    fold.addEventListener("click", () => {
+      const open = panel.classList.toggle("folded");
+      fold.textContent = open ? "Show" : "Hide";
+      fold.setAttribute("aria-expanded", String(!open));
+      if (selected) reveal(pills.get(selected));
+    });
+    // keep the selected result in sight: clear of the panel below and inside the map's sideways scroll
+    function reveal(b) {
+      if (!b) return;
+      requestAnimationFrame(() => {
+        const w = wrap.getBoundingClientRect(), r = b.getBoundingClientRect();
+        if (r.left < w.left || r.right > w.right) wrap.scrollLeft += r.left - w.left - (w.width - r.width) / 2;
+        const top = 70, bottom = Math.min(innerHeight, panel.getBoundingClientRect().top) - 12;
+        if (r.top < top || r.bottom > bottom) window.scrollBy({ top: r.top - (top + bottom - r.height) / 2, behavior: "smooth" });
+      });
+    }
 
-    const pills = new Map(), pages = new Map();
-    const page = (slug) => {
-      if (!pages.has(slug)) pages.set(slug, fetch(`${BASE}${slug}/`).then((r) => r.text()).then((t) => new DOMParser().parseFromString(t, "text/html")));
-      return pages.get(slug);
-    };
+    const pills = new Map();
     let chapter = null, col = null;
     for (const n of nodes) {
       if (n.chapter !== chapter) {
@@ -108,15 +134,18 @@
       }
       cols.classList.toggle("focused", !!selected);
       draw();
-      if (!selected) { panel.innerHTML = '<p class="gp-hint">Tap a result.</p>'; history.replaceState(null, "", location.pathname); return; }
+      panel.classList.toggle("chosen", !!selected);
+      if (!selected) { body.innerHTML = '<p class="gp-hint">Tap a result.</p>'; history.replaceState(null, "", location.pathname); return; }
       history.replaceState(null, "", "#focus=" + encodeURIComponent(selected));
       const n = byId.get(selected);
       const count = (s, one, many) => `${s.size} ${s.size === 1 ? one : many}`;
-      panel.innerHTML = `<div class="gp-head"><b>${esc(n.label)}</b>${n.name ? ` <span>(${esc(n.name)})</span>` : ""} <em>${esc(n.chapter)}</em></div>`
+      bar.querySelector(".gp-sum").textContent = n.label + (n.name ? ` (${n.name})` : "");
+      body.innerHTML = `<div class="gp-head"><b>${esc(n.label)}</b>${n.name ? ` <span>(${esc(n.name)})</span>` : ""} <em>${esc(n.chapter)}</em></div>`
         + `<div class="gp-stmt"><p class="gp-text">${esc(n.text)}${n.text.length >= 220 ? "…" : ""}</p></div>`
         + `<p class="gp-meta">Rests on ${count(anc, "item", "items")}; ${count(desc, "later result builds", "later results build")} on it.</p>`
         + `<p class="gp-links"><a href="${BASE}${n.page}/#${encodeURIComponent(n.id)}">Open it in ${esc(n.chapter)} &rarr;</a>`
         + (anc.size ? ` <a href="${BASE}path/#${encodeURIComponent(n.id)}">Just what it rests on &rarr;</a>` : "") + "</p>";
+      reveal(pills.get(selected));
       // the statement itself, typeset, from its chapter (the plain text above stands in until it arrives)
       const want = selected;
       page(n.page).then((d) => {
@@ -132,6 +161,7 @@
           panel.querySelector(".gp-head").remove();
           panel.querySelector(".gp-meta").prepend(`${n.chapter}. `);
         }
+        reveal(pills.get(want));
       }).catch(() => { /* keep the plain text */ });
     }
     eqs.querySelector("input").addEventListener("change", (e) => {
@@ -144,8 +174,6 @@
       draw();
       if (m && byId.has(decodeURIComponent(m[1]))) {
         select(decodeURIComponent(m[1]));
-        const b = pills.get(decodeURIComponent(m[1]));
-        b.scrollIntoView({ block: "center", inline: "center" });
       }
     });
   }
@@ -157,22 +185,35 @@
     sec.appendChild(el("h2", "", "The Equations It Comes Back To"));
     sec.appendChild(el("p", "lean-lede", "The equations the text refers to most often, counting every reference in every chapter."));
     const ol = el("ol", "lean-list");
+    const slots = [];
     for (const e of lean) {
-      const li = el("li", "", `<a href="${BASE}${e.page}/#${encodeURIComponent(e.id)}"><b>${esc(e.label.replace(/^Equation\s*/, ""))}</b></a>`
-        + ` <span class="lean-n">cited ${e.cited} times, ${esc(e.chapter)}</span><span class="lean-t">${esc(e.text)}</span>`);
+      // two numbers of one displayed block are one entry, in the order they are printed
+      const nums = [e, ...(e.also || [])].map((x) => ({ id: x.id, num: x.label.replace(/^Equation\s*/, ""), cited: x.cited }))
+        .sort((a, b) => a.num.localeCompare(b.num, "en", { numeric: true }));
+      const li = el("li", "", nums.map((x) => `<a href="${BASE}${e.page}/#${encodeURIComponent(x.id)}"><b>${esc(x.num)}</b></a>`).join(", ")
+        + ` <span class="lean-n">cited ${nums.map((x) => x.cited).join(" and ")} times, ${esc(e.chapter)}</span><span class="lean-t">${esc(e.text)}</span>`);
       ol.appendChild(li);
+      slots.push([e, li]);
     }
     sec.appendChild(ol);
     out.appendChild(sec);
+    // the equations themselves, from their chapters, once the list comes near the screen (the words stand in till then)
+    const show = () => slots.forEach(([e, li]) => page(e.page).then((d) => {
+      const src = d.getElementById(e.block || e.id);
+      if (!src) return;
+      const eq = (src.classList.contains("display") ? src : src.closest(".display") || src).cloneNode(true);
+      eq.querySelectorAll('a[href^="#"]').forEach((a) => { a.href = `${BASE}${e.page}/${a.getAttribute("href")}`; });
+      eq.removeAttribute("id");
+      eq.querySelectorAll("[id]").forEach((x) => x.removeAttribute("id"));
+      li.querySelector(".lean-t").replaceWith(eq);
+    }).catch(() => { /* keep the words */ }));
+    if (!("IntersectionObserver" in window)) return show();
+    const io = new IntersectionObserver((es) => { if (es.some((x) => x.isIntersecting)) { io.disconnect(); show(); } }, { rootMargin: "600px 0px" });
+    io.observe(sec);
   }
 
   // ------------------------------------------------------------------ one result and just what it rests on
   function path(nodes, { byId, uses, closure }) {
-    const pages = new Map();
-    const page = (slug) => {
-      if (!pages.has(slug)) pages.set(slug, fetch(`${BASE}${slug}/`).then((r) => r.text()).then((t) => new DOMParser().parseFromString(t, "text/html")));
-      return pages.get(slug);
-    };
     async function render() {
       const id = decodeURIComponent(location.hash.slice(1));
       const n = byId.get(id);

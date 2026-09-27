@@ -12,10 +12,10 @@
   const norm = (s) => s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[’‘]/g, "'").replace(/[–—]/g, "-");
   function load() {
     if (index) return Promise.resolve(index);
-    if (!loading) loading = fetch(BASE + "search.json").then((r) => r.json()).then((d) => {
+    if (!loading) loading = fetch(BASE + "search.json").then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }).then((d) => {
       d.entries.forEach((e) => { e.n = norm((e.l || "") + " " + (e.x || "")); });
       return (index = d);
-    });
+    }).catch((err) => { loading = null; unavailable(); throw err; });   // the next keystroke tries again
     return loading;
   }
   function search(q) {
@@ -47,8 +47,17 @@
     const r = input.getBoundingClientRect(), w = Math.min(520, innerWidth - 24);
     Object.assign(panel.style, { top: r.bottom + 6 + "px", left: Math.max(12, Math.min(r.left, innerWidth - w - 12)) + "px", width: w + "px" });
   }
-  function show() {
+  function makePanel() {
     if (!panel) { panel = document.createElement("div"); panel.className = "dsearch-panel"; panel.setAttribute("role", "listbox"); document.body.appendChild(panel); }
+  }
+  function unavailable() {
+    if (!input.value.trim()) return;
+    makePanel(); hits = []; pick = -1;
+    panel.innerHTML = `<p class="none">Search is unavailable.</p>`;
+    panel.hidden = false; place();
+  }
+  function show() {
+    makePanel();
     const q = input.value.trim(), words = norm(q).split(/\s+/).filter(Boolean);
     if (!q) { panel.hidden = true; return; }
     hits = search(q); pick = hits.length ? 0 : -1;
@@ -60,8 +69,8 @@
   function go(e) { try { sessionStorage.setItem("dsearch", input.value.trim()); } catch (x) {} location.href = hrefOf(e); if (panel) panel.hidden = true; }
 
   if (input) {
-    input.addEventListener("focus", () => { load().then(() => input.value && show()); });
-    input.addEventListener("input", () => load().then(show));
+    input.addEventListener("focus", () => { load().then(() => input.value && show(), () => {}); });
+    input.addEventListener("input", () => load().then(show, () => {}));
     input.addEventListener("keydown", (ev) => {
       if (!panel || panel.hidden) return;
       const links = [...panel.querySelectorAll(".hit")];

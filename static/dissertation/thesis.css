@@ -97,6 +97,7 @@
 .body .math.display { display: block; overflow-x: auto; overflow-y: hidden; padding: 0.35em 0.1em; margin: 0.2em 0; scrollbar-width: thin; }
 .body .math.display .katex-display { margin: 0.35em 0; }
 .body .katex { font-size: 1.06em; }
+.body .nobr { white-space: nowrap; }   /* an inline formula and the punctuation after it (build.py glue_punct) */
 .body .math.display:target, .body :target > .math.display { background: var(--accent-soft); border-radius: 6px; }
 
 /* theorems, definitions, remarks, proofs */
@@ -326,7 +327,11 @@
 .glegend .k-res, .gnode.k-res { --k: var(--accent); }
 .glegend .k-eq, .gnode.k-eq { --k: var(--ink-3); }
 .glegend .k-def, .glegend .k-res, .glegend .k-eq { background: var(--k); opacity: 0.8; }
-.glegend .k-anc { background: var(--accent); } .glegend .k-desc { background: var(--warm); }
+/* the highlight has its own two colours, apart from the node kinds' blue and orange: teal for what the selected
+   result rests on, plum for what builds on it */
+.graphpage { --rests: #0b7a6a; --builds: #8b3a9a; }
+.dark .graphpage { --rests: #5ccfb8; --builds: #d796e3; }
+.glegend .k-anc { background: var(--rests); } .glegend .k-desc { background: var(--builds); }
 .gmap { position: relative; overflow-x: auto; padding: 0.4rem 0 1rem; -webkit-overflow-scrolling: touch; }
 .gcols { position: relative; display: flex; gap: 4.2rem; align-items: flex-start; width: max-content; padding-right: 3rem; }
 .gedges { position: absolute; left: 0; top: 0.4rem; pointer-events: none; overflow: visible; }
@@ -341,16 +346,29 @@
 .gnode.lonely { opacity: 0.55; }
 .gnode:hover { background: color-mix(in srgb, var(--k) 12%, var(--paper)); }
 .gnode.sel { background: var(--ink); color: var(--paper); border-color: var(--ink); opacity: 1; }
-.gnode.anc { background: color-mix(in srgb, var(--accent) 18%, var(--paper)); border-color: var(--accent); opacity: 1; }
-.gnode.desc { background: color-mix(in srgb, var(--warm) 18%, var(--paper)); border-color: var(--warm); opacity: 1; }
+.gnode.anc { background: color-mix(in srgb, var(--rests) 18%, var(--paper)); border-color: var(--rests); opacity: 1; }
+.gnode.desc { background: color-mix(in srgb, var(--builds) 18%, var(--paper)); border-color: var(--builds); opacity: 1; }
 .gnode.dim { opacity: 0.22; }
 .gcols.no-eq .gnode.k-eq { display: none; }
 .ge { fill: none; stroke: var(--ink-3); stroke-opacity: 0.35; stroke-width: 1; }
-.ge-anc { stroke: var(--accent); stroke-opacity: 0.9; stroke-width: 1.6; }
-.ge-desc { stroke: var(--warm); stroke-opacity: 0.9; stroke-width: 1.6; }
+.ge-anc { stroke: var(--rests); stroke-opacity: 0.9; stroke-width: 1.6; }
+.ge-desc { stroke: var(--builds); stroke-opacity: 0.9; stroke-width: 1.6; }
 .ge-dim { stroke-opacity: 0.08; }
 .gpanel { position: sticky; bottom: 0; z-index: 5; margin-top: 0.6rem; padding: 0.9rem 1.1rem; background: var(--paper); border: 1px solid var(--rule);
   border-radius: 8px; box-shadow: 0 -10px 30px -22px rgba(0, 0, 0, 0.4); font-size: 0.98rem; }
+.gpanel .gp-body { overflow: auto; max-height: 38vh; }
+/* at rest, with nothing chosen, the panel sits below the map instead of over its bottom rows */
+.gpanel:not(.chosen) { position: static; }
+.gpanel .gp-bar { display: none; align-items: baseline; gap: 1rem; font: 0.8rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+.gpanel.chosen .gp-bar { display: flex; }
+.gpanel .gp-sum { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; visibility: hidden; }
+.gpanel .gp-fold { margin-left: auto; font: inherit; color: var(--accent); background: none; border: 1px solid var(--rule); border-radius: 999px;
+  padding: 0.05em 0.8em; cursor: pointer; }
+.gpanel.chosen:not(.folded) .gp-bar { margin: -0.4rem -0.4rem 0 0; }
+.gpanel.folded { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+.gpanel.folded .gp-body { display: none; }
+.gpanel.folded .gp-sum { visibility: visible; color: var(--ink-2); }
+@media (max-width: 700px) { .gpanel { padding: 0.7rem 0.8rem; } .gpanel .gp-body { max-height: 36vh; } .gpanel .gp-stmt { max-height: none; } }
 .gpanel .gp-hint { margin: 0; color: var(--ink-3); font: 0.82rem ui-sans-serif, system-ui, sans-serif; }
 .gpanel .gp-head b { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
 .gpanel .gp-head em { float: right; font: 0.75rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); font-style: normal; }
@@ -408,7 +426,7 @@
 .lean { margin-top: 3rem; }
 .lean h2 { font-size: 1.35rem; }
 .lean-lede { color: var(--ink-2); }
-.lean-list { list-style: none; padding: 0; columns: 2 22rem; column-gap: 2.5rem; }
+.lean-list { list-style: none; padding: 0; }
 .lean-list li { break-inside: avoid; margin: 0 0 0.9rem; }
 .lean-list b { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.85rem; }
 .lean-n { font: 0.75rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
@@ -455,3 +473,12 @@
 .body .math.display .katex-display { overflow-x: auto; overflow-y: hidden; }
 .body .math.display .katex-display > .katex > .katex-html { display: inline-block; min-width: 100%; padding-right: 5.5em; box-sizing: border-box; }
 
+
+/* notes added after the dissertation (tools/dissertation/asides.py): folded shut, opened on a tap */
+.body details.aside-note { margin: 1.2rem 0; border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 6px; background: color-mix(in srgb, var(--accent) 4%, transparent); }
+.body details.aside-note > summary { cursor: pointer; padding: 0.6rem 0.9rem; font: 600 0.9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink); list-style-position: inside; }
+.body details.aside-note > summary .an-sub { font-weight: 400; color: var(--ink-3); }
+.body details.aside-note > :not(summary) { margin-left: 0.9rem; margin-right: 0.9rem; }
+.body details.aside-note[open] > summary { border-bottom: 1px solid var(--rule); margin-bottom: 0.6rem; }
+.body details.aside-note .an-credit { font-size: 0.88rem; color: var(--ink-3); padding-bottom: 0.8rem; }
+@media print { .body details.aside-note { display: none; } }

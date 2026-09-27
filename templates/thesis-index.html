@@ -22,6 +22,8 @@
             <a class="primary" href="{{ get_url(path='dissertation/introduction/') }}">Start reading</a>
             <a href="{{ get_url(path='dissertation/idea/') }}">The Noise-State, Explained</a>
             <a href="{{ get_url(path='dissertation/wedge/') }}">The Price of Changing Someone&rsquo;s Mind</a>
+            <a href="{{ get_url(path='dissertation/spike/') }}">The Life of a Spike</a>
+            <a href="#abstract">Abstract</a>
             <a href="#contents">Contents</a>
             <a href="{{ get_url(path='dissertation/map/') }}">What Rests on What</a>
             <a href="{{ get_url(path='dissertation/babichenko-dissertation.pdf') }}">PDF, 250 pages</a>
@@ -30,6 +32,7 @@
         <p class="scrollhint" aria-hidden="true">scroll</p>
       </section>
 
+      {% include "partials/story-noscript.html" %}
       <section class="story" id="story">
         <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
         <div class="steps">
@@ -120,6 +123,20 @@
       </section>
 
       <a class="skip-pill" href="#contents" data-from="#story" data-until="#story2">Skip to the contents</a>
+      <section class="abstract" id="abstract" aria-labelledby="abstract-h">
+        <h2 id="abstract-h">Abstract</h2>
+        <p>Dynamic games with dispersed private information look hard, even when linearized, because each player needs
+          forecasts of others&rsquo; forecasts, without end. The regress comes from a loop. Actions move the state, the state
+          generates observations, observations update beliefs, and beliefs determine actions. Current approaches become
+          tractable by cutting the loop. This dissertation builds a noise-state calculus that keeps the loop intact.</p>
+        <p>Each player keeps estimates of the primitive shocks instead of belief hierarchies about the endogenous state.
+          Beliefs, prices, and policy rules are deterministic impulse responses in continuous-time linear-quadratic-Gaussian
+          games. Equilibrium is a fixed point in those functions and is solved numerically.</p>
+        <p>The information wedge is the shadow price of changing an opponent&rsquo;s beliefs. It breaks the separation
+          principle and vanishes when the loop is cut.</p>
+        <p class="abs-full">Shortened here; <a href="{{ get_url(path='dissertation/front/') }}#abstract">the full abstract</a> is in the front matter.</p>
+      </section>
+
       <section class="contents" id="contents">
         <h2>Contents</h2>
         <input class="dsearch" id="dsearch" type="search" placeholder="Search all 250 pages: a word, a phrase, &ldquo;Theorem 3.2&rdquo;" aria-label="Search the dissertation" autocomplete="off" data-base="{{ get_url(path='dissertation/') }}" />
