@@ -23,7 +23,6 @@ from matplotlib.patches import Patch
 from matplotlib.collections import Collection
 from matplotlib.colors import to_rgba
 from matplotlib.gridspec import GridSpec
-from matplotlib.legend import Legend
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.environ.get("WEBFIG_OUT", os.path.join(HERE, "out"))
@@ -39,23 +38,6 @@ matplotlib.rcParams.update(FONT)
 INK = {"light": ("#1d1d22", "#55555f", "#d9d7cf"), "dark": ("#e4e4ea", "#a4a4b0", "#44444c")}
 WIDE_IN, NARROW_IN = 7.4, 4.6          # figure widths in inches; the column is ~740 px, a phone ~360 px
 WIDE_PT, NARROW_PT = 10.5, 12.0         # the median text size after scaling
-PAGE = {"light": "#fcf9f2", "dark": "#27282b"}   # the paper behind the figures as drawn (--paper in thesis.css, under its grain)
-
-# per-figure adjustments for the web versions: placement and drawing only, never the data or the words
-#   legend: {panel index: (loc, bbox_to_anchor, text size factor)}   move a legend off the curves the larger text
-#                                                   pushes it onto, and set its text a little smaller
-#   dash:   [series label, ...]                     draw a series dashed and on top, where it lies under another
-#   halo:   True                                    set the annotations on the page colour where lines cross them
-#   nudge:  {label text: (dx, dy)}                  move a label, in data units, off a box the larger text runs into
-#   max_scale: k                                    in the wide version, enlarge the text no further than k (a diagram
-#                                                   whose labels sit close to its lines)
-#   repel:  True                                    part inline labels that sit on top of each other
-FIGURES = {
-    "fig_kb_multiasset": {"legend": {2: ("upper right", (1.0, 0.93), 0.9)}},
-    "figA_transmission": {"dash": ["exogenous signal"]},
-    "fig_ch5_schematic": {"halo": True, "nudge": {"order $o^{v-1}_t$": (0.0, -0.12)}, "max_scale": 1.17},
-    "fig8_barD1_vs_p": {"repel": True, "halo": True},
-}
 
 
 def _is_ink(c):
@@ -133,13 +115,6 @@ def _recolor(fig, theme):
                     o.set_edgecolor([ink(c) if _is_ink(c) else data(c) for c in ecs])
             except Exception:
                 pass
-    for o in fig.findobj(Text):                       # an annotation's arrow is not among the figure's children
-        ap = getattr(o, "arrow_patch", None)
-        if ap is not None:
-            for get, put in ((ap.get_edgecolor, ap.set_edgecolor), (ap.get_facecolor, ap.set_facecolor)):
-                c = get()
-                if c[3] > 0:
-                    put(ink(c) if _is_ink(c) else data(c))
     for ax in fig.axes:
         for s in ax.spines.values():
             s.set_edgecolor(ink(s.get_edgecolor()))
@@ -287,7 +262,7 @@ def _problems(fig):
     return len(hits)
 
 
-def _fit(fig, target, allowed, relayout_first=False, cap=float("inf")):
+def _fit(fig, target, allowed, relayout_first=False):
     """grow the text toward target (median size, pt) only as far as it adds no collisions beyond `allowed`
     (what the figure had to begin with); tries the script's own layout before re-running tight_layout"""
     base = {id(t): t.get_fontsize() for t in fig.findobj(Text)}
@@ -299,7 +274,7 @@ def _fit(fig, target, allowed, relayout_first=False, cap=float("inf")):
     sp = fig.subplotpars
     pars = dict(left=sp.left, right=sp.right, bottom=sp.bottom, top=sp.top, wspace=sp.wspace, hspace=sp.hspace)
     sizes = [t.get_fontsize() for t in _texts(fig)]
-    k0 = min(cap, max(1.0, target / statistics.median(sizes)) if sizes else 1.0)
+    k0 = max(1.0, target / statistics.median(sizes)) if sizes else 1.0
     tries = sorted({k0 * f for f in (1, 0.9, 0.8, 0.7, 0.6, 0.5) if k0 * f >= 1} | {1.0}, reverse=True)
     n = None
     for k in tries:
@@ -321,102 +296,10 @@ def _fit(fig, target, allowed, relayout_first=False, cap=float("inf")):
     return 1.0, n
 
 
-def _adjust(fig, name):
-    """the FIGURES placement changes that come before the text is sized: legends moved, series dashed"""
-    opt = FIGURES.get(name, {})
-    panels = sorted(_main_axes(fig), key=lambda a: (a.get_subplotspec().rowspan.start, a.get_subplotspec().colspan.start))
-    for i, (loc, anchor, _) in opt.get("legend", {}).items():
-        leg = panels[i].get_legend()
-        leg._loc = Legend.codes[loc]
-        leg.set_bbox_to_anchor(anchor, transform=panels[i].transAxes)
-    for ax in fig.axes:
-        for t in ax.texts:
-            if t.get_text() in opt.get("nudge", {}):
-                dx, dy = opt["nudge"][t.get_text()]
-                x, y = t.get_position()
-                t.set_position((x + dx, y + dy))
-    dashed = set(opt.get("dash", ()))
-    for ax in fig.axes if dashed else ():
-        lines = ax.get_lines()
-        top = max((l.get_zorder() for l in lines), default=2)
-        for l in lines:
-            if l.get_label() in dashed:
-                l.set_linestyle((0, (3, 2))); l.set_zorder(top + 0.1)
-        leg = ax.get_legend()
-        if leg is not None:
-            for h, t in zip(getattr(leg, "legend_handles", None) or leg.legendHandles, leg.get_texts()):
-                if t.get_text() in dashed:
-                    h.set_linestyle((0, (3, 2)))
-
-
-def _repel(fig):
-    """inline labels (text boxes placed on the data) that overlap: push each pair apart vertically, half each"""
-    for _ in range(4):
-        fig.canvas.draw()
-        r = fig.canvas.get_renderer()
-        moved = False
-        for ax in fig.axes:
-            ts = [t for t in ax.texts if t.get_text().strip() and t.get_bbox_patch() is not None]
-            for i in range(len(ts)):
-                for j in range(i + 1, len(ts)):
-                    a, b = (t.get_bbox_patch().get_window_extent(r) for t in (ts[i], ts[j]))
-                    w = min(a.x1, b.x1) - max(a.x0, b.x0); h = min(a.y1, b.y1) - max(a.y0, b.y0)
-                    if w > 0 and h > 0:
-                        lo, hi = (ts[i], ts[j]) if a.y0 < b.y0 else (ts[j], ts[i])
-                        for t, dy in ((lo, -(h / 2 + 0.5)), (hi, h / 2 + 0.5)):
-                            x, y = ax.transData.transform(t.get_position())
-                            t.set_position(ax.transData.inverted().transform((x, y + dy)))
-                        moved = True
-        if not moved:
-            return
-
-
-def _halo(fig, theme):
-    """annotations set on a patch of the page colour, so a line running under a label does not strike through it
-    (a box, not a stroke path effect: with svg.fonttype=path a path effect writes every glyph out in full)"""
-    for ax in fig.axes:
-        for t in ax.texts:
-            if not t.get_text().strip():               # an arrow drawn as an empty annotation keeps its own look
-                continue
-            bb = t.get_bbox_patch()
-            if bb is not None:
-                bb.set_facecolor(PAGE[theme])
-            else:
-                t.set_bbox(dict(facecolor=PAGE[theme], edgecolor="none", pad=0.6))
-
-
-def _axis_labels(fig):
-    """axis labels, which matplotlib (3.6) collapses to a point when it finds the tight crop, so a label longer
-    than its axes is cut off at the figure's edge; one longer than everything else in the figure is set smaller"""
-    fig.canvas.draw()
-    r = fig.canvas.get_renderer()
-    tb = fig.get_tightbbox(r)
-    W, H = tb.width * fig.dpi, tb.height * fig.dpi
-    labels = []
-    for ax in fig.axes:
-        for lab, long in ((ax.xaxis.label, "width"), (ax.yaxis.label, "height")):
-            if not (ax.get_visible() and lab.get_visible() and lab.get_text().strip()):
-                continue
-            size = getattr(lab.get_window_extent(r), long)
-            room = W if long == "width" else H
-            text = lab.get_text()
-            if size > room and ", " in text and "\n" not in text:     # first break it at the comma nearest its middle
-                i = min((i for i in range(len(text)) if text.startswith(", ", i)), key=lambda i: abs(i - len(text) / 2))
-                lab.set_text(text[:i + 1] + "\n" + text[i + 2:])
-                lab.set_linespacing(1.1)
-                size = getattr(lab.get_window_extent(r), long)
-            if size > room:
-                lab.set_fontsize(lab.get_fontsize() * 0.97 * room / size)
-            labels.append(lab)
-    return labels
-
-
 def _variant(fig, name, narrow, theme):
     with plt.rc_context(FONT):
         for t in fig.findobj(Text):
             t.set_fontfamily("serif")
-        opt = FIGURES.get(name, {})
-        _adjust(fig, name)
         allowed = _problems(fig)                      # collisions the figure already has as drawn
         for ax in fig.axes:
             ax.tick_params(length=3, width=0.6)
@@ -442,22 +325,12 @@ def _variant(fig, name, narrow, theme):
                     f.write(f"{name}-narrow{'-dark' if theme == 'dark' else ''}\tSKIPPED\t{' ; '.join(_last_hits[:3])}\n")
                 return
         else:
-            k, bad = _fit(fig, WIDE_PT * w / WIDE_IN, allowed, cap=opt.get("max_scale", float("inf")))   # the figure keeps its size; text is set for its display width
-        if opt.get("legend"):
-            panels = sorted(_main_axes(fig), key=lambda a: (a.get_subplotspec().rowspan.start, a.get_subplotspec().colspan.start))
-            for i, (_, _, f) in opt["legend"].items():
-                for t in panels[i].get_legend().get_texts():
-                    t.set_fontsize(t.get_fontsize() * f)
-        if opt.get("repel"):
-            _repel(fig)
+            k, bad = _fit(fig, WIDE_PT * w / WIDE_IN, allowed)   # the figure keeps its size; text is set for its display width
         _recolor(fig, theme)
-        if opt.get("halo"):
-            _halo(fig, theme)
-        labels = _axis_labels(fig)
         suffix = ("-narrow" if narrow else "") + ("-dark" if theme == "dark" else "")
         path = os.path.join(OUT, name + suffix + ".svg")
         _orig_savefig(fig, path, format="svg", transparent=True, bbox_inches="tight", pad_inches=0.04,
-                      bbox_extra_artists=fig.get_default_bbox_extra_artists() + labels, metadata={"Date": None})
+                      metadata={"Date": None})
         if narrow:                                    # a side legend can leave it wider than a phone
             import re as _re
             width = float(_re.search(r'width="([\d.]+)pt"', open(path).read(1000)).group(1))

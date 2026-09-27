@@ -5,7 +5,7 @@
   --paper: #fffff0;
   --ink: #17171b;
   --ink-2: #4a4a55;
-  --ink-3: #70707a;    /* 4.8:1 on the paper: small grey text passes WCAG AA */
+  --ink-3: #85858f;
   --rule: rgba(20, 20, 30, 0.1);
   --rule-2: rgba(20, 20, 30, 0.05);
   --accent: #1f3fd0;
@@ -24,7 +24,7 @@
   --paper: #1f2022;
   --ink: #edeef1;
   --ink-2: #a8a9b2;
-  --ink-3: #8e8f98;    /* 5.1:1 on the dark paper */
+  --ink-3: #74757e;
   --rule: rgba(255, 255, 255, 0.12);
   --rule-2: rgba(255, 255, 255, 0.06);
   --accent: #8fb0ff;

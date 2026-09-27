@@ -1,8 +1,7 @@
 // Runs the decision-mesh estimators off the page's thread: triangular-decision-mesh/core (trimesh.js, right
 // triangles) and rectangular-decision-mesh/core (rectmesh.js, rectangles), each compiled to WebAssembly
 // unchanged. A message names the engine and carries a design CSV and a seed; the engine reads the CSV from
-// its virtual filesystem, fits with the held-out split on, and the dumps it writes come back parsed. The pages send
-// the design without a header row, which the engines read by position: x, y, trials, successes.
+// its virtual filesystem, fits with the held-out split on, and the dumps it writes come back parsed.
 "use strict";
 let log = [];
 const engines = {};

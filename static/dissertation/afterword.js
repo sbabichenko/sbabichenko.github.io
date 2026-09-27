@@ -210,15 +210,13 @@
   window.addEventListener("scroll", measure, { passive: true });
   window.addEventListener("resize", measure);
   measure();
-  let last = performance.now(), still = null;
+  let last = performance.now();
   (function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     const story = document.getElementById("story").getBoundingClientRect();
-    // reduced motion: each scene is drawn once, finished and still, when it becomes active
-    if (active && story.top < window.innerHeight && story.bottom > 0 && !(reduced && still === active)) {
+    if (active && story.top < window.innerHeight && story.bottom > 0) {
       const sc = scenes[active.dataset.scene];
-      if (reduced) still = active;
-      if (sc) sc.update(reduced ? 1 : prog, reduced ? 0 : now, reduced ? 0 : dt);
+      if (sc) sc.update(reduced ? 1 : prog, now, reduced ? 0 : dt);
     }
     requestAnimationFrame(frame);
   })(performance.now());

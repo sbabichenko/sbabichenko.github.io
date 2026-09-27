@@ -29,13 +29,3 @@
 #stage .stagebusy { font: 12px ui-monospace, Menlo, monospace; letter-spacing: 0.08em; fill: var(--ink-3); }
 .gatehow .howbar input[type=range] { width: 120px; accent-color: var(--accent); }
 .gatehow .howbar .val { font: 0.8rem ui-monospace, Menlo, monospace; color: var(--ink); min-width: 2.2em; }
-/* on a phone the drawing is shown at about half its size: its labels are set larger to stay readable */
-@media (max-width: 820px) {
-  .gatehow #stage text { font-size: 19px; }
-  .gatehow #stage text.label { font-size: 18px; }
-  .gatehow #stage text.mono { font-size: 13px; letter-spacing: 0.02em; }
-  .gatehow #stage text.small { font-size: 15px; }
-  .gatehow #stage text.tiny { font-size: 13px; }
-}
-/* dark theme: the controls' native parts (a select's list and arrow) in dark too, or WebKit draws them white */
-.dark .gatehow { color-scheme: dark; }

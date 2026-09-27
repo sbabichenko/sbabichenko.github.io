@@ -8,7 +8,6 @@
   {% include "partials/head.html" %}
   <body class="text-black duration-200 ease-out dark:text-white">
     <link rel="stylesheet" href="{{ get_url(path='dissertation/opening.css', cachebust=true) }}" />
-    <link rel="stylesheet" href="{{ get_url(path='noisestate/solver-how.css', cachebust=true) }}" />
     {% include "partials/header.html" %}
     <div class="progress" id="progress" aria-hidden="true"></div>
 
@@ -108,7 +107,7 @@
               found a minimum. Refinement solves again with 1.5 times the nodes and compares.</p>
             <p class="small">Stability is the spectral radius of the best-response map at the equilibrium, the factor by
               which a small deviation shrinks per round of best responses. Below 1,
-              players who started near it and kept best-responding to each other, without damping, would find it. <span id="refineline"></span></p>
+              players who kept best-responding to each other would find it. <span id="refineline"></span></p>
           </div>
           <div class="step" data-scene="quadrant">
             <p>In a stationary game the calendar drops out and only ages remain: a kernel depends on how long ago the shock

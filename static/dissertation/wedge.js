@@ -43,9 +43,8 @@
   const status = document.getElementById("solvestate");
   const jobs = [{ kind: "base", params: {} }]
     .concat(SWEEP.map((p2) => ({ kind: "sweep", p2, params: { p2 } })))
-    .concat([{ kind: "full", params: { p1: 1e4, p2: 1e4, r1: 0.05, r2: 0.2, sigma: 0.5 } }])
-    // the starvation drawing uses Figure 1.5's parameters: total precision 20, sigma = 0.5, (r1, r2) = (0.05, 0.2)
-    .concat(STARVE.map((f) => ({ kind: "starve", f, params: { p1: 20 * f, p2: 20 * (1 - f), r1: 0.05, r2: 0.2, sigma: 0.5 } })));
+    .concat([{ kind: "full", params: { p1: 1e4, p2: 1e4, r1: 0.1, r2: 0.5 } }])
+    .concat(STARVE.map((f) => ({ kind: "starve", f, params: { p1: 10 * f, p2: 10 * (1 - f), r1: 0.1, r2: 0.5 } })));
   let done = 0, t0 = performance.now();
   const maxAbs = (a) => a.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
   function onResult(job, res) {
@@ -58,7 +57,6 @@
       R.sweep.sort((a, b) => b.p2 - a.p2);
     } else if (job.kind === "full") R.full = res.costs.player1 + res.costs.player2 + 2;
     else { R.starve.push({ f: job.f, J: res.costs.player1 + res.costs.player2 + 2 }); R.starve.sort((a, b) => a.f - b.f); }
-    for (const w of waits) w.textContent = `solving… ${done} of ${jobs.length}`;
     if (status) {
       status.textContent = done < jobs.length ? `Solving: ${done} of ${jobs.length} equilibria…` : `Solved ${jobs.length} equilibria in your browser, in ${((performance.now() - t0) / 1000).toFixed(1)} s.`;
       status.classList.toggle("ok", done === jobs.length);
@@ -90,10 +88,9 @@
     const acts = stroke(g, pencil([[165, 312], [300, 360], [435, 318]], 3, 1), "", 2);
     const h = arrowHead(g, 435, 318, -0.3, "");
     const l1 = text(g, 400, 222, "learn", "mono"), l2 = text(g, 150, 150, "act on x̂ as if it were x", "mono acc"), l3 = text(g, 300, 395, "push", "mono");
-    const l4 = text(g, 300, 428, "what you don't know about x", "mono acc");
     const cap = text(g, 300, 480, "learning and acting, separately", "label");
     return { g, update(t) {
-      fade(me, seg(t, 0, 0.1)); fade(st, seg(t, 0, 0.1)); fade(fog, seg(t, 0.05, 0.2)); fade(l4, seg(t, 0.1, 0.2));
+      fade(me, seg(t, 0, 0.1)); fade(st, seg(t, 0, 0.1)); fade(fog, seg(t, 0.05, 0.2));
       sees.set(seg(t, 0.15, 0.3)); fade(l1, seg(t, 0.2, 0.3)); fade(est, seg(t, 0.25, 0.35));
       uses.set(seg(t, 0.35, 0.5)); fade(l2, seg(t, 0.4, 0.5)); acts.set(seg(t, 0.5, 0.65)); fade(h, seg(t, 0.62, 0.66)); fade(l3, seg(t, 0.55, 0.65));
       fade(cap, seg(t, 0.7, 0.85));
@@ -215,8 +212,8 @@
       f.appendChild(n); return { x, y, W, H };
     };
     const eqL = text(g, 300, 422, "the backward equation for the shadow price", "mono");
-    put("backward1", 50, 462, 500);
-    const b2 = put("backward2", 80, 548, 440);
+    put("backward1", 95, 462, 410);
+    const b2 = put("backward2", 175, 540, 250);
     const hl = b2 ? el("rect", { x: b2.x - 12, y: b2.y - b2.H / 2 - 8, width: b2.W + 24, height: b2.H + 16, rx: 10, class: "fillacc" }, g) : null;
     if (hl) g.insertBefore(hl, f);
     return { g, update(t, now) {
@@ -239,8 +236,7 @@
     el("line", { x1: x0, y1: y0, x2: x0 + W, y2: y0, class: "pencil soft", "stroke-width": 1 }, g);
     if (xlab) text(g, x0 + W / 2, y0 + H + 34, xlab, "mono");
   }
-  const waits = [];
-  const waiting = (g) => { const t = text(g, 300, 300, "solving…", "mono"); waits.push(t); return t; };
+  const waiting = (g) => { const t = text(g, 300, 300, "solving…", "mono"); return t; };
 
   // ------------------------------------------------------------------ 5. the split, solved
   scenes.split = (() => {
@@ -250,13 +246,10 @@
     function draw() {
       const f = R.base; live.innerHTML = "";
       const chans = Object.keys(f.channels);
-      // each shock's row on its own scale (the percentage beside it compares the two parts within the row), with its
-      // zero line drawn out past the curves and marked, so a wedge lying along zero reads as small, not as missing
+      let mx = 0; for (const c of chans) mx = Math.max(mx, maxAbs(f.channels[c].physical), maxAbs(f.channels[c].wedge));
       chans.forEach((c, k) => {
-        const mx = Math.max(maxAbs(f.channels[c].physical), maxAbs(f.channels[c].wedge)) || 1;
         const top = 90 + k * 160, H = 110, x0 = 60, W = 490, mid = top + H / 2, s = f.s, sx = (v) => x0 + (W * v) / s[s.length - 1], sy = (v) => mid - (v / mx) * (H / 2);
-        el("line", { x1: x0 - 14, y1: mid, x2: x0 + W, y2: mid, class: "pencil soft", "stroke-width": 1, "stroke-dasharray": "3 4" }, live);
-        text(live, x0 - 20, mid + 4, "0", "mono", "end");
+        el("line", { x1: x0, y1: mid, x2: x0 + W, y2: mid, class: "pencil soft", "stroke-width": 1 }, live);
         // labels sit just above the panel: the curves are scaled to fill it, so the largest reaches its top
         text(live, x0, top - 8, NAMES[c] || c, "mono", "start");
         const pm = maxAbs(f.channels[c].physical), wm = maxAbs(f.channels[c].wedge);
@@ -264,12 +257,9 @@
         el("path", { d: pencil(s.map((v, i) => [sx(v), sy(f.channels[c].physical[i])]), 20 + k, 0.1), class: "pencil", "stroke-width": 2 }, live);
         el("path", { d: pencil(s.map((v, i) => [sx(v), sy(f.channels[c].wedge[i])]), 30 + k, 0.1), class: "pencil accent", "stroke-width": 2.6 }, live);
       });
-      // the legend names each line by a sample of it, not by a colour (the physical part is white on the dark theme)
-      el("line", { x1: 60, y1: 555, x2: 84, y2: 555, class: "pencil", "stroke-width": 2 }, live);
-      text(live, 92, 560, "physical part", "label", "start");
-      el("line", { x1: 250, y1: 555, x2: 274, y2: 555, class: "pencil accent", "stroke-width": 2.6 }, live);
-      text(live, 282, 560, "the information wedge", "label acc", "start");
-      text(live, 300, 588, "by the time s of the shock, at t = 1/2; each row on its own scale", "mono");
+      text(live, 60, 560, "black: physical part", "label", "start");
+      text(live, 250, 560, "blue: the information wedge", "label acc", "start");
+      text(live, 300, 588, "by the time s of the shock, at t = 1/2", "mono");
       drawn = true;
     }
     return { g, update(t) { if (R.base && !drawn) draw(); fade(wait, R.base ? 0 : 1); fade(live, seg(t, 0.05, 0.25)); } };
@@ -293,7 +283,7 @@
       const last = R.sweep[R.sweep.length - 1];
       if (last && last.p2 <= 0.01) {
         text(live, X(0.01) - 6, Y(last.wedge) - 18, `${last.wedge.toExponential(0)}`, "mono acc", "end");
-        text(live, 300, 575, "blind player 2: no wedge for player 1", "label");
+        text(live, 300, 575, "blind player 2: no wedge, and separation holds again", "label");
       }
       n = R.sweep.length;
     }
@@ -322,7 +312,7 @@
       if (R.full) {
         const y = Y(R.full);
         el("line", { x1: 80, y1: y, x2: 520, y2: y, class: "pencil soft", "stroke-width": 1.2, "stroke-dasharray": "5 5" }, live);
-        text(live, 520, y - 8, "if both had precision 10⁴", "mono", "end");
+        text(live, 520, y - 8, "if both saw everything", "mono", "end");
       }
       const even = R.starve.find((q) => q.f === 0.5);
       if (even) { el("circle", { cx: X(0.5), cy: Y(even.J), r: 9, class: "pencil", "stroke-width": 1.4 }, live); text(live, X(0.5), Y(even.J) - 18, "split evenly", "mono"); }
@@ -420,12 +410,9 @@
   window.addEventListener("scroll", measure, { passive: true });
   window.addEventListener("resize", measure);
   measure();
-  let still = null;
   (function frame(now) {
     const story = document.getElementById("story").getBoundingClientRect();
-    // reduced motion: each scene is drawn once, finished and still, when it becomes active (and again as solves land)
-    const key = active && active.dataset.scene + done;
-    if (active && story.top < window.innerHeight && story.bottom > 0 && !(reduced && still === key)) { const sc = scenes[active.dataset.scene]; if (reduced) still = key; if (sc) sc.update(reduced ? 1 : prog, reduced ? 0 : now); }
+    if (active && story.top < window.innerHeight && story.bottom > 0) { const sc = scenes[active.dataset.scene]; if (sc) sc.update(reduced ? 1 : prog, now); }
     requestAnimationFrame(frame);
   })(performance.now());
 })();
