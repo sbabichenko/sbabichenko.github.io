@@ -17,7 +17,7 @@
   const G = 64;              // the drawing grid
   const drawing = new Float32Array(G * G).fill(BASE);
   const TRUTHS = {
-    hills: { name: "Two hills", f: (x, y) => BASE + 1.8 * Math.exp(-((x - 0.3) ** 2 + (y - 0.7) ** 2) / 0.02) - 1.5 * Math.exp(-((x - 0.7) ** 2 + (y - 0.3) ** 2) / 0.03) },
+    hills: { name: "A hill and a pit", f: (x, y) => BASE + 1.8 * Math.exp(-((x - 0.3) ** 2 + (y - 0.7) ** 2) / 0.02) - 1.5 * Math.exp(-((x - 0.7) ** 2 + (y - 0.3) ** 2) / 0.03) },
     island: { hidden: true, name: "An island", f: (x, y) => (Math.hypot(x - 0.55, y - 0.5) < 0.27 ? BASE + 1.6 : BASE - 0.6) },
     fault: { hidden: true, name: "A fault line", f: (x, y) => BASE - 0.2 + 2 * Math.tanh(25 * (x - 0.35 - 0.3 * y)) },
     peaks: { name: "Three peaks", f: (x, y) => BASE + 1.6 * Math.exp(-((x - 0.25) ** 2 + (y - 0.3) ** 2) / 0.006) + 1.1 * Math.exp(-((x - 0.7) ** 2 + (y - 0.7) ** 2) / 0.008) - 1.4 * Math.exp(-((x - 0.72) ** 2 + (y - 0.22) ** 2) / 0.01) },
@@ -59,7 +59,7 @@
   function makeData(truth, sites, flips, seed, sd) {
     const r = mulberry32(seed * 7919 + 17), f = TRUTHS[truth].f;
     const x = new Float64Array(sites), y = new Float64Array(sites), n = new Int32Array(sites), k = new Int32Array(sites);
-    const rows = ["wala,wac,n,k"];
+    const rows = [];          // no header row: the engines read a headerless design as x, y, trials, heads
     for (let i = 0; i < sites; ++i) {
       x[i] = r(); y[i] = r();
       n[i] = Math.max(1, Math.round(flips * (0.5 + r())));
@@ -72,11 +72,12 @@
   // ------------------------------------------------------------------ colour and rasters
   const D = 200, VMAX = 2.2;
   let CENTRE = BASE;         // the log-odds at the middle of the colour scale: the coins' background, or a file's overall rate
+  // low odds orange, high odds blue: the same meaning as the illustrated pages (/gate/how, /gate/deep)
   function ramp() {
     const hex = (h) => [1, 3, 5].map((q) => parseInt(h.slice(q, q + 2), 16));
     const s = isDark()
-      ? [hex("#2b6cf0"), hex("#5b8ff9"), hex("#2a2b30"), hex("#f0845c"), hex("#f5c451")]
-      : [hex("#1d4ed8"), hex("#6d9cf5"), hex("#f7f6ee"), hex("#ef7a55"), hex("#b91c1c")];
+      ? [hex("#f2a878"), hex("#d9784c"), hex("#2a2b30"), hex("#5b8ff9"), hex("#9dbaff")]
+      : [hex("#a8401b"), hex("#e8875c"), hex("#f7f6ee"), hex("#6d9cf5"), hex("#1d4ed8")];
     const lut = new Uint8ClampedArray(256 * 3);
     for (let q = 0; q < 256; ++q) {
       const t = (q / 255) * 4, a = Math.min(3, Math.floor(t)), u = t - a;
@@ -205,12 +206,15 @@
       ctx.stroke();
     }
     if ($("showadmit").checked) {
-      const cols = ROUND_COLOURS(), r = Math.max(2.5, W / 110);
+      // each dot has a light ring inside a dark one, so it shows on the deepest blue and orange alike
+      const cols = ROUND_COLOURS(), r = Math.max(2.5, W / 110), lw = Math.max(1, W / 400);
       for (const v of fit.verts) {
         if (!v.admitted) continue;
+        ctx.beginPath(); ctx.arc(X(v.x), Y(v.y), r + lw, 0, 2 * Math.PI);
+        ctx.fillStyle = isDark() ? "#f4f4f5" : "#18181b"; ctx.fill();
         ctx.fillStyle = cols[Math.min(cols.length - 1, Math.max(0, v.round))];
         ctx.beginPath(); ctx.arc(X(v.x), Y(v.y), r, 0, 2 * Math.PI); ctx.fill();
-        ctx.lineWidth = Math.max(1, W / 400); ctx.strokeStyle = isDark() ? "#111" : "#fff"; ctx.stroke();
+        ctx.lineWidth = lw; ctx.strokeStyle = isDark() ? "#111" : "#fff"; ctx.stroke();
       }
     }
   }
@@ -255,10 +259,15 @@
     const d = b.map((x, i) => x - a[i]), ma = mean(a), mb = mean(b), md = mean(d);
     return { fit: ma, fitSe: se(a, ma), flat: mb, flatSe: se(b, mb), gain: md, gainSe: se(d, md), m };
   }
+  // how many of the rounds admitted something, out of all the rounds the table lists
+  function roundsSay(rounds) {
+    const k = rounds.filter((r) => r.admitted > 0).length, m = rounds.length;
+    return k ? `in ${k} of ${m} round${m === 1 ? "" : "s"}` : `none in ${m} round${m === 1 ? "" : "s"}`;
+  }
   function ownCards(f, admitted) {
     const u = S.user, H = ownHeld(f.heldout, u.rate), rounds = f.rounds;
     return [
-      ["Vertices admitted", admitted, `over ${rounds.filter((r) => r.admitted > 0).length} round${rounds.filter((r) => r.admitted > 0).length === 1 ? "" : "s"}; ${f.tri.length / f.stride} ${f.engine === "rect" ? "rectangles" : "triangles"}`],
+      ["Vertices admitted", admitted, `${roundsSay(rounds)}; ${f.tri.length / f.stride} ${f.engine === "rect" ? "rectangles" : "triangles"}`],
       ["Sites", u.sites.toLocaleString(), u.grid ? `from ${u.rows.toLocaleString()} rows, grouped on a ${u.grid} &times; ${u.grid} grid` : `from ${u.rows.toLocaleString()} rows, each with its own trials`],
       ["Site variance", fmt(f.poolVariance, 4), "the variance of the sites' own effects on the log-odds, fitted with the surface"],
       H ? ["Held-out deviance", `${fmt(H.fit, 3)} <small>&plusmn; ${fmt(H.fitSe, 3)}</small>`,
@@ -272,7 +281,7 @@
     const flat = new Float32Array(D * D).fill(f.baseline);
     const err = S.user ? NaN : rmse(S.fitG, S.truthG), errFlat = S.user ? NaN : rmse(flat, S.truthG);
     $("cards").innerHTML = (S.user ? ownCards(f, admitted) : [
-      ["Vertices admitted", admitted, `over ${rounds.filter((r) => r.admitted > 0).length} round${rounds.filter((r) => r.admitted > 0).length === 1 ? "" : "s"}; ${f.tri.length / f.stride} ${f.engine === "rect" ? "rectangles" : "triangles"}`],
+      ["Vertices admitted", admitted, `${roundsSay(rounds)}; ${f.tri.length / f.stride} ${f.engine === "rect" ? "rectangles" : "triangles"}`],
       ["Error against the truth", fmt(err, 3), `log-odds RMSE; a flat fit: ${fmt(errFlat, 3)}`],
       ["Coin variance", fmt(f.poolVariance, 4), `the coin effects' variance; truly ${fmt(coinSd() ** 2, 4)}`],
       (() => {
@@ -285,11 +294,18 @@
     ]).map(([k, v, d]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join("");
 
     const cap = f.engine === "rect" ? 3 : 6;             // each engine's upper bound on the null's spread
-    const rule = (r) => (r.method === "lindsey" ? "empirical null" : r.method === "BH-fallback" ? "theoretical null (BH)" : r.method === "defer-invalid-null" ? "deferred" : r.method || "–");
+    const rule = (r) => (r.method === "lindsey" ? `<span title="the null's centre and spread were read off the middle of this round's own scores">empirical null</span>`
+      : r.method === "BH-fallback" ? `<span title="the textbook null, centred at 0 with spread 1, with the Benjamini-Hochberg rule">theoretical null (BH)</span>`
+      : r.method === "defer-invalid-null" ? "deferred" : r.method || "–");
     const cols = ROUND_COLOURS();
-    $("rounds").innerHTML = `<table class="diag"><thead><tr><th>Round</th><th>Scored</th><th>Null centre</th><th>Null spread</th><th>&pi;<sub>0</sub></th><th>Rule</th><th>Admitted</th><th>${S.user ? "Site" : "Coin"} variance</th></tr></thead><tbody>` +
-      rounds.map((r) => `<tr><td class="mono"><i class="dot" style="background:${cols[Math.min(cols.length - 1, r.round)]}"></i>${r.round}</td><td class="mono">${r.candidates}</td><td class="mono">${fmt(r.nullMean, 2)}</td><td class="mono">${fmt(r.nullSd, 2)}${r.nullSd >= cap - 1e-3 ? " <span class='cap'>cap</span>" : ""}</td><td class="mono">${fmt(r.pi0, 2)}</td><td>${rule(r)}</td><td class="mono"><b>${r.admitted}</b></td><td class="mono">${fmt(r.poolVariance, 4)}</td></tr>`).join("") +
-      `</tbody></table>`;
+    $("rounds").innerHTML = `<table class="diag"><thead><tr><th>Round</th><th title="candidate vertices given a score this round">Scored</th>`
+      + `<th title="where the scores of candidates that change nothing are centred: 0 in textbook theory, read off the data here">Null centre</th>`
+      + `<th title="how widely those scores spread: 1 in textbook theory; &quot;cap&quot; marks the widest the estimator allows">Null spread</th>`
+      + `<th title="the estimated share of this round's candidates that are only noise">&pi;<sub>0</sub></th><th>Rule</th><th>Admitted</th>`
+      + `<th title="the fitted spread of each ${S.user ? "site" : "coin"}'s own effect on the log-odds">${S.user ? "Site" : "Coin"} variance</th></tr></thead><tbody>` +
+      rounds.map((r) => `<tr${r.admitted ? "" : ' class="none"'}><td class="mono"><i class="dot" style="background:${cols[Math.min(cols.length - 1, r.round)]}"></i>${r.round}</td><td class="mono">${r.candidates}</td><td class="mono">${fmt(r.nullMean, 2)}</td><td class="mono">${fmt(r.nullSd, 2)}${r.nullSd >= cap - 1e-3 ? " <span class='cap'>cap</span>" : ""}</td><td class="mono">${fmt(r.pi0, 2)}</td><td>${rule(r)}</td><td class="mono"><b>${r.admitted}</b></td><td class="mono">${fmt(r.poolVariance, 4)}</td></tr>`).join("") +
+      `</tbody></table><p class="caption">Grey rows admitted nothing. The run ends after three rounds in a row that
+      ${f.engine === "rect" ? "admit" : "select"} nothing; between them the estimator refits the ${S.user ? "site" : "coin"} variance and scores again.</p>`;
 
     // what happened, in the gate's own terms
     const r0 = rounds[0], last = rounds[rounds.length - 1];
@@ -327,7 +343,11 @@
       setChip("ok", "Fitted"); report(); drawFit();
       if (S.queued) run();
     };
-    worker.onerror = (e) => { setChip("bad", "Error"); $("statustext").textContent = "The engine could not start in this browser: " + (e.message || e); };
+    // an error event from a worker script that never loaded carries no message: most often the network
+    worker.onerror = (e) => {
+      setChip("bad", "Error");
+      $("statustext").textContent = e.message ? `The estimator stopped: ${e.message}` : "The estimator could not be loaded. Check the connection and reload the page.";
+    };
   }
   function run() {
     if (!S.ready) return;
@@ -532,7 +552,7 @@
       sx = []; sy = []; sn = []; sk = [];
       for (const q of cells.values()) { sx.push(q.u / q.n); sy.push(q.v / q.n); sn.push(q.n); sk.push(q.k); }
     }
-    const lines = ["wala,wac,n,k"];
+    const lines = [];         // headerless, as in makeData: x, y, trials, successes
     for (let i = 0; i < sx.length; ++i) lines.push(sx[i].toFixed(6) + "," + sy[i].toFixed(6) + "," + sn[i] + "," + sk[i]);
     return {
       name: table.name, xName: H[jx], yName: H[jy], xr, yr, rows, skipped, grid, sites: sx.length, rate: K / N,

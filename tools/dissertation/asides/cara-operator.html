@@ -1,0 +1,49 @@
+<!-- after: thm:risk_sensitive_appendix -->
+<!-- page: chapter-1 -->
+<details class="aside-note" id="aside-cara-operator">
+<summary><span class="an-title">A simpler form of the condition</span><span class="an-sub"> · added after the dissertation</span></summary>
+<p><em>Setting.</em> Stack the increments of \(W\) on \([0,T]\), past and future, state shocks and signal noise alike,
+into one standard normal vector \(\varepsilon\sim N(0,I)\). Take the tracking case with no linear part (\(k=0\)), so
+that the cost is a quadratic form, \(\mathcal C^i=c_0+\tfrac12\,\varepsilon^\top K\varepsilon\), with \(K\) the kernel
+<a class="xref" href="#eq:rs_K">(1.B.28)</a>. Assume \(K\) is positive semidefinite and \(\theta_i\lambda_{\max}(K)<1\).</p>
+<p>What player \(i\) has observed by time \(t\) is a set of linear combinations of \(\varepsilon\). Let \(P_t\) be the
+projection matrix onto their span. Then</p>
+<p class="an-eq">\[\mathbb E[\varepsilon\mid\mathcal F_t^i]=P_t\,\varepsilon,\]</p>
+<p class="an-eq">\[\operatorname{Var}(\varepsilon\mid\mathcal F_t^i)=I-P_t\eqqcolon\Sigma_t .\]</p>
+<p>Let \(H^{X,i}_t=\bar H^{X,i}_t+\int_0^TH^{X,i}_t(u)\,dW_u\) be player \(i\)'s state price, the adjoint of
+<a class="xref" href="#thm:wedge-adjoints">Theorem 1.8</a>, and let</p>
+<p class="an-eq">\[M_t=G^{DD,i}(t)\,D^i_t+B^X_i(t)^\top H^{X,i}_t\]</p>
+<p>be the marginal cost of its control at \(t\): the control's own cost plus the state price, carried through
+\(B^X_i\) (in the two-player tracking game, \(2r_iD^i_t+H^{X,i}_t\)). This is the bracket of <a class="xref" href="#eq:first_variation_revised">(1.B.10)</a>, and the
+first-order condition sets its conditional mean to zero. Under a linear profile \(M_t\) is a linear function of the
+shocks, so it can be written with a fixed vector \(a_t\) of loadings,</p>
+<p class="an-eq">\[M_t=a_t^\top\varepsilon .\]</p>
+<p>(For a vector control, take one \(a_t\) per component.) The risk-neutral condition then reads
+\(\mathbb E[M_t\mid\mathcal F_t^i]=a_t^\top P_t\,\varepsilon=0\) for every \(\varepsilon\), that is, \(P_ta_t=0\): the
+loadings have no component along what player \(i\) has observed.</p>
+<p><em>Proposition.</em> For each \(t\), the following are equivalent:</p>
+<p class="an-eq">\[\text{(a)}\quad P_t\,(I-\theta_iK)^{-1}a_t=0,\]</p>
+<p class="an-eq">\[\text{(b)}\quad P_t\,(I-\theta_iK\Sigma_t)^{-1}a_t=0 .\]</p>
+<p>Condition (b) is the stationarity condition of Theorem 1.18: it evaluates \(a_t\) at
+\((I-\theta_i\Sigma_tK)^{-1}m\) for every \(m\) in the range of \(P_t\), and \(\Sigma_t\) and \(K\) are symmetric.
+Condition (a) is the same condition with \(\Sigma_t\) replaced by \(I\): stationarity when the whole game is judged
+from the start, under the tilted law \(\varepsilon\sim N\bigl(0,(I-\theta_iK)^{-1}\bigr)\).</p>
+<p><em>Proof.</em> Both inverses exist, because \(0\preceq\Sigma_t\preceq I\). The two matrices agree on vectors
+orthogonal to everything observed: if \(P_tv=0\), then \(\Sigma_tv=v\), and so</p>
+<p class="an-eq">\[(I-\theta_iK\Sigma_t)\,v=(I-\theta_iK)\,v .\qquad(\ast)\]</p>
+<p>Suppose (a), and set \(u=(I-\theta_iK)^{-1}a_t\). Then \(P_tu=0\), so \((\ast)\) gives \((I-\theta_iK\Sigma_t)\,u=a_t\).
+Hence \((I-\theta_iK\Sigma_t)^{-1}a_t=u\), and (b) holds.</p>
+<p>Conversely, suppose (b), and set \(v=(I-\theta_iK\Sigma_t)^{-1}a_t\). Then \(P_tv=0\), so \((\ast)\) gives
+\((I-\theta_iK)\,v=a_t\). Hence \((I-\theta_iK)^{-1}a_t=v\), and (a) holds. \(\square\)</p>
+<p><em>Remark.</em> Both conditions say \(\mathbb E^{Q}[M_t\mid\mathcal F_t^i]=0\), computed two ways: (a)
+conditions the tilted law \(Q\) on \(\mathcal F_t^i\), (b) tilts the conditional law. By Bayes' rule these are the same
+law, since \(Q(\cdot\mid\mathcal F_t^i)\propto e^{\theta_i\mathcal C^i}P(\cdot\mid\mathcal F_t^i)\).</p>
+<p>The matrix in (a) is the same for every \(t\) and needs no conditional variance. Since</p>
+<p class="an-eq">\[(I-\theta_iK)^{-1}=I+\theta_iK(I-\theta_iK)^{-1},\]</p>
+<p>condition (a) is the risk-neutral condition \(P_ta_t=0\) plus one
+correction, and it is through this correction that the unobserved part of \(a_t\), including its future part, enters.
+The entropic cost itself is finite exactly when \(I-\theta_iK\) is positive definite.</p>
+<p class="an-credit">Found by Claude Opus 5.5 (Anthropic) while adding risk-averse players to
+<a href="/noisestate/">noisestate</a>, September 2026, and checked there against a brute-force solver. The
+<a href="/noisestate/risk/#equiv-section">risk page</a> draws the argument.</p>
+</details>
