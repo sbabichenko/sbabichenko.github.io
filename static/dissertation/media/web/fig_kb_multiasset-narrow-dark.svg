@@ -2623,14 +2623,14 @@ L 333.334375 504.524583
    </g>
    <g id="legend_3">
     <g id="line2d_49">
-     <path d="M 141.2956 552.727467 
-L 148.2956 552.727467 
-L 155.2956 552.727467 
+     <path d="M 160.545937 527.051137 
+L 167.545937 527.051137 
+L 174.545937 527.051137 
 " style="fill: none; stroke: #3a9add; stroke-width: 1.5; stroke-linecap: square"/>
     </g>
     <g id="text_45">
      <!-- trader 1: cumulative loading on own noise -->
-     <g style="fill: #e4e4ea" transform="translate(160.8956 555.177467) scale(0.084 -0.084)">
+     <g style="fill: #e4e4ea" transform="translate(180.145937 529.501137) scale(0.0756 -0.0756)">
       <defs>
        <path id="Newsreader16pt-Regular-3a" d="M 880 829 
 Q 1078 829 1201 710 
@@ -2698,14 +2698,14 @@ z
      </g>
     </g>
     <g id="line2d_50">
-     <path d="M 141.2956 564.412217 
-L 148.2956 564.412217 
-L 155.2956 564.412217 
+     <path d="M 160.545937 537.917412 
+L 167.545937 537.917412 
+L 174.545937 537.917412 
 " style="fill: none; stroke: #ff8f2d; stroke-width: 1.5; stroke-linecap: square"/>
     </g>
     <g id="text_46">
      <!-- trader 2: cumulative loading on 1's noise -->
-     <g style="fill: #e4e4ea" transform="translate(160.8956 566.862217) scale(0.084 -0.084)">
+     <g style="fill: #e4e4ea" transform="translate(180.145937 540.367412) scale(0.0756 -0.0756)">
       <use xlink:href="#Newsreader16pt-Regular-74"/>
       <use xlink:href="#Newsreader16pt-Regular-72" x="38.150009"/>
       <use xlink:href="#Newsreader16pt-Regular-61" x="80.850006"/>
@@ -2750,14 +2750,14 @@ L 155.2956 564.412217
      </g>
     </g>
     <g id="line2d_51">
-     <path d="M 141.2956 576.096967 
-L 148.2956 576.096967 
-L 155.2956 576.096967 
+     <path d="M 160.545937 548.783687 
+L 167.545937 548.783687 
+L 174.545937 548.783687 
 " style="fill: none; stroke: #e4e4ea; stroke-width: 1.2; stroke-linecap: square"/>
     </g>
     <g id="text_47">
      <!-- sum over traders -->
-     <g style="fill: #e4e4ea" transform="translate(160.8956 578.546967) scale(0.084 -0.084)">
+     <g style="fill: #e4e4ea" transform="translate(180.145937 551.233687) scale(0.0756 -0.0756)">
       <use xlink:href="#Newsreader16pt-Regular-73"/>
       <use xlink:href="#Newsreader16pt-Regular-75" x="44.550003"/>
       <use xlink:href="#Newsreader16pt-Regular-6d" x="103.250015"/>

@@ -19,6 +19,7 @@
           their own noisy signals.</p>
       </section>
 
+      {% include "partials/story-noscript.html" %}
       <section class="story" id="story">
         <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
         <div class="steps">
@@ -50,8 +51,8 @@
             <p>Your actions depend on what you believe about the world, and on what you think others believe. If everyone
               acts on their beliefs about others&rsquo; beliefs, those become relevant too: beliefs about beliefs about
               beliefs. There is no last layer.</p>
-            <p class="small">With <i>n</i> players there are <i>n</i> beliefs of the second order, <i>n</i>&sup2; of the
-              third, and so on. Townsend called it forecasting the forecasts of others.</p>
+            <p class="small">With <i>n</i> players there are <i>n</i> beliefs of the first order, <i>n</i>(<i>n</i>&minus;1) of the
+              second, and so on. Townsend called it forecasting the forecasts of others.</p>
           </div>
           <div class="step" data-scene="randomness">
             <p>Change what a belief is a belief about. Underneath everyone&rsquo;s model of everyone else are the same

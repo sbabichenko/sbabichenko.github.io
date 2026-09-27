@@ -463,6 +463,12 @@ def story(body, plan):
     return str(soup)
 
 
+def glue_punct(body):
+    """an inline formula and the punctuation after it on one line (a line may not start with a lone '.')"""
+    return re.sub(r'(<span class="math inline"><span class="katex"><math\b(?:(?!</math>).)*</math></span></span>)([.,;:])',
+                  r'<span class="nobr">\1\2</span>', body, flags=re.S)
+
+
 def fingerprint():
     """a hash of the LaTeX that makes the pages, and the newest time any of it was edited"""
     import hashlib
@@ -589,7 +595,7 @@ def main():
         body = "\n".join(str(s) for s in p["secs"])
         if p["slug"] in STORIES:
             body = story(body, STORIES[p["slug"]])
-        (frag / f"{p['slug']}.html").write_text(body)
+        (frag / f"{p['slug']}.html").write_text(glue_punct(body))
         manifest.append({"slug": p["slug"], "title": title, "label": label, "sections": sections, "weight": w})
         fm = ["+++", f'title = {json.dumps((label + ": " if label else "") + title)}', f"weight = {w}",
               f'path = "dissertation/{p["slug"]}"', 'template = "thesis.html"', "[extra]", "math = false",
@@ -628,6 +634,8 @@ def main():
     subprocess.run([sys.executable, str(Path(__file__).parent / "webfigs.py")], check=True)
     # what rests on what, for the "used in" lines, assumption tracing, the map and the paths
     subprocess.run([sys.executable, str(Path(__file__).parent / "deps.py")], check=True)
+    # notes added after the dissertation, folded shut (tools/dissertation/asides/)
+    subprocess.run([sys.executable, str(Path(__file__).parent / "asides.py")], check=True)
     pdf = SRC / "combined_dissertation.pdf"
     if pdf.exists():
         shutil.copy(pdf, STATIC / "babichenko-dissertation.pdf")

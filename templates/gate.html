@@ -10,8 +10,8 @@
     {% include "partials/header.html" %}
 
     <main class="explorer mesh gate" id="gate" data-worker="{{ get_url(path='mesh/fit-worker.js', cachebust=true) }}">
-      <div class="crumbs"><a href="{{ get_url(path='') }}#projects">Projects</a> &nbsp;/&nbsp; <a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &nbsp;/&nbsp; Live</div>
-      <h1>Decision Mesh</h1>
+      <div class="crumbs"><a href="{{ get_url(path='') }}#projects">Projects</a> &nbsp;/&nbsp; <a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &nbsp;/&nbsp; Live fit</div>
+      <h1>Decision Mesh: Live Fit</h1>
       <p class="sub">The odds of a coin vary over this square. A few thousand sites each flip a coin a handful of
         times. The estimator refines a mesh of right triangles or rectangles only where a false-discovery gate finds
         support in the flips, and stops when no candidate passes. It separates the odds from each coin's own effect
@@ -27,9 +27,9 @@
           <div class="ctl"><label for="flips"><span>Flips per site</span></label><select id="flips">
             <option value="5">about 5</option><option value="10">about 10</option><option value="20" selected>about 20</option>
             <option value="40">about 40</option><option value="80">about 80</option><option value="160">about 160</option></select></div>
-          <div class="ctl"><label for="coinsd"><span>Coin effects, sd</span><span class="val" id="coinsdval"></span></label>
+          <div class="ctl"><label for="coinsd" title="each coin also tips its own odds a little; at 0 every coin at a spot is the same"><span>Coin effects, sd</span><span class="val" id="coinsdval"></span></label>
             <input type="range" id="coinsd" min="0" max="1" step="0.05" value="0.25" /></div>
-          <div class="ctl"><label for="q"><span>False discovery rate, q</span><span class="val" id="qval"></span></label>
+          <div class="ctl"><label for="q" title="the share of admitted vertices the gate allows, on average, to be false alarms"><span>False discoveries, q</span><span class="val" id="qval"></span></label>
             <input type="range" id="q" min="0.01" max="0.3" step="0.01" value="0.1" /></div>
           <div class="ctl" id="drawtools" hidden><label><span>Brush</span></label>
             <div class="brushrow"><label class="check"><input type="checkbox" id="lower" /> lower</label>
@@ -38,6 +38,7 @@
         <input type="hidden" id="seed" value="1" />
       </section>
 
+      <noscript><p class="caption" style="color:var(--warn);margin:0 0 12px">Everything on this page is computed in your browser by JavaScript, which is turned off here, so none of it will run.</p></noscript>
       <div id="statusbar">
         <span class="chip idle" id="chip">Ready</span>
         <span id="statustext"></span>
@@ -60,7 +61,7 @@
         </div>
       </section>
 
-      <p class="tries">Try giving <a href="#truth=hills&amp;flips=160">the two hills more flips</a> and watch the mesh fill
+      <p class="tries">Try giving <a href="#truth=hills&amp;flips=160">the hill and the pit more flips</a> and watch the mesh fill
         in around them; pick <a href="#truth=nothing&amp;flips=160">&ldquo;nothing at all&rdquo;</a>, which it leaves uncut at
         any number of flips; pick <a href="#truth=drawing">&ldquo;your drawing&rdquo;</a> and paint on the odds (drag to
         raise them, tick &ldquo;lower&rdquo; or hold shift to lower them).</p>

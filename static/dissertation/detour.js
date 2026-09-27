@@ -177,6 +177,21 @@
       parts.push({ set: (t) => bits.forEach((e, k) => { e.style.opacity = t * n > k ? 0.85 : 0; }), w: [t0, t0 + 0.03] });
     });
     parts.push({ set: (t) => { hatch.style.opacity = 0.9 - 0.55 * t; if (unmapped) unmapped.style.opacity = 1 - t; }, w: [0.9, 0.99] });
+    // under the 2026 label, once the dashes are in: what they are
+    if (!still) {
+      // on a phone under the 2026 label; on a wide screen inside the band, just left of the line that goes through
+      let doorLab;
+      if (vertical) {
+        const [x, y] = P(uT, vEdge - 0.02);
+        doorLab = el("text", { x: x - 8, y: y + 24, class: "lab accl", "text-anchor": "end" }, g);
+        doorLab.textContent = "dashed: each line's own way in";
+      } else {
+        const [x, y] = P(uT, 0.5);
+        doorLab = el("text", { x: x - 10, y: y + 4, class: "lab accl", "text-anchor": "end", style: "paint-order: stroke; stroke: var(--paper); stroke-width: 5px; stroke-linejoin: round" }, g);
+        doorLab.textContent = "dashed: each line's own way in";
+      }
+      parts.push({ set: (t) => { doorLab.style.opacity = t; }, w: [0.93, 0.99] });
+    }
 
     return function (p) { for (const q of parts) q.set(seg(p, q.w[0], q.w[1])); };
   }

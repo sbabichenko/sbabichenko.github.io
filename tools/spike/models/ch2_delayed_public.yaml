@@ -1,0 +1,26 @@
+# Chapter 2's structure: a public signal that the players see with different delays, next to private signals seen at
+# once. Player 1 sees the public signal Z at once, player 2 a lag Delta late. Two-player tracking game on the Chapter 1
+# example's parameters (p = 3, r = 0.1, sigma = 1).
+#   dX = (D1 + D2) dt + sigma dw0,  dY_i = sqrt(p_i) X dt + dw_i,  dZ = sqrt(q) X dt + dwZ
+name: ch2_delayed_public
+params: {p1: 3.0, p2: 3.0, q: 3.0, r1: 0.1, r2: 0.1, sigma: 1.0, Delta: 0.25}
+shocks: [w0, w1, w2, wZ]
+states:
+  X: (D1 + D2) dt + sigma dw0
+agents:
+  player1:
+    controls: D1
+    observes:
+      y1: sqrt(p1) X dt + dw1
+      z: sqrt(q) X dt + dwZ
+    loss: X^2 + r1 D1^2
+  player2:
+    controls: D2
+    observes:
+      y2: sqrt(p2) X dt + dw2
+      z:
+        d: sqrt(q) X dt + dwZ
+        delay: Delta
+    loss: X^2 + r2 D2^2
+horizon: {T: 1.0}
+numerics: {nodes: 8}
