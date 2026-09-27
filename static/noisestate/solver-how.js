@@ -52,17 +52,21 @@
   const CH3 = {"name":"ch3_stationary_tracking","params":{"p1":3,"p2":10,"r1":1,"r2":1},"channels":["w0","w1","w2"],"states":{"X":{"drift":{"D1":1,"D2":1},"noise":{"w0":1}}},"agents":{"player1":{"controls":["D1"],"signals":{"y1":{"drift":{"X":"sqrt(p1)"},"noise":{"w1":1}}},"loss":[[0.5,"X","X"],["0.5*r1","D1","D1"]]},"player2":{"controls":["D2"],"signals":{"y2":{"drift":{"X":"sqrt(p2)"},"noise":{"w2":1}}},"loss":[[0.5,"X","X"],["0.5*r2","D2","D2"]]}},"horizon":{"kind":"stationary","discount":0,"window":8},"numerics":{"nodes":32}};
   const TRAN_AGENTS = {"player1":{"controls":["D1"],"signals":{"y1":{"drift":{"X":"sqrt(p1)"},"noise":{"w1":1}}},"loss":[[0.5,"X","X"],["0.5*r1","D1","D1"]]},"player2":{"controls":["D2"],"signals":{"y2":{"drift":{"X":"sqrt(p2)"},"noise":{"w2":1}}},"loss":[[0.5,"X","X"],["0.5*r2","D2","D2"]]}};
   const TRAN_STATES = {"X":{"drift":{"X":"-a","D1":1,"D2":1},"noise":{"w0":1}}};
-  const TRAN = {"name":"regime_change","params":{"p1":6,"p2":3,"r1":1,"r2":1,"a":1,"T":6},"channels":["w0","w1","w2"],"states":TRAN_STATES,"agents":TRAN_AGENTS,
+  // The transition runs its continuation on its own grid (unequal grids leave a floor of 5e-4 under the settled check
+  // that no T removes) and to T = 9: at T = 6 the rules are still 3e-4 from the new stationary ones, at 9 they are 6e-8.
+  const TRAN = {"name":"regime_change","params":{"p1":6,"p2":3,"r1":1,"r2":1,"a":1,"T":9},"channels":["w0","w1","w2"],"states":TRAN_STATES,"agents":TRAN_AGENTS,
     "horizon":{"kind":"transition","T":"T","past":{"model":{"name":"before","params":{"p1":1,"p2":3,"r1":1,"r2":1,"a":1},"channels":["w0","w1","w2"],"states":TRAN_STATES,"agents":TRAN_AGENTS,"horizon":{"kind":"stationary","window":3},"numerics":{"nodes":12}}},"continuation":"stationary"},
-    "numerics":{"nodes":8,"continuation_nodes":12}};
+    "numerics":{"nodes":12,"continuation_nodes":12}};
   const copy = (m) => JSON.parse(JSON.stringify(m));
   const plain = copy(CH1); plain.numerics.settings = { anderson_m: 0 };
+  const fine = copy(CH1); fine.numerics.nodes = 14;
   const stat = (window, discount) => { const m = copy(CH3); m.horizon.window = window; m.horizon.discount = discount; return m; };
   const jobs = [
     { kind: "base", model: CH1, request: { start_policy: "zero" } },
     { kind: "plain", model: plain, request: { start_policy: "zero" } },
     { kind: "coarse", model: CH1, request: { start_policy: "coarse" } },
-    { kind: "checks", model: CH1, request: { start_policy: "coarse", refine: true, stability: true } },
+    { kind: "checks", model: fine, request: { start_policy: "coarse", refine: true, stability: true } },
+    { kind: "checks12", model: CH1, request: { start_policy: "coarse", refine: true } },
     { kind: "window", L: 2, rho: 0, model: stat(2, 0), request: { start_policy: "coarse" } },
     { kind: "window", L: 4, rho: 0, model: stat(4, 0), request: { start_policy: "coarse" } },
     { kind: "window", L: 8, rho: 0, model: stat(8, 0), request: { start_policy: "coarse" } },
@@ -70,7 +74,7 @@
     { kind: "window", L: 2, rho: 3, model: stat(2, 3), request: { start_policy: "coarse" } },
     { kind: "transition", model: TRAN, request: {} },
   ];
-  const R = { base: null, trace: {}, checks: null, windows: [], transition: null, version: 0 };
+  const R = { base: null, trace: {}, checks: null, checks12: null, windows: [], transition: null, version: 0 };
   const status = document.getElementById("solvestate");
   let done = 0, t0 = performance.now();
   const prog = jobs.map(() => []);
@@ -82,6 +86,7 @@
       else if (job.kind === "plain") R.trace.plain = prog[k];
       else if (job.kind === "coarse") R.trace.coarse = prog[k];
       else if (job.kind === "checks") R.checks = res;
+      else if (job.kind === "checks12") R.checks12 = res;
       else if (job.kind === "window") { R.windows.push({ L: job.L, rho: job.rho, res }); }
       else if (job.kind === "transition") R.transition = res;
       R.version++;
@@ -121,11 +126,16 @@
   }
   const nodeKernel = (res, ctl, ch) => res.kernels[ctl][ch];
   const peak = (a) => a.reduce((m, v) => Math.max(m, Math.abs(v)), 0) || 1;
-  function dotField(g, res, vals, X, Y, rmax, scale) {
+  // a dot per node, its area the value's size; by default its colour is the sign (orange above 0, blue below). With a
+  // colour of its own (ink, or "acc" for the accent) the dot is filled above 0 and hollow below.
+  function dotField(g, res, vals, X, Y, rmax, scale, own) {
     const n = res.nodes.t.length, m = scale || peak(vals);
     for (let k = 0; k < n; ++k) {
       const t = res.nodes.t[k], s = t - res.nodes.a[k], v = vals[k], r = 1.2 + rmax * Math.sqrt(Math.min(1, Math.abs(v) / m));
-      el("circle", { cx: X(t).toFixed(1), cy: Y(s).toFixed(1), r: r.toFixed(2), class: v < 0 ? "fillacc" : "fillwarm", opacity: Math.abs(v) < 1e-9 * m ? 0.25 : 0.8 }, g);
+      const at = { cx: X(t).toFixed(1), cy: Y(s).toFixed(1), r: r.toFixed(2), opacity: Math.abs(v) < 1e-9 * m ? 0.25 : 0.8 };
+      if (own === undefined) at.class = v < 0 ? "fillacc" : "fillwarm";
+      else { const col = own === "acc" ? "var(--accent)" : "currentColor"; Object.assign(at, v < 0 ? { fill: "none", stroke: col, "stroke-width": 1.2 } : { fill: col }); }
+      el("circle", at, g);
     }
   }
   function triangleOutline(g, X, Y, seed) {
@@ -209,7 +219,7 @@
     stroke(g, pencil([[S0x + SW + 12, S0y + SW * 0.7], [X(0.55) - 40, Y(0.4)]], 7, 1), "soft", 1.3).set(1);
     arrowHead(g, X(0.55) - 40, Y(0.4), Math.atan2(Y(0.4) - (S0y + SW * 0.7), X(0.55) - 40 - (S0x + SW + 12)), "soft");
     const n = Math.round(Math.sqrt(res.nodes.t.length));
-    text(g, 300, 568, `${n} × ${n} = ${res.nodes.t.length} nodes, shaded by D¹ on w⁰`, "label");
+    text(g, 300, 568, `${n} × ${n} nodes, sized by D¹ on w⁰; orange above 0, blue below`, "label");
     const rep = Math.max(...Object.values(res.representation_error));
     text(g, 300, 592, `representation error ${sci(rep)}`, "label acc");
   });
@@ -266,16 +276,18 @@
   // ------------------------------------------------------------------ 5. the first-order condition, physical part and wedge, at every node
   scenes.split = live("split", () => R.base, (g) => {
     const res = R.base, f = res.foc_nodal.D1.w0;
-    const panel = (x0, vals, label, cls) => {
+    // both triangles on the physical part's scale, so the wedge's dots are as small as the wedge is
+    const one = Math.max(peak(f.physical), peak(f.wedge));
+    const panel = (x0, vals, label, cls, note) => {
       const X = (t) => x0 + 230 * t, Y = (s) => 330 - 230 * s;
       triangleOutline(g, X, Y, x0);
-      dotField(g, res, vals, X, Y, 6.5);
+      dotField(g, res, vals, X, Y, 6.5, one, cls);
       text(g, X(0.5), 70, label, "label " + cls);
-      text(g, X(0.5), 360, `largest ${sci(peak(vals), 2)}`, "mono");
+      text(g, X(0.5), 360, `largest ${sci(peak(vals), 2)}${note || ""}`, "mono");
     };
     panel(40, f.physical, "physical part", "");
-    panel(330, f.wedge, "wedge", "acc");
-    text(g, 300, 388, "each on its own scale, date t across, shock date s up", "mono");
+    panel(330, f.wedge, "wedge", "acc", `, ${Math.round((100 * peak(f.wedge)) / peak(f.physical))}% of the physical`);
+    text(g, 300, 388, "one scale for both, t across, s up; hollow dots: below 0", "mono");
     // one date, both parts on a common scale
     const q = res.samples.foc.D1, c = q.channels.w0, all = c.physical.concat(c.wedge, [0]);
     const lo = Math.min(...all), hi = Math.max(...all), PX = (s) => 90 + 440 * s / q.t, PY = (v) => 560 - 130 * (v - lo) / (hi - lo || 1);
@@ -327,7 +339,7 @@
 
   // ------------------------------------------------------------------ 8. the checks
   const refineLine = document.getElementById("refineline");
-  scenes.checks = live("checks", () => R.checks, (g) => {
+  scenes.checks = live("checks", () => R.checks && (R.checks12 || done === jobs.length), (g) => {
     const res = R.checks, rows = [];
     for (const c of res.checks) {
       if (c.name === "converged") rows.push(["residual", c.value, "below " + sci(c.threshold), c.ok]);
@@ -347,8 +359,9 @@
       text(g, 470, y, th, "label", "end");
       text(g, 575, y, ok ? "passes" : "fails", "label " + (ok ? "acc" : "warmt"), "end");
     });
-    const rf = res.refinement;
-    text(g, 30, 130 + 44 * rows.length + 20, `refinement at ${rf.nodes} nodes, curvature as smallest over largest`, "mono", "start");
+    const rf = res.refinement, n0 = Math.round(Math.sqrt(res.nodes.t.length)), rf12 = R.checks12 && R.checks12.refinement;
+    text(g, 30, 130 + 44 * rows.length + 20, `the game at ${n0} nodes, refined at ${rf.nodes}; curvature as smallest over largest`, "mono", "start");
+    if (rf12) text(g, 30, 130 + 44 * rows.length + 40, `at 12 nodes, refinement moves the kernels by ${sci(rf12.kernel_change)}: ${rf12.kernel_change <= 1e-5 ? "passes" : "fails, so these checks use " + n0}`, "mono", "start");
     if (refineLine && rf) refineLine.textContent = `Here, solving again at ${rf.nodes} nodes moves the costs by ${sci(rf.cost_change)} and the kernels by ${sci(rf.kernel_change)}, against tolerances of 10⁻⁶ and 10⁻⁵.`;
   });
 
@@ -421,6 +434,12 @@
     el("line", { x1: X(t0), x2: X(0), y1: Y(old), y2: Y(old), class: "pencil", "stroke-width": 2 }, g);
     el("line", { x1: X(0), x2: X(t1), y1: Y(neu), y2: Y(neu), class: "pencil soft", "stroke-width": 1.2, "stroke-dasharray": "5 5" }, g);
     text(g, X(t1), Y(neu) + 18, "new stationary loss", "mono", "end");
+    // the axis: the two stationary flows and the path's peak, the numbers the drawing is about
+    el("line", { x1: 66, x2: 66, y1: 110, y2: 430, class: "pencil soft", "stroke-width": 0.8 }, g);
+    const ks = path.reduce((b, v, i) => (v > path[b] ? i : b), 0), yt = [["old", old], ["new", neu]];
+    if (path[ks] > old + 0.1 * (hi - lo)) yt.push(["peak", path[ks]]);
+    for (const [k, v] of yt) { el("line", { x1: 62, x2: 66, y1: Y(v), y2: Y(v), class: "pencil", "stroke-width": 1 }, g); text(g, 58, Y(v) + 4, `${k} ${v.toFixed(3)}`, "mono", "end"); }
+    if (path[ks] > old) text(g, X(times[ks]) + 8, Y(path[ks]) - 6, `at t = ${times[ks].toFixed(2)}, ${(100 * (path[ks] / old - 1)).toFixed(1)}% above the old loss`, "mono", "start");
     const dpath = poly(times.map((t, i) => [X(t), Y(path[i])]));
     const pl = stroke(g, dpath, "accent", 2.2);
     pl.set(1);
@@ -459,4 +478,24 @@
     if (active && story.top < window.innerHeight && story.bottom > 0) { const sc = scenes[active.dataset.scene]; if (sc) sc.update(reduced ? 1 : prog2, now); }
     requestAnimationFrame(frame);
   })(performance.now());
+  // On a phone the drawing's labels are set larger (the page's stylesheet). A label that would then run past the
+  // drawing's edge, 600 units wide, is shrunk back until it fits, measured from where it is anchored.
+  const phone = window.matchMedia("(max-width: 820px)");
+  let fitQueued = false;
+  function fitLabels() {
+    fitQueued = false;
+    const mode = phone.matches ? "phone" : "wide";
+    for (const t of svg.querySelectorAll("text")) {
+      const key = mode + t.textContent;
+      if (t.fitKey === key) continue;           // measured already, for this text at this width
+      t.fitKey = key; t.style.fontSize = "";
+      if (mode !== "phone" || !t.textContent) continue;
+      const b = t.getBBox(), x = +t.getAttribute("x") || 0, a = t.getAttribute("text-anchor") || "start";
+      const room = a === "middle" ? 2 * Math.min(x, 600 - x) : a === "end" ? x : 600 - x;
+      if (b.width > room && room > 0) t.style.fontSize = (parseFloat(getComputedStyle(t).fontSize) * room / b.width).toFixed(2) + "px";
+    }
+  }
+  const queueFit = () => { if (!fitQueued) { fitQueued = true; requestAnimationFrame(fitLabels); } };
+  new MutationObserver(queueFit).observe(svg, { childList: true, subtree: true, characterData: true });
+  phone.addEventListener("change", queueFit);
 })();

@@ -11,8 +11,8 @@
     <div class="progress" id="progress" data-auto aria-hidden="true"></div>
 
     <main class="explorer mesh">
-      <div class="crumbs"><a href="{{ get_url(path='') }}#projects">Projects</a> &nbsp;/&nbsp; Decision Mesh</div>
-      <h1>Decision Mesh</h1>
+      <div class="crumbs"><a href="{{ get_url(path='') }}#projects">Projects</a> &nbsp;/&nbsp; Decision Mesh &nbsp;/&nbsp; Geometries compared</div>
+      <h1>Decision Mesh: Geometries Compared</h1>
       <p class="sub">A regression tree cuts the plane into boxes and predicts a constant in each, so its fit is a
         staircase. A decision mesh cuts the plane into pieces that share their corners and predicts across each piece
         from those corner heights, so its fit is continuous. Below, four fits
@@ -53,6 +53,7 @@
         </div>
       </section>
 
+      <noscript><p class="caption" style="color:var(--warn);margin:0 0 12px">Everything on this page is computed in your browser by JavaScript, which is turned off here, so none of it will run.</p></noscript>
       <div id="statusbar">
         <span class="chip idle" id="chip">Ready</span>
         <svg class="glass" id="glass" viewBox="0 0 14 20" aria-hidden="true"><title>Step budget left</title>
@@ -95,22 +96,25 @@
 
       <section class="panel">
         <h2>Error Against the Truth</h2>
+        <div class="legend" id="curvekey"><span><i style="background:var(--accent)"></i>freeform triangles</span><span><i style="background:var(--c5)"></i>right triangles</span><span><i style="background:var(--c6)"></i>rectangles</span><span><i style="background:var(--c4)"></i>tree</span></div>
         <div class="cv wide"><canvas id="cvcurve" width="900" height="220"></canvas></div>
         <p class="caption">Root-mean-square distance from the true surface over the square, against the number of free
-          parameters; the dashed line is the noise &sigma;. Over a whole run, on all six surfaces the right triangles get closest to the
-          truth.</p>
+          parameters; the dashed line is the noise &sigma;. The table gives each fit's lowest RMSE over a whole run on the
+          page's default data, grown one step a frame.</p>
         <div class="tablewrap best"><table class="diag">
-          <thead><tr><th>Best RMSE over a run</th><th>Freeform</th><th>Right</th><th>Rectangles</th><th>Tree</th></tr></thead>
+          <thead><tr><th>Surface</th><th>Freeform</th><th>Right</th><th>Rectangles</th><th>Tree</th></tr></thead>
           <tbody>
-            <tr><td><a href="#surface=cliff">Diagonal cliff</a></td><td class="mono">0.161</td><td class="mono"><b>0.130</b></td><td class="mono">0.170</td><td class="mono">0.217</td></tr>
-            <tr><td><a href="#surface=bump">Two hills</a></td><td class="mono">0.127</td><td class="mono"><b>0.091</b></td><td class="mono">0.123</td><td class="mono">0.152</td></tr>
-            <tr><td><a href="#surface=saddle">Saddle</a></td><td class="mono">0.099</td><td class="mono"><b>0.075</b></td><td class="mono">0.120</td><td class="mono">0.229</td></tr>
-            <tr><td><a href="#surface=disk">Disk (a jump)</a></td><td class="mono">0.329</td><td class="mono"><b>0.277</b></td><td class="mono">0.284</td><td class="mono">0.303</td></tr>
+            <tr><td><a href="#surface=cliff">Diagonal cliff</a></td><td class="mono">0.159</td><td class="mono"><b>0.126</b></td><td class="mono">0.168</td><td class="mono">0.207</td></tr>
+            <tr><td><a href="#surface=bump">Hill and pit</a></td><td class="mono">0.123</td><td class="mono"><b>0.090</b></td><td class="mono">0.121</td><td class="mono">0.151</td></tr>
+            <tr><td><a href="#surface=saddle">Saddle</a></td><td class="mono">0.095</td><td class="mono"><b>0.073</b></td><td class="mono">0.119</td><td class="mono">0.229</td></tr>
+            <tr><td><a href="#surface=disk">Disk (a jump)</a></td><td class="mono">0.329</td><td class="mono"><b>0.275</b></td><td class="mono">0.284</td><td class="mono">0.298</td></tr>
             <tr><td><a href="#surface=ripples">Ripples</a></td><td class="mono">0.578</td><td class="mono"><b>0.464</b></td><td class="mono">0.485</td><td class="mono">0.495</td></tr>
-            <tr><td><a href="#surface=waves">Slow waves</a></td><td class="mono">0.206</td><td class="mono"><b>0.162</b></td><td class="mono">0.164</td><td class="mono">0.232</td></tr>
+            <tr><td><a href="#surface=waves">Slow waves</a></td><td class="mono">0.205</td><td class="mono">0.160</td><td class="mono"><b>0.159</b></td><td class="mono">0.231</td></tr>
           </tbody>
         </table></div>
-        <p class="caption">Their lead is largest early, at fifty parameters. Late in a run every mesh starts fitting noise and the curves turn up. A minimum of 3 points per
+        <p class="caption">On this one draw of the data, the right triangles get closest to the truth on five of the six
+          surfaces. A new draw can change the order. Late in a run every mesh starts fitting
+          noise and the curves turn up. A minimum of 3 points per
           piece is the default (0 is the published freeform algorithm), and "refresh fits" refits the freeform
           candidates around a vertex whose height has just moved, which the published algorithm leaves stale.</p>
       </section>

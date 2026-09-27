@@ -1,0 +1,11 @@
+{#- Without JavaScript the story pages' drawings never draw and their steps and cover stay faded: show the text at
+    full strength, drop the empty drawing, and say so once, just before the first story. -#}
+<noscript>
+  <style>
+    .story .step, .cover .big span, .cover .title, .cover .by, .cover .cta { opacity: 1 !important; transform: none !important; }
+    .story .stage, #solvestate { display: none !important; }
+    .story .steps, .told .toldbody .steps { padding-top: 4vh !important; }
+    .noscript-note { width: min(1100px, calc(100% - 40px)); margin: 2rem auto 0; font: 0.9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+  </style>
+  <p class="noscript-note">The drawings on this page need JavaScript.</p>
+</noscript>

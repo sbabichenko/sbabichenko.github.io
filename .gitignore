@@ -1,3 +1,4 @@
 tools/dissertation/node_modules/
 __pycache__/
 public/
+tools/spike/.cache/

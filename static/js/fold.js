@@ -53,7 +53,8 @@
       const y = parseFloat(getComputedStyle(root).getPropertyValue("--hinge-y")) || vh / 2;
       return y + (vh - y) / 2;
     }
-    const st = document.querySelector(".story .stage");
+    // the stage of the story on screen (the home page has two stories, one after the other)
+    const st = [...document.querySelectorAll(".story .stage")].find((s) => { const r = s.getBoundingClientRect(); return r.bottom > 0 && r.top < vh; });
     if (st) {
       const r = st.getBoundingClientRect();
       if (r.width > innerWidth * 0.8 && r.bottom > 0 && r.bottom < vh * 0.8) return r.bottom + (vh - r.bottom) * 0.45;

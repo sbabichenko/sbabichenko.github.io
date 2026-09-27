@@ -201,6 +201,14 @@ z
 " clip-path="url(#p089677fe16)" style="fill: #ffffff; stroke: #313138; stroke-width: 1.2; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
+    <g id="patch_15">
+     <path d="M 102.614561 120.687365 
+L 168.019361 120.687365 
+L 168.019361 100.072325 
+L 102.614561 100.072325 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- sales $y^{H,v}_t$ -->
     <g style="fill: #313138" transform="translate(131.990561 107.675525) scale(0.0864 -0.0864)">
      <defs>
@@ -818,6 +826,14 @@ z
     </g>
    </g>
    <g id="text_2">
+    <g id="patch_16">
+     <path d="M 191.082489 120.191105 
+L 237.652089 120.191105 
+L 237.652089 100.827785 
+L 191.082489 100.827785 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- spending $q_t$ -->
     <g style="fill: #8f8f91" transform="translate(191.687289 107.480585) scale(0.0864 -0.0864)">
      <defs>
@@ -1091,8 +1107,16 @@ z
     </g>
    </g>
    <g id="text_3">
+    <g id="patch_17">
+     <path d="M 31.853398 100.545608 
+L 73.930198 100.545608 
+L 73.930198 89.745608 
+L 31.853398 89.745608 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- order $o^{v-1}_t$ -->
-    <g style="fill: #1f5fa8" transform="translate(32.458198 92.296538) scale(0.0864 -0.0864)">
+    <g style="fill: #1f5fa8" transform="translate(32.458198 97.521608) scale(0.0864 -0.0864)">
      <defs>
       <path id="Newsreader16pt-Regular-6f" d="M 1808 301 
 Q 2106 301 2322 421 
@@ -1180,6 +1204,14 @@ z
     </g>
    </g>
    <g id="text_4">
+    <g id="patch_18">
+     <path d="M 46.953925 167.399662 
+L 312.147925 167.399662 
+L 312.147925 158.327662 
+L 46.953925 158.327662 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- the cycle closes: firm $v+1$ sells on to $v+2$, and firm $v-1$ buys from $v-2$ -->
     <g style="fill: #8f8f91" transform="translate(47.520925 164.807662) scale(0.081 -0.081)">
      <defs>
@@ -1617,6 +1649,14 @@ z
     </g>
    </g>
    <g id="text_6">
+    <g id="patch_19">
+     <path d="M 44.556637 85.708015 
+L 86.381577 85.708015 
+L 86.381577 65.384069 
+L 44.556637 65.384069 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- firm $v-1$ -->
     <g style="fill: #1d1d22" transform="translate(46.237007 72.690775) scale(0.0918 -0.0918)">
      <use xlink:href="#Newsreader16pt-Regular-66" transform="translate(0 0.40625)"/>
@@ -1687,6 +1727,14 @@ z
     </g>
    </g>
    <g id="text_7">
+    <g id="patch_20">
+     <path d="M 166.423525 80.615124 
+L 192.678325 80.615124 
+L 192.678325 70.476961 
+L 166.423525 70.476961 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- firm $v$ -->
     <g style="fill: #1d1d22" transform="translate(167.066125 77.783667) scale(0.0918 -0.0918)">
      <use xlink:href="#Newsreader16pt-Regular-66" transform="translate(0 0.40625)"/>
@@ -1698,6 +1746,14 @@ z
     </g>
    </g>
    <g id="text_8">
+    <g id="patch_21">
+     <path d="M 270.365746 85.708015 
+L 316.89974 85.708015 
+L 316.89974 65.384069 
+L 270.365746 65.384069 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- firm $v+1$ -->
     <g style="fill: #1d1d22" transform="translate(274.400643 72.690775) scale(0.0918 -0.0918)">
      <use xlink:href="#Newsreader16pt-Regular-66" transform="translate(0 0.40625)"/>
@@ -1724,6 +1780,14 @@ z
     </g>
    </g>
    <g id="text_9">
+    <g id="patch_22">
+     <path d="M 154.84525 148.105616 
+L 204.2566 148.105616 
+L 204.2566 137.967454 
+L 154.84525 137.967454 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- households -->
     <g style="fill: #1d1d22" transform="translate(155.48785 145.27416) scale(0.0918 -0.0918)">
      <use xlink:href="#Newsreader16pt-Regular-68"/>
@@ -1739,6 +1803,14 @@ z
     </g>
    </g>
    <g id="text_10">
+    <g id="patch_23">
+     <path d="M 53.994816 30.866899 
+L 191.025216 30.866899 
+L 191.025216 20.930899 
+L 53.994816 20.930899 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- input $i^v_t=o^v_{t-\tau}$, delivered after lag $\tau$ -->
     <g style="fill: #313138" transform="translate(54.599616 27.842899) scale(0.0864 -0.0864)">
      <defs>
@@ -1832,6 +1904,14 @@ z
     </g>
    </g>
    <g id="text_11">
+    <g id="patch_24">
+     <path d="M 198.705434 30.866899 
+L 274.478234 30.866899 
+L 274.478234 20.066899 
+L 198.705434 20.066899 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- deliveries $d^v_t=o^{v+1}_{t-\tau}$ -->
     <g style="fill: #313138" transform="translate(199.310234 27.842899) scale(0.0864 -0.0864)">
      <defs>
@@ -1903,6 +1983,14 @@ z
     </g>
    </g>
    <g id="text_12">
+    <g id="patch_25">
+     <path d="M 98.963316 67.044769 
+L 146.056716 67.044769 
+L 146.056716 55.569769 
+L 98.963316 55.569769 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- quote $P^{v-1}_t$ -->
     <g style="fill: #c0392b" transform="translate(99.605916 63.831769) scale(0.0918 -0.0918)">
      <defs>
@@ -1959,6 +2047,14 @@ z
     </g>
    </g>
    <g id="text_13">
+    <g id="patch_26">
+     <path d="M 104.884416 94.604315 
+L 140.135616 94.604315 
+L 140.135616 84.047315 
+L 104.884416 84.047315 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- order $o^v_t$ -->
     <g style="fill: #1f5fa8" transform="translate(105.527016 91.391315) scale(0.0918 -0.0918)">
      <use xlink:href="#Newsreader16pt-Regular-6f" transform="translate(0 0.40625)"/>
@@ -1973,6 +2069,14 @@ z
     </g>
    </g>
    <g id="text_14">
+    <g id="patch_27">
+     <path d="M 217.818734 67.044769 
+L 255.364934 67.044769 
+L 255.364934 56.906607 
+L 217.818734 56.906607 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- quote $P^v_t$ -->
     <g style="fill: #c0392b" transform="translate(218.461334 63.831769) scale(0.0918 -0.0918)">
      <use xlink:href="#Newsreader16pt-Regular-71" transform="translate(0 0.859375)"/>
@@ -1987,6 +2091,14 @@ z
     </g>
    </g>
    <g id="text_15">
+    <g id="patch_28">
+     <path d="M 214.238534 95.522315 
+L 258.945134 95.522315 
+L 258.945134 84.047315 
+L 214.238534 84.047315 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- order $o^{v+1}_t$ -->
     <g style="fill: #1f5fa8" transform="translate(214.881134 92.309315) scale(0.0918 -0.0918)">
      <use xlink:href="#Newsreader16pt-Regular-6f" transform="translate(0 0.409375)"/>
@@ -2004,7 +2116,7 @@ z
    </g>
   </g>
   <g id="axes_2">
-   <g id="patch_15">
+   <g id="patch_29">
     <path d="M 19.350925 356.829 
 L 339.750925 356.829 
 L 339.750925 202.254 
@@ -2153,30 +2265,38 @@ z
 L 339.750925 325.283082 
 " clip-path="url(#pec993be548)" style="fill: none; stroke-dasharray: 1.6,2.4; stroke-dashoffset: 0; stroke: #8f8f91; stroke-width: 0.8"/>
    </g>
-   <g id="patch_16">
+   <g id="patch_30">
     <path d="M 19.350925 356.829 
 L 19.350925 202.254 
 " style="fill: none; stroke: #2f2f36; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
-   <g id="patch_17">
+   <g id="patch_31">
     <path d="M 19.350925 356.829 
 L 339.750925 356.829 
 " style="fill: none; stroke: #2f2f36; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
-   <g id="patch_18">
+   <g id="patch_32">
     <path d="M 175.037859 306.355531 
 Q 190.993137 306.355531 206.948415 306.355531 
-" style="fill: none; stroke: #222222; stroke-linecap: round"/>
+" style="fill: none; stroke: #313138; stroke-linecap: round"/>
     <path d="M 179.357859 308.515531 
 L 175.037859 306.355531 
 L 179.357859 304.195531 
-" style="fill: none; stroke: #222222; stroke-linecap: round"/>
+" style="fill: none; stroke: #313138; stroke-linecap: round"/>
     <path d="M 202.628415 304.195531 
 L 206.948415 306.355531 
 L 202.628415 308.515531 
-" style="fill: none; stroke: #222222; stroke-linecap: round"/>
+" style="fill: none; stroke: #313138; stroke-linecap: round"/>
    </g>
    <g id="text_18">
+    <g id="patch_33">
+     <path d="M 155.915382 333.470525 
+L 226.072182 333.470525 
+L 226.072182 313.470545 
+L 155.915382 313.470545 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- mismatch -->
     <g style="fill: #1d1d22" transform="translate(171.341157 319.988345) scale(0.0864 -0.0864)">
      <use xlink:href="#Newsreader16pt-Regular-6d"/>
@@ -2249,6 +2369,14 @@ z
     </g>
    </g>
    <g id="text_19">
+    <g id="patch_34">
+     <path d="M 268.169896 349.059355 
+L 321.322096 349.059355 
+L 321.322096 337.767955 
+L 268.169896 337.767955 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- demand $y^{H,v}_t$ -->
     <g style="fill: #1f5fa8" transform="translate(268.812496 345.846355) scale(0.0918 -0.0918)">
      <use xlink:href="#Newsreader16pt-Regular-64" transform="translate(0 0.017188)"/>
@@ -2266,6 +2394,14 @@ z
     </g>
    </g>
    <g id="text_20">
+    <g id="patch_35">
+     <path d="M 26.374696 218.631759 
+L 66.982696 218.631759 
+L 66.982696 209.089959 
+L 26.374696 209.089959 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- $q_t$ or $\eta^v_t$ up -->
     <g style="fill: #1f5fa8" transform="translate(26.979496 215.607759) scale(0.0864 -0.0864)">
      <use xlink:href="#STIXGeneral-Italic-71" transform="translate(0 0.859375)"/>
@@ -2283,6 +2419,14 @@ z
     </g>
    </g>
    <g id="text_21">
+    <g id="patch_36">
+     <path d="M 213.274696 260.605223 
+L 286.103146 260.605223 
+L 286.103146 221.643143 
+L 213.274696 221.643143 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- supply -->
     <g style="fill: #c0392b" transform="translate(213.879496 228.592943) scale(0.0864 -0.0864)">
      <use xlink:href="#Newsreader16pt-Regular-73"/>
@@ -2382,6 +2526,14 @@ z
     </g>
    </g>
    <g id="text_22">
+    <g id="patch_37">
+     <path d="M 26.374696 292.238902 
+L 90.569896 292.238902 
+L 90.569896 282.302902 
+L 26.374696 282.302902 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- price in force $\pi^v_t$ -->
     <g style="fill: #313138" transform="translate(26.979496 289.214902) scale(0.0864 -0.0864)">
      <use xlink:href="#Newsreader16pt-Regular-70" transform="translate(0 0.40625)"/>
@@ -2404,17 +2556,25 @@ z
      <use xlink:href="#STIXGeneral-Italic-74" transform="translate(686.700043 -26.05) scale(0.7)"/>
     </g>
    </g>
-   <g id="patch_19">
+   <g id="patch_38">
     <path d="M 110.893782 291.737304 
 Q 110.893782 283.223179 110.893782 274.709055 
-" style="fill: none; stroke: #8a8a8a; stroke-width: 0.8; stroke-linecap: round"/>
+" style="fill: none; stroke: #8f8f91; stroke-width: 0.8; stroke-linecap: round"/>
    </g>
-   <g id="patch_20">
+   <g id="patch_39">
     <path d="M 169.922089 293.737163 
 Q 141.407713 293.737163 112.893337 293.737163 
-" style="fill: none; stroke: #8a8a8a; stroke-width: 0.8; stroke-linecap: round"/>
+" style="fill: none; stroke: #8f8f91; stroke-width: 0.8; stroke-linecap: round"/>
    </g>
    <g id="text_23">
+    <g id="patch_40">
+     <path d="M 120.604354 306.893051 
+L 159.160354 306.893051 
+L 159.160354 297.902051 
+L 120.604354 297.902051 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- slope $-1/\theta$ -->
     <g style="fill: #8f8f91" transform="translate(121.171354 304.382051) scale(0.081 -0.081)">
      <defs>
@@ -2468,20 +2628,28 @@ z
      <use xlink:href="#STIXGeneral-Italic-3b8" transform="translate(413.249985 0.40625)"/>
     </g>
    </g>
-   <g id="patch_21">
+   <g id="patch_41">
     <path d="M 316.865211 322.278275 
 Q 316.865211 309.511736 316.865211 296.745197 
-" style="fill: none; stroke: #222222; stroke-width: 0.9; stroke-linecap: round"/>
+" style="fill: none; stroke: #313138; stroke-width: 0.9; stroke-linecap: round"/>
     <path d="M 319.025211 317.958275 
 L 316.865211 322.278275 
 L 314.705211 317.958275 
-" style="fill: none; stroke: #222222; stroke-width: 0.9; stroke-linecap: round"/>
+" style="fill: none; stroke: #313138; stroke-width: 0.9; stroke-linecap: round"/>
     <path d="M 314.705211 301.065197 
 L 316.865211 296.745197 
 L 319.025211 301.065197 
-" style="fill: none; stroke: #222222; stroke-width: 0.9; stroke-linecap: round"/>
+" style="fill: none; stroke: #313138; stroke-width: 0.9; stroke-linecap: round"/>
    </g>
    <g id="text_24">
+    <g id="patch_42">
+     <path d="M 275.034925 314.305322 
+L 313.655725 314.305322 
+L 313.655725 304.714922 
+L 275.034925 304.714922 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- markup $\kappa$ -->
     <g style="fill: #1d1d22" transform="translate(275.639725 311.626922) scale(0.0864 -0.0864)">
      <defs>
@@ -2565,6 +2733,14 @@ z
     </g>
    </g>
    <g id="text_25">
+    <g id="patch_43">
+     <path d="M 26.374696 336.323143 
+L 62.310346 336.323143 
+L 62.310346 326.781343 
+L 26.374696 326.781343 
+z
+" style="fill: #fcf9f2"/>
+    </g>
     <!-- unit cost -->
     <g style="fill: #8f8f91" transform="translate(26.979496 333.658243) scale(0.0864 -0.0864)">
      <use xlink:href="#Newsreader16pt-Regular-75"/>

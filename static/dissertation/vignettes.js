@@ -91,8 +91,10 @@
       const bell = (m) => { const p = []; for (let x = 120; x <= 480; x += 8) p.push([x, 125 - 95 * Math.exp(-((x - m) ** 2) / (2 * 45 ** 2))]); return p; };
       line([[100, 125], [500, 125]], "soft", 1);
       line(bell(270), "soft dash", 1.4); line(bell(330), "acc", 2.2);
-      arrow(275, 20, 325, 20, "warm", 1.8);
-      label(300, 146, "the wedge: what moving someone's belief is worth", "small");
+      arrow(275, 20, 325, 20, "acc", 1.8); label(333, 24, "a belief moves", "small acc", "start");
+      // the wedge is the move's price, not the move: its own mark, a tag
+      line([[128, 136], [134, 130], [140, 136], [140, 149], [128, 149], [128, 136]], "warm", 1.3);
+      label(148, 146, "the wedge: what moving someone's belief is worth", "small warm", "start");
     },
   };
   if (!draw[num]) return;
