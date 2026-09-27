@@ -38,56 +38,6 @@
   const fmt = (v, d = 2) => (Math.abs(v) < 0.005 && d <= 2 ? "0" : v.toFixed(d)).replace("-", "−");
   const pct = (v) => Math.round(100 * v) + "%";
   const phi = (z) => Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
-  // the normal cdf (Numerical Recipes' erfcc, relative error below 1.2e-7), for the counts under each null
-  function Phi(x) {
-    const z = Math.abs(x) / Math.SQRT2, t = 1 / (1 + 0.5 * z);
-    const r = t * Math.exp(-z * z - 1.26551223 + t * (1.00002368 + t * (0.37409196 + t * (0.09678418 + t * (-0.18628806 + t * (0.27886807 + t * (-1.13520398 + t * (1.48851587 + t * (-0.82215223 + t * 0.17087277)))))))));
-    return x >= 0 ? 1 - r / 2 : r / 2;
-  }
-  // The smooth density the null is matched to: Lindsey's Poisson fit of a degree-6 polynomial to 72 linearly binned
-  // counts, the same port as gate-deep.js (tri fit/gate.cpp:106-195; the rect engine's is identical up to its scale
-  // box). Returns the density, or null where the engine would need its damped retry.
-  function lindseyDensity(zIn) {
-    const NB = 72, DEG = 6, lo = -9.5, hi = 9.5, d = (hi - lo) / NB;
-    const z = zIn.map((v) => clamp(v, -9, 9)), M = z.length, counts = new Array(NB).fill(0), mids = [];
-    for (let b = 0; b < NB; ++b) mids.push(lo + (b + 0.5) * d);
-    for (const v of z) { const t = (v - lo) / d - 0.5, b0 = clamp(Math.floor(t), 0, NB - 2), w = clamp(t - b0, 0, 1); counts[b0] += 1 - w; counts[b0 + 1] += w; }
-    let mm = 0, ms = 0;
-    for (const m of mids) mm += m;
-    mm /= NB;
-    for (const m of mids) ms += (m - mm) ** 2;
-    ms = Math.sqrt(ms / (NB - 1));
-    const B = mids.map((m) => { const t = (m - mm) / ms, r = []; let p = 1; for (let k = 0; k <= DEG; ++k) { r.push(p); p *= t; } return r; });
-    const solve = (A, b) => {
-      const n = b.length; A = A.map((r) => r.slice()); b = b.slice();
-      for (let c = 0; c < n; ++c) {
-        let piv = c;
-        for (let r = c + 1; r < n; ++r) if (Math.abs(A[r][c]) > Math.abs(A[piv][c])) piv = r;
-        [A[c], A[piv]] = [A[piv], A[c]]; [b[c], b[piv]] = [b[piv], b[c]];
-        for (let r = c + 1; r < n; ++r) { const f = A[r][c] / A[c][c]; for (let j = c; j < n; ++j) A[r][j] -= f * A[c][j]; b[r] -= f * b[c]; }
-      }
-      const out = new Array(n).fill(0);
-      for (let r = n - 1; r >= 0; --r) { let s = b[r]; for (let j = r + 1; j < n; ++j) s -= A[r][j] * out[j]; out[r] = s / A[r][r]; }
-      return out;
-    };
-    let beta = new Array(DEG + 1).fill(0), converged = false;
-    for (let it = 0; it < 100 && !converged; ++it) {
-      const A = [...Array(DEG + 1)].map(() => new Array(DEG + 1).fill(0)), rhs = new Array(DEG + 1).fill(0);
-      for (let b = 0; b < NB; ++b) {
-        let eta = 0; for (let k = 0; k <= DEG; ++k) eta += B[b][k] * beta[k];
-        eta = clamp(eta, -30, 30);
-        const mu = Math.exp(eta), zw = eta + (counts[b] - mu) / Math.max(mu, 1e-10);
-        for (let k = 0; k <= DEG; ++k) { rhs[k] += B[b][k] * mu * zw; for (let l = 0; l <= DEG; ++l) A[k][l] += B[b][k] * mu * B[b][l]; }
-      }
-      for (let k = 0; k <= DEG; ++k) A[k][k] += 1e-8;
-      const nb = solve(A, rhs);
-      let maxdiff = 0;
-      for (let k = 0; k <= DEG; ++k) { if (!isFinite(nb[k])) return null; maxdiff = Math.max(maxdiff, Math.abs(nb[k] - beta[k])); }
-      beta = nb; converged = maxdiff < 1e-9;
-    }
-    if (!converged) return null;
-    return (v) => { const t = (clamp(v, -9, 9) - mm) / ms; let eta = 0, p = 1; for (let k = 0; k <= DEG; ++k) { eta += p * beta[k]; p *= t; } return Math.exp(clamp(eta, -30, 30)) / (M * d); };
-  }
 
   // ------------------------------------------------------------------ the data (the same odds as /gate)
   const BASE = -1, SITES = 6000, FLIPS = 20;
@@ -101,7 +51,7 @@
   function makeData(truth, seed) {
     const r = mulberry32(seed * 7919 + 17), f = TRUTHS[truth];
     const x = new Float64Array(SITES), y = new Float64Array(SITES), n = new Int32Array(SITES), k = new Int32Array(SITES), u = new Float64Array(SITES);
-    const rows = [];          // no header row: the engines read a headerless design as x, y, trials, heads
+    const rows = ["wala,wac,n,k"];
     for (let i = 0; i < SITES; ++i) {
       x[i] = r(); y[i] = r();
       n[i] = Math.max(1, Math.round(FLIPS * (0.5 + r())));
@@ -448,7 +398,7 @@
       const textbook = el("path", { d: curve(0, 1, 1), class: "pencil soft", "stroke-width": 1.4, fill: "none", "stroke-dasharray": "4 4" }, g);
       const own = c ? el("path", { d: curve(c.nullMean, c.nullSd, c.pi0), class: "pencil accent", "stroke-width": 2, fill: "none" }, g) : null;
       if (!opts.bare) for (const z of [-8, -4, 0, 4, 8]) if (z >= lo && z <= hi) text(g, X(z), y + h + 16, fmt(z, 0), "tiny");
-      return { bars, sbars, textbook, own, X, Y, M, bw, lo, hi };
+      return { bars, sbars, textbook, own, X, Y };
     }
 
     // 6. the family: round 0's scores and its null ---------------------------------------------------------------
@@ -457,28 +407,14 @@
       text(g, 70, 90, `round 0: ${r0.length} scores`, "mono", "start");
       const H = histogram(g, r0, cal0, { x: 70, y: 120, w: 460, h: 300 });
       H.sbars.forEach((b) => b.remove());
-      // The null is matched to the centre of a smooth fit to the whole histogram, not to the bars. A degree-6 curve
-      // across z from -9.5 to 9.5 cannot follow a sharp peak, so when the bars peak sharply the null comes out wider
-      // than they are. Drawn here so that gap reads as the method's, and counted so the reader can check which null
-      // carries the centre: the scores within |z| <= 2 against what each drawn curve puts there.
-      const dens = lindseyDensity(r0.map((c) => c.z));
-      const smooth = dens ? el("path", { d: (() => { const p = []; for (let z = H.lo; z <= H.hi + 1e-9; z += (H.hi - H.lo) / 240) p.push([H.X(z), H.Y(dens(z) * H.M * H.bw)]); return "M" + p.map((q) => q[0].toFixed(1) + "," + q[1].toFixed(1)).join(" L"); })(), class: "pencil", "stroke-width": 1.4, fill: "none" }, g) : null;
-      const l1 = el("g", {}, g), l2 = el("g", {}, g), l3 = el("g", {}, g), l4 = el("g", {}, g);
+      const l1 = el("g", {}, g), l2 = el("g", {}, g);
       line(l1, 80, 470, 110, 470, "soft", 1.4).setAttribute("stroke-dasharray", "4 4"); text(l1, 118, 474, "the textbook null, N(0, 1)", "tiny", "start");
       line(l2, 80, 492, 110, 492, "accent", 2); text(l2, 118, 496, `this round's null: centre ${fmt(cal0.nullMean)}, spread ${fmt(cal0.nullSd)}, share ${pct(cal0.pi0)}`, "tiny", "start");
-      if (smooth) { line(l3, 80, 514, 110, 514, "", 1.4); text(l3, 118, 518, "the smooth fit its centre is matched to", "tiny", "start"); }
-      const inC = r0.filter((c) => Math.abs(c.z) <= 2).length;
-      const ownC = cal0.pi0 * r0.length * (Phi((2 - cal0.nullMean) / cal0.nullSd) - Phi((-2 - cal0.nullMean) / cal0.nullSd));
-      const tbC = r0.length * (Phi(2) - Phi(-2));
-      text(l4, 80, 544, `within |z| ≤ 2: ${inC} scores; this round's null holds ${Math.round(ownC)}, N(0, 1) ${Math.round(tbC)}`, "tiny", "start");
-      if (smooth) text(l4, 80, 562, "the null is wider than the sharp peak: many null scores really are this spread out", "tiny", "start");
       return { g, update(t) {
         const n = Math.floor(seg(t, 0, 0.35) * H.bars.length);
         H.bars.forEach((b, i) => fade(b, i < n ? 0.22 : 0));
         fade(H.textbook, seg(t, 0.35, 0.45)); fade(l1, seg(t, 0.35, 0.45));
-        if (smooth) fade(smooth, seg(t, 0.45, 0.55)); fade(l3, seg(t, 0.45, 0.55));
         if (H.own) fade(H.own, seg(t, 0.5, 0.65)); fade(l2, seg(t, 0.5, 0.65));
-        fade(l4, seg(t, 0.65, 0.8));
       } };
     })();
 
@@ -695,24 +631,4 @@
   })(performance.now());
   fitNow();
   measure();
-  // On a phone the drawing's labels are set larger (the page's stylesheet). A label that would then run past the
-  // drawing's edge, 600 units wide, is shrunk back until it fits, measured from where it is anchored.
-  const phone = window.matchMedia("(max-width: 820px)");
-  let fitQueued = false;
-  function fitLabels() {
-    fitQueued = false;
-    const mode = phone.matches ? "phone" : "wide";
-    for (const t of svg.querySelectorAll("text")) {
-      const key = mode + t.textContent;
-      if (t.fitKey === key) continue;           // measured already, for this text at this width
-      t.fitKey = key; t.style.fontSize = "";
-      if (mode !== "phone" || !t.textContent) continue;
-      const b = t.getBBox(), x = +t.getAttribute("x") || 0, a = t.getAttribute("text-anchor") || "start";
-      const room = a === "middle" ? 2 * Math.min(x, 600 - x) : a === "end" ? x : 600 - x;
-      if (b.width > room && room > 0) t.style.fontSize = (parseFloat(getComputedStyle(t).fontSize) * room / b.width).toFixed(2) + "px";
-    }
-  }
-  const queueFit = () => { if (!fitQueued) { fitQueued = true; requestAnimationFrame(fitLabels); } };
-  new MutationObserver(queueFit).observe(svg, { childList: true, subtree: true, characterData: true });
-  phone.addEventListener("change", queueFit);
 })();

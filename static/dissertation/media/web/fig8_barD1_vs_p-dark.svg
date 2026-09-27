@@ -914,15 +914,16 @@ L 549.338135 2.88
    </g>
    <g id="text_15">
     <g id="patch_7">
-     <path d="M 49.880555 36.036234 
-L 65.223325 36.036234 
-L 65.223325 25.099207 
-L 49.880555 25.099207 
+     <path d="M 49.880555 37.080619 
+L 65.223325 37.080619 
+L 65.223325 26.143592 
+L 49.880555 26.143592 
+L 49.880555 37.080619 
 z
-" style="fill: #27282b"/>
+" style="fill: none"/>
     </g>
     <!-- 0.3 -->
-    <g style="fill: #9327d1" transform="translate(50.970285 32.781234) scale(0.090811 -0.090811)">
+    <g style="fill: #9327d1" transform="translate(50.970285 33.825619) scale(0.090811 -0.090811)">
      <defs>
       <path id="Newsreader16pt-Regular-33" d="M 1414 2074 
 L 1354 2397 
@@ -977,15 +978,16 @@ z
    </g>
    <g id="text_16">
     <g id="patch_8">
-     <path d="M 53.737886 47.575693 
-L 61.365994 47.575693 
-L 61.365994 36.638666 
-L 53.737886 36.638666 
+     <path d="M 53.737886 46.531309 
+L 61.365994 46.531309 
+L 61.365994 35.594282 
+L 53.737886 35.594282 
+L 53.737886 46.531309 
 z
-" style="fill: #27282b"/>
+" style="fill: none"/>
     </g>
     <!-- 1 -->
-    <g style="fill: #6956b8" transform="translate(54.827616 44.320693) scale(0.090811 -0.090811)">
+    <g style="fill: #6956b8" transform="translate(54.827616 43.276309) scale(0.090811 -0.090811)">
      <use xlink:href="#Newsreader16pt-Regular-31"/>
     </g>
    </g>
@@ -995,8 +997,9 @@ z
 L 61.365994 64.378877 
 L 61.365994 53.44185 
 L 53.737886 53.44185 
+L 53.737886 64.378877 
 z
-" style="fill: #27282b"/>
+" style="fill: none"/>
     </g>
     <!-- 3 -->
     <g style="fill: #587abb" transform="translate(54.827616 61.123877) scale(0.090811 -0.090811)">
@@ -1009,8 +1012,9 @@ z
 L 64.090319 92.83613 
 L 64.090319 81.899103 
 L 51.013562 81.899103 
+L 51.013562 92.83613 
 z
-" style="fill: #27282b"/>
+" style="fill: none"/>
     </g>
     <!-- 10 -->
     <g style="fill: #49a1c6" transform="translate(52.103291 89.58113) scale(0.090811 -0.090811)">
@@ -1024,8 +1028,9 @@ z
 L 64.090319 119.421735 
 L 64.090319 108.484708 
 L 51.013562 108.484708 
+L 51.013562 119.421735 
 z
-" style="fill: #27282b"/>
+" style="fill: none"/>
     </g>
     <!-- 30 -->
     <g style="fill: #3ccccf" transform="translate(52.103291 116.166735) scale(0.090811 -0.090811)">
@@ -1039,8 +1044,9 @@ z
 L 66.814643 142.035596 
 L 66.814643 131.098569 
 L 48.289237 131.098569 
+L 48.289237 142.035596 
 z
-" style="fill: #27282b"/>
+" style="fill: none"/>
     </g>
     <!-- 100 -->
     <g style="fill: #3ad8b4" transform="translate(49.378967 138.780596) scale(0.090811 -0.090811)">
@@ -1051,15 +1057,16 @@ z
    </g>
    <g id="text_21">
     <g id="patch_13">
-     <path d="M 45.564913 159.056197 
-L 69.538967 159.056197 
-L 69.538967 148.11917 
-L 45.564913 148.11917 
+     <path d="M 45.564913 163.737149 
+L 69.538967 163.737149 
+L 69.538967 152.800122 
+L 45.564913 152.800122 
+L 45.564913 163.737149 
 z
-" style="fill: #27282b"/>
+" style="fill: none"/>
     </g>
     <!-- 1000 -->
-    <g style="fill: #5ec888" transform="translate(46.654643 155.801197) scale(0.090811 -0.090811)">
+    <g style="fill: #5ec888" transform="translate(46.654643 160.482149) scale(0.090811 -0.090811)">
      <use xlink:href="#Newsreader16pt-Regular-31"/>
      <use xlink:href="#Newsreader16pt-Regular-30" x="60.000015"/>
      <use xlink:href="#Newsreader16pt-Regular-30" x="120.000031"/>
@@ -1068,15 +1075,16 @@ z
    </g>
    <g id="text_22">
     <g id="patch_14">
-     <path d="M 42.840589 170.595657 
-L 72.263291 170.595657 
-L 72.263291 159.65863 
-L 42.840589 159.65863 
+     <path d="M 42.840589 165.914705 
+L 72.263291 165.914705 
+L 72.263291 154.977678 
+L 42.840589 154.977678 
+L 42.840589 165.914705 
 z
-" style="fill: #27282b"/>
+" style="fill: none"/>
     </g>
     <!-- 10000 -->
-    <g style="fill: #84d55e" transform="translate(43.930319 167.340657) scale(0.090811 -0.090811)">
+    <g style="fill: #84d55e" transform="translate(43.930319 162.659705) scale(0.090811 -0.090811)">
      <use xlink:href="#Newsreader16pt-Regular-31"/>
      <use xlink:href="#Newsreader16pt-Regular-30" x="60.000015"/>
      <use xlink:href="#Newsreader16pt-Regular-30" x="120.000031"/>

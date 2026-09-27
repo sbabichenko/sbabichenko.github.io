@@ -11,7 +11,7 @@
   // ------------------------------------------------------------------ data
   const SURFACES = {
     cliff: { name: "Diagonal cliff", f: (x, y) => 2 * Math.tanh(1.6 * (x - y + 0.6 * Math.sin(0.8 * (x + y)))) },
-    bump: { name: "Hill and pit", f: (x, y) => 2.6 * Math.exp(-((x - 1.4) ** 2 + (y - 1) ** 2) / 1.8) - 2 * Math.exp(-((x + 1.6) ** 2 + (y + 1.2) ** 2) / 1.2) },
+    bump: { name: "Two hills", f: (x, y) => 2.6 * Math.exp(-((x - 1.4) ** 2 + (y - 1) ** 2) / 1.8) - 2 * Math.exp(-((x + 1.6) ** 2 + (y + 1.2) ** 2) / 1.2) },
     saddle: { name: "Saddle", f: (x, y) => (x * x - y * y) / 6 },
     disk: { name: "Disk (a jump)", f: (x, y) => (x * x + y * y < 5 ? 1.5 : -1) },
     ripples: { name: "Ripples", f: (x, y) => 2 * Math.cos(5 * x) * Math.cos(2 * y) },
@@ -206,7 +206,7 @@
     tree = new Tree(X, Y);
     truth = truthGrid(f);
     vmax = 0; for (const v of truth) vmax = Math.max(vmax, Math.abs(v)); vmax = vmax || 1;
-    S.history = []; S.done = false; S.counted = false;
+    S.history = []; S.done = false;
     sync(); record();
     drawTruth(); draw();
     setStatus(S.running ? "busy" : "idle", S.running ? "Growing" : "Ready", S.running ? "" : "Press play, or step once.");
@@ -344,7 +344,12 @@
     line("t", css("--c4"));
     line("r", css("--c6"));
     line("q", css("--c5"));
-    line("m", css("--accent"));                        // the key is HTML above the canvas (#curvekey), so it wraps on a phone
+    line("m", css("--accent"));
+    let lx = L + 8 * dpr;                              // the key, laid out by measured width
+    for (const [label, col] of [["freeform triangles", css("--accent")], ["right triangles", css("--c5")], ["rectangles", css("--c6")], ["tree", css("--c4")]]) {
+      ctx.fillStyle = col; ctx.fillText(label, lx, T + 12 * dpr);
+      lx += ctx.measureText(label).width + 14 * dpr;
+    }
   }
 
   // ------------------------------------------------------------------ loop
@@ -376,8 +381,6 @@
       if (performance.now() - t0 > budget) break;
     }
     if (did) stepMs = 0.8 * stepMs + 0.2 * ((performance.now() - t0) / did);
-    // the site's tally counts a run when it starts, so the footer is not still at nothing while the meshes grow
-    if (did && !S.counted && window.siteTally) { S.counted = true; window.siteTally("grow", 3, `three meshes and a tree growing on the ${SURFACES[$("surface").value].name} surface`); }
     sync(); record(); draw();
     const h = S.history[S.history.length - 1];
     const names = ["freeform triangles", "right triangles", "rectangles", "the tree"], errs = [h.m, h.q, h.r, h.t];
@@ -386,6 +389,7 @@
     const txt = `${h.df.toLocaleString()} free parameters each: ${names[w]} closest to the truth `
       + `(RMSE ${errs[w].toFixed(3)}), ${(100 * (rest / errs[w] - 1)).toFixed(0)}% ahead of the next.`;
     if ($("speedfact")) $("speedfact").textContent = `about ${stepMs < 1 ? stepMs.toFixed(2) : stepMs.toFixed(1)} ms a step here`;
+    if (S.done && window.siteTally) window.siteTally("grow", 3, `four meshes grown, ${names[w]} closest to the truth`);
     if (S.done) { S.running = false; $("playbtn").textContent = "Play"; setStatus("ok", "Done", txt + " Stopped at ten points per freeform triangle, on average."); }
     else setStatus(S.running ? "busy" : "idle", S.running ? "Growing" : "Paused", txt);
   }

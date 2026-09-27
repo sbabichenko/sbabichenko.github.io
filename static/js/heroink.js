@@ -401,7 +401,7 @@
   if (reduced) {                                          // one still figure, no motion
     start();
     if (!nothing) for (let i = 0; i < 700 && mesh.activeFaces.size < TARGET; ++i) if (mesh.step(0.08) === "none") break;
-    const once = () => draw(performance.now() + 1e6);            // long after every cut: settled, none glowing
+    const once = () => draw(performance.now() - 1e6);
     once(); window.addEventListener("resize", once);
     new MutationObserver(once).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     return;

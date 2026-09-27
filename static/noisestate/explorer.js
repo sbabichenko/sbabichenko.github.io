@@ -40,7 +40,7 @@ numerics: {nodes: 12}
       { key: "sigma", label: "σ common shock scale", min: 0.2, max: 3, step: 0.05 },
       { key: "T", label: "T horizon", min: 0.5, max: 3, step: 0.25 },
     ],
-    nodes: { def: 12, options: [[8, "8: fastest, rough"], [10, "10: quick"], [12, "12: the default"], [16, "16: fine, passes the refinement check"]] },
+    nodes: { def: 12, options: [[8, "8: fastest, rough"], [10, "10: quick"], [12, "12: converged at defaults"], [16, "16: fine, slowest"]] },
     constCost: (p) => ({ player1: p.b1 * p.b1 * p.T, player2: p.b2 * p.b2 * p.T }),
     meansCaption: "Expected controls and state over time. With opposite targets the players pull in opposite directions; as [precision falls](#game=ch1&p1=0.1&p2=0.1) the mean controls approach the open-loop solution, and as [it rises](#game=ch1&p1=100&p2=100) they approach the full-information one.",
   },
@@ -309,15 +309,6 @@ numerics: {nodes: 8, unit: 0.5, unit_range: 4.0}
     grid: { key: "window", check: "window", label: "Lag window", options: [[10, "10: quick, a few seconds"], [24, "24: the dissertation's, about 30 s"]],
       apply: (d, v) => { d.horizon.window = v; d.numerics.unit_range = v >= 16 ? 8 : 4; } },
     defaultVar: "P0", defaultCtl: "P0",
-    approx: "Expected on this tab: none of the grids it offers reaches the solver's strict 1e-6 target.",
-    // nineteen shocks: the response plot shows one group at a time, each firm's shocks in that firm's colour
-    channelGroups: [["demand and cost shocks", (c) => !/^w_\d_\d$/.test(c)], ["signal noise, firm 0", (c) => /^w_0_\d$/.test(c)],
-      ["signal noise, firm 1", (c) => /^w_1_\d$/.test(c)], ["signal noise, firm 2", (c) => /^w_2_\d$/.test(c)], ["all nineteen", () => true]],
-    channelStyle: (res, c) => {
-      const m = /^w_(?:a|eta)(\d)$/.exec(c) || /^w_(\d)_(\d)$/.exec(c);
-      if (!m) return { color: css("--c3"), dash: "solid" };
-      return { color: agentColor(res, "firm" + m[1]), dash: m[2] !== undefined ? ["solid", "dash", "dot", "dashdot"][+m[2]] : c.startsWith("w_eta") ? "dash" : "solid" };
-    },
     channelNames: {"w_q": "aggregate demand shock", "w_a0": "cost shock, firm 0", "w_eta0": "demand shock, firm 0", "w_0_0": "sales-signal noise, firm 0", "w_0_1": "price-signal noise, firm 0", "w_0_2": "order-book noise, firm 0", "w_0_3": "upstream-order noise, firm 0", "w_a1": "cost shock, firm 1", "w_eta1": "demand shock, firm 1", "w_1_0": "sales-signal noise, firm 1", "w_1_1": "price-signal noise, firm 1", "w_1_2": "order-book noise, firm 1", "w_1_3": "upstream-order noise, firm 1", "w_a2": "cost shock, firm 2", "w_eta2": "demand shock, firm 2", "w_2_0": "sales-signal noise, firm 2", "w_2_1": "price-signal noise, firm 2", "w_2_2": "order-book noise, firm 2", "w_2_3": "upstream-order noise, firm 2"},
   },
   tr: {
@@ -334,7 +325,7 @@ numerics: {nodes: 8, unit: 0.5, unit_range: 4.0}
       <p class="small muted" style="margin:0">The strip carries the old shocks on a band of depth L = 3 below s = 0.
       "Until settled" lets the solver pick T: it marches T = 0, 3, 6, &hellip; until the best-response rules on the last window are within 2% of the new stationary ones.</p>`,
     yaml: `name: regime_change
-params: {p1: 6.0, p2: 3.0, r1: 1.0, r2: 1.0, a: 1.0, T: 9.0, b1: 1.0, b2: -1.0}
+params: {p1: 6.0, p2: 3.0, r1: 1.0, r2: 1.0, a: 1.0, T: 6.0, b1: 1.0, b2: -1.0}
 shocks: [w0, w1, w2]
 states:
   X: {drift: {X: "-a", D1: 1.0, D2: 1.0}, noise: {w0: 1.0}}
@@ -388,10 +379,6 @@ numerics: {nodes: 8, continuation_nodes: 12}
       apply: (d, v) => { d.horizon.past.model.horizon.window = v; } },
     march: true,
     defaultVar: "D1", defaultCtl: "D1",
-    // the surface opens on the response that the regime change moves most: player 1's reaction to its own signal
-    // noise, which doubles at s = 0 when the precision jumps (peak 0.13 on old shocks, 0.26 on new ones)
-    surfaceDefault: ["D1", "w1"],
-    approx: "Expected on this tab: none of the grids it offers reaches the solver's strict 1e-6 target.",
     meansCaption: "",
   },
   custom: {
@@ -533,15 +520,14 @@ const MAX_NODES = 96, MAX_WINDOW = 96;   // how far a "solve again with" button,
 const lastStart = {};
 let solverThreads = 1;
 let prevResult = null;            // the result before the last change, drawn faintly for comparison
-let pathSeed = 1;
-let keepGroup = 0;            // the group of shocks the Supply-chain response plot shows, kept across solves             // preset -> the raw maps of its last equilibrium
+let pathSeed = 1;             // preset -> the raw maps of its last equilibrium
 let customYaml = "";
 let worker = null, workerReady = false;
 let reqId = 0, inFlight = null, pending = false, debounce = null, lastResult = null;
 let solveStart = 0, timerHandle = null, progress = null;
 
 const $ = (id) => document.getElementById(id);
-const fmt = (x, d = 4) => { if (x === null || x === undefined || !isFinite(x)) return "–"; const s = Number(x).toFixed(d); return /^-0(\.0*)?$/.test(s) ? s.slice(1) : s; };   // no "-0.0000"
+const fmt = (x, d = 4) => (x === null || x === undefined || !isFinite(x)) ? "–" : Number(x).toFixed(d);
 const fmtE = (x) => (x === null || x === undefined || !isFinite(x)) ? "–" : Number(x).toExponential(1);
 // the explorer's colours live on its root element (they follow the site's light and dark themes)
 const css = (v) => getComputedStyle(document.querySelector(".explorer") || document.documentElement).getPropertyValue(v).trim();
@@ -714,7 +700,7 @@ function sliderParams(d, s) {
   return out;
 }
 function isControl(name) { return !!(lastResult && lastResult.agents && lastResult.agents.some((a) => a.controls.includes(name))); }
-function label(name) { if (typeof name !== "string") return "–"; return NAME_LABEL[name] || (isControl(name) || /^[A-Z]\d*$/.test(name) ? `control ${name}` : name); }
+function label(name) { return NAME_LABEL[name] || (isControl(name) || name.match(/^[A-Z]\d*$/) ? `control ${name}` : name); }
 function chLabel(res, c) { return (PRESETS[game] && PRESETS[game].channelNames && PRESETS[game].channelNames[c]) || CHANNEL_LABEL[c] || c; }
 
 // ---------------------------------------------------------------------------------------------
@@ -778,12 +764,7 @@ function roundParam(p, v) {
   const mag = Math.pow(10, Math.floor(Math.log10(Math.abs(v))) - 1);
   return Math.round(v / mag) * mag;
 }
-// a readout to the slider's own precision: a stepped slider to its step's decimals, a log slider to the two significant
-// figures roundParam keeps
-function showVal(p, v) {
-  const d = p.step ? (String(p.step).split(".")[1] || "").length : v ? Math.max(0, 1 - Math.floor(Math.log10(Math.abs(v)))) : 0;
-  return Number(v).toFixed(d);
-}
+function showVal(p, v) { const d = Math.abs(v) >= 10 ? 1 : Math.abs(v) >= 1 ? 2 : 3; return Number(v).toFixed(p.step && p.step >= 0.25 ? 2 : d); }
 
 function renderTabs() {
   const tabs = $("tabs"); tabs.innerHTML = "";
@@ -798,8 +779,7 @@ function renderTabs() {
     b.onclick = () => {
       if (g === game) return;
       game = g; renderAll(); writeHash(); lastResult = null; $("results").innerHTML = ""; $("savebtn").disabled = true;
-      // "Your model" waits for Solve: a solve still running for the tab left behind is stopped, not left reporting
-      if (g !== "custom") requestSolve(0); else { if (inFlight) stopSolve(); clearTimeout(debounce); customReady(); }
+      if (g !== "custom") requestSolve(0); else customReady();
     };
     tabs.appendChild(b);
   }
@@ -854,8 +834,8 @@ function renderOptions(box) {
   let html = "";
   if (def.march) html += `<label class="pick"><span>End of the transition</span><select id="opt-march">
       <option value="0">Fixed T (the slider)</option><option value="1">Until settled (march in T)</option></select></label>`;
-  html += `<label class="check" title="Re-solve on a grid 1.5 times finer and report how much the costs and the kernels (the shock-response curves) move"><input type="checkbox" id="opt-refine"> Refinement check</label>
-      <label class="check" title="Whether players who kept best-responding to each other, starting near this equilibrium, would settle back into it: the spectral radius of the best-response map, below 1 if they would"><input type="checkbox" id="opt-stability"> Stability</label>
+  html += `<label class="check" title="Re-solve on a grid 1.5 times finer and report how much costs and kernels move"><input type="checkbox" id="opt-refine"> Refinement check</label>
+      <label class="check" title="The spectral radius of the best-response map"><input type="checkbox" id="opt-stability"> Stability</label>
       <span class="hint">Checks run after the solve and add time.</span>`;
   wrap.innerHTML = html; box.appendChild(wrap);
   const on = (id, f) => { const e = wrap.querySelector("#" + id); if (e) e.addEventListener("change", () => { f(e); writeHash(); requestSolve(0); }); return e; };
@@ -878,9 +858,6 @@ function customModel() {
   try { d = jsyaml.load($("yaml").value); }
   catch (e) { throw new Error("The model file is not valid YAML: " + e.message.split("\n")[0]); }
   if (!d || typeof d !== "object") throw new Error("The model file must be a mapping (name, shocks, states, agents, horizon).");
-  const has = (k) => d[k] && typeof d[k] === "object" && Object.keys(d[k]).length;
-  if (!has("agents")) throw new Error("The model file needs at least one agent under agents, each with its controls and loss.");
-  if (!has("shocks") && !has("channels")) throw new Error("The model file needs a list of shocks, the noise that drives the game.");
   return d;
 }
 
@@ -1112,8 +1089,7 @@ function onSolved(m) {
   const accuracy = failed.filter((d) => ACCURACY_CHECKS.has(d.name)), other = failed.filter((d) => !ACCURACY_CHECKS.has(d.name));
   if (!res.converged) setStatus("bad", "Not converged", `The fixed point did not converge (residual ${fmtE(res.residual)} after ${res.evaluations} rounds). Try a finer grid or less extreme parameters.`);
   else if (failed.length && !other.length)
-    setStatus("warn", "Solved, approximate", `Solved in ${t} s${how}. ${cap(accuracy.map(accuracyNote).join("; "))}. Costs are good to a few digits.`
-      + (game !== "custom" && PRESETS[game].approx && accuracy.every((d) => d.name === "resolution" || d.name === "settled") ? " " + PRESETS[game].approx : ""));
+    setStatus("warn", "Solved, approximate", `Solved in ${t} s${how}. ${cap(accuracy.map(accuracyNote).join("; "))}. Costs are good to a few digits.`);
   else if (failed.length) setStatus("warn", "Converged, with warnings", `Solved in ${t} s${how}. Failed: ${failed.map((d) => checkName(d.name)).join(", ")}; the Diagnostics table says what each means.`);
   else setStatus("ok", "Solved", `Solved in ${t} s${how}, ${res.evaluations} best-response rounds, residual ${fmtE(res.residual)}. All checks passed.`);
   showFixes(res.converged ? accuracy : failed.filter((d) => d.name === "resolution"));
@@ -1264,12 +1240,14 @@ function plotly(method, id, data, layout, cfg) {
 const plotCfg = { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"] };
 const titleOf = (s) => ({ text: s, font: { size: 13 }, x: 0, xanchor: "left", xref: "paper" });
 const palette = () => ["--c3", "--c1", "--c2", "--c4", "--c5", "--c6"].map(css);
+function ramp(i, n) {
+  const dark = isDark();
+  const a = n > 1 ? i / (n - 1) : 1;
+  const from = dark ? [60, 90, 120] : [170, 200, 225], to = dark ? [140, 200, 245] : [20, 70, 120];
+  return `rgb(${from.map((f, k) => Math.round(f + (to[k] - f) * a)).join(",")})`;
+}
 const line = (x, y, name, color, extra) => Object.assign({ x, y, name, type: "scatter", mode: "lines", line: { color, width: 2 } }, extra || {});
 const nonzero = (arr) => arr.some((v) => v !== null && Math.abs(v) > 1e-12);
-// one colour per player on every panel of a tab, the same one the cost sweep and the transition use: the model's
-// agents in order take --c1, --c2, --c4, ...; a state, which no one controls, is drawn in ink (--c3)
-function agentColor(res, a) { const pal = palette(), i = (res.agents || []).findIndex((q) => q.name === a); return i < 0 ? pal[0] : pal[(i + 1) % pal.length]; }
-function ownerColor(res, name) { const a = (res.agents || []).find((q) => q.controls.includes(name)); return a ? agentColor(res, a.name) : css("--c3"); }
 
 function renderResults(res) {
   const out = $("results");
@@ -1303,20 +1281,14 @@ function renderResults(res) {
 function renderFinite(res, out, keepVar, keepCtl) {
   const S = res.samples, T = res.T;
   const pathNames = res.names.filter((n) => nonzero(S.means[n] || []));
-  // means that stay flat (a change of regime that moves only the responses to shocks) draw as flat lines that say
-  // nothing; say so in words instead, with the size of the largest move
-  const big = Math.max(0, ...pathNames.map((n) => Math.max(...S.means[n].map(Math.abs))));
-  const moved = Math.max(0, ...pathNames.map((n) => Math.max(...S.means[n]) - Math.min(...S.means[n])));
-  if (res.has_means && pathNames.length && big > 0 && moved < 0.05 * big) {
-    out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Mean paths</h2>
-      <p class="caption">The means stay almost flat here: over the horizon none moves by more than ${fmt(100 * moved / big, 1)}% of the largest (${pathNames.map((n) => `mean ${esc(label(n))} ${fmt(S.means[n][0], 3)} to ${fmt(S.means[n][S.means[n].length - 1], 3)}`).join(", ")}), so they are not plotted.</p></section>`);
-  } else if (res.has_means && pathNames.length) {
+  if (res.has_means && pathNames.length) {
     out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Mean paths</h2><div class="plot" id="p-means"></div>
       <p class="caption">${links((PRESETS[game] && PRESETS[game].meansCaption) || "The expected states and controls over time: the deterministic part that targets, constant drifts and initial states move.")}</p></section>`);
+    const pal = palette();
     const PS = prevResult && prevResult.samples && prevResult.samples.means;
-    plotly("newPlot", "p-means", pathNames.map((n) => line(S.mean_t, S.means[n], "mean " + n, ownerColor(res, n),
-      res.states.includes(n) ? { line: { color: ownerColor(res, n), width: 2, dash: "dash" } } : {}))
-      .concat(PS ? pathNames.filter((n) => PS[n]).map((n) => line(prevResult.samples.mean_t, PS[n], "before", ownerColor(res, n), { line: { color: ownerColor(res, n), width: 1, dash: "dot" }, opacity: 0.45, showlegend: false })) : []),
+    plotly("newPlot", "p-means", pathNames.map((n, i) => line(S.mean_t, S.means[n], "mean " + n, pal[(i + 1) % pal.length],
+      res.states.includes(n) ? { line: { color: pal[(i + 1) % pal.length], width: 2, dash: "dash" } } : {}))
+      .concat(PS ? pathNames.filter((n) => PS[n]).map((n, i) => line(prevResult.samples.mean_t, PS[n], "before", pal[(i + 1) % pal.length], { line: { color: pal[(i + 1) % pal.length], width: 1, dash: "dot" }, opacity: 0.45, showlegend: false })) : []),
       baseLayout({ xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
   }
   const vars = res.names.concat(res.definitions || []);
@@ -1334,8 +1306,7 @@ function renderFinite(res, out, keepVar, keepCtl) {
       if (!curves) continue;
       if (!curves.some((cv) => nonzero(cv.v))) continue;
       const div = document.createElement("div"); div.className = "plot"; box.appendChild(div);
-      // the dates in the colour of whoever the quantity belongs to, later dates darker
-      plotly("newPlot", div, curves.map((cv, i) => line(cv.s, cv.v, `t = ${fmt(cv.t, 2)}`, ownerColor(res, v), { opacity: 0.3 + 0.7 * (curves.length > 1 ? i / (curves.length - 1) : 1) })),
+      plotly("newPlot", div, curves.map((cv, i) => line(cv.s, cv.v, `t = ${fmt(cv.t, 2)}`, ramp(i, curves.length))),
         baseLayout({ title: titleOf(chLabel(res, c) + (tr && (res.transition.initial || []).includes(c) ? " (initial shock)" : "")),
           xaxis: { ...baseLayout().xaxis, title: { text: "shock time s" }, range: [smin, T] },
           shapes: tr ? [{ type: "line", x0: 0, x1: 0, yref: "paper", y0: 0, y1: 1, line: { color: css("--faint"), width: 1, dash: "dot" } }] : [] }), plotCfg);
@@ -1343,7 +1314,7 @@ function renderFinite(res, out, keepVar, keepCtl) {
     if (!box.children.length) box.innerHTML = `<p class="small muted">No channel moves ${esc(label(v))}.</p>`;
   };
   const ksel = out.querySelector("#kvar"); ksel.value = kv; ksel.onchange = () => drawK(ksel.value); drawK(kv);
-  renderFoc(res, out, keepCtl, `Split at t = ${fmt(T / 2, 2)} across shock times s${res.kind === "transition" ? " from 0 on; the old regime's shocks are not shown" : ""}. The physical part is what the first-order condition would be if nobody reacted to the player's deviation; the information wedge is the rest, which comes from the other agents revising their forecasts.`, "shock time s");
+  renderFoc(res, out, keepCtl, `Split at t = ${fmt(T / 2, 2)} across shock times s${res.kind === "transition" ? ", old shocks included" : ""}. The physical part is what the first-order condition would be if nobody reacted to the player's deviation; the information wedge is the rest, which comes from the other agents revising their forecasts.`, "shock time s");
   if (res.kind !== "transition") renderStrategy(res, out, keepCtl, "shock time s");
 }
 
@@ -1458,21 +1429,20 @@ function renderPaths(res, out) {
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Sample paths</h2>
     <div class="row"><button class="secondary" id="redraw">Draw new shocks</button><span class="small muted" id="seedlab"></span>
       ${many ? `<label for="pshow" class="small muted" style="margin-left:12px">Show</label><select id="pshow"><option value="c">controls</option><option value="s">states</option><option value="a">all</option></select>` : ""}</div>
-    <div class="legend pathkey"><span><i style="opacity:1;height:2px"></i>draw 1</span><span><i style="opacity:0.55;height:1.5px"></i>draw 2</span><span><i style="opacity:0.3;height:1px"></i>draw 3</span><span><i class="band"></i>&plusmn; 2 sd</span><span><i class="dots"></i>mean</span></div>
     <div class="grid3" id="pgrid"></div>
-    <p class="caption">Each panel is in its player's colour, ink for a state. Three draws of the shocks pushed through the equilibrium${stat ? ", over two lag windows of the stationary game" : res.kind === "transition" ? ", old shocks before time 0 included" : ""}. The band is the mean plus and minus two standard deviations. The shocks are drawn in your browser, so a new draw is instant.</p></section>`);
+    <p class="caption">Three draws of the shocks pushed through the equilibrium${stat ? ", over two lag windows of the stationary game" : res.kind === "transition" ? ", old shocks before time 0 included" : ""}. The band is the mean plus and minus two standard deviations. The shocks are drawn in your browser, so a new draw is instant.</p></section>`);
   const draw = () => {
     const sim = simulatePaths(res, 3, pathSeed), box = out.querySelector("#pgrid"); box.innerHTML = "";
     out.querySelector("#seedlab").textContent = `draw ${pathSeed}`;
-    const shade = [[1, 2], [0.55, 1.5], [0.3, 1]];     // draw 1, 2, 3: opacity and width, as in the key above the panels
+    const pal = palette();
     for (const nm of names) {
-      const S = sim[nm], col = ownerColor(res, nm), div = document.createElement("div"); div.className = "plot"; box.appendChild(div);
+      const S = sim[nm], div = document.createElement("div"); div.className = "plot"; box.appendChild(div);
       const hi = S.mean.map((m, j) => m + 2 * S.sd[j]), lo = S.mean.map((m, j) => m - 2 * S.sd[j]);
       const traces = [
         { x: S.t, y: hi, mode: "lines", line: { width: 0 }, hoverinfo: "skip", showlegend: false },
         { x: S.t, y: lo, mode: "lines", line: { width: 0 }, fill: "tonexty", fillcolor: css("--grid"), name: "± 2 sd", hoverinfo: "skip" },
         line(S.t, S.mean, "mean", css("--faint"), { line: { color: css("--faint"), width: 1, dash: "dot" } }),
-        ...S.draws.map((y, d) => line(S.t, y, `draw ${d + 1}`, col, { line: { color: col, width: shade[d % 3][1] }, opacity: shade[d % 3][0] })),
+        ...S.draws.map((y, d) => line(S.t, y, `draw ${d + 1}`, pal[(d + 1) % pal.length], { line: { color: pal[(d + 1) % pal.length], width: 1.5 } })),
       ];
       plotly("newPlot", div, traces, baseLayout({ title: titleOf(label(nm)), showlegend: false, xaxis: { ...baseLayout().xaxis, title: { text: "time t" } } }), plotCfg);
     }
@@ -1492,30 +1462,23 @@ function renderSurface(res, out, names) {
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Response surface</h2>
     <div class="row"><label for="svar" class="small muted">Response of</label><select id="svar">${pairs.map(([nm, c], i) => `<option value="${i}">${esc(label(nm))} to ${esc(chLabel(res, c))}</option>`).join("")}</select></div>
     <div class="plot tall" id="psurf"></div>
-    <p class="caption">Each row is a date t, each column a shock time s: the colour is how much a unit shock at s moves the quantity at t. Grey is where s is after t: a shock cannot move anything before it strikes, so there is nothing to show. Rows of the shock-response plots below are horizontal slices of this picture.${res.kind === "transition" ? " Columns left of s = 0 are the old regime's shocks." : ""} The colour is on a square-root scale, so weak responses still show.</p></section>`);
+    <p class="caption">Each row is a date t, each column a shock time s: the colour is how much a unit shock at s moves the quantity at t. Rows of the shock-response plots above are horizontal slices of this picture.${res.kind === "transition" ? " Columns left of s = 0 are the old regime's shocks." : ""}</p></section>`);
   const draw = (i) => {
     const [nm, c] = pairs[i], rows = P.kernels[nm][c], M = P.times.length - 1, nb = P.band;
     const sgrid = Array.from({ length: nb + M }, (_, k) => (k - nb + 0.5) * P.h);
     const z = rows.map((r) => sgrid.map((_, k) => (k < r.length ? r[k] : null)));
     let mx = 0; for (const r of z) for (const v of r) if (v !== null) mx = Math.max(mx, Math.abs(v));
-    // colour on a signed square-root scale, so a response a tenth of the peak still shows at a third of the colour;
-    // the colour bar and the hover read the response itself
-    const m = mx || 1, sq = (v) => (v === null ? null : Math.sign(v) * Math.sqrt(Math.abs(v) / m));
-    const tv = [-1, -0.5, -0.1, 0, 0.1, 0.5, 1].map((f) => f * m);
-    plotly("react", "psurf", [{ type: "heatmap", x: sgrid, y: P.times, z: z.map((r) => r.map(sq)), zmin: -1, zmax: 1, colorscale: [[0, css("--c2")], [0.5, isDark() ? "rgb(31,32,34)" : "rgb(255,255,240)"], [1, css("--c1")]], hoverongaps: false,
-      customdata: z, hovertemplate: "s %{x:.2f}, t %{y:.2f}: %{customdata:.4g}<extra></extra>",
-      colorbar: { thickness: 10, outlinewidth: 0, tickfont: { color: css("--muted") }, tickvals: tv.map(sq), ticktext: tv.map((v) => Number(v.toPrecision(2)).toString().replace("-", "−")) } }],
-      // the cells with s > t have no value (null); the plot's own background shows through them, set apart from zero
-      baseLayout({ showlegend: false, hovermode: "closest", plot_bgcolor: css("--track"), xaxis: { ...baseLayout().xaxis, title: { text: "shock time s" } },
+    plotly("react", "psurf", [{ type: "heatmap", x: sgrid, y: P.times, z, zmin: -mx, zmax: mx, colorscale: [[0, css("--c2")], [0.5, css("--panel")], [1, css("--c1")]], hoverongaps: false,
+      colorbar: { thickness: 10, outlinewidth: 0, tickfont: { color: css("--muted") } } }],
+      baseLayout({ showlegend: false, hovermode: "closest", xaxis: { ...baseLayout().xaxis, title: { text: "shock time s" } },
         yaxis: { ...baseLayout().yaxis, title: { text: "date t" } }, margin: { l: 52, r: 12, t: 20, b: 50 } }), plotCfg);
   };
-  const want = PRESETS[game] && PRESETS[game].surfaceDefault, i0 = want ? Math.max(0, pairs.findIndex(([nm, c]) => nm === want[0] && c === want[1])) : 0;
-  const sel = out.querySelector("#svar"); sel.value = String(i0); sel.onchange = () => draw(+sel.value); draw(i0);
+  const sel = out.querySelector("#svar"); sel.onchange = () => draw(+sel.value); draw(0);
 }
 
 // a transition: the loss path against the old and new stationary flows, the forecast errors, the march in T
 function renderTransition(res, out) {
-  const X = res.transition, agents = Object.keys(res.costs);
+  const X = res.transition, pal = palette(), agents = Object.keys(res.costs);
   // a game that ends at T (continuation "end") or starts from a prior alone has no stationary flows to compare with
   const flows = X.excess_costs && X.old_flows && X.new_flows && agents.every((a) => X.excess_costs[a] !== undefined);
   const cards = flows ? agents.map((a) => `<div class="card"><div class="k">${esc(AGENT_LABEL[a] || a)}</div>
@@ -1535,7 +1498,7 @@ function renderTransition(res, out) {
   const keep = X.times.map((t, k) => t <= res.T * (1 + 1e-9) ? k : -1).filter((k) => k >= 0);   // [0, T]: the buffer is the continuation's
   const cut = (v) => keep.map((k) => v[k]);
   agents.forEach((a, i) => {
-    const c = agentColor(res, a), t = cut(X.times), t0 = t[0], t1 = t[t.length - 1];
+    const c = pal[(i + 1) % pal.length], t = cut(X.times), t0 = t[0], t1 = t[t.length - 1];
     tr.push(line(t, cut(X.loss_path[a]), AGENT_LABEL[a] || a, c));
     if (flows) {
       tr.push(line([t0, t1], [X.old_flows[a], X.old_flows[a]], "before", c, { line: { color: c, width: 1, dash: "dot" }, showlegend: i === 0, hoverinfo: "skip" }));
@@ -1557,25 +1520,19 @@ function renderStationary(res, out, keepVar, keepCtl) {
   const vars = res.names.concat(res.definitions || []);
   const kv = vars.includes(keepVar) ? keepVar : (PRESETS[game].defaultVar && vars.includes(PRESETS[game].defaultVar) ? PRESETS[game].defaultVar : vars[0]);
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Shock responses</h2>
-    <div class="row"><label for="kvar" class="small muted">Response of</label><select id="kvar">${vars.map((v) => `<option value="${esc(v)}">${esc(label(v))}</option>`).join("")}</select>
-      ${PRESETS[game].channelGroups ? `<label for="kgroup" class="small muted" style="margin-left:12px">to</label><select id="kgroup">${PRESETS[game].channelGroups.map((g, i) => `<option value="${i}">${esc(g[0])}</option>`).join("")}</select>` : ""}</div>
+    <div class="row"><label for="kvar" class="small muted">Response of</label><select id="kvar">${vars.map((v) => `<option value="${esc(v)}">${esc(label(v))}</option>`).join("")}</select></div>
     <div class="plot tall" id="pk"></div>
     <p class="caption">Response to a unit shock as a function of its age: how much of a shock that struck a units of time ago is still present. Channels with no response are left out.${prevResult ? " Dotted: the previous solve, before your last change." : ""}</p></section>`);
   const drawK = (v) => {
-    const pal = palette(), G = PRESETS[game].channelGroups, gsel = out.querySelector("#kgroup");
-    const shown = (c) => !G || !gsel || G[+gsel.value][1](c);
-    const style = (c, i) => (PRESETS[game].channelStyle ? PRESETS[game].channelStyle(res, c) : { color: pal[i % pal.length], dash: "solid" });
-    const traces = res.channels.map((c, i) => [c, i]).filter(([c]) => shown(c) && nonzero(S.kernels[v][c]))
-      .map(([c, i]) => line(S.age, S.kernels[v][c], chLabel(res, c), style(c, i).color, { line: { ...style(c, i), width: 2 } }));
+    const pal = palette();
+    const traces = res.channels.map((c, i) => [c, i]).filter(([c]) => nonzero(S.kernels[v][c]))
+      .map(([c, i]) => line(S.age, S.kernels[v][c], chLabel(res, c), pal[i % pal.length]));
     // the previous solve's curves, faint, to show what the last change did
     const P = prevResult && prevResult.samples && prevResult.samples.kernels && prevResult.samples.kernels[v];
-    if (P) res.channels.forEach((c, i) => { if (shown(c) && P[c] && nonzero(P[c])) traces.unshift(line(prevResult.samples.age, P[c], chLabel(res, c) + " (before)", style(c, i).color, { line: { color: style(c, i).color, width: 1, dash: "dot" }, opacity: 0.5, showlegend: false })); });
+    if (P) res.channels.forEach((c, i) => { if (P[c] && nonzero(P[c])) traces.unshift(line(prevResult.samples.age, P[c], chLabel(res, c) + " (before)", pal[i % pal.length], { line: { color: pal[i % pal.length], width: 1, dash: "dot" }, opacity: 0.5, showlegend: false })); });
     plotly("react", "pk", traces, baseLayout({ title: titleOf("Response of " + label(v)), xaxis: { ...baseLayout().xaxis, title: { text: "shock age" } } }), plotCfg);
   };
-  const ksel = out.querySelector("#kvar"); ksel.value = kv; ksel.onchange = () => drawK(ksel.value);
-  const gsel = out.querySelector("#kgroup");
-  if (gsel) { gsel.value = String(keepGroup); gsel.onchange = () => { keepGroup = +gsel.value; drawK(ksel.value); }; }
-  drawK(kv);
+  const ksel = out.querySelector("#kvar"); ksel.value = kv; ksel.onchange = () => drawK(ksel.value); drawK(kv);
   renderFoc(res, out, keepCtl, "Split by shock age. The physical part is what the first-order condition would be if nobody reacted to the agent's deviation; the information wedge is the rest, which comes from the other agents revising their forecasts.", "shock age");
   renderStrategy(res, out, keepCtl, "shock age");
 }
@@ -1656,8 +1613,8 @@ function renderStrategy(res, out, keepCtl, xlabel) {
       if (!nonzero(dw) && !nonzero(dn)) continue;
       const div = document.createElement("div"); div.className = "plot"; box.appendChild(div);
       plotly("newPlot", div, [
-        line(xs, dw, "response to the shock, D<sub>W</sub>", agentColor(res, f.agent)),
-        line(xs, dn, "weight on its estimate, D", agentColor(res, f.agent), { line: { color: agentColor(res, f.agent), width: 2, dash: "dash" } }),
+        line(xs, dw, "response to the shock, D<sub>W</sub>", css("--c1")),
+        line(xs, dn, "weight on its estimate, D", css("--c2"), { line: { color: css("--c2"), width: 2, dash: "dash" } }),
       ], baseLayout({ title: titleOf(chLabel(res, c)), xaxis: { ...baseLayout().xaxis, title: { text: xlabel } } }), plotCfg);
     }
     if (!box.children.length) box.innerHTML = `<p class="small muted">${esc(label(ctl))} responds to no shock.</p>`;
@@ -1668,9 +1625,9 @@ function renderStrategy(res, out, keepCtl, xlabel) {
 const CHECK_MEANING = {
   converged: "Whether the fixed-point iteration on the best-response map reached its tolerance.",
   resolution: "Whether the strategies are represented accurately on this grid (representation error against its threshold).",
-  window: "Whether the stationary kernels (the shock-response curves) have died out before the end of the lag window.",
+  window: "Whether the stationary kernels have died out before the end of the lag window.",
   second_order: "Whether each agent's best response is a minimum, not only a stationary point (lowest curvature of its loss).",
-  refinement: "Whether the costs and the kernels (the shock-response curves) stay put when the game is re-solved on a finer grid.",
+  refinement: "Whether the costs and kernels stay put when the game is re-solved on a finer grid.",
   "past window": "Whether the old regime's kernels have died out before the end of its window, the depth of the band.",
   settled: "Whether the best-response rules on the last window of the transition are close to the new stationary ones, so T is long enough.",
   "continuation window": "Whether the new stationary kernels have died out before the end of their window.",
@@ -1726,7 +1683,7 @@ function renderDiagnostics(res, out) {
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Diagnostics</h2>
     <p class="small muted" style="margin-top:0">${esc(res.version)}${solverThreads > 1 ? ` · ${solverThreads} threads` : ""} · ${esc(res.message)} · solve ${fmt(res.seconds, 2)} s.
     A failed check means the numbers may be off in the digits shown here; the row says what to raise.</p>
-    <div class="tablewrap"><table class="diag checks"><thead><tr><th>Check</th><th>Status</th><th>Value / threshold</th><th>What it means</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="tablewrap"><table class="diag"><thead><tr><th>Check</th><th>Status</th><th>Value / threshold</th><th>What it means</th></tr></thead><tbody>${rows}</tbody></table></div>
     ${res.stability ? spectrumPanel(res.stability) : ""}
     ${res.refinement ? `<p class="small" style="margin:6px 0 0">Refinement: re-solved at ${res.refinement.nodes} nodes in ${fmt(res.refinement.seconds, 1)} s; costs moved ${fmtE(res.refinement.cost_change)}, kernels ${fmtE(res.refinement.kernel_change)}.</p>` : ""}
     ${game !== "custom" ? modelPanel(currentModel()) : ""}</section>`);

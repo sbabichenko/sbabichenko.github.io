@@ -260,15 +260,13 @@
       for (let d = 0; d < 3; ++d) el("circle", { cx: left - 34 + d * 11, cy: y + 26 - d * 9, r: 2 + d, class: "pencil soft", "stroke-width": 1.2 }, lg);
       return lg;
     });
-    // how many beliefs of each order n players hold: n first-order, then each belief about another player (n - 1 choices)
-    const counts = ["n", "n(n−1)", "n(n−1)²", "n(n−1)³"].map((c, i) => text(g, 28, 436 - i * 92, c, "label acc", "start"));
-    const countHead = text(g, 28, 100, "how many, n players", "mono", "start");
+    const counts = ["1", "n", "n²", "n³"].map((c, i) => text(g, 28, 436 - i * 92, c, "label acc", "start"));
     const dots = text(g, 300, 58, "…", "label"); dots.style.fontSize = "34px";
     const cap = text(g, 300, 585, "forecasting the forecasts of others, without end", "mono");
     return { g, update(t, now) {
       fade(p1, seg(t, 0, 0.1)); fade(p2, seg(t, 0, 0.1));
       levels.forEach((l, i) => { fade(l, seg(t, 0.08 + i * 0.14, 0.2 + i * 0.14)); l.setAttribute("transform", `translate(0 ${Math.sin(now / 900 + i) * 3})`); });
-      counts.forEach((c, i) => fade(c, seg(t, 0.14 + i * 0.14, 0.24 + i * 0.14))); fade(countHead, seg(t, 0.14, 0.24));
+      counts.forEach((c, i) => fade(c, seg(t, 0.14 + i * 0.14, 0.24 + i * 0.14)));
       fade(dots, seg(t, 0.66, 0.8) * (0.6 + 0.4 * Math.sin(now / 300))); fade(cap, seg(t, 0.75, 0.9));
     } };
   })();
@@ -450,9 +448,7 @@
     text(hm, 180, H0 + 205, "player 2's forecast, as a kernel", "mono");
     text(hm, 180, H0 + 222, "row: date t · column: shock u", "mono");
     const arrow = el("g", {}, g);
-    // the kernel times the noise-state gives the forecast path below: × between them, the arrow down to the path
-    const times = text(arrow, 320, 159, "×", "label"); times.style.fontSize = "28px";
-    el("path", { d: "M460,258 L460,306 M452,297 L460,307 L468,297", class: "pencil", "stroke-width": 1.6 }, arrow);
+    el("path", { d: "M290,150 L345,150 M336,142 L346,150 L336,158", class: "pencil", "stroke-width": 1.6 }, arrow);
     const w1 = el("g", {}, g);
     for (let u = 0; u < N; ++u) { const v = What[0][N - 1][u]; el("rect", { x: 370 + u * (180 / N), y: v >= 0 ? 150 - v * 20 : 150, width: 180 / N - 0.6, height: Math.abs(v) * 20, class: "fillacc" }, w1); }
     text(w1, 460, 245, "run against player 1's noise-state", "mono");
@@ -524,12 +520,11 @@
   window.addEventListener("scroll", measure, { passive: true });
   window.addEventListener("resize", measure);
   measure();
-  let last = performance.now(), still = null;
+  let last = performance.now();
   (function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     const story = document.getElementById("story").getBoundingClientRect();
-    // reduced motion: each scene is drawn once, finished and still, when it becomes active
-    if (active && story.top < window.innerHeight && story.bottom > 0 && !(reduced && still === active)) { const sc = scenes[active.dataset.scene]; if (reduced) still = active; if (sc) sc.update(reduced ? 1 : prog, reduced ? 0 : now, reduced ? 0 : dt); }
+    if (active && story.top < window.innerHeight && story.bottom > 0) { const sc = scenes[active.dataset.scene]; if (sc) sc.update(reduced ? 1 : prog, now, dt); }
     requestAnimationFrame(frame);
   })(performance.now());
 })();

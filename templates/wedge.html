@@ -20,7 +20,6 @@
           Chapter 1. <span class="solvestate" id="solvestate">Loading the solver&hellip;</span></p>
       </section>
 
-      {% include "partials/story-noscript.html" %}
       <section class="story" id="story">
         <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
         <div class="steps">
@@ -61,7 +60,8 @@
             <p>A planner has a fixed budget of signal precision to split between the two players,
               and player 2 finds effort costlier. It looks like a tradeoff: favor the productive player, or balance the
               precision to keep both restrained.</p>
-            <p class="small">Denying the inefficient player signal access weakens the bilateral arms race.</p>
+            <p class="small">Give it all to player 1 and player 2, starved of information to manipulate with,
+              stops pulling against them.</p>
           </div>
           <div class="step" data-scene="chicken">
             <p>The game of chicken.</p>
@@ -79,12 +79,11 @@
           <a href="{{ get_url(path='dissertation/idea/') }}">The noise-state explained</a>
           <a href="{{ get_url(path='dissertation/') }}">The dissertation</a>
         </div>
-        <p class="note">The game: <i>dX</i> = (<i>D</i>&sup1; + <i>D</i>&sup2;) <i>dt</i> + &sigma; <i>dW</i>&#8304;, player <i>i</i>
+        <p class="note">The game: <i>dX</i> = (<i>D</i>&sup1; + <i>D</i>&sup2;) <i>dt</i> + <i>dW</i>&#8304;, player <i>i</i>
           sees <i>dY</i><sup><i>i</i></sup> = &radic;<i>p</i><sub><i>i</i></sub> <i>X dt</i> + <i>dW</i><sup><i>i</i></sup> and
           minimises <i>E</i>&int;<sub>0</sub><sup>1</sup>[(<i>X</i> &minus; <i>b</i><sub><i>i</i></sub>)&sup2; + <i>r</i><sub><i>i</i></sub>(<i>D</i><sup><i>i</i></sup>)&sup2;]<i>dt</i>,
-          with targets <i>b</i> = &plusmn;1. Defaults: <i>p</i><sub>1</sub> = <i>p</i><sub>2</sub> = 9, <i>r</i><sub>1</sub> = <i>r</i><sub>2</sub> = 0.1, &sigma; = 1.
-          The starvation drawing splits a total precision of 20, as in
-          <a href="{{ get_url(path='dissertation/chapter-1/') }}#fig:precision_decomposition">Figure 1.5</a>, and reports the
+          with targets <i>b</i> = &plusmn;1. Defaults: <i>p</i><sub>1</sub> = <i>p</i><sub>2</sub> = 9, <i>r</i><sub>1</sub> = <i>r</i><sub>2</sub> = 0.1.
+          The starvation drawing splits a total precision of 10 with <i>r</i><sub>1</sub> = 0.1, <i>r</i><sub>2</sub> = 0.5 and reports the
           players&rsquo; summed cost. Every number is solved in your browser when the page opens.</p>
       </section>
     </main>

@@ -69,7 +69,7 @@
   function makeData(truth, seed) {
     const r = mulberry32(seed * 7919 + 17), f = TRUTHS[truth];
     const x = new Float64Array(SITES), y = new Float64Array(SITES), n = new Int32Array(SITES), k = new Int32Array(SITES);
-    const rows = [];          // no header row: the engines read a headerless design as x, y, trials, heads
+    const rows = ["wala,wac,n,k"];
     for (let i = 0; i < SITES; ++i) {
       x[i] = r(); y[i] = r();
       n[i] = Math.max(1, Math.round(FLIPS * (0.5 + r())));
@@ -581,11 +581,6 @@
       line(leg, 330, 104, 356, 104, "", 1.8); text(leg, 362, 108, "fitted density", "tiny", "start");
       line(leg, 330, 122, 356, 122, "accent", 2.2); text(leg, 362, 126, "π₀ × null", "tiny", "start");
       line(leg, 330, 140, 356, 140, "soft", 1.3).setAttribute("stroke-dasharray", "4 4"); text(leg, 362, 144, "N(0, 1)", "tiny", "start");
-      // the null is matched to the smooth fit, which is wider than the sharp peak of the bars; studies against known
-      // truth (2026-09-27) found that width right: many truly null scores are this spread out
-      text(leg, 330, 166, "the null is wider than the peak:", "tiny", "start");
-      text(leg, 330, 180, "many null scores really are", "tiny", "start");
-      text(leg, 330, 194, "this spread out", "tiny", "start");
       // the log-density near zero and the central parabola
       const Bx = { x: 80, y: 372, w: 440, h: 150 }, WB = 3.5, XB = (z) => Bx.x + ((z + WB) / (2 * WB)) * Bx.w;
       const lf = LN.mids.map((m, b) => [m, Math.log(LN.fbins[b])]).filter(([m]) => Math.abs(m) <= WB);
@@ -928,36 +923,11 @@
   }
   window.addEventListener("scroll", measure, { passive: true });
   window.addEventListener("resize", measure);
-  let still = null;
   (function frameLoop(now) {
     const story = document.getElementById("story").getBoundingClientRect();
-    if (active && story.top < window.innerHeight && story.bottom > 0) {
-      const sc = scenes[active.dataset.scene];
-      // with reduced motion a scene is drawn once, finished, and left alone until another takes its place
-      if (sc && (!reduced || sc !== still)) { sc.update(reduced ? 1 : prog, now); still = sc; }
-    }
+    if (active && story.top < window.innerHeight && story.bottom > 0) { const sc = scenes[active.dataset.scene]; if (sc) sc.update(reduced ? 1 : prog, now); }
     requestAnimationFrame(frameLoop);
   })(performance.now());
   fitNow();
   measure();
-  // On a phone the drawing's labels are set larger (the page's stylesheet). A label that would then run past the
-  // drawing's edge, 600 units wide, is shrunk back until it fits, measured from where it is anchored.
-  const phone = window.matchMedia("(max-width: 820px)");
-  let fitQueued = false;
-  function fitLabels() {
-    fitQueued = false;
-    const mode = phone.matches ? "phone" : "wide";
-    for (const t of svg.querySelectorAll("text")) {
-      const key = mode + t.textContent;
-      if (t.fitKey === key) continue;           // measured already, for this text at this width
-      t.fitKey = key; t.style.fontSize = "";
-      if (mode !== "phone" || !t.textContent) continue;
-      const b = t.getBBox(), x = +t.getAttribute("x") || 0, a = t.getAttribute("text-anchor") || "start";
-      const room = a === "middle" ? 2 * Math.min(x, 600 - x) : a === "end" ? x : 600 - x;
-      if (b.width > room && room > 0) t.style.fontSize = (parseFloat(getComputedStyle(t).fontSize) * room / b.width).toFixed(2) + "px";
-    }
-  }
-  const queueFit = () => { if (!fitQueued) { fitQueued = true; requestAnimationFrame(fitLabels); } };
-  new MutationObserver(queueFit).observe(svg, { childList: true, subtree: true, characterData: true });
-  phone.addEventListener("change", queueFit);
 })();

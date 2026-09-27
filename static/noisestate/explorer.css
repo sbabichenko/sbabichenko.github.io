@@ -201,22 +201,3 @@
 .explorer .settle .tol { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.7; vector-effect: non-scaling-stroke; }
 .explorer .settle polyline { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 @media (max-width: 520px) { .explorer .settle { display: none; } }
-
-/* the key to the sample paths: the three draws told apart by weight and opacity, not colour (explorer.js renderPaths) */
-.explorer .legend.pathkey { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.8rem; color: var(--muted); margin: 6px 0 4px; }
-.explorer .legend.pathkey i { display: inline-block; width: 18px; height: 2px; background: var(--text); vertical-align: middle; margin-right: 6px; }
-.explorer .legend.pathkey i.band { height: 9px; background: var(--grid); border-radius: 2px; }
-.explorer .legend.pathkey i.dots { height: 0; background: none; border-top: 1.5px dotted var(--faint); }
-
-/* on a phone: a typeset equation keeps to one line and scrolls sideways rather than breaking mid-expression, and each
-   row of the Diagnostics table stacks, the check and its status on one line, the value and its meaning under them */
-@media (max-width: 600px) {
-  .explorer .eq .tex.typeset { white-space: nowrap; }
-  .explorer table.diag.checks thead { display: none; }
-  .explorer table.diag.checks tr { display: grid; grid-template-columns: 1fr auto; column-gap: 8px; border-bottom: 1px solid var(--border); padding: 6px 0; }
-  .explorer table.diag.checks td { border: 0; padding: 2px 4px; }
-  .explorer table.diag.checks td:nth-child(3), .explorer table.diag.checks td:nth-child(4) { grid-column: 1 / -1; }
-  .explorer table.diag.checks td.mono { white-space: normal; }
-}
-/* "Your model": the example list is as wide as its longest name; on a phone it shrinks to the row instead */
-.explorer #editor .row select { max-width: 100%; min-width: 0; }

@@ -112,22 +112,15 @@
   function makePencil(name, finale) {
     const g = group(name);
     const parts = [
-      { name: "cedar", who: "\u201cthe logger in Oregon\u201d", from: [-170, -160], lx: 150, ly: 150, tx: 236, ty: 283, build(pg) {
+      { name: "cedar", from: [-170, -160], lx: 150, ly: 150, tx: 236, ty: 283, build(pg) {
           return [stroke(pg, pencil([[170, 283], [440, 283]], 1), "", 2), stroke(pg, pencil([[170, 327], [440, 327]], 2), "", 2),
-                  stroke(pg, pencil([[440, 283], [482, 301]], 4), "", 2), stroke(pg, pencil([[440, 327], [482, 309]], 12), "", 2)]; } },   // the body; its cone stops at the lead
-      // the graphite is a rod with a point: it flies in to line up with the pencil beyond its tip, then slides in
-      // along the axis; once inside, the hidden core fades out and the sharpened point shows past the wood
-      { name: "graphite", who: "\u201cthe miner of graphite in Ceylon\u201d", from: [170, -170], lx: 480, ly: 170, tx: 490, ty: 301,
-        path: (k) => (k < 0.55 ? [170 + (300 - 170) * (k / 0.55), -170 * (1 - k / 0.55)] : [300 * (1 - (k - 0.55) / 0.45), 0]),
-        build(pg) {
-          this.rod = el("path", { d: "M172,301 L482,301 L482,309 L172,309 Z", class: "fillink" }, pg);        // the core
-          this.point = el("path", { d: "M482,301 L500,305 L482,309 Z", class: "fillink", opacity: 0 }, pg);   // the exposed lead
-          this.edge = stroke(pg, pencil([[482, 301], [172, 301], [172, 309], [482, 309]], 3), "", 1.2);
-          return [this.edge, stroke(pg, pencil([[482, 301], [500, 305], [482, 309]], 5), "", 1.4)]; } },
-      { name: "lacquer", who: "\u201cthe growers of castor beans\u201d", from: [160, 170], lx: 470, ly: 440, tx: 392, ty: 326, build(pg) {
+                  stroke(pg, pencil([[170, 305], [440, 305]], 3), "soft", 1)]; } },
+      { name: "graphite", from: [170, -170], lx: 480, ly: 170, tx: 490, ty: 301, build(pg) {
+          return [stroke(pg, pencil([[440, 283], [500, 305], [440, 327]], 4), "", 2), stroke(pg, pencil([[484, 299], [500, 305], [484, 311]], 5), "accent", 2.4)]; } },
+      { name: "lacquer", from: [160, 170], lx: 470, ly: 440, tx: 392, ty: 326, build(pg) {
           const f = el("rect", { x: 171, y: 284, width: 268, height: 42, class: "fillacc", opacity: 0.1 }, pg);
           return [{ set: (t) => fade(f, t * 0.16) }, stroke(pg, pencil([[176, 294], [434, 294]], 6), "accent soft", 1)]; } },
-      { name: "rubber", who: "\u201crapeseed oil from the Dutch East Indies\u201d", from: [-170, 170], lx: 130, ly: 440, tx: 118, ty: 318, build(pg) {
+      { name: "rubber", from: [-170, 170], lx: 130, ly: 440, tx: 118, ty: 318, build(pg) {
           return [stroke(pg, pencil([[170, 283], [140, 283], [140, 327], [170, 327]], 7), "", 2),
                   stroke(pg, pencil([[150, 283], [150, 327]], 8), "soft", 1), stroke(pg, pencil([[160, 283], [160, 327]], 9), "soft", 1),
                   stroke(pg, pencil([[140, 286], [116, 288], [112, 305], [116, 322], [140, 324]], 10), "warm", 2)]; } },
@@ -135,23 +128,18 @@
     for (const p of parts) {
       p.g = el("g", {}, g);
       p.lines = p.build(p.g);
-      // the part, and in Leonard Read's own words who or what brings it (I, Pencil): above the name at the top,
-      // below it at the bottom, clear of the leader
-      p.label = el("g", {}, g);
-      text(p.label, p.lx, p.ly, p.name, "label");
-      text(p.label, Math.max(135, Math.min(465, p.lx)), p.ly + (p.ly < 300 ? -20 : 20), p.who, "quote");
+      p.label = text(g, p.lx, p.ly, p.name, "label");
       p.lead = el("line", { x1: p.lx, y1: p.ly + (p.ly < 300 ? 8 : -20), x2: p.lx, y2: p.ly + (p.ly < 300 ? 8 : -20), class: "pencil soft", "stroke-dasharray": "3 4" }, g);
     }
-    const read = el("g", {}, g);                                     // Read's line, under the pencil
-    text(read, 300, 530, "\u201cnot a single person on the face of this earth", "quote");
-    text(read, 300, 548, "knows how to make me\u201d", "quote");
-    text(read, 300, 570, "Leonard Read, I, Pencil (1958)", "src");
+    const tag = el("g", {}, g);
+    stroke(tag, pencil([[300, 327], [310, 370]], 11), "soft", 1).set(1);
+    el("rect", { x: 250, y: 370, width: 124, height: 34, rx: 4, class: "box pencil", "stroke-width": 1.4 }, tag);
+    text(tag, 312, 392, "almost nothing", "mono");
     if (finale) {
-      // whole from the start, labels and Read's line put away; the pencil rides the end of a line it draws
+      // whole from the start, labels and tag put away; the pencil rides the end of a line it draws
       const body = el("g", {}, g);
       parts.forEach((p) => { body.appendChild(p.g); p.lines.forEach((l) => l.set(1)); p.label.remove(); p.lead.remove(); });
-      parts.forEach((p) => { if (p.rod) { p.rod.setAttribute("opacity", 0); p.point.setAttribute("opacity", 0.7); p.edge.a.style.opacity = p.edge.b.style.opacity = 0; } });
-      read.remove();
+      tag.remove();
       const r = mulberry32(77), pts = [];
       let y = 430;
       for (let x = 60; x <= 430; x += 5) { pts.push([x, y]); y += gauss(r) * 5; y = clamp(y, 380, 480); }
@@ -170,24 +158,18 @@
       g,
       update(t) {
         parts.forEach((p, i) => {
-          const k = seg(t, 0.05 + 0.1 * i, 0.4 + 0.1 * i), off = p.path ? p.path(k) : [p.from[0] * (1 - k), p.from[1] * (1 - k)];
-          p.g.setAttribute("transform", `translate(${off[0]},${off[1]})`);
-          if (p.rod) {                                                  // solid while it travels
-            const inside = seg(k, 0.9, 1);
-            const shown = seg(t, 0.12, 0.22);                           // once in: the point clear, the hidden core gone
-            p.rod.setAttribute("opacity", 0.7 * (1 - inside) * shown);
-            p.point.setAttribute("opacity", 0.7 * shown);
-            p.edge.a.style.opacity = p.edge.b.style.opacity = 1 - inside;
-          }
+          const k = seg(t, 0.05 + 0.1 * i, 0.4 + 0.1 * i);
+          p.g.setAttribute("transform", `translate(${p.from[0] * (1 - k)},${p.from[1] * (1 - k)})`);
           p.lines.forEach((l) => l.set(seg(t, 0.02 + 0.1 * i, 0.3 + 0.1 * i)));
           fade(p.label, seg(t, 0.02 + 0.1 * i, 0.2 + 0.1 * i));
           // the leader runs from the label to its own part, following the part in, and stops just short of it
           const x1 = +p.lead.getAttribute("x1"), y1 = +p.lead.getAttribute("y1");
-          const tx = p.tx + off[0], ty = p.ty + off[1], L = Math.hypot(tx - x1, ty - y1) || 1;
+          const tx = p.tx + p.from[0] * (1 - k), ty = p.ty + p.from[1] * (1 - k), L = Math.hypot(tx - x1, ty - y1) || 1;
           p.lead.setAttribute("x2", tx - (tx - x1) / L * 7); p.lead.setAttribute("y2", ty - (ty - y1) / L * 7);
           fade(p.lead, seg(t, 0.2, 0.5) * 0.8);
         });
-        fade(read, seg(t, 0.72, 0.9));
+        tag.setAttribute("transform", `rotate(${Math.sin(performance.now() / 700) * 3} 310 370)`);
+        fade(tag, seg(t, 0.72, 0.9));
       },
     };
   }
@@ -342,42 +324,9 @@
     });
     // only the showing drawing is updated each frame, so the targets are also switched off here when it is hidden
     new MutationObserver(() => { if (+g.style.opacity < 0.5) hits.style.pointerEvents = "none"; }).observe(g, { attributes: true, attributeFilter: ["style"] });
-    // Reduced motion draws this scene once, with no clock, so no wave would ever start. Instead one wave is drawn
-    // stopped part-way: it left the leftmost person, the people it has reached are shaded by how many links back
-    // the change began (strongest at the front), and a pulse sits halfway along each link it is crossing now.
-    function frozenWave() {
-      const src = nodes.reduce((b, n, i) => (n.x < nodes[b].x ? i : b), 0), hop = nodes.map(() => -1);
-      hop[src] = 0;
-      for (let front = [src]; front.length;) {
-        const next = [];
-        for (const i of front) for (const j of adj[i]) if (hop[j] < 0) { hop[j] = hop[i] + 1; next.push(j); }
-        front = next;
-      }
-      const D = Math.max(2, Math.round(0.45 * Math.max(...hop)));
-      pulses.innerHTML = "";
-      nodes.forEach((n, i) => {
-        if (hop[i] > D) { n.dot.setAttribute("r", 3.6); n.dot.style.fill = "currentColor"; return; }
-        const u = hop[i] / D;
-        n.dot.setAttribute("r", (i === src ? 6.6 : 3.6 + 2.4 * u).toFixed(1));
-        n.dot.style.fill = "var(--accent)";
-        n.dot.style.opacity = (0.35 + 0.65 * u).toFixed(2);
-      });
-      edges.forEach(([i, j]) => {
-        const [a, b] = hop[i] === D && hop[j] === D + 1 ? [nodes[i], nodes[j]] : hop[j] === D && hop[i] === D + 1 ? [nodes[j], nodes[i]] : [];
-        if (a) el("circle", { cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, r: 3, class: "fillacc" }, pulses);
-      });
-    }
     return {
       g,
       update(t, now) {
-        if (reduced) {
-          lines.forEach((l) => l.set(1));
-          nodes.forEach((n) => { fade(n.ring, 0.8); });
-          fade(lab, 1);
-          hits.style.pointerEvents = "none";      // a click would start a wave that nothing then draws
-          frozenWave();
-          return;
-        }
         lines.forEach((l, k) => l.set(seg(t, 0.02 + (k % 10) * 0.02, 0.35 + (k % 10) * 0.02)));
         nodes.forEach((n, i) => { fade(n.ring, seg(t, 0, 0.2) * 0.8); fade(n.dot, seg(t, 0, 0.15)); });
         fade(lab, seg(t, 0.3, 0.5));
@@ -536,14 +485,8 @@
     const push = stroke(g, pencil([[150, 160], [230, 205], [300, 238]], 51, 1.2), "warm", 2);
     const tip = el("path", { d: "M288,226 L300,238 L284,242", class: "pencil warm", "stroke-width": 2 }, g);
     const act = text(g, 190, 150, "A acts", "label warmt");
-    // the shift is B's belief moving; the wedge is its price to A, a separate mark: a tag hung on A's push
-    const sl = text(g, 300, 442, "B's belief moves", "mono acc");
-    const tag = el("g", {}, g);
-    el("path", { d: pencil([[141, 168], [84, 214], [84, 438]], 53, 0.4), class: "pencil warm", "stroke-width": 1, "stroke-dasharray": "2 4" }, tag);
-    el("path", { d: "M84,448 L93,457 L93,478 L75,478 L75,457 Z", class: "pencil warm", "stroke-width": 1.6 }, tag);
-    el("circle", { cx: 84, cy: 458, r: 2, class: "pencil warm", "stroke-width": 1.2 }, tag);
-    const wl = text(g, 102, 470, "the wedge: what it is worth to A to move B's belief", "mono warmt", "start");
-    const note = text(g, 102, 500, "cut the loop and it is zero", "mono", "start");
+    const wl = text(g, 300, 470, "the wedge: what it is worth to A to move B's belief", "mono");
+    const note = text(g, 300, 500, "cut the loop and it is zero", "mono");
     return {
       g,
       update(t, now) {
@@ -554,7 +497,7 @@
         after.setAttribute("d", pencil(p1, 52, 0.2)); fade(after, seg(t, 0.3, 0.4));
         area.setAttribute("d", "M" + p1.map((q) => q.join(",")).join(" L") + " L" + p0.slice().reverse().map((q) => q.join(",")).join(" L") + "Z");
         fade(area, seg(t, 0.45, 0.65) * 0.16);
-        fade(sl, seg(t, 0.5, 0.65)); fade(tag, seg(t, 0.6, 0.72)); fade(wl, seg(t, 0.62, 0.75)); fade(note, seg(t, 0.8, 0.95));
+        fade(wl, seg(t, 0.55, 0.7)); fade(note, seg(t, 0.8, 0.95));
       },
     };
   })();
@@ -581,15 +524,13 @@
   window.addEventListener("scroll", measure, { passive: true });
   window.addEventListener("resize", measure);
   measure();
-  let last = performance.now(), still = null;
+  let last = performance.now();
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
     const story = active && active.closest(".story").getBoundingClientRect();
-    // reduced motion: each scene is drawn once, finished and still, when it becomes active
-    if (active && story.top < window.innerHeight && story.bottom > 0 && !(reduced && still === active)) {
+    if (active && story.top < window.innerHeight && story.bottom > 0) {
       const sc = scenes[active.dataset.scene];
-      if (reduced) still = active;
-      if (sc) sc.update(reduced ? 1 : prog, reduced ? 0 : now, reduced ? 0 : dt);
+      if (sc) sc.update(reduced ? 1 : prog, now, reduced ? 0 : dt);
     }
     requestAnimationFrame(frame);
   }

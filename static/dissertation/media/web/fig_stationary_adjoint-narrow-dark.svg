@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="311.406375pt" height="170.9643pt" viewBox="0 0 311.406375 170.9643" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="311.406375pt" height="154.6935pt" viewBox="0 0 311.406375 154.6935" xmlns="http://www.w3.org/2000/svg" version="1.1">
  <metadata>
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
@@ -20,11 +20,11 @@
  </defs>
  <g id="figure_1">
   <g id="patch_1">
-   <path d="M 0 170.9643 
-L 311.406375 170.9643 
+   <path d="M 0 154.6935 
+L 311.406375 154.6935 
 L 311.406375 0 
 L 0 0 
-L 0 170.9643 
+L 0 154.6935 
 z
 " style="fill: none; opacity: 0"/>
   </g>
@@ -278,8 +278,8 @@ z
      </g>
     </g>
     <g id="text_8">
-     <!-- source lag $\ell$   (future side $\ell&lt;0$, -->
-     <g style="fill: #e4e4ea" transform="translate(68.634375 147.9135) scale(0.156 -0.156)">
+     <!-- source lag $\ell$   (future side $\ell&lt;0$, past side $\ell&gt;0$) -->
+     <g style="fill: #e4e4ea" transform="translate(14.814375 147.9135) scale(0.156 -0.156)">
       <defs>
        <path id="Newsreader16pt-Regular-73" d="M 1546 3066 
 Q 1754 3066 1942 3030 
@@ -918,43 +918,6 @@ Q 608 -925 349 -1126
 L 182 -934 
 z
 " transform="scale(0.015625)"/>
-      </defs>
-      <use xlink:href="#Newsreader16pt-Regular-73" transform="translate(0 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-6f" transform="translate(44.550003 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-75" transform="translate(101.450012 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-72" transform="translate(160.150024 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-63" transform="translate(202.850021 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-65" transform="translate(251.000031 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(301.600037 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-6c" transform="translate(325.950043 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-61" transform="translate(355.350037 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-67" transform="translate(406.800049 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(460.500061 0.40625)"/>
-      <use xlink:href="#Cmmi10-60" transform="translate(484.850067 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(526.45163 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(550.801636 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(575.151642 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-28" transform="translate(599.501648 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-66" transform="translate(630.851654 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-75" transform="translate(669.551651 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-74" transform="translate(728.251663 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-75" transform="translate(766.401672 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-72" transform="translate(825.101685 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-65" transform="translate(867.801682 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(918.401688 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-73" transform="translate(942.751694 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-69" transform="translate(987.301697 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-64" transform="translate(1017.951691 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-65" transform="translate(1078.501694 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(1129.1017 0.40625)"/>
-      <use xlink:href="#Cmmi10-60" transform="translate(1153.451706 0.40625)"/>
-      <use xlink:href="#Cmmi10-3c" transform="translate(1212.611862 0.40625)"/>
-      <use xlink:href="#Cmr10-30" transform="translate(1307.856003 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-2c" transform="translate(1357.856003 0.40625)"/>
-     </g>
-     <!-- past side $\ell&gt;0$) -->
-     <g style="fill: #e4e4ea" transform="translate(124.560375 164.3403) scale(0.156 -0.156)">
-      <defs>
        <path id="Newsreader16pt-Regular-70" d="M 3014 1475 
 Q 3014 2038 2745 2323 
 Q 2477 2608 2019 2608 
@@ -1038,20 +1001,53 @@ Q 1123 1574 1123 1910
 z
 " transform="scale(0.015625)"/>
       </defs>
-      <use xlink:href="#Newsreader16pt-Regular-70" transform="translate(0 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-61" transform="translate(61.150009 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-73" transform="translate(112.600021 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-74" transform="translate(157.150024 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(195.300034 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-73" transform="translate(219.65004 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-69" transform="translate(264.200043 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-64" transform="translate(294.850037 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-65" transform="translate(355.40004 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(406.000046 0.40625)"/>
-      <use xlink:href="#Cmmi10-60" transform="translate(430.350052 0.40625)"/>
-      <use xlink:href="#Cmmi10-3e" transform="translate(489.510208 0.40625)"/>
-      <use xlink:href="#Cmr10-30" transform="translate(584.754349 0.40625)"/>
-      <use xlink:href="#Newsreader16pt-Regular-29" transform="translate(634.754349 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-73" transform="translate(0 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-6f" transform="translate(44.550003 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-75" transform="translate(101.450012 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-72" transform="translate(160.150024 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-63" transform="translate(202.850021 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-65" transform="translate(251.000031 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(301.600037 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-6c" transform="translate(325.950043 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-61" transform="translate(355.350037 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-67" transform="translate(406.800049 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(460.500061 0.40625)"/>
+      <use xlink:href="#Cmmi10-60" transform="translate(484.850067 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(526.45163 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(550.801636 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(575.151642 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-28" transform="translate(599.501648 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-66" transform="translate(630.851654 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-75" transform="translate(669.551651 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-74" transform="translate(728.251663 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-75" transform="translate(766.401672 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-72" transform="translate(825.101685 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-65" transform="translate(867.801682 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(918.401688 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-73" transform="translate(942.751694 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-69" transform="translate(987.301697 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-64" transform="translate(1017.951691 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-65" transform="translate(1078.501694 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(1129.1017 0.40625)"/>
+      <use xlink:href="#Cmmi10-60" transform="translate(1153.451706 0.40625)"/>
+      <use xlink:href="#Cmmi10-3c" transform="translate(1212.611862 0.40625)"/>
+      <use xlink:href="#Cmr10-30" transform="translate(1307.856003 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-2c" transform="translate(1357.856003 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(1383.356003 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-70" transform="translate(1407.706009 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-61" transform="translate(1468.856018 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-73" transform="translate(1520.30603 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-74" transform="translate(1564.856033 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(1603.006042 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-73" transform="translate(1627.356049 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-69" transform="translate(1671.906052 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-64" transform="translate(1702.556046 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-65" transform="translate(1763.106049 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-20" transform="translate(1813.706055 0.40625)"/>
+      <use xlink:href="#Cmmi10-60" transform="translate(1838.056061 0.40625)"/>
+      <use xlink:href="#Cmmi10-3e" transform="translate(1897.216217 0.40625)"/>
+      <use xlink:href="#Cmr10-30" transform="translate(1992.460358 0.40625)"/>
+      <use xlink:href="#Newsreader16pt-Regular-29" transform="translate(2042.460358 0.40625)"/>
      </g>
     </g>
    </g>
@@ -1421,7 +1417,7 @@ L 277.647305 81.334783
 L 293.40498 81.618972 
 L 304.926375 81.746406 
 L 304.926375 81.746406 
-" clip-path="url(#pae0f4f3f60)" style="fill: none; stroke: #3a9add; stroke-width: 1.6; stroke-linecap: square"/>
+" clip-path="url(#p9fc6a243f7)" style="fill: none; stroke: #3a9add; stroke-width: 1.6; stroke-linecap: square"/>
    </g>
    <g id="line2d_12">
     <path d="M 48.246375 84.068058 
@@ -1465,17 +1461,17 @@ L 274.951491 82.024789
 L 291.190561 81.819829 
 L 304.926375 81.746406 
 L 304.926375 81.746406 
-" clip-path="url(#pae0f4f3f60)" style="fill: none; stroke: #ff8f2d; stroke-width: 1.6; stroke-linecap: square"/>
+" clip-path="url(#p9fc6a243f7)" style="fill: none; stroke: #ff8f2d; stroke-width: 1.6; stroke-linecap: square"/>
    </g>
    <g id="line2d_13">
     <path d="M 176.586375 114.453 
 L 176.586375 2.88 
-" clip-path="url(#pae0f4f3f60)" style="fill: none; stroke-dasharray: 0.8,1.32; stroke-dashoffset: 0; stroke: #6a6a74; stroke-width: 0.8"/>
+" clip-path="url(#p9fc6a243f7)" style="fill: none; stroke-dasharray: 0.8,1.32; stroke-dashoffset: 0; stroke: #6a6a74; stroke-width: 0.8"/>
    </g>
    <g id="line2d_14">
     <path d="M 48.246375 81.746406 
 L 304.926375 81.746406 
-" clip-path="url(#pae0f4f3f60)" style="fill: none; stroke: #cccccc; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#p9fc6a243f7)" style="fill: none; stroke: #cccccc; stroke-width: 0.8; stroke-linecap: square"/>
    </g>
    <g id="patch_3">
     <path d="M 48.246375 114.453 
@@ -1767,7 +1763,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="pae0f4f3f60">
+  <clipPath id="p9fc6a243f7">
    <rect x="48.246375" y="2.88" width="256.68" height="111.573"/>
   </clipPath>
  </defs>

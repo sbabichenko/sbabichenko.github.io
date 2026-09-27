@@ -26,9 +26,8 @@ const LINES = {
   hands3: String.raw`\Delta X_{t+1} = A X_t + K^1\widehat X^{1}_t + K^2\widehat X^{2}_t + \cdots + \text{noise}_{t+1}`,
   // the wedge page (templates/wedge.html)
   sep: String.raw`a^\star_t = K\,x_t + k_t \;\longrightarrow\; a^\star_t = K\,\widehat x_t + k_t`,
-  backward1: String.raw`-\frac{d}{dt}H^{X,i}_t = \underbrace{G^{XX,i}X_t + G^{X,i}_t + G^{XD,i}D^i_t}_{\text{immediate value}} + \underbrace{B^X_X{}^{\top} H^{X,i}_t}_{\text{propagated value}}`,
-  // eq. (1.4.6)-(1.4.7), Theorem 1.8 (chapters/main_noise_state_chapter.tex, thm:wedge-adjoints), in the chapter's symbols
-  backward2: String.raw`+\;\underbrace{\sum_{k\neq i}\Big[B^{Y,k}_X{}^{\top}E^k H^{k,i}_t(t) + P^k\!\int_0^t \widetilde X^{k}_t(r)\, H^{k,i}_t(r)\,dr\Big]}_{\text{information wedge}}`,
+  backward1: String.raw`-\frac{d}{dt}H^{X,i}_t = \underbrace{G^{XX,i}X_t + G^{X,i}}_{\text{immediate value}} + \underbrace{A^{\top} H^{X,i}_t}_{\text{propagated value}}`,
+  backward2: String.raw`+\;\underbrace{\sum_{k\neq i}\Gamma^{k\top}\!\int_0^t \widetilde X^{k}(t,z)\, H^{k,i}(t,z)\,dz}_{\text{manipulation price}}`,
   control: String.raw`D^i_t = -\big(G^{DD,i}\big)^{-1}\,\widehat H^{X,i}_t`,
   t1: String.raw`\mathbb{E}^1[X]`,
   t2: String.raw`\mathbb{E}^1\big[\mathbb{E}^2[X]\big]`,
