@@ -18,17 +18,22 @@
   const rng = mulberry32(20260924);
   const w = Array.from({ length: N }, () => gauss(rng));
   const e = [Array.from({ length: N }, () => gauss(rng)), Array.from({ length: N }, () => gauss(rng))];
-  const K = (k, j) => (j <= k ? Math.pow(RHO, k - j) : 0);          // the kernel of X: L(t, s) on the grid
+  const RP = Array.from({ length: N }, (_, d) => Math.pow(RHO, d));
+  const K = (k, j) => (j <= k ? RP[k - j] : 0);          // the kernel of X: L(t, s) on the grid
   const X = Array.from({ length: N }, (_, k) => { let s = 0; for (let j = 0; j <= k; ++j) s += K(k, j) * w[j]; return s; });
   const Y = [0, 1].map((i) => X.map((x, k) => x + SIG[i] * e[i][k]));
 
   // small dense solves: S z = b for symmetric positive definite S (Cholesky)
-  function cholSolve(S, b) {
-    const n = b.length, L = S.map((r) => r.slice());
+  function cholFactor(S) {
+    const n = S.length, L = S.map((r) => r.slice());
     for (let i = 0; i < n; ++i) for (let j = 0; j <= i; ++j) {
       let s = L[i][j]; for (let k = 0; k < j; ++k) s -= L[i][k] * L[j][k];
       L[i][j] = i === j ? Math.sqrt(s) : s / L[j][j];
     }
+    return L;
+  }
+  function cholSolve(S, b, L = cholFactor(S)) {   // pass L to solve against a matrix already factored
+    const n = b.length;
     const z = b.slice();
     for (let i = 0; i < n; ++i) { for (let k = 0; k < i; ++k) z[i] -= L[i][k] * z[k]; z[i] /= L[i][i]; }
     for (let i = n - 1; i >= 0; --i) { for (let k = i + 1; k < n; ++k) z[i] -= L[k][i] * z[k]; z[i] /= L[i][i]; }
@@ -43,7 +48,8 @@
       for (let a = 0; a <= k; ++a) { S.push([]); for (let b = 0; b <= k; ++b) { let s = 0; for (let j = 0; j <= Math.min(a, b); ++j) s += K(a, j) * K(b, j); S[a].push(s + (a === b ? SIG[i] * SIG[i] : 0)); } }
       // columns of S^{-1}: G_k[u][m] = Σ_a K(a,u) (S^{-1})_{a m}
       const Sinv = [];
-      for (let m = 0; m <= k; ++m) { const unit = Array(k + 1).fill(0); unit[m] = 1; Sinv.push(cholSolve(S, unit)); }
+      const L = cholFactor(S);
+      for (let m = 0; m <= k; ++m) { const unit = Array(k + 1).fill(0); unit[m] = 1; Sinv.push(cholSolve(S, unit, L)); }
       const Gk = [];
       for (let u = 0; u < N; ++u) { const row = Array(k + 1).fill(0); if (u <= k) for (let m = 0; m <= k; ++m) { let s = 0; for (let a = u; a <= k; ++a) s += K(a, u) * Sinv[m][a]; row[m] = s; } Gk.push(row); }
       out.push(Gk);
