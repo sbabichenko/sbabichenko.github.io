@@ -16,16 +16,21 @@
   const btn = document.querySelector(".btn-dark");
   if (btn && document.startViewTransition && !reduced) {
     let passing = false;
+    // the other theme's paper is fetched and decoded when the toggle is pointed at, so the new theme does not wait on it
+    const warm = () => {
+      const other = document.documentElement.classList.contains("dark") ? "light" : "dark", img = new Image();
+      img.src = "/images/paper/brown-" + other + (window.devicePixelRatio > 1 ? "-2x" : "") + ".webp";   // as the header's image-set picks
+      if (img.decode) img.decode().catch(() => {});
+    };
+    for (const ev of ["pointerenter", "focus", "touchstart"]) btn.addEventListener(ev, warm, { once: true, passive: true });
     btn.addEventListener("click", (e) => {
       if (passing) return;
       e.stopImmediatePropagation(); e.preventDefault();
       const r = btn.getBoundingClientRect();
       const frames = meshFrames(r.left + r.width / 2, r.top + r.height / 2);
-      document.documentElement.classList.add("inking");
       const t = document.startViewTransition(() => { passing = true; btn.click(); passing = false; });
       t.ready.then(() => document.documentElement.animate({ clipPath: frames },
-        { duration: 728, easing: "linear", fill: "both", pseudoElement: "::view-transition-new(root)" })).catch(() => {});
-      t.finished.finally(() => document.documentElement.classList.remove("inking"));
+        { duration: 400, easing: "cubic-bezier(0.25, 0.6, 0.4, 1)", fill: "both", pseudoElement: "::view-transition-new(root)" })).catch(() => {});
     }, true);
   }
 
