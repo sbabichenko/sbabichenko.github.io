@@ -359,7 +359,9 @@
     const left = S.done ? 0 : Math.max(0, 1 - (mesh ? mesh.activeFaces.size : 0) / MAX_PIECES()), d = 8 * Math.sqrt(left);
     $("sand-top").setAttribute("y", 10 - d); $("sand-top").setAttribute("height", d);
     $("sand-bot").setAttribute("y", 10 + d); $("sand-bot").setAttribute("height", 8 - d);
-    $("sand-stream").style.opacity = S.running && left > 0 ? 1 : 0;
+    const flowing = S.running && left > 0;
+    $("sand-stream").style.opacity = flowing ? 1 : 0;
+    $("sand-stream").style.animationPlayState = flowing ? "running" : "paused";   // hidden, it would still repaint every frame
   }
   const MAX_PIECES = () => Math.min(3000, Math.floor(Y.length / 10));
   let stepMs = 0;

@@ -265,3 +265,42 @@ body:has(.home .hero) { overflow-x: clip; }
 .home .demo .more a { font-size: 0.85rem; color: var(--ink-2); border-bottom: 1px solid transparent; }
 .home .demo .more a:hover { color: var(--accent); border-bottom-color: currentColor; }
 .home #projects .work { margin-top: 1.6rem; }
+
+/* ---------------------------------------------------------------- the touchable cards (static/js/cards.js) */
+.home .demo .body { position: relative; }
+.home .demo .hint { position: absolute; top: 1.35rem; right: 20px; font: 0.7rem ui-monospace, Menlo, monospace; letter-spacing: 0.02em;
+  color: var(--ink-3); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.home .demo:hover .hint { opacity: 0.9; }
+@media (hover: none) { .home .demo .hint { opacity: 0.8; font-size: 0; } .home .demo .hint::after { content: "hold, then draw"; font-size: 0.7rem; } }
+.home .demo .shot { position: relative; }
+/* Decision Mesh: the image at rest; after a touch, the canvas over it, drawn in the image's own crop */
+.home .shot.draw { cursor: crosshair; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+.home .shot.draw img { -webkit-user-drag: none; }
+.home .shot.draw canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; transition: transform 0.4s ease; }
+.home .shot.draw.live canvas { display: block; }
+.home .demo:hover .shot.draw canvas { transform: scale(1.04); }   /* zoomed with the image, so a stroke never jumps */
+.home .shot.draw .clear, .home .shot.draw .status { position: absolute; bottom: 8px; display: none; z-index: 1;
+  font: 0.7rem ui-monospace, Menlo, monospace; letter-spacing: 0.02em; color: var(--ink-2);
+  background: color-mix(in srgb, var(--paper) 86%, transparent); border-radius: 999px; padding: 2px 9px; }
+.home .shot.draw .status { left: 8px; max-width: calc(100% - 80px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+.home .shot.draw .status:empty { visibility: hidden; }
+.home .shot.draw .clear { right: 8px; border: 1px solid var(--rule); cursor: pointer; }
+.home .shot.draw .clear:hover { color: var(--accent); border-color: var(--accent); }
+.home .shot.draw.live :is(.clear, .status) { display: block; }
+
+/* Noise-State Calculus: the tug of war, in pencil */
+.home .shot.tug { background: transparent; cursor: ew-resize; touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+.home .shot.tug:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+.home .shot.tug svg { display: block; width: 100%; height: 100%; color: var(--ink); overflow: hidden; }
+.home .shot.tug .pencil { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+.home .shot.tug .soft { opacity: 0.4; }
+.home .shot.tug .accent { stroke: var(--accent); }
+.home .shot.tug .warm { stroke: var(--warm); }
+.home .shot.tug text { fill: currentColor; font-family: Newsreader, "Iowan Old Style", Georgia, serif; font-size: 15px; }
+.home .shot.tug text.mono { font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; letter-spacing: 0.04em; fill: var(--ink-3); }
+.home .shot.tug text.pv { fill: var(--ink-2); }
+.home .shot.tug text.cap { fill: var(--ink-2); }
+.home .shot.tug text.acc { fill: var(--accent); }
+.home .shot.tug text.warmt { fill: var(--warm); }
+@media (max-width: 480px) { .home .shot.tug text { font-size: 13px; } .home .shot.tug text.mono { font-size: 9.5px; letter-spacing: 0.02em; } }
+.home .shot.tug .fillacc { fill: var(--accent); }

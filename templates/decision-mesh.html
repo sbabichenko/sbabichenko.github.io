@@ -3,8 +3,8 @@
         rectangular-decision-mesh/core, compiled to WebAssembly) fitting coin flips drawn on the page. gate.js makes the
         data and draws; the engines run in fit-worker.js. It also owns the round-by-round table, the CSV upload and the
         notes further down.
-      how the gate decides: one step per screen beside a drawing (gate-how.js), every drawing read off its own run of
-        the estimator in a second worker, with the candidate trace on. Its controls are namespaced gh-*.
+      how the gate decides: one step per screen beside a drawing (gate-how.js), every drawing read off the live fit's
+        run (the same coins, settings and worker; gate.js asks the worker for the candidate trace). Its ids are gh-*.
       why right triangles: four geometries grown greedily on the same data (decision-mesh.js, right-mesh.js,
         rect-mesh.js, mesh-demo.js). Its elements are namespaced race-*.
     The story and the race load their scripts only when their section nears the window, so the page runs one fit at
@@ -84,17 +84,13 @@
         raise them, tick &ldquo;lower&rdquo; or hold shift to lower them).</p>
     </div>
 
-    <section class="gatehow" id="gatehow" data-engine="tri" data-worker="{{ get_url(path='mesh/fit-worker.js', cachebust=true) }}"
+    <section class="gatehow" id="gatehow" data-engine="tri"
       data-src="{{ get_url(path='mesh/gate-how.js', cachebust=true) }}">
       <div class="howhead" id="how">
         <h2 class="sect">How the Gate Decides</h2>
-        <p class="lede">The drawings below come from one run of the estimator in your browser, on coin flips drawn on this
-          page.</p>
+        <p class="lede">The drawings below come from the same run as the fit above, in your browser, on the same coin
+          flips.</p>
         <div class="howbar">
-          <label>Estimator <select id="gh-engine"><option value="tri" selected>Right triangles</option><option value="rect">Rectangles</option></select></label>
-          <label>The odds <select id="gh-truth"><option value="peaks" selected>Three peaks</option><option value="hills">A hill and a pit</option><option value="ring">A ring</option></select></label>
-          <label>Coin effects, sd <input type="range" id="gh-coinsd" min="0" max="1" step="0.05" value="0.25" /> <span class="val" id="gh-coinsdval">0.25</span></label>
-          <button id="gh-again" type="button"><i class="mini-coin" aria-hidden="true"></i>Flip again</button>
           <span class="howstatus" id="gh-status">Fitting&hellip;</span>
         </div>
       </div>
@@ -103,8 +99,8 @@
         <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
         <div class="steps">
           <div class="step" data-scene="sites">
-            <p>The odds of a coin vary over this square. Six thousand sites each flip a coin about twenty times. Each dot
-              is one site&rsquo;s share of heads.</p>
+            <p>The odds of a coin vary over this square. <span data-v="sitesWord">Six thousand</span> sites each flip a
+              coin about <span data-v="flipsWord">twenty</span> times. Each dot is one site&rsquo;s share of heads.</p>
             <p class="small">Each coin also has an effect of its own on its log-odds, with the standard deviation set by
               the slider above. Half the sites are held out: the estimator never sees them, and they are used to score the
               fit at the end.</p>
@@ -175,7 +171,7 @@
           </div>
           <div class="step" data-scene="lfdr">
             <p>From the null, each candidate gets a local false discovery rate: the probability it is noise given its
-              score. Sorted best first, the gate takes the longest run whose average stays at or below 10%.</p>
+              score. Sorted best first, the gate takes the longest run whose average stays at or below <span data-v="q">10%</span><span data-v="qsweep"></span>.</p>
             <p class="small">In round 0 that is <span data-v="prefix0">&hellip;</span> candidates. A cutoff of
               |<i>z</i>| &gt; 1.96 would have taken <span data-v="naive0">&hellip;</span>.</p>
           </div>
@@ -208,7 +204,8 @@
       </div>
 
       <div class="howfoot">
-        <p class="note">The run: 6,000 sites on the unit square, each flipping a coin about 20 times (between 10 and 30),
+        <p class="note">The run: <span data-v="sites">6,000</span> sites on the unit square, each flipping a coin about
+          <span data-v="flips">20</span> times (between <span data-v="nlo">10</span> and <span data-v="nhi">30</span>),
           with odds from the picture chosen above plus a normal effect per coin on the log-odds (standard deviation from the
           slider), fitted by
           <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a> or
@@ -318,7 +315,8 @@
         <p class="ownmsg" id="ownmsg" aria-live="polite"></p>
       </section>
 
-      <div class="notes">
+      <details class="cite notes">
+        <summary>Notes</summary>
         <p>The estimators are <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a>
           and <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a>, compiled from
           their C++ with Emscripten. On my test designs the browser builds
@@ -332,7 +330,7 @@
           its own effect and flips are random, so it sets the floor. The coins are drawn on this page from
           the odds you pick, plus a normal effect per coin on the log-odds, with the standard deviation on the slider
           (0.25 to start). Set it to zero and the coins are plain binomial.</p>
-      </div>
+      </details>
       <details class="cite">
         <summary>Cite it</summary>
 <pre>@software{triangular_decision_mesh,

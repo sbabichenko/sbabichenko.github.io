@@ -256,10 +256,11 @@
       // the scroll sets how many vertices should show; the drawing walks there one vertex at a time, so a single
       // turn of the wheel plays as a short sequence rather than a jump of several
       const RATE = 8;            // vertices per second
-      let shown = 0, lastNow = 0;
+      // update() returns true while the drawing is still walking toward where the scroll puts it
+      let shown = 0, lastNow = 0, moving = false;
       return { g, update(t, now) {
         let e = 0;
-        const dt = lastNow ? Math.min(0.1, (now - lastNow) / 1000) : 0; lastNow = now;
+        const dt = moving && lastNow ? Math.min(0.1, (now - lastNow) / 1000) : 0; lastNow = now;
         const u = seg(t, 0.32, 0.42), z = 1 + (ZF - 1) * u, c = [Qs[0] + (cen[0] - Qs[0]) * u, Qs[1] + (cen[1] - Qs[1]) * u];
         zg.setAttribute("transform", `translate(${c[0].toFixed(2)},${c[1].toFixed(2)}) scale(${z.toFixed(4)}) translate(${-Qs[0]},${-Qs[1]})`);
         dots.forEach((d, i) => d.setAttribute("r", dotR(events[i]) / z)); ring.setAttribute("r", 9 / z);
@@ -279,6 +280,8 @@
         dots.forEach((d, i) => fade(d, i < e ? 1 : 0));
         if (e) { ring.setAttribute("cx", sx(events[e - 1].p[0])); ring.setAttribute("cy", sy(events[e - 1].p[1])); }
         fade(ring, e ? 1 : 0); fade(leg, seg(t, 0.32, 0.4));
+        moving = shown !== want;
+        return moving;
       } };
     })();
 
@@ -925,19 +928,24 @@
       for (const s of steps) s.classList.toggle("on", s === best);
       for (const [name, sc] of Object.entries(scenes)) sc.g.style.opacity = name === best.dataset.scene ? 1 : 0;
     }
+    queueDraw();
   }
   window.addEventListener("scroll", measure, { passive: true });
   window.addEventListener("resize", measure);
-  let still = null;
-  (function frameLoop(now) {
-    const story = document.getElementById("story").getBoundingClientRect();
-    if (active && story.top < window.innerHeight && story.bottom > 0) {
-      const sc = scenes[active.dataset.scene];
-      // with reduced motion a scene is drawn once, finished, and left alone until another takes its place
-      if (sc && (!reduced || sc !== still)) { sc.update(reduced ? 1 : prog, now); still = sc; }
-    }
-    requestAnimationFrame(frameLoop);
-  })(performance.now());
+  // A scene is redrawn only when the reading position or the scene changes, or while a scene is still moving toward
+  // it (update() returns true); with reduced motion a scene is drawn once, finished, until another takes its place.
+  let drawnScene = null, drawnProg = -1, queued = false, moving = false;
+  function redraw(now) {
+    queued = false;
+    const sc = active && scenes[active.dataset.scene];
+    if (!sc) return;
+    const p = reduced ? 1 : prog;
+    if (sc === drawnScene && p === drawnProg && !moving) return;
+    drawnScene = sc; drawnProg = p;
+    moving = !!sc.update(p, now) && !reduced;
+    if (moving) queueDraw();
+  }
+  function queueDraw() { if (!queued) { queued = true; requestAnimationFrame(redraw); } }
   fitNow();
   measure();
   // On a phone the drawing's labels are set larger (the page's stylesheet). A label that would then run past the
