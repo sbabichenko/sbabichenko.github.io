@@ -410,7 +410,8 @@
   };
   $("showedges").onchange = draw; $("showpts").onchange = () => { drawTruth(); draw(); };
   let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { drawTruth(); draw(); }, 100); });
-  const retheme = () => setTimeout(() => { LUT = ramp(); drawTruth(); draw(); }, 30);
+  let wasDark = document.documentElement.classList.contains("dark");   // once per change of theme (both signals below fire)
+  const retheme = () => setTimeout(() => { const d = document.documentElement.classList.contains("dark"); if (d === wasDark) return; wasDark = d; LUT = ramp(); drawTruth(); draw(); }, 30);
   document.body.addEventListener("set-theme", retheme);
   new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 

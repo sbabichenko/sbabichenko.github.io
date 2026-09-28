@@ -477,7 +477,9 @@
   const end = () => { if (painting) { painting = false; run(); } };
   cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
 
-  new MutationObserver(() => { LUT = ramp(); drawScale(); drawAll(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  let wasDark = document.documentElement.classList.contains("dark");   // only a change of theme, not every class on <html>
+  new MutationObserver(() => { const d = document.documentElement.classList.contains("dark"); if (d === wasDark) return; wasDark = d; LUT = ramp(); drawScale(); drawAll(); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   let rz = 0; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(drawAll, 120); });
 
   // ------------------------------------------------------------------ your own data

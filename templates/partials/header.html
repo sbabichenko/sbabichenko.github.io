@@ -21,7 +21,9 @@
              phone, a bar that stays put, a popup): background: var(--ground) var(--paper-img) 0 0 / 768px 768px with
              background-blend-mode: var(--patch-blend). Everything else is clear, so the page's own paper runs through it.
              Patches pin their paper to the window and shift it by the scroll (--paper-y), so a pill or bar that stays put
-             still shows the page's paper moving under it, lined up with the page around it. */
+             still shows the page's paper moving under it, lined up with the page around it. A new patch goes in the
+             list in the script below: only the patches carry --paper-y (set on the page's root, every scroll frame
+             restyled every element on the page, 100 ms and more a frame on a chapter). */
           html:not(.dark) { --ground: #ecdebe; --patch-blend: multiply; }
           html.dark { --ground: #1f2022; --patch-blend: screen; }
           /* in light mode the paper also gets a paper's own warm tone: the site's near-white cream is what made the grain read as dirt */
@@ -47,17 +49,42 @@
                     mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent); opacity: var(--hdr-fade, 0); }
           html:not(.dark) figure { background-color: transparent; }
           html:not(.dark) :is(figure img, .shot img, .shot canvas, .panel canvas, .js-plotly-plot, main img) { mix-blend-mode: multiply; }
-          html:not(.dark) { --paper-img: url({{ get_url(path='images/paper/brown-light.webp') }}); }
-          html.dark { --paper-img: url({{ get_url(path='images/paper/brown-dark.webp') }}); }
+          /* the tile is 768px: a 768-pixel image for ordinary screens (what the browser drew from the 1536 one anyway) and
+             the 1536 one for sharp screens */
+          html:not(.dark) { --paper-img: image-set(url({{ get_url(path='images/paper/brown-light.webp') }}) 1x, url({{ get_url(path='images/paper/brown-light-2x.webp') }}) 2x); }
+          html.dark { --paper-img: image-set(url({{ get_url(path='images/paper/brown-dark.webp') }}) 1x, url({{ get_url(path='images/paper/brown-dark-2x.webp') }}) 2x); }
         </style>
         <script>
           (() => {
-            const root = document.documentElement; let queued = false;
-            const hdr = document.querySelector("header.blur-header");
-            const put = () => { queued = false; root.style.setProperty("--paper-y", -(window.scrollY % 768) + "px"); if (hdr) root.style.setProperty("--hdr-h", hdr.offsetHeight + "px");
-              root.style.setProperty("--hdr-fade", Math.min(1, window.scrollY / 44).toFixed(3)); };
-            addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(put); } }, { passive: true });
-            put();
+            // the patches of paper (above); a pseudo-element patch is listed as itself, and its element carries the scroll
+            // for browsers without scroll-driven animations
+            const PATCHES = ["header.blur-header", ".peek", ".figzoom", ".trace-note", ".wayback", ".gpanel", ".cover .cta a",
+              ".stage::before", ".gatehow .stage::before", "html.fold-table .story .stage", ".spike .controls", ".risk .rcontrols",
+              ".dsearch-panel", ".explorer #statusbar", ".explorer #race-statusbar", ".home .shot.draw .clear", ".home .shot.draw .status",
+              ".whimsy-coin p", ".whimsy-forecast", ".skip-pill"];
+            const root = document.documentElement, hdr = document.querySelector("header.blur-header");
+            if (hdr) new ResizeObserver(() => hdr.style.setProperty("--hdr-h", hdr.offsetHeight + "px")).observe(hdr);
+            const css = document.createElement("style");
+            css.textContent = '@property --paper-y { syntax: "<length>"; inherits: true; initial-value: 0px; }' +
+              '@property --hdr-fade { syntax: "<number>"; inherits: true; initial-value: 0; }';
+            if (CSS.supports("animation-timeline: scroll()") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+              // the browser moves each patch's paper with the scroll itself: --paper-y runs from 0 down by a pixel per
+              // pixel scrolled (the range is far longer than any page, so the ratio is one to one)
+              css.textContent += "@keyframes paper-y { from { --paper-y: 0px; } to { --paper-y: -1000000px; } }" +
+                "@keyframes hdr-fade { from { --hdr-fade: 0; } to { --hdr-fade: 1; } }" +
+                PATCHES.join(",") + " { animation: paper-y linear both; animation-timeline: scroll(root block); animation-range: 0px 1000000px; }" +
+                "header.blur-header { animation: paper-y linear both, hdr-fade linear both; animation-timeline: scroll(root block), scroll(root block);" +
+                " animation-range: 0px 1000000px, 0px 44px; }";
+            } else {
+              const hosts = PATCHES.map((s) => s.replace(/::before$/, "")).join(",");
+              let queued = false;
+              const put = () => { queued = false; const y = -(window.scrollY % 768) + "px";
+                for (const el of document.querySelectorAll(hosts)) el.style.setProperty("--paper-y", y);
+                if (hdr) hdr.style.setProperty("--hdr-fade", Math.min(1, window.scrollY / 44).toFixed(3)); };
+              addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(put); } }, { passive: true });
+              put();
+            }
+            document.head.appendChild(css);
           })();
         </script>
       </div>

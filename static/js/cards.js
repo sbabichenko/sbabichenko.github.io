@@ -24,7 +24,9 @@
     };
   }
   const themeWatchers = [];
-  new MutationObserver(() => themeWatchers.forEach((f) => f())).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  let wasDark = document.documentElement.classList.contains("dark");   // only a change of theme, not every class on <html> (heroink toggles one as the pointer crosses the mesh)
+  new MutationObserver(() => { const d = document.documentElement.classList.contains("dark"); if (d === wasDark) return; wasDark = d; themeWatchers.forEach((f) => f()); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
   // ================================================================== Decision Mesh
   (function meshCard() {
@@ -297,9 +299,16 @@
   (function headsCard() {
     const shot = document.querySelector(".home .shot.nsheads"), card = shot && shot.closest(".demo"), rim = card && card.querySelector(".nsheads-rim");
     if (!shot) return;
-    // a touch screen has no hover: a tap on the picture toggles the same state
-    const touch = window.matchMedia("(hover: none) and (pointer: coarse)");
-    shot.addEventListener("click", () => { if (touch.matches) card.classList.toggle("on"); });
+    // a finger or a pen has no hover: a tap on the picture toggles the same state. Decided by the tap itself, not by
+    // what the browser says about the device, which some phones (and "desktop site" modes) get wrong
+    // A tap or a press-and-hold both count (a long press fires no click, so the release decides); a finger that moves
+    // is scrolling the page and counts as neither
+    let down = null;
+    shot.addEventListener("pointerdown", (ev) => { down = ev.pointerType === "mouse" ? null : { x: ev.clientX, y: ev.clientY }; });
+    shot.addEventListener("pointermove", (ev) => { if (down && Math.hypot(ev.clientX - down.x, ev.clientY - down.y) > 10) down = null; });
+    shot.addEventListener("pointercancel", () => { down = null; });
+    shot.addEventListener("pointerup", () => { if (down) card.classList.toggle("on"); down = null; });
+    shot.addEventListener("contextmenu", (ev) => ev.preventDefault());   // no save-image menu on a long press
     thinking();
     if (!rim) return;
     // the two thought-cloud rims, laid out once for the card's size (and again when it changes size): scallops along a
@@ -385,7 +394,7 @@
       }
       function identity(o, gi) {             // set once, when a shock lands: kept or not, and how far its pair steps aside
         const k = kept(gi); o.g.classList.toggle("kept", k);
-        o.pb.firstChild.style.setProperty("--sx", (k ? -4.9 : -2.1) + "px"); o.pw.firstChild.style.setProperty("--sx", (k ? 4.9 : 2.1) + "px");
+        o.pb.firstChild.style.setProperty("--sx", (k ? -4.9 : -3) + "px"); o.pw.firstChild.style.setProperty("--sx", (k ? 4.9 : 3) + "px");
       }
       function step() {
         const wrap = s + 1 >= D.m.length, t = wrap ? 0 : s + 1;
