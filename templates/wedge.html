@@ -44,17 +44,10 @@
           <div class="step" data-scene="stateprice">
             <p>Optimal control prices a move of the state with a shadow price: how much better the future looks if the
               state is a little higher now. The best action sets the cost of effort against that price.</p>
-            <details class="math"><summary>In the math</summary>
-              <div class="fx">{{ fx.control.svg | safe }}</div>
-            </details>
           </div>
           <div class="step" data-scene="wedge">
             <p>In a game there is a second thing a push moves: the other player&rsquo;s noise-state. The information wedge
               is its price, the value of changing an opponent&rsquo;s beliefs.</p>
-            <details class="math"><summary>In the math</summary>
-              <p class="small">It is one more term in the backward equation for the shadow price.</p>
-              <p class="small">All the strategic complexity sits in deterministic kernels, solved once at equilibrium.</p>
-            </details>
           </div>
           <div class="step" data-scene="split">
             <p>Player 1&rsquo;s first-order condition at mid-horizon, split into its physical part
