@@ -44,7 +44,7 @@ onmessage = async (ev) => {
   let rc;
   try {
     rc = engine.ccall("dm_run", "number", ["number", "string"],
-      [seed, "DMESH_DATA=/w/design.csv\nDMESH_DUMP=/w/run\nDMESH_SPLIT=1\nDMESH_Q=" + (q > 0 && q < 1 ? q : "") + (ev.data.detail ? "\nDMESH_TRACE=/w/run_trace.csv" : "")]);
+      [seed, "DMESH_DATA=/w/design.csv\nDMESH_DUMP=/w/run\nDMESH_SPLIT=" + (ev.data.split === false ? "0" : "1") + "\nDMESH_Q=" + (q > 0 && q < 1 ? q : "") + (ev.data.detail ? "\nDMESH_TRACE=/w/run_trace.csv" : "")]);
   } catch (e) {
     postMessage({ id, type: "error", message: String(e), log });
     return;

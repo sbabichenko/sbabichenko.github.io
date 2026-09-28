@@ -398,12 +398,31 @@ numerics: {nodes: 8, continuation_nodes: 12}
     tab: "Your model",
     title: "Your model",
     desc: `<p class="small muted" style="margin:0">Write or paste a model file, or start from one of the examples of the noisestate package.
-      The solver takes any model the package's grammar allows: stationary, finite and transition
+      The solver takes the package's model files, written as equations or in the grammar: stationary, finite and transition
       horizons, with the past model written inline under horizon.past.model and an optional horizon.settle for the march in T.</p>`,
   },
 };
 const EXAMPLES = {
   "tracking game with targets (Ch. 1)": PRESETS.ch1.yaml,
+  "tracking game written as equations (Ch. 1)": `# The tracking game of the first tab, written as the package's equations: a loss (X - b)^2
+# keeps its constant b^2, so these costs include b^2 T.
+name: ch1_tracking_equations
+params: {p1: 9.0, p2: 9.0, r1: 0.1, r2: 0.1, b1: 1.0, b2: -1.0, sigma: 1.0, T: 1.0}
+shocks: [w0, w1, w2]
+states:
+  X: (D1 + D2) dt + sigma dw0
+agents:
+  player1:
+    controls: D1
+    observes: {y1: sqrt(p1) X dt + dw1}
+    loss: (X - b1)^2 + r1 D1^2
+  player2:
+    controls: D2
+    observes: {y2: sqrt(p2) X dt + dw2}
+    loss: (X - b2)^2 + r2 D2^2
+horizon: {T: T}
+numerics: {nodes: 12}
+`,
   "stationary tracking (Ch. 3)": PRESETS.ch3.yaml,
   "Kyle–Back market (Ch. 4)": PRESETS.ch4.yaml,
   "change of regime (Ch. 3 transition)": PRESETS.tr.yaml,
@@ -880,7 +899,10 @@ function customModel() {
   if (!d || typeof d !== "object") throw new Error("The model file must be a mapping (name, shocks, states, agents, horizon).");
   const has = (k) => d[k] && typeof d[k] === "object" && Object.keys(d[k]).length;
   if (!has("agents")) throw new Error("The model file needs at least one agent under agents, each with its controls and loss.");
-  if (!has("shocks") && !has("channels")) throw new Error("The model file needs a list of shocks, the noise that drives the game.");
+  // a file written as equations may leave its shocks to be read off the dW terms of its equations
+  const equations = Object.values(d.states || {}).some((v) => typeof v === "string" || (v && typeof v === "object" && "d" in v))
+    || Object.values(d.agents).some((a) => a && typeof a === "object" && ("observes" in a || typeof a.loss === "string"));
+  if (!equations && !has("shocks") && !has("channels")) throw new Error("The model file needs a list of shocks, the noise that drives the game.");
   return d;
 }
 
@@ -1022,16 +1044,9 @@ function typesetEquations(root) {
   }
 }
 
-// The in-browser solver is a C++ port of noisestate 1.0.1, whose model files name the shocks "channels"; the page
-// writes the current key, shocks, and renames it only on the way to the solver (an older file with channels passes).
-function forSolver(d) {
-  if (!d || typeof d !== "object") return d;
-  const out = { ...d };
-  if (out.shocks !== undefined && out.channels === undefined) { out.channels = out.shocks; delete out.shocks; }
-  if (out.horizon && out.horizon.past && out.horizon.past.model && typeof out.horizon.past.model === "object")
-    out.horizon = { ...out.horizon, past: { ...out.horizon.past, model: forSolver(out.horizon.past.model) } };
-  return out;
-}
+// The in-browser solver is a C++ port of noisestate 2 (noisestate-cpp), which reads the package's model files as they
+// are: shocks, written as equations or in the grammar.  An older file that names its shocks "channels" passes too.
+function forSolver(d) { return d; }
 function currentModel() {
   if (game === "custom") return customModel();
   const def = PRESETS[game], d = presetModel(game);
@@ -1069,7 +1084,7 @@ function sendSolve() {
   // and ignores otherwise (a new grid or a new model)
   const request = { ...currentRequest(), return_start: true };
   if (game !== "custom" && PRESETS[game].naive) request.naive_compare = PRESETS[game].naive;
-  // naive_observers is withdrawn: it did not compute Chapter 6's naive or privy equilibria (a fix is in progress)
+  // naive_observers was removed in noisestate 2 (it computed neither of Chapter 6's corners); an old file's key is dropped
   if (game === "custom" && model.naive_observers) { model = { ...model }; delete model.naive_observers; }
   const hk = model.horizon && model.horizon.kind;
   request.path_grid = hk === "stationary" ? 150 : hk === "transition" ? 48 : 60;
@@ -1630,9 +1645,11 @@ function lossHessian(model, ctl) {
 }
 function renderStrategy(res, out, keepCtl, xlabel) {
   const F = res.samples.foc; if (!F) return;
-  let model; try { model = currentModel(); } catch (e) { return; }
+  // the model as the solver read it (the grammar, also for a file written as equations), else the page's own
+  let model = res.model; if (!model) { try { model = currentModel(); } catch (e) { return; } }
   const stat = res.kind === "stationary";
-  const ok = Object.keys(F).filter((c) => lossHessian(model, c) && F[c].channels && (stat || (res.samples.kernels[c] && res.samples.kernels[c][res.channels[0]].some((q) => Math.abs(q.t - F[c].t) < 1e-9))));
+  // a risk-averse agent's action is the first-order condition at the risk-adjusted noise-state, not this decomposition
+  const ok = Object.keys(F).filter((c) => !(res.risk && res.risk[F[c].agent]) && lossHessian(model, c) && F[c].channels && (stat || (res.samples.kernels[c] && res.samples.kernels[c][res.channels[0]].some((q) => Math.abs(q.t - F[c].t) < 1e-9))));
   if (!ok.length) return;
   const kc = ok.includes(keepCtl) ? keepCtl : ok[0];
   const at = stat ? "" : ` at t = ${fmt(F[kc].t, 2)}`;

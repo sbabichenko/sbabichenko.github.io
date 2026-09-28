@@ -14,6 +14,18 @@
   const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
   const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
   const seg = (t, a, b) => ease(clamp((t - a) / (b - a)));
+  // A one-shot motion (a ball rolling downhill): once the step's progress passes `at` it plays over `dur` seconds
+  // whatever the scroll speed, and runs back if the reader scrolls above `at` again. With reduced motion it jumps to
+  // where it is headed. step(t, dt) returns 0..1, not eased.
+  function oneShot(at, dur) {
+    let v = 0, to = 0;
+    return {
+      step(t, dt) { to = t >= at ? 1 : 0; v = reduced ? to : v + clamp(to - v, -dt / dur, dt / dur); return v; },
+      get moving() { return v !== to; },
+      get playing() { return to === 1 && v < 1; },     // on its way forward: worth finishing before the drawing is put away
+      jump(t) { to = v = t >= at ? 1 : 0; },           // reached from below: already where the progress puts it
+    };
+  }
   const fade = (n, t) => { n.style.opacity = clamp(t); };
   function pencil(pts, seed, wob = 0.6) {
     const r = mulberry32(seed);
@@ -158,15 +170,17 @@
     el("line", { x1: X(200), y1: Y(0), x2: X(200), y2: Y(100), class: "pencil", "stroke-width": 1.4, "stroke-dasharray": "3 4" }, best);
     el("circle", { cx: X(200), cy: Y(0), r: 4.5, class: "fillacc" }, best);
     text(best, X(200), Y(0) + 20, "best push", "label");
-    return { g, update(t) {
+    const roll = oneShot(0.42, 1.1);                      // the roll is timed, so it is seen whole
+    return { g, live: false, shots: [roll], update(t, now, dt) {
       fade(axes, seg(t, 0, 0.1)); curve.set(seg(t, 0, 0.22));
       fade(tan, seg(t, 0.2, 0.3)); fade(lab, seg(t, 0.24, 0.32));
       pa.set(seg(t, 0.32, 0.42)); fade(ph, seg(t, 0.4, 0.43)); fade(pl, seg(t, 0.34, 0.42));
-      const u = seg(t, 0.42, 0.52), bx = x0 + (x1 - x0) * u;
+      const u = ease(roll.step(t, dt)), bx = x0 + (x1 - x0) * u;
       ball.setAttribute("cx", bx); ball.setAttribute("cy", C(bx) - 10); fade(ball, seg(t, 0.14, 0.2));
-      fade(drop, seg(t, 0.5, 0.58));
+      fade(drop, seg(u, 0.8, 1));
       fade(B, seg(t, 0.58, 0.64)); save.set(seg(t, 0.6, 0.72)); effort.set(seg(t, 0.64, 0.76));
       bl.forEach((l, k) => fade(l, seg(t, 0.68 + 0.04 * k, 0.76 + 0.04 * k))); fade(best, seg(t, 0.8, 0.9));
+      return roll.moving;
     } };
   })();
 
@@ -341,30 +355,66 @@
 
   // ------------------------------------------------------------------ scroll to scene, and the progress line
   const bar = document.getElementById("progress");
-  let active = null, prog = 0;
+  // A step's progress runs from 0 as it becomes the active step (its top at the reading line) to 1 once 70% of it has
+  // passed the line, so its drawing builds while the paragraph is read, on the way down as well as up. The drawing
+  // follows that progress no faster than PACE a second: a flick of the wheel is caught up over a moment, not skipped.
+  // A drawing whose one-shot motion is still playing forward stays up a moment longer (HOLD seconds at most), then
+  // finishes the motion as it fades out under the next. Frames are asked for only while something moves, or while
+  // solves are still arriving.
+  const PACE = 0.9, HOLD = 0.5, FADE = 0.7;
+  let active = null, prog = 0, shown = 0, current = null, held = 0, raf = 0, last = 0, still = null;
+  let leaving = null, leftT = 0, leftFor = 0, from = null;
   function measure() {
-    const vh = window.innerHeight;
+    const vh = window.innerHeight, line = window.readLine ? window.readLine() : vh * 0.55;
     let best = null, bestD = Infinity;
-    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - (window.readLine ? window.readLine() : vh * 0.55)); if (d < bestD) { bestD = d; best = s; } }
+    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - line); if (d < bestD) { bestD = d; best = s; } }
     if (bar) { const h = document.documentElement.scrollHeight - vh; bar.style.width = (h > 0 ? (100 * window.scrollY) / h : 0) + "%"; }
     if (!best) return;
     const r = best.getBoundingClientRect();
-    prog = clamp((vh * 0.85 - r.top) / (r.height * 0.9));
+    prog = clamp((line - r.top) / (r.height * 0.7));
     if (best !== active) {
       active = best;
       for (const s of steps) s.classList.toggle("on", s === best);
-      for (const [name, sc] of Object.entries(scenes)) sc.g.style.opacity = name === best.dataset.scene ? 1 : 0;
     }
+    wake();
   }
+  function wake() { if (!raf) raf = requestAnimationFrame(frame); }
   window.addEventListener("scroll", measure, { passive: true });
   window.addEventListener("resize", measure);
-  measure();
-  let still = null;
-  (function frame(now) {
+  function frame(now) {
+    raf = 0;
+    const dt = last ? Math.min(0.05, (now - last) / 1000) : 0; last = now;
     const story = document.getElementById("story").getBoundingClientRect();
+    if (!active || story.top >= window.innerHeight || story.bottom <= 0) { last = 0; return; }   // asleep until a scroll
+    const want = active.dataset.scene;
+    if (want !== current) {
+      const was = current && scenes[current];
+      if (was && !reduced && was.shots && was.shots.some((s) => s.playing) && held < HOLD) {
+        held += dt; was.update(shown, now, dt); raf = requestAnimationFrame(frame); return;   // let its motion finish
+      }
+      leaving = was && !reduced && was.shots && was.shots.some((s) => s.playing) ? was : null; leftT = shown; leftFor = 0;
+      if (leaving === scenes[want]) leaving = null;
+      // reached from above, a drawing builds from nothing; from below, it is there already
+      const down = !from || steps.indexOf(active) > steps.indexOf(from);
+      held = 0; shown = down ? 0 : prog; current = want; from = active;
+      if (!down && scenes[want] && scenes[want].shots) scenes[want].shots.forEach((s) => s.jump(prog));
+      for (const [name, sc] of Object.entries(scenes)) sc.g.style.opacity = name === want ? 1 : 0;
+    }
+    const sc = scenes[want];
+    if (!sc) { last = 0; return; }
     // reduced motion: each scene is drawn once, finished and still, when it becomes active (and again as solves land)
-    const key = active && active.dataset.scene + done;
-    if (active && story.top < window.innerHeight && story.bottom > 0 && !(reduced && still === key)) { const sc = scenes[active.dataset.scene]; if (reduced) still = key; if (sc) sc.update(reduced ? 1 : prog, reduced ? 0 : now); }
-    requestAnimationFrame(frame);
-  })(performance.now());
+    if (reduced) {
+      const key = want + done;
+      if (still !== key) { still = key; sc.update(1, 0, 0); }
+      if (done < jobs.length) raf = requestAnimationFrame(frame); else last = 0;
+      return;
+    }
+    shown = Math.abs(prog - shown) <= PACE * dt ? prog : shown + Math.sign(prog - shown) * PACE * dt;
+    const busy = sc.update(shown, now, dt);
+    if (leaving) { leftFor += dt; leaving.update(leftT, now, dt); if (leftFor >= FADE || !leaving.shots.some((s) => s.moving)) leaving = null; }
+    // a scene that moves by itself (its update reads the clock) keeps asking for frames while the story is on screen
+    if (busy || leaving || shown !== prog || done < jobs.length || (sc.live !== undefined ? sc.live : sc.update.length > 1)) raf = requestAnimationFrame(frame);
+    else last = 0;
+  }
+  measure();
 })();

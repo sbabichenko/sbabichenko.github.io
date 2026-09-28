@@ -81,6 +81,20 @@
   const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
   const seg = (t, a, b) => ease(clamp((t - a) / (b - a)));
   const fade = (n, t) => { n.style.opacity = clamp(t); };
+  // A one-shot motion (a head turning, a sun going up): once the step's progress passes `at` it plays over `dur`
+  // seconds whatever the scroll speed, and runs back if the reader scrolls above `at` again. With reduced motion it
+  // jumps to where it is headed. step(t, dt) returns 0..1, not eased.
+  // a one-shot plays forward once the progress passes `at` going down, and back again if the reader scrolls above `at`
+  // while it is on screen. A drawing that leaves the screen is put straight back to its start (jump(0) below).
+  function oneShot(at, dur) {
+    let v = 0, to = 0;
+    return {
+      step(t, dt) { to = t >= at ? 1 : 0; v = reduced ? to : v + clamp(to - v, -dt / dur, dt / dur); return v; },
+      get moving() { return v !== to; },
+      get playing() { return to === 1 && v < 1; },     // on its way forward: worth finishing before the drawing is put away
+      jump(t) { to = v = t >= at ? 1 : 0; },           // reached from below: already where the progress puts it
+    };
+  }
   function pencil(pts, seed, wob = 0.6) {
     const r = mulberry32(seed);
     let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
@@ -153,9 +167,20 @@
       months.push(el("path", { d: `M${cx - 6},-7 L${cx + 6},7`, class: "pencil accent", "stroke-width": 1.8 }, cal));
     }
     text(cal, 0, -12, "six months", "mono");
-    return { g, update(t, now) {
+    // at the sixth month the person is gone: a small headstone where they stood, while everyone else carries on
+    const stone = el("g", { transform: `translate(${me.x} ${me.y + 12})` }, g);
+    el("path", { d: "M-9,0 L-9,-16 Q-9,-26 0,-26 Q9,-26 9,-16 L9,0 Z", class: "headfill" }, stone);
+    el("path", { d: "M-9,0 L-9,-16 Q-9,-26 0,-26 Q9,-26 9,-16 L9,0", class: "pencil", "stroke-width": 1.6, fill: "none" }, stone);
+    el("path", { d: "M0,-21 L0,-9 M-4,-17 L4,-17", class: "pencil soft", "stroke-width": 1.2 }, stone);
+    el("path", { d: "M-15,0.5 L15,0.5", class: "pencil soft", "stroke-width": 1.2 }, stone);
+    fade(stone, 0);
+    const end = oneShot(0.74, 1.5);                        // after the last month is crossed off; timed, so it is seen whole
+    return { g, shots: [end], update(t, now, dt) {
+      const v = now ? end.step(t, dt) : 0, gone = seg(v, 0, 0.45), rise = seg(v, 0.3, 1);
+      stone.setAttribute("transform", `translate(${me.x} ${me.y + 12 + 10 * (1 - rise)})`);
+      fade(stone, rise);
       crowd.forEach((c) => {
-        fade(c.p, seg(t, 0, 0.12) * (c.k ? 1 : 0.4));
+        fade(c.p, seg(t, 0, 0.12) * (c.k ? 1 - gone : 0.4));
         // everyone else keeps walking about their business
         const dx = c.k ? 0 : Math.sin(now / 1100 + c.ph) * 6, dy = c.k ? 0 : Math.abs(Math.sin(now / 280 + c.ph)) * -2;
         c.p.setAttribute("transform", `translate(${c.x + dx} ${c.y + dy})`);
@@ -180,9 +205,28 @@
       const p = person(g, x, y, "fillacc"); p.style.fill = "var(--accent)";
       crowd.push({ p, x, y, jx: (r() - 0.5) * 40, jy: (r() - 0.5) * 30, ja: (r() - 0.5) * 70, ph: r() * 6 });
     }
-    return { g, update(t, now) {
-      fade(sun, seg(t, 0, 0.15));
-      const pulse = 1 + 0.05 * Math.sin(now / 160) + 0.25 * seg(t, 0.3, 0.7);
+    const flash = el("circle", { cx: 300, cy: 150, r: 0, class: "suncore" }, g);
+    const ring = el("circle", { cx: 300, cy: 150, r: 0, class: "pencil warm", "stroke-width": 3, fill: "none" }, g);
+    const shards = [];
+    for (let k = 0; k < 30; ++k) {
+      const a = (k / 30) * 2 * Math.PI + (r() - 0.5) * 0.3, len = 8 + r() * 16, sp = 0.6 + r() * 0.8;
+      shards.push({ a, sp, s: el("path", { d: `M0,0 L${len},0`, class: "pencil warm", "stroke-width": 2 + r() * 2, "stroke-linecap": "round" }, g) });
+    }
+    [flash, ring].forEach((n) => fade(n, 0)); shards.forEach((q) => fade(q.s, 0));
+    const blast = oneShot(0.65, 1.6);                     // timed: seen whole however fast the page is scrolled
+    return { g, shots: [blast], update(t, now, dt) {
+      // it blows up as the reader moves on; with reduced motion it stays whole
+      const boom = now ? 1 - Math.pow(1 - blast.step(t, dt), 2) : 0;
+      fade(sun, seg(t, 0, 0.15) * (1 - seg(boom, 0.05, 0.3)));
+      sun.style.transformOrigin = "300px 150px";
+      fade(flash, boom > 0 ? Math.sin(Math.PI * seg(boom, 0, 0.5)) * 0.95 : 0); flash.setAttribute("r", 30 + 520 * seg(boom, 0, 0.5));
+      fade(ring, boom > 0 ? 1 - boom : 0); ring.setAttribute("r", 60 + 700 * boom);
+      shards.forEach((q) => {
+        const d = 40 + 620 * q.sp * boom;
+        q.s.setAttribute("transform", `translate(${300 + d * Math.cos(q.a)} ${150 + d * Math.sin(q.a)}) rotate(${(q.a * 180) / Math.PI})`);
+        fade(q.s, boom > 0 ? (1 - boom) * 0.9 : 0);
+      });
+      const pulse = 1 + 0.05 * Math.sin(now / 160) + 0.25 * seg(t, 0.3, 0.7) + 0.6 * seg(boom, 0, 0.2);
       outer.setAttribute("transform", `rotate(${now / 90 % 360}) scale(${pulse})`);
       inner.setAttribute("transform", `rotate(${-now / 60 % 360}) scale(${pulse})`);
       halo.setAttribute("r", 118 * pulse);
@@ -190,7 +234,8 @@
       crowd.forEach((c) => {
         fade(c.p, seg(t, 0.05, 0.2));
         const wob = Math.sin(now / 200 + c.ph);
-        c.p.setAttribute("transform", `translate(${c.x + chaos * (c.jx + wob * 6)} ${c.y + chaos * c.jy}) rotate(${chaos * (c.ja + wob * 12)})`);
+        const push = boom * boom * 60, ang = Math.atan2(c.y - 150, c.x - 300);
+        c.p.setAttribute("transform", `translate(${c.x + chaos * (c.jx + wob * 6) + push * Math.cos(ang)} ${c.y + chaos * c.jy + push * Math.sin(ang)}) rotate(${chaos * (c.ja + wob * 12) + boom * 90 * Math.sign(c.jx)})`);
       });
     } };
   })();
@@ -262,7 +307,7 @@
     });
     // how many beliefs of each order n players hold: n first-order, then each belief about another player (n - 1 choices)
     const counts = ["n", "n(n−1)", "n(n−1)²", "n(n−1)³"].map((c, i) => text(g, 28, 436 - i * 92, c, "label acc", "start"));
-    const countHead = text(g, 28, 100, "how many, n players", "mono", "start");
+    const countHead = text(g, 28, 100, "with n players", "mono", "start");
     const dots = text(g, 300, 58, "…", "label"); dots.style.fontSize = "34px";
     const cap = text(g, 300, 585, "forecasting the forecasts of others, without end", "mono");
     return { g, update(t, now) {
@@ -322,7 +367,7 @@
     const b = bars(g, w, 470, 22, "fillwarm");
     const xp = stroke(g, pencil(X.map((v, k) => [TX(k), 240 - v * 22]), 3), "", 2);
     const lw = text(g, 50, 540, "W: the primitive shocks", "label warmt", "start");
-    const lx = text(g, 50, 110, "X: what they push around", "label", "start");
+    const lx = text(g, 50, 110, "X: the physical world", "label", "start");
     return { g, update(t) {
       b.forEach((r, k) => fade(r, seg(t, 0.02 + (k / N) * 0.5, 0.06 + (k / N) * 0.5) * 0.8));
       xp.set(seg(t, 0.08, 0.62)); fade(lw, seg(t, 0.05, 0.2)); fade(lx, seg(t, 0.3, 0.45));
@@ -506,30 +551,65 @@
 
   // ------------------------------------------------------------------ scroll to scene, and the progress line
   const bar = document.getElementById("progress");
-  let active = null, prog = 0;
+  // A step's progress runs from 0 as it becomes the active step (its top at the reading line) to 1 once 70% of it has
+  // passed the line, so its drawing builds while the paragraph is read, on the way down as well as up. The drawing
+  // follows that progress no faster than PACE a second: a flick of the wheel is caught up over a moment, not skipped.
+  // A drawing whose one-shot motion is still playing forward stays up a moment longer (HOLD seconds at most), then
+  // finishes the motion as it fades out under the next. Frames are asked for only while something moves.
+  const PACE = 0.9, HOLD = 0.5, FADE = 0.7;
+  let active = null, prog = 0, shown = 0, current = null, held = 0, raf = 0, last = 0, still = null;
+  let leaving = null, leftT = 0, leftFor = 0, from = null;
   function measure() {
-    const vh = window.innerHeight;
+    const vh = window.innerHeight, line = window.readLine ? window.readLine() : vh * 0.55;
     let best = null, bestD = Infinity;
-    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - (window.readLine ? window.readLine() : vh * 0.55)); if (d < bestD) { bestD = d; best = s; } }
+    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - line); if (d < bestD) { bestD = d; best = s; } }
     if (bar) { const h = document.documentElement.scrollHeight - vh; bar.style.width = (h > 0 ? (100 * window.scrollY) / h : 0) + "%"; }
     if (!best) return;
     const r = best.getBoundingClientRect();
-    prog = clamp((vh * 0.85 - r.top) / (r.height * 0.9));
+    prog = clamp((line - r.top) / (r.height * 0.7));
     if (best !== active) {
       active = best;
       for (const s of steps) s.classList.toggle("on", s === best);
-      for (const [name, sc] of Object.entries(scenes)) sc.g.style.opacity = name === best.dataset.scene ? 1 : 0;
     }
+    wake();
   }
+  function wake() { if (!raf) raf = requestAnimationFrame(frame); }
   window.addEventListener("scroll", measure, { passive: true });
   window.addEventListener("resize", measure);
-  measure();
-  let last = performance.now(), still = null;
-  (function frame(now) {
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  function frame(now) {
+    raf = 0;
+    const dt = last ? Math.min(0.05, (now - last) / 1000) : 0; last = now;
     const story = document.getElementById("story").getBoundingClientRect();
+    if (!active || story.top >= window.innerHeight || story.bottom <= 0) {                   // asleep until a scroll, all reset
+      for (const sc of Object.values(scenes)) if (sc.shots) { sc.shots.forEach((s) => s.jump(0)); sc.update(0, now, 0); }
+      leaving = null; last = 0; return;
+    }
+    const want = active.dataset.scene;
+    if (want !== current) {
+      const was = current && scenes[current];
+      if (was && !reduced && was.shots && was.shots.some((s) => s.playing) && held < HOLD) {
+        held += dt; was.update(shown, now, dt); raf = requestAnimationFrame(frame); return;   // let its motion finish
+      }
+      leaving = was && !reduced && was.shots && was.shots.some((s) => s.playing) ? was : null; leftT = shown; leftFor = 0;
+      if (leaving === scenes[want]) leaving = null;
+      // reached from above, a drawing builds from nothing; from below, it is there already
+      const down = !from || steps.indexOf(active) > steps.indexOf(from);
+      held = 0; shown = down ? 0 : prog; current = want; from = active;
+      if (!down && scenes[want] && scenes[want].shots) scenes[want].shots.forEach((s) => s.jump(prog));
+      for (const [name, sc] of Object.entries(scenes)) sc.g.style.opacity = name === want ? 1 : 0;
+      // every drawing not on screen goes fully back to its start, so nothing is left half-played for later
+      for (const [name, sc] of Object.entries(scenes)) if (name !== want && sc !== leaving && sc.shots) { sc.shots.forEach((s) => s.jump(0)); sc.update(0, now, 0); }
+    }
+    const sc = scenes[want];
+    if (!sc) { last = 0; return; }
     // reduced motion: each scene is drawn once, finished and still, when it becomes active
-    if (active && story.top < window.innerHeight && story.bottom > 0 && !(reduced && still === active)) { const sc = scenes[active.dataset.scene]; if (reduced) still = active; if (sc) sc.update(reduced ? 1 : prog, reduced ? 0 : now, reduced ? 0 : dt); }
-    requestAnimationFrame(frame);
-  })(performance.now());
+    if (reduced) { if (still !== active) { still = active; sc.update(1, 0, 0); } last = 0; return; }
+    shown = Math.abs(prog - shown) <= PACE * dt ? prog : shown + Math.sign(prog - shown) * PACE * dt;
+    const busy = sc.update(shown, now, dt);
+    if (leaving) { leftFor += dt; leaving.update(leftT, now, dt); if (leftFor >= FADE || !leaving.shots.some((s) => s.moving)) { leaving.shots.forEach((s) => s.jump(0)); leaving.update(0, now, 0); leaving = null; } }
+    // a scene that moves by itself (its update reads the clock) keeps asking for frames while the story is on screen
+    if (busy || leaving || shown !== prog || (sc.live !== undefined ? sc.live : sc.update.length > 1)) raf = requestAnimationFrame(frame);
+    else last = 0;
+  }
+  measure();
 })();

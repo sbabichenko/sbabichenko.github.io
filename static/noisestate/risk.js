@@ -31,7 +31,8 @@
   // evaluated, not something the player believes, so it never shares the belief's solid-past, dashed-forecast style.
   // The dash carries that meaning, not the color: later sections draw the risk-averse equilibrium itself in solid blue.
   const RW = { stroke: "var(--accent)", "stroke-dasharray": "6 4", "stroke-width": 1.7, fill: "none" };
-  const hollow = (cx, cy, svg, r = 5) => el("circle", { r, cx, cy, fill: "var(--paper)", stroke: "var(--accent)", "stroke-width": 2.2 }, svg);
+  const HOLLOW = "color-mix(in srgb, var(--paper) 70%, transparent)";   // mostly hides the line under the ring, and shows the paper's grain
+  const hollow = (cx, cy, svg, r = 5) => el("circle", { r, cx, cy, fill: HOLLOW, stroke: "var(--accent)", "stroke-width": 2.2 }, svg);
   const size = (svg, H) => { const W = Math.max(240, svg.clientWidth || 500); svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("height", H); svg.innerHTML = ""; return W; };
 
   // ------------------------------------------------------------------ the header drawing: one shock, the #why figure's math at mu = 0
@@ -318,7 +319,16 @@
       const sub = d.rows.filter((r) => r.theta <= 1.8), elo = Math.min(...sub.map((r) => r.expected)), ehi = Math.max(...sub.map((r) => r.expected));
       const pad = (ehi - elo) * 0.25, a0 = elo - pad, a1 = ehi + pad;
       const Xi = (t) => ix + (t / 1.8) * iw, Yi = (v) => iy + ((a1 - v) / (a1 - a0)) * ih;
-      el("rect", { x: ix - 4, y: iy - 4, width: iw + 8, height: ih + 22, fill: "var(--paper)", stroke: "var(--rule)" }, svg);
+      // the inset is clear, on the textured paper: what is drawn so far is masked out under it, where a flat paper fill hid it
+      {
+        const under = el("g", { mask: "url(#eq-costs-inset)" });
+        while (svg.firstChild) under.appendChild(svg.firstChild);
+        const m = el("mask", { id: "eq-costs-inset", maskUnits: "userSpaceOnUse", x: 0, y: 0, width: W, height: H }, el("defs", {}, svg));
+        el("rect", { x: 0, y: 0, width: W, height: H, fill: "#fff" }, m);
+        el("rect", { x: ix - 4, y: iy - 4, width: iw + 8, height: ih + 22, fill: "#000" }, m);
+        svg.appendChild(under);
+      }
+      el("rect", { x: ix - 4, y: iy - 4, width: iw + 8, height: ih + 22, fill: "none", stroke: "var(--rule)" }, svg);
       el("path", { class: "curve", d: sub.map((r, j) => (j ? "L" : "M") + Xi(r.theta).toFixed(1) + "," + Yi(r.expected).toFixed(1)).join(""), stroke: "var(--ink)", "stroke-width": 1.6 }, svg);
       el("line", { class: "zero", x1: ix, x2: ix + iw, y1: Yi(base.expected), y2: Yi(base.expected) }, svg);
       el("line", { class: "zero", x1: Xi(emin.theta), x2: Xi(emin.theta), y1: Yi(emin.expected), y2: iy + ih }, svg);
@@ -398,7 +408,7 @@
         if (up && v) el("text", { x: 3, y: Yp(v) + 3, opacity: 0.75 }, svg).textContent = v;
       }
     };
-    const ring = (svg, cx, cy, col) => el("circle", { cx, cy, r: 5, fill: "var(--paper)", stroke: col, "stroke-width": 2 }, svg);
+    const ring = (svg, cx, cy, col) => el("circle", { cx, cy, r: 5, fill: HOLLOW, stroke: col, "stroke-width": 2 }, svg);
     function plane(id, dens, col, x0) {                                // a density over both shocks, shaded: to come across, seen up
       const svg = panel(id), c = (2 * R) / NH;
       let mx = 0; const v = [];

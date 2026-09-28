@@ -1,7 +1,8 @@
-/* The game explorer inside the site: every rule is scoped to .explorer, the colours are tokens on it, and the dark
+/* (boxes, cards, formulas and fields are clear, --panel-2: transparent, so the site's paper runs through them)
+   The game explorer inside the site: every rule is scoped to .explorer, the colours are tokens on it, and the dark
    theme follows the site's own switch (html.dark), so the page reads as part of the site. */
 .explorer {
-  --bg: transparent; --panel: rgba(255, 255, 255, 0.62); --panel-2: rgba(0, 0, 0, 0.028); --border: rgba(0, 0, 0, 0.09);
+  --bg: transparent; --panel: rgba(255, 255, 255, 0.62); --panel-2: transparent; --border: rgba(0, 0, 0, 0.09);
   --text: #1b1b1f; --muted: #52525b; --faint: #8a8a93;
   --accent: #1f3fd0; --accent-soft: rgba(31, 63, 208, 0.1); --accent-ink: #ffffff;
   --ok: #15803d; --ok-soft: rgba(21, 128, 61, 0.1); --warn: #a16207; --warn-soft: rgba(202, 138, 4, 0.13);
@@ -13,7 +14,7 @@
   max-width: 1120px; margin: 0 auto; padding: 5.5rem 16px 48px;
 }
 .dark .explorer {
-  --panel: rgba(255, 255, 255, 0.035); --panel-2: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.09);
+  --panel: rgba(255, 255, 255, 0.035); --panel-2: transparent; --border: rgba(255, 255, 255, 0.09);
   --text: #ececef; --muted: #a1a1aa; --faint: #71717a;
   --accent: #8fb0ff; --accent-soft: rgba(143, 176, 255, 0.14); --accent-ink: #0b1220;
   --ok: #4ade80; --ok-soft: rgba(74, 222, 128, 0.12); --warn: #facc15; --warn-soft: rgba(250, 204, 21, 0.12);
@@ -94,7 +95,7 @@
 
 /* the status bar stays under the site header while the results scroll */
 .explorer #statusbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; position: sticky; top: 4rem; z-index: 5;
-  background: var(--panel); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  background: var(--ground) var(--paper-img) 0 var(--paper-y, 0px) / 768px 768px fixed; background-blend-mode: var(--patch-blend);   /* a patch of the paper */
   border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; margin-bottom: 16px; }
 .explorer .chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 2px 10px; font-size: 0.82rem; font-weight: 600; white-space: nowrap; }
 .explorer .rally { width: 40px; height: 14px; flex: none; }

@@ -12,6 +12,54 @@
           tabindex="0"
           aria-label="Switch to dark theme"
         ></div>
+        <style>
+          /* brown paper (a CC0 scan from ambientCG, reduced to its surface and fibers) is the page's own background: it scrolls with the page and stays behind the content, so it costs
+             nothing to scroll (an overlay blended over everything had to be recomposited on every frame) */
+          html :is(body, header.blur-header) { background-image: var(--paper-img); background-size: 768px 768px; background-blend-mode: multiply; }
+          html.dark :is(body, header.blur-header) { background-blend-mode: screen; }
+          /* a patch of the same paper, for the few things that must hide what passes under them (a sticky drawing on a
+             phone, a bar that stays put, a popup): background: var(--ground) var(--paper-img) 0 0 / 768px 768px with
+             background-blend-mode: var(--patch-blend). Everything else is clear, so the page's own paper runs through it.
+             Patches pin their paper to the window and shift it by the scroll (--paper-y), so a pill or bar that stays put
+             still shows the page's paper moving under it, lined up with the page around it. */
+          html:not(.dark) { --ground: #ecdebe; --patch-blend: multiply; }
+          html.dark { --ground: #1f2022; --patch-blend: screen; }
+          /* in light mode the paper also gets a paper's own warm tone: the site's near-white cream is what made the grain read as dirt */
+          html:not(.dark), html:not(.dark) :is(.home, .opening, .thesis, .gatehow) { --paper: #ecdebe; --sheet: #f0e4c8; }
+          html:not(.dark) body { background-color: var(--paper); }
+          /* the paper runs through everything: the bar at the top is paper, cards and panels are clear (outlines only), and
+             pictures, plots and canvases are multiplied onto it, so their white ground becomes the paper and their ink stays ink */
+          html :is(.panel, .statusbar, button.tab:not([aria-selected="true"]), article.demo) { background-color: transparent !important; }
+          html header.blur-header { backdrop-filter: none; -webkit-backdrop-filter: none; background-color: var(--paper, #fffff0);
+            border-bottom: 0; box-shadow: none; }
+          html.dark header.blur-header { background-color: #1f2022; }
+          /* the bar stays put, but its paper is the page's: shifted with the scroll, so the grain moves under it as it does
+             everywhere else and lines up with the page at its edge */
+          html header.blur-header { background-position: 0 var(--paper-y, 0px); }
+          /* in place of a line under the bar: a soft band where whatever scrolls up (text, drawings, the mesh) blurs and fades
+             into the bar's paper, so nothing is cut off at a hard edge. It comes in over the first 44px of scroll: at the top of
+             the page nothing has scrolled under the bar, and the band would only wash out the first line below it */
+          html header.blur-header::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 44px; pointer-events: none;
+            background-color: inherit; background-image: inherit; background-size: inherit; background-blend-mode: inherit;
+            background-position: 0 calc(var(--paper-y, 0px) - var(--hdr-h, 56px));
+            -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+            -webkit-mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent);
+                    mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent); opacity: var(--hdr-fade, 0); }
+          html:not(.dark) figure { background-color: transparent; }
+          html:not(.dark) :is(figure img, .shot img, .shot canvas, .panel canvas, .js-plotly-plot, main img) { mix-blend-mode: multiply; }
+          html:not(.dark) { --paper-img: url({{ get_url(path='images/paper/brown-light.webp') }}); }
+          html.dark { --paper-img: url({{ get_url(path='images/paper/brown-dark.webp') }}); }
+        </style>
+        <script>
+          (() => {
+            const root = document.documentElement; let queued = false;
+            const hdr = document.querySelector("header.blur-header");
+            const put = () => { queued = false; root.style.setProperty("--paper-y", -(window.scrollY % 768) + "px"); if (hdr) root.style.setProperty("--hdr-h", hdr.offsetHeight + "px");
+              root.style.setProperty("--hdr-fade", Math.min(1, window.scrollY / 44).toFixed(3)); };
+            addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(put); } }, { passive: true });
+            put();
+          })();
+        </script>
       </div>
       {% if config.extra.menu %}
       <div

@@ -25,6 +25,18 @@
   const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
   const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
   const seg = (t, a, b) => ease(clamp((t - a) / (b - a)));   // 0 before a, 1 after b
+  // A one-shot motion (a part sliding home, a line being drawn): once the step's progress passes `at` it plays over
+  // `dur` seconds whatever the scroll speed, and runs back if the reader scrolls above `at` again. With reduced
+  // motion it jumps to where it is headed. step(t, dt) returns 0..1, not eased.
+  function oneShot(at, dur) {
+    let v = 0, to = 0;
+    return {
+      step(t, dt) { to = t >= at ? 1 : 0; v = reduced ? to : v + clamp(to - v, -dt / dur, dt / dur); return v; },
+      get moving() { return v !== to; },
+      get playing() { return to === 1 && v < 1; },     // on its way forward: worth finishing before the drawing is put away
+      jump(t) { to = v = t >= at ? 1 : 0; },           // reached from below: already where the progress puts it
+    };
+  }
 
   // a pencil line through points: each segment bowed a little, deterministically, so it reads as drawn
   function pencil(pts, seed, wob = 1.2) {
@@ -82,18 +94,24 @@
       q.p = stroke(sv, pencil(walk(r), seed, 0.6), q.acc ? "accent" : "", q.acc ? 1.5 : 1.1);
       q.t = 0;
     }
-    let last = performance.now();
+    let last = performance.now(), ticking = 0;
     function tick(now) {
+      ticking = 0;
       const dt = Math.min(0.05, (now - last) / 1000); last = now;
-      if (!reduced && cover.getBoundingClientRect().bottom > 0) for (const q of paths) {
+      if (cover.getBoundingClientRect().bottom <= 0) return;      // scrolled past: asleep until the cover is back
+      for (const q of paths) {
         q.t += q.speed * dt; q.p.set(q.t);
         const f = q.t < 1.25 ? 1 : Math.max(0, 1 - (q.t - 1.25) / 0.3);
         q.p.a.style.opacity = (q.acc ? 0.45 : 0.26) * f; q.p.b.style.opacity = (q.acc ? 0.22 : 0.1) * f;
         if (q.t > 1.55) renew(q);
       }
-      requestAnimationFrame(tick);
+      ticking = requestAnimationFrame(tick);
     }
-    if (reduced) paths.forEach((q) => q.p.set(1)); else requestAnimationFrame(tick);
+    if (reduced) paths.forEach((q) => q.p.set(1));
+    else {
+      ticking = requestAnimationFrame(tick);
+      window.addEventListener("scroll", () => { if (!ticking && cover.getBoundingClientRect().bottom > 0) { last = performance.now(); ticking = requestAnimationFrame(tick); } }, { passive: true });
+    }
     let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { lay(); if (reduced) paths.forEach((q) => q.p.set(1)); }, 200); });
   }
 
@@ -156,21 +174,26 @@
       let y = 430;
       for (let x = 60; x <= 430; x += 5) { pts.push([x, y]); y += gauss(r) * 5; y = clamp(y, 380, 480); }
       const line = stroke(g, pencil(pts, 78, 0.6), "accent", 1.8);
+      const write = oneShot(0.08, 2.6);                              // the line is written at the pencil's pace, not the wheel's
       return {
-        g,
-        update(t) {
-          const q = seg(t, 0.05, 0.85);
+        g, live: false, shots: [write],
+        update(t, now, dt) {
+          const q = ease(write.step(t, dt));
           line.set(q);
           const L = line.a.getTotalLength(), pt = line.a.getPointAtLength(L * q);
           body.setAttribute("transform", `translate(${pt.x},${pt.y}) scale(0.42) rotate(140) translate(-500,-305)`);
+          return write.moving;
         },
       };
     }
+    // the graphite's flight and slide home is one action, timed, so it is seen whole however fast the page is scrolled
+    const slide = oneShot(0.12, 1.7);
     return {
-      g,
-      update(t) {
+      g, live: false, shots: [slide],
+      update(t, now, dt) {
+        const kg = ease(slide.step(t, dt));
         parts.forEach((p, i) => {
-          const k = seg(t, 0.05 + 0.1 * i, 0.4 + 0.1 * i), off = p.path ? p.path(k) : [p.from[0] * (1 - k), p.from[1] * (1 - k)];
+          const k = p.path ? kg : seg(t, 0.05 + 0.1 * i, 0.4 + 0.1 * i), off = p.path ? p.path(k) : [p.from[0] * (1 - k), p.from[1] * (1 - k)];
           p.g.setAttribute("transform", `translate(${off[0]},${off[1]})`);
           if (p.rod) {                                                  // solid while it travels
             const inside = seg(k, 0.9, 1);
@@ -188,6 +211,7 @@
           fade(p.lead, seg(t, 0.2, 0.5) * 0.8);
         });
         fade(read, seg(t, 0.72, 0.9));
+        return slide.moving;
       },
     };
   }
@@ -560,38 +584,63 @@
   })();
 
   // ------------------------------------------------------------------ scroll to scene
-  let active = null, prog = 0;
+  // A step's progress runs from 0 as it becomes the active step (its top at the reading line) to 1 once 70% of it has
+  // passed the line, so its drawing builds while the paragraph is read, on the way down as well as up. The drawing
+  // follows that progress no faster than PACE a second: a flick of the wheel is caught up over a moment, not skipped.
+  // A drawing whose one-shot motion is still playing forward stays up a moment longer (HOLD seconds at most), then
+  // finishes the motion as it fades out under the next. Frames are asked for only while something moves.
+  const PACE = 0.9, HOLD = 0.5, FADE = 0.7;
+  let active = null, prog = 0, shown = 0, current = null, held = 0, raf = 0, last = 0, still = null;
+  let leaving = null, leftT = 0, leftFor = 0, from = null;
   function measure() {
-    const vh = window.innerHeight;
+    const vh = window.innerHeight, line = window.readLine ? window.readLine() : vh * 0.55;
     let best = null, bestD = Infinity;
     for (const s of steps) {
       const r = s.getBoundingClientRect();
-      const mid = r.top + r.height / 2, d = Math.abs(mid - (window.readLine ? window.readLine() : vh * 0.55));
+      const mid = r.top + r.height / 2, d = Math.abs(mid - line);
       if (d < bestD) { bestD = d; best = s; }
     }
     if (!best) return;
     const r = best.getBoundingClientRect();
-    prog = clamp((vh * 0.85 - r.top) / (r.height * 0.9));
+    prog = clamp((line - r.top) / (r.height * 0.7));
     if (best !== active) {
       active = best;
       for (const s of steps) s.classList.toggle("on", s === best);
-      for (const [name, sc] of Object.entries(scenes)) sc.g.style.opacity = name === best.dataset.scene ? 1 : 0;
     }
+    wake();
   }
+  function wake() { if (!raf) raf = requestAnimationFrame(frame); }
   window.addEventListener("scroll", measure, { passive: true });
   window.addEventListener("resize", measure);
-  measure();
-  let last = performance.now(), still = null;
   function frame(now) {
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    raf = 0;
+    const dt = last ? Math.min(0.05, (now - last) / 1000) : 0; last = now;
     const story = active && active.closest(".story").getBoundingClientRect();
-    // reduced motion: each scene is drawn once, finished and still, when it becomes active
-    if (active && story.top < window.innerHeight && story.bottom > 0 && !(reduced && still === active)) {
-      const sc = scenes[active.dataset.scene];
-      if (reduced) still = active;
-      if (sc) sc.update(reduced ? 1 : prog, reduced ? 0 : now, reduced ? 0 : dt);
+    if (!active || story.top >= window.innerHeight || story.bottom <= 0) { last = 0; return; }   // asleep until a scroll
+    const want = active.dataset.scene;
+    if (want !== current) {
+      const was = current && scenes[current];
+      if (was && !reduced && was.shots && was.shots.some((s) => s.playing) && held < HOLD) {
+        held += dt; was.update(shown, now, dt); raf = requestAnimationFrame(frame); return;   // let its motion finish
+      }
+      leaving = was && !reduced && was.shots && was.shots.some((s) => s.playing) ? was : null; leftT = shown; leftFor = 0;
+      if (leaving === scenes[want]) leaving = null;
+      // reached from above, a drawing builds from nothing; from below, it is there already
+      const down = !from || steps.indexOf(active) > steps.indexOf(from);
+      held = 0; shown = down ? 0 : prog; current = want; from = active;
+      if (!down && scenes[want] && scenes[want].shots) scenes[want].shots.forEach((s) => s.jump(prog));
+      for (const [name, sc] of Object.entries(scenes)) sc.g.style.opacity = name === want ? 1 : 0;
     }
-    requestAnimationFrame(frame);
+    const sc = scenes[want];
+    if (!sc) { last = 0; return; }
+    // reduced motion: each scene is drawn once, finished and still, when it becomes active
+    if (reduced) { if (still !== active) { still = active; sc.update(1, 0, 0); } last = 0; return; }
+    shown = Math.abs(prog - shown) <= PACE * dt ? prog : shown + Math.sign(prog - shown) * PACE * dt;
+    const busy = sc.update(shown, now, dt);
+    if (leaving) { leftFor += dt; leaving.update(leftT, now, dt); if (leftFor >= FADE || !leaving.shots.some((s) => s.moving)) leaving = null; }
+    // a scene that moves by itself (its update reads the clock) keeps asking for frames while the story is on screen
+    if (busy || leaving || shown !== prog || (sc.live !== undefined ? sc.live : sc.update.length > 1)) raf = requestAnimationFrame(frame);
+    else last = 0;
   }
-  requestAnimationFrame(frame);
+  measure();
 })();
