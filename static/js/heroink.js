@@ -1,5 +1,5 @@
 // The ink behind the name: a decision mesh drawing itself on a smooth field, edges only, faint.
-// Same engine as the /mesh page (static/mesh/decision-mesh.js); here it is ornament, so it runs
+// Same engine as the geometry race on /decision-mesh (static/mesh/decision-mesh.js); here it is ornament, so it runs
 // slowly, brightens each new cut for a moment, and starts over on a new surface when it fills in.
 //
 // Toys on top. The edges near the pointer brighten, like a lens. A click or tap raises a sharp bump in the data

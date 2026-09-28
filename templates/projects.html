@@ -43,106 +43,55 @@
         </a>
       </section>
 
-      <section>
-        <h2>Interactive Demos</h2>
-        <div class="demos">
-          <a class="demo" href="{{ get_url(path='noisestate/') }}">
-            <div class="shot">
-              <img class="img-light" loading="lazy" decoding="async" src="{{ get_url(path='images/card-noisestate-light.webp') }}" alt="" width="480" height="240" />
-              <img class="img-dark" loading="lazy" decoding="async" src="{{ get_url(path='images/card-noisestate-dark.webp') }}" alt="" width="480" height="240" />
-            </div>
-            <div class="body">
-              <h3>Noise-State Game Explorer</h3>
-              <p>Actions move the state, the state sets what others observe, and what they observe sets
-                their next actions. My dissertation keeps that loop intact by tracking beliefs about the
-                primitive shocks. Move a slider and the equilibrium is solved again in about a second.</p>
-              <span class="go">Solve a game <span class="arrow">&rarr;</span></span>
-            </div>
-          </a>
-          <a class="demo" href="{{ get_url(path='gate/') }}">
-            <div class="shot">
-              <img class="img-light" loading="lazy" decoding="async" src="{{ get_url(path='images/card-gate-light.webp') }}" alt="" width="480" height="240" />
-              <img class="img-dark" loading="lazy" decoding="async" src="{{ get_url(path='images/card-gate-dark.webp') }}" alt="" width="480" height="240" />
-            </div>
-            <div class="body">
-              <h3>Decision Mesh</h3>
-              <p>Thousands of coins, each flipped a few times, and odds that change somewhere on the square.
-                The estimator adds detail only where a false-discovery gate says the flips justify it, then
-                stops on its own. It separates the odds from each coin's own effect and from the noise of the flips.
-                Draw the odds yourself and see what it can find.</p>
-              <span class="go">Draw your own odds <span class="arrow">&rarr;</span></span>
-            </div>
-          </a>
-          <a class="demo slim wide" href="{{ get_url(path='mesh/') }}">
-            <div class="body">
-              <h3>Decision Mesh Geometries Compared</h3>
-              <p>Freeform triangles, right triangles, rectangles and a regression tree, grown on the same noisy surface
-                one greedy cut at a time, with the same number of free parameters each.</p>
-              <span class="go">Watch four meshes grow <span class="arrow">&rarr;</span></span>
-            </div>
-          </a>
-        </div>
-      </section>
-
-      <section>
-        <h2>Illustrated Explanations</h2>
-        <div class="demos stories">
-          <a class="demo slim" href="{{ get_url(path='dissertation/idea/') }}">
-            <div class="body">
-              <h3>The Noise-State, Explained</h3>
-              <p>Why knowing what others know changes everything, starting from a doctor&rsquo;s diagnosis and the sun
-                exploding, and how the dissertation handles beliefs about beliefs.</p>
-              <span class="go">Start with the story <span class="arrow">&rarr;</span></span>
-            </div>
-          </a>
-          <a class="demo slim" href="{{ get_url(path='dissertation/wedge/') }}">
-            <div class="body">
-              <h3>The Price of Changing Someone&rsquo;s Mind</h3>
-              <p>The information wedge: what it is worth to move an opponent&rsquo;s beliefs, why it vanishes when the
-                loop is cut, and why starving one player of information can help everyone.</p>
-              <span class="go">See the wedge solved <span class="arrow">&rarr;</span></span>
-            </div>
-          </a>
-          <a class="demo slim" href="{{ get_url(path='noisestate/how/') }}">
-            <div class="body">
-              <h3>How the Noise-State Solver Works</h3>
-              <p>What the explorer does when it solves a game: kernels on a grid, one best response, the fixed point and
-                its acceleration, the checks, drawn from solves run in your browser.</p>
-              <span class="go">Watch a solve <span class="arrow">&rarr;</span></span>
-            </div>
-          </a>
-          <a class="demo slim" href="{{ get_url(path='gate/how/') }}">
-            <div class="body">
-              <h3>The False-Discovery Gate, Step by Step</h3>
-              <p>How the decision mesh decides where the data justify more detail, and when to stop, drawn from a live run
-                in your browser.</p>
-              <span class="go">Follow one fit <span class="arrow">&rarr;</span></span>
-            </div>
-          </a>
-          <a class="demo slim" href="{{ get_url(path='gate/deep/') }}">
-            <div class="body">
-              <h3>The Decision Mesh, in Detail</h3>
-              <p>One level further down: how a split spreads, how a candidate is scored and corrected, how the null is
-                fitted, and how the two engines differ, drawn from live runs in your browser.</p>
-              <span class="go">Go through the algorithm <span class="arrow">&rarr;</span></span>
-            </div>
-          </a>
-        </div>
-      </section>
-
       <section id="projects">
         <h2>Projects</h2>
+        <div class="demos">
+          <article class="demo">
+            <a class="shot" href="{{ get_url(path='noisestate/') }}" tabindex="-1" aria-hidden="true">
+              <img class="img-light" loading="lazy" decoding="async" src="{{ get_url(path='images/card-noisestate-light.webp') }}" alt="" width="480" height="240" />
+              <img class="img-dark" loading="lazy" decoding="async" src="{{ get_url(path='images/card-noisestate-dark.webp') }}" alt="" width="480" height="240" />
+            </a>
+            <div class="body">
+              <h3><a href="{{ get_url(path='noisestate/') }}">Noise-State Calculus</a></h3>
+              <p>My dissertation. Actions move the state, the state sets what others observe, and what they observe sets
+                their next actions. I keep that loop intact by tracking beliefs about the primitive shocks. Move a slider
+                and the equilibrium is solved again in about a second.</p>
+              <a class="go" href="{{ get_url(path='noisestate/') }}">Solve a game <span class="arrow">&rarr;</span></a>
+              <div class="more">
+                <a href="{{ get_url(path='dissertation/idea/') }}">The noise-state, explained</a>
+                <a href="{{ get_url(path='dissertation/wedge/') }}">The price of changing someone&rsquo;s mind</a>
+                <a href="{{ get_url(path='dissertation/') }}">Read the dissertation</a>
+                <a href="https://pypi.org/project/noisestate/" target="_blank" rel="noopener">PyPI</a>
+                <a href="https://github.com/sbabichenko/noisestate" target="_blank" rel="noopener">GitHub</a>
+              </div>
+            </div>
+          </article>
+          <article class="demo">
+            <a class="shot" href="{{ get_url(path='decision-mesh/') }}" tabindex="-1" aria-hidden="true">
+              <img class="img-light" loading="lazy" decoding="async" src="{{ get_url(path='images/card-gate-light.webp') }}" alt="" width="480" height="240" />
+              <img class="img-dark" loading="lazy" decoding="async" src="{{ get_url(path='images/card-gate-dark.webp') }}" alt="" width="480" height="240" />
+            </a>
+            <div class="body">
+              <h3><a href="{{ get_url(path='decision-mesh/') }}">Decision Mesh</a></h3>
+              <p>Thousands of coins, each flipped a few times, and odds that change somewhere on the square.
+                The estimator adds detail only where a false-discovery gate says the flips justify it, then
+                stops on its own. It separates the odds from each coin's own effect and from the noise of the flips.</p>
+              <a class="go" href="{{ get_url(path='decision-mesh/') }}">Draw your own odds <span class="arrow">&rarr;</span></a>
+              <div class="more">
+                <a href="{{ get_url(path='decision-mesh/detail/') }}">The algorithm in detail</a>
+                <a href="https://github.com/sbabichenko/triangular-decision-mesh" target="_blank" rel="noopener">Right triangles on GitHub</a>
+                <a href="https://github.com/sbabichenko/rectangular-decision-mesh" target="_blank" rel="noopener">Rectangles on GitHub</a>
+              </div>
+            </div>
+          </article>
+        </div>
         <div class="work">
-          {% for project in data.project %}
-          <article class="item{% if project.detour %} with-still{% endif %}">
+          {% for project in data.project %}{% if project.list %}
+          <article class="item">
             <div>
               <h3>{{ project.name }}</h3>
               <p>{{ project.desc }}</p>
             </div>
-            {%- if project.detour %}
-            <a class="dstill" href="{{ get_url(path='dissertation/') }}#detour" aria-label="The detour map: ninety years of economics going around one problem">
-              <svg data-detour="still" aria-hidden="true"></svg></a>
-            {%- endif %}
             <div class="foot">
             <div class="tags">{% for tag in project.tags %}<span>{{ tag }}</span>{% endfor %}</div>
             <div class="out">
@@ -155,7 +104,7 @@
             </div>
             </div>
           </article>
-          {% endfor %}
+          {% endif %}{% endfor %}
         </div>
       </section>
 

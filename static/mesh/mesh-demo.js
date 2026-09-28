@@ -1,10 +1,15 @@
-// The Decision Mesh demo: noisy data from a chosen surface, fitted four ways with the same number of free parameters:
-// freeform triangles (decision-mesh.js), right triangles (right-mesh.js), rectangles (rect-mesh.js) and a best-first
-// regression tree, drawn side by side with the truth, with their error curves.
+// The geometry race on /decision-mesh ("Why Right Triangles"): noisy data from a surface, fitted four ways with the
+// same number of free parameters: freeform triangles (decision-mesh.js), right triangles (right-mesh.js), rectangles
+// (rect-mesh.js) and a best-first regression tree, drawn side by side with the truth. Its elements' ids carry the
+// prefix race-, since the live fit on the same page has a truth canvas, a status bar and mesh-line switch of its own.
+// The race has no settings on the page: surface, points, noise, exploration, aspect limit, minimum points and speed
+// take the defaults below, the freeform candidates are not refreshed, and there is no error chart.
 (function () {
   "use strict";
-  const $ = (id) => document.getElementById(id);
-  const root = document.querySelector(".explorer");
+  const $ = (id) => document.getElementById("race-" + id);
+  const root = document.getElementById("race") || document.querySelector(".explorer");
+  const DEFAULTS = { surface: "cliff", npts: 5000, noise: 0.5, eps: 0.1, aspect: 5, minpts: 3, speed: 1 };
+  const val = (id) => String(DEFAULTS[id]);
   const css = (name) => getComputedStyle(root).getPropertyValue(name).trim();
   const isDark = () => document.documentElement.classList.contains("dark");
 
@@ -139,7 +144,7 @@
     return n ? Math.sqrt(s / n) : NaN;
   }
 
-  // colour: a diverging ramp through the page's background tone
+  // color: a diverging ramp through the page's background tone
   function ramp() {
     const hex = (h) => [1, 3, 5].map((k) => parseInt(h.slice(k, k + 2), 16));
     const stops = isDark()
@@ -180,29 +185,22 @@
   let gMesh = new Float32Array(D * D), gRight = new Float32Array(D * D), gRect = new Float32Array(D * D), gTree = new Float32Array(D * D);
   let X, Y, sigma;
 
-  function readHash() {
-    const h = new URLSearchParams(location.hash.slice(1));
-    const s = h.get("surface");
-    $("surface").value = s && SURFACES[s] ? s : "cliff";
-  }
-  function writeHash() { history.replaceState(null, "", "#surface=" + $("surface").value); }
-
   let seed = 7;
   function reset(newSeed) {
     if (newSeed) seed = (seed * 1103515245 + 12345) >>> 0;
-    const rng = mulberry32(seed), n = +$("npts").value, f = SURFACES[$("surface").value].f;
-    sigma = +$("noise").value;
+    const rng = mulberry32(seed), n = +val("npts"), f = SURFACES[val("surface")].f;
+    sigma = +val("noise");
     X = new Float64Array(2 * n); Y = new Float64Array(n);
     for (let i = 0; i < n; ++i) {
       const x = LO + (HI - LO) * rng(), y = LO + (HI - LO) * rng();
       X[2 * i] = x; X[2 * i + 1] = y; Y[i] = f(x, y) + sigma * gauss(rng);
     }
     DM.reset();
-    mesh = new DM.DecisionMesh(X, Y, { maxAspectRatio: +$("aspect").value, minPoints: +$("minpts").value, refresh: $("refresh").checked, rng: mulberry32(seed + 1) });
+    mesh = new DM.DecisionMesh(X, Y, { maxAspectRatio: +val("aspect"), minPoints: +val("minpts"), refresh: false, rng: mulberry32(seed + 1) });
     TM.reset();
-    right = new TM.RightMesh(X, Y, { depth: 4, minPoints: +$("minpts").value });
+    right = new TM.RightMesh(X, Y, { depth: 4, minPoints: +val("minpts") });
     RM.reset();
-    rect = new RM.RectMesh(X, Y, { grid: 4, minPoints: +$("minpts").value, maxAspect: +$("aspect").value, rng: mulberry32(seed + 2) });
+    rect = new RM.RectMesh(X, Y, { grid: 4, minPoints: +val("minpts"), maxAspect: +val("aspect"), rng: mulberry32(seed + 2) });
     tree = new Tree(X, Y);
     truth = truthGrid(f);
     vmax = 0; for (const v of truth) vmax = Math.max(vmax, Math.abs(v)); vmax = vmax || 1;
@@ -314,7 +312,8 @@
     $("scale").innerHTML = `${(-vmax).toFixed(1)} <i style="background:linear-gradient(90deg,${stops.join(",")})"></i> ${vmax.toFixed(1)}`;
   }
   function drawCurve() {
-    const c = $("cvcurve"); fitCanvas(c);
+    const c = $("cvcurve"); if (!c) return;   // the race on /decision-mesh has no error chart
+    fitCanvas(c);
     const ctx = c.getContext("2d"), W = c.width, H = c.height, dpr = W / c.getBoundingClientRect().width || 1;
     ctx.clearRect(0, 0, W, H);
     const L = 44 * dpr, R = 12 * dpr, T = 12 * dpr, B = 26 * dpr;
@@ -367,7 +366,7 @@
   function advance(k, budget) {
     const t0 = performance.now();
     let did = 0;
-    const eps = +$("eps").value;
+    const eps = +val("eps");
     for (let i = 0; i < k; ++i) {
       if (mesh.activeFaces.size >= MAX_PIECES()) { S.done = true; break; }
       const r = mesh.step(eps);
@@ -377,7 +376,7 @@
     }
     if (did) stepMs = 0.8 * stepMs + 0.2 * ((performance.now() - t0) / did);
     // the site's tally counts a run when it starts, so the footer is not still at nothing while the meshes grow
-    if (did && !S.counted && window.siteTally) { S.counted = true; window.siteTally("grow", 3, `three meshes and a tree growing on the ${SURFACES[$("surface").value].name} surface`); }
+    if (did && !S.counted && window.siteTally) { S.counted = true; window.siteTally("grow", 3, `three meshes and a tree growing on the ${SURFACES[val("surface")].name} surface`); }
     sync(); record(); draw();
     const h = S.history[S.history.length - 1];
     const names = ["freeform triangles", "right triangles", "rectangles", "the tree"], errs = [h.m, h.q, h.r, h.t];
@@ -395,24 +394,11 @@
   function loop() {
     if (!S.running) return;
     if (!onScreen) { waiting = true; return; }
-    advance(+$("speed").value, 40);
+    advance(+val("speed"), 40);
     if (S.running) requestAnimationFrame(loop);
   }
 
   // ------------------------------------------------------------------ wiring
-  $("surface").innerHTML = Object.entries(SURFACES).map(([k, s]) => `<option value="${k}">${s.name}</option>`).join("");
-  readHash();
-  const show = () => {
-    $("noiseval").textContent = (+$("noise").value).toFixed(2);
-    $("epsval").textContent = (+$("eps").value).toFixed(2);
-    $("aspectval").textContent = (+$("aspect").value).toFixed(1);
-    $("speedval").textContent = $("speed").value + ($("speed").value === "1" ? " step" : " steps");
-    $("minptsval").textContent = $("minpts").value;
-  };
-  show();
-  for (const id of ["noise", "eps", "aspect", "speed", "minpts"]) $(id).addEventListener("input", show);
-  for (const id of ["surface", "npts"]) $(id).addEventListener("change", () => { writeHash(); reset(false); });
-  for (const id of ["noise", "aspect", "minpts"]) $(id).addEventListener("change", () => reset(false));
   $("resetbtn").onclick = () => reset(true);
   $("stepbtn").onclick = () => { S.running = false; $("playbtn").textContent = "Play"; if (S.done) reset(false); advance(1, 1e9); };
   $("playbtn").onclick = () => {
@@ -420,16 +406,13 @@
     if (S.done) reset(false);
     S.running = true; $("playbtn").textContent = "Pause"; setStatus("busy", "Growing"); requestAnimationFrame(loop);
   };
-  $("refresh").onchange = () => reset(false);
   $("showedges").onchange = draw; $("showpts").onchange = () => { drawTruth(); draw(); };
-  window.addEventListener("hashchange", () => { readHash(); reset(false); $("surface").closest(".panel").scrollIntoView({ behavior: "smooth", block: "start" }); });
   let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { drawTruth(); draw(); }, 100); });
   const retheme = () => setTimeout(() => { LUT = ramp(); drawTruth(); draw(); }, 30);
   document.body.addEventListener("set-theme", retheme);
   new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
   reset(false);
-  writeHash();
 
   // start growing the first time the meshes come into view, so no one arrives at empty boxes;
   // with reduced motion, grow a first stretch at once and wait there
@@ -440,9 +423,10 @@
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { advance(120, 400); return; }
     $("playbtn").click();
   }, { threshold: 0.25 });
-  firstView.observe(document.querySelector(".stage"));
+  const stage = root.querySelector(".stage");
+  firstView.observe(stage);
   new IntersectionObserver((es) => {
     onScreen = es.some((e) => e.isIntersecting);
     if (onScreen && waiting && S.running) { waiting = false; requestAnimationFrame(loop); }
-  }).observe(document.querySelector(".stage"));
+  }).observe(stage);
 })();

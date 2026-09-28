@@ -1,0 +1,381 @@
+{#- /decision-mesh: the Decision Mesh in one page. From the top:
+      the live fit: the triangular and rectangular estimators (triangular-decision-mesh/core and
+        rectangular-decision-mesh/core, compiled to WebAssembly) fitting coin flips drawn on the page. gate.js makes the
+        data and draws; the engines run in fit-worker.js. It also owns the round-by-round table, the CSV upload and the
+        notes further down.
+      how the gate decides: one step per screen beside a drawing (gate-how.js), every drawing read off its own run of
+        the estimator in a second worker, with the candidate trace on. Its controls are namespaced gh-*.
+      why right triangles: four geometries grown greedily on the same data (decision-mesh.js, right-mesh.js,
+        rect-mesh.js, mesh-demo.js). Its elements are namespaced race-*.
+    The story and the race load their scripts only when their section nears the window, so the page runs one fit at
+    load. The detail page is /decision-mesh/detail (gate-deep.html). -#}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='noisestate/explorer.css', cachebust=true) }}" />
+    <link rel="stylesheet" href="{{ get_url(path='mesh/mesh.css', cachebust=true) }}" />
+    <link rel="stylesheet" href="{{ get_url(path='mesh/gate-how.css', cachebust=true) }}" />
+    {% include "partials/header.html" %}
+    <div class="progress" id="progress" data-auto aria-hidden="true"></div>
+
+    <main class="dmesh">
+    <div class="explorer mesh gate" id="gate" data-worker="{{ get_url(path='mesh/fit-worker.js', cachebust=true) }}">
+      <div class="crumbs"><a href="{{ get_url(path='') }}#projects">Projects</a> &nbsp;/&nbsp; Decision Mesh</div>
+      <h1>Decision Mesh</h1>
+      <p class="sub">The odds of a coin vary over this square. A few thousand sites each flip a coin a handful of
+        times, and each site's share of heads mixes the odds with the coin's own effect and the noise of the flips.
+        The estimator refines a mesh of right triangles or rectangles only where a false-discovery gate finds
+        support in the flips, and stops when no candidate passes.</p>
+      <p class="sub">My post on <a href="{{ get_url(path='writing/partial-pooling/') }}">partial pooling</a> takes up the
+        same trade-off between detail and the data each cell has.</p>
+
+      <section class="panel">
+        <div class="meshbar">
+          <div class="ctl"><label for="engine"><span>Estimator</span></label><select id="engine">
+            <option value="tri" selected>Right triangles</option><option value="rect">Rectangles</option></select></div>
+          <div class="ctl"><label for="truth"><span>The odds</span></label><select id="truth"></select></div>
+          <div class="ctl"><label for="sites"><span>Sites</span></label><select id="sites">
+            <option value="3000">3,000</option><option value="6000" selected>6,000</option><option value="12000">12,000</option></select></div>
+          <div class="ctl"><label for="flips"><span>Flips per site</span></label><select id="flips">
+            <option value="5">about 5</option><option value="10">about 10</option><option value="20" selected>about 20</option>
+            <option value="40">about 40</option><option value="80">about 80</option><option value="160">about 160</option></select></div>
+          <div class="ctl"><label for="coinsd" title="each coin also tips its own odds a little; at 0 every coin at a site is the same"><span>Coin effects, sd</span><span class="val" id="coinsdval"></span></label>
+            <input type="range" id="coinsd" min="0" max="1" step="0.05" value="0.25" /></div>
+          <div class="ctl"><label for="q" title="the share of admitted vertices the gate allows, on average, to be false discoveries"><span>False discoveries, q</span><span class="val" id="qval"></span></label>
+            <input type="range" id="q" min="0.01" max="0.3" step="0.01" value="0.1" /></div>
+          <div class="ctl" id="drawtools" hidden><label><span>Brush</span></label>
+            <div class="brushrow"><label class="check"><input type="checkbox" id="lower" /> lower</label>
+              <button class="secondary small" id="clear">Clear</button></div></div>
+        </div>
+        <input type="hidden" id="seed" value="1" />
+      </section>
+
+      <noscript><p class="caption" style="color:var(--warn);margin:0 0 12px">Everything on this page is computed in your browser by JavaScript, which is turned off here, so none of it will run.</p></noscript>
+      <div id="statusbar">
+        <span class="chip idle" id="chip">Ready</span>
+        <span id="statustext"></span>
+        <span class="buttons"><button class="secondary" id="newdata" title="Flip every coin again (hold to keep flipping)"><i class="mini-coin" aria-hidden="true"></i>Flip again</button><button class="secondary" id="ownback" hidden>Back to the coins</button></span>
+      </div>
+
+      <section class="panel">
+        <div class="stage">
+          <figure><div class="cv"><canvas id="cvtruth" width="320" height="320"></canvas></div>
+            <figcaption><b>The odds</b> <span class="muted">what the coins really do</span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvdata" width="320" height="320"></canvas></div>
+            <figcaption><b>The flips</b> <span class="muted">each site's share of heads</span></figcaption></figure>
+          <figure><div class="cv"><canvas id="cvfit" width="320" height="320"></canvas></div>
+            <figcaption><b>The fit</b> <span class="muted">dots: admitted, by round</span></figcaption></figure>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <label class="check"><input type="checkbox" id="showedges" checked /> Mesh lines</label>
+          <label class="check"><input type="checkbox" id="showadmit" checked /> Admitted vertices</label>
+          <span class="scale" id="scale"></span>
+        </div>
+      </section>
+
+      <div id="results" class="stale">
+        <section class="panel"><div class="cards" id="cards"></div></section>
+      </div>
+
+      <p class="tries">Try giving <a href="#truth=hills&amp;flips=160">the hill and the pit more flips</a> and watch the mesh fill
+        in around them; pick <a href="#truth=nothing&amp;flips=160">&ldquo;nothing at all&rdquo;</a>, which it leaves uncut at
+        any number of flips; pick <a href="#truth=drawing">&ldquo;your drawing&rdquo;</a> and paint on the odds (drag to
+        raise them, tick &ldquo;lower&rdquo; or hold shift to lower them).</p>
+    </div>
+
+    <section class="gatehow" id="gatehow" data-engine="tri" data-worker="{{ get_url(path='mesh/fit-worker.js', cachebust=true) }}"
+      data-src="{{ get_url(path='mesh/gate-how.js', cachebust=true) }}">
+      <div class="howhead" id="how">
+        <h2 class="sect">How the Gate Decides</h2>
+        <p class="lede">The drawings below come from one run of the estimator in your browser, on coin flips drawn on this
+          page.</p>
+        <div class="howbar">
+          <label>Estimator <select id="gh-engine"><option value="tri" selected>Right triangles</option><option value="rect">Rectangles</option></select></label>
+          <label>The odds <select id="gh-truth"><option value="peaks" selected>Three peaks</option><option value="hills">A hill and a pit</option><option value="ring">A ring</option></select></label>
+          <label>Coin effects, sd <input type="range" id="gh-coinsd" min="0" max="1" step="0.05" value="0.25" /> <span class="val" id="gh-coinsdval">0.25</span></label>
+          <button id="gh-again" type="button"><i class="mini-coin" aria-hidden="true"></i>Flip again</button>
+          <span class="howstatus" id="gh-status">Fitting&hellip;</span>
+        </div>
+      </div>
+
+      <div class="story" id="story">
+        <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
+        <div class="steps">
+          <div class="step" data-scene="sites">
+            <p>The odds of a coin vary over this square. Six thousand sites each flip a coin about twenty times. Each dot
+              is one site&rsquo;s share of heads.</p>
+            <p class="small">Each coin also has an effect of its own on its log-odds, with the standard deviation set by
+              the slider above. Half the sites are held out: the estimator never sees them, and they are used to score the
+              fit at the end.</p>
+          </div>
+          <div class="step" data-scene="funnel">
+            <p>For a binomial, the variance is determined by the mean. If you know a coin&rsquo;s odds, you know how much
+              its share of heads should vary, so any extra variation can be measured.</p>
+            <p class="small">Against the fitted odds, <span data-v="outside">&hellip;</span> of sites fall outside the 95%
+              lines. With no coin effects it would be about 5%.</p>
+          </div>
+          <div class="step" data-scene="wrongmean">
+            <p>The odds themselves have to be estimated, and an error in the mean also shows up as extra variance. A
+              site&rsquo;s error has two parts: the fitted surface can be off from the true surface, and the two axes may
+              not capture everything that determines a coin&rsquo;s odds.</p>
+            <p class="small">Both parts add to the variance in the same way, growing with the square of the error. Since
+              this page generated the coins, both parts are known. Even the true surface is off by the part the axes
+              don&rsquo;t capture, which here is the coin effect.</p>
+          </div>
+          <div class="step" data-scene="coherent">
+            <p>So there are two kinds of overdispersion. <em>Coherent</em>: neighboring sites share it, and the surface
+              should change there. <em>Incoherent</em>: each site has its own, and no surface can fit it.</p>
+            <p class="small">An error in the surface is shared by neighbors, since they sit under the same part of it. The
+              part the axes miss is specific to each site; anything in it that varied along the axes would belong to the
+              surface. Against a flat surface the mean squared residual is <span data-v="dispFlat">&hellip;</span> and the
+              large residuals cluster; against the final fit it is <span data-v="dispFit">&hellip;</span> and they
+              don&rsquo;t. The mesh is refined for the coherent part. The incoherent part is the coin variance, which
+              the gate uses as the baseline level of disagreement between sites.</p>
+          </div>
+          <div class="step" data-scene="coarse">
+            <p data-engine="tri">The fit starts from a coarse mesh of right triangles, with only its coarsest vertices
+              free: the four corners and the first midpoints, nine in all. A triangle can only be split at the midpoint of its longest edge. If that would leave a vertex in the
+              middle of a neighbor&rsquo;s edge, the neighbor is split too.</p>
+            <p data-engine="rect">The fit starts from an 8 &times; 8 grid of rectangles, with the corners and the two
+              midlines free. A rectangle can be split along either midline, so both directions are offered as candidates
+              and the gate picks. A vertex in the middle of a longer edge takes its height from that edge, so the surface
+              stays continuous.</p>
+            <p class="small">Each segment drawn here has a candidate vertex at its midpoint.</p>
+          </div>
+          <div class="step" data-scene="surplus">
+            <p>A vertex that isn&rsquo;t free sits at the average of its two parents, the endpoints of the segment it
+              splits. A free vertex can differ from that average by its <em>surplus</em>.</p>
+            <p class="small">Admitting a candidate means allowing its surplus to be nonzero. A prior shrinks each surplus
+              toward zero, more strongly for deeper vertices, so fine corrections need more evidence than coarse ones.</p>
+          </div>
+          <div class="step" data-scene="score">
+            <p>Each round scores every candidate against the current fit: would a nonzero surplus there improve it? The
+              score is a weighted sum of the residuals of the sites under the candidate&rsquo;s tent.</p>
+            <p class="small">Blue means the data pull the surface up there, orange means down; larger dots are larger
+              scores. Round 0 scored <span data-v="M0">&hellip;</span> candidates. Over the whole run,
+              <span data-v="unscoreable">some</span> more had too few sites under them to be scored.</p>
+          </div>
+          <div class="step" data-scene="corrections">
+            <p>The raw score is biased, and three corrections are applied. First, each residual is <em>centered</em>:
+              shrinkage and the discreteness of the counts give it a nonzero mean even when the surface is right.</p>
+            <p class="small">Second, the part of the candidate&rsquo;s tent that the existing coefficients could absorb is
+              removed (a first-order refit), so a candidate isn&rsquo;t credited for a slope its parents could fit. Third,
+              the bias from the prior&rsquo;s shrinkage is removed. Dividing by the standard deviation gives the
+              candidate&rsquo;s <i>z</i>.</p>
+          </div>
+          <div class="step" data-scene="family">
+            <p>The gate looks at all of a round&rsquo;s scores together. If no candidate mattered, they would follow a
+              single bell curve, the null.</p>
+            <p class="small">Lindsey&rsquo;s method fits the density of the scores and estimates the null from its
+              center, so a round whose scores are shifted or spread out is compared with its own null rather than
+              N(0, 1). Here the null has center <span data-v="nullMean">&hellip;</span> and spread
+              <span data-v="nullSd">&hellip;</span>, and <span data-v="pi0">&hellip;</span> of candidates are estimated to
+              be noise.<span data-v="capnote"></span></p>
+          </div>
+          <div class="step" data-scene="lfdr">
+            <p>From the null, each candidate gets a local false discovery rate: the probability it is noise given its
+              score. Sorted best first, the gate takes the longest run whose average stays at or below 10%.</p>
+            <p class="small">In round 0 that is <span data-v="prefix0">&hellip;</span> candidates. A cutoff of
+              |<i>z</i>| &gt; 1.96 would have taken <span data-v="naive0">&hellip;</span>.</p>
+          </div>
+          <div class="step" data-scene="admit">
+            <p>The selected candidates are admitted one at a time, best first. Each is re-scored against the surface as
+              updated by the earlier admissions, and admitted only if it still improves the fit.</p>
+            <p class="small"><span data-v="admit0">&hellip;</span></p>
+          </div>
+          <div class="step" data-scene="rounds">
+            <p>The next round scores the new candidates against the new fit. As the signal is used up, the scores look
+              more like noise and the null gets closer to N(0, 1).</p>
+            <p class="small">After three rounds in a row that <span data-engine="tri">select</span><span data-engine="rect">admit</span> nothing, the gate stops. This run took
+              <span data-v="nrounds">&hellip;</span> rounds.</p>
+          </div>
+          <div class="step" data-scene="variance">
+            <p>Two variances are refitted between rounds. The coin variance is the incoherent part, the spread around the
+              surface. As the mesh picks up the coherent part, it falls toward the true variance of the coin effects.</p>
+            <p class="small">The depth variance controls how large a surplus at each depth tends to be. It is estimated by EM
+              from the admitted surpluses, averaging their squares plus their posterior variances by depth. Including the
+              posterior variance keeps a depth&rsquo;s variance from getting stuck at its floor.</p>
+          </div>
+          <div class="step" data-scene="done">
+            <p>The final surface is flat where the data show nothing and refined where they show a pattern.</p>
+            <p class="small">On the held-out half: <span data-v="heldout">&hellip;</span>. (A site&rsquo;s deviance is
+              twice the log of how much likelier its flips are under its own share of heads than under the fit: zero only for a
+              perfect match.) Changing any setting above
+              refits and redraws every step.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="howfoot">
+        <p class="note">The run: 6,000 sites on the unit square, each flipping a coin about 20 times (between 10 and 30),
+          with odds from the picture chosen above plus a normal effect per coin on the log-odds (standard deviation from the
+          slider), fitted by
+          <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a> or
+          <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a> compiled to
+          WebAssembly. The scores, nulls, false discovery rates, admissions and variances drawn here are the
+          engine&rsquo;s own, from a trace of each round&rsquo;s candidates; the trace is the builds&rsquo; one addition,
+          and it changes nothing the fit computes. The fifth drawing is a one-dimensional sketch of the corrections, not
+          the run.</p>
+      </div>
+    </section>
+    <a class="skip-pill" href="#why" data-from="#story">Skip past the story</a>
+
+    <div class="explorer mesh race" id="race"
+      data-src="{{ get_url(path='mesh/decision-mesh.js', cachebust=true) }} {{ get_url(path='mesh/right-mesh.js', cachebust=true) }} {{ get_url(path='mesh/rect-mesh.js', cachebust=true) }} {{ get_url(path='mesh/mesh-demo.js', cachebust=true) }}">
+      <h2 class="sect" id="why">Why Right Triangles</h2>
+      <p class="sub">Below, four fits grow on the same noisy data, each given the same number of free parameters. None of
+        them uses the false-discovery gate. Each grows by the same greedy rule, so the only difference is the geometry.</p>
+      <ul class="geoms">
+        <li><b>Freeform triangles.</b> Any edge can be cut, so the mesh can turn to follow a feature in any direction, at
+          the price of thin triangles.</li>
+        <li><b>Right triangles.</b> Every triangle is right isosceles and is only ever cut through the midpoint of its
+          hypotenuse, which gives two smaller right isosceles triangles. The mesh never has hanging vertices and its
+          triangles never get thin, however long it grows.</li>
+        <li><b>Rectangles.</b> Every cell can be cut across either axis, so the refinement can follow anisotropy that
+          lines up with the axes; inside a cell the fit is bilinear, which carries the interaction of the two
+          coordinates that a flat triangle cannot.</li>
+        <li><b>Regression tree.</b> A regression tree cuts the plane into boxes and predicts a constant in each, so its
+          fit is a staircase. The tree is ordinary best-first CART.</li>
+      </ul>
+
+      <div id="race-statusbar" class="statusbar">
+        <span class="chip idle" id="race-chip">Ready</span>
+        <svg class="glass" id="race-glass" viewBox="0 0 14 20" aria-hidden="true"><title>Step budget left</title>
+          <clipPath id="glass-top"><path d="M2.6,2 H11.4 L7,10 Z" /></clipPath><clipPath id="glass-bot"><path d="M7,10 L11.4,18 H2.6 Z" /></clipPath>
+          <rect class="sand" id="race-sand-top" clip-path="url(#glass-top)" x="0" y="2" width="14" height="8" />
+          <rect class="sand" id="race-sand-bot" clip-path="url(#glass-bot)" x="0" y="18" width="14" height="0" />
+          <line class="stream" id="race-sand-stream" x1="7" y1="9.6" x2="7" y2="18" />
+          <path class="frame" d="M1.5,1 H12.5 M1.5,19 H12.5 M2.6,1.5 L7,10 L2.6,18.5 M11.4,1.5 L7,10 L11.4,18.5" />
+        </svg>
+        <span id="race-statustext" class="statustext">Starting when the meshes come into view.</span>
+        <span class="buttons">
+          <button class="secondary" id="race-resetbtn" title="New data and a fresh mesh">New data</button>
+          <button class="secondary" id="race-stepbtn" title="One step">Step</button>
+          <button class="primary" id="race-playbtn">Play</button>
+        </span>
+      </div>
+
+      <section class="panel">
+        <div class="stage">
+          <figure><div class="cv"><canvas id="race-cvmesh" width="320" height="320"></canvas></div>
+            <figcaption><b>Freeform triangles</b> <span id="race-capmesh"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="race-cvright" width="320" height="320"></canvas></div>
+            <figcaption><b>Right triangles</b> <span id="race-capright"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="race-cvrect" width="320" height="320"></canvas></div>
+            <figcaption><b>Rectangles</b> <span id="race-caprect"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="race-cvtree" width="320" height="320"></canvas></div>
+            <figcaption><b>Regression tree</b> <span id="race-captree"></span></figcaption></figure>
+          <figure><div class="cv"><canvas id="race-cvtruth" width="320" height="320"></canvas></div>
+            <figcaption><b>Truth</b> <span class="muted">the surface under the noise</span></figcaption></figure>
+          <figure class="boardfig"><div class="board" id="race-board"></div></figure>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <label class="check"><input type="checkbox" id="race-showedges" checked /> Mesh and tree lines</label>
+          <label class="check"><input type="checkbox" id="race-showpts" /> Data points</label>
+          <span class="scale" id="race-scale"></span>
+        </div>
+        <p class="caption">On this one draw of the data, the right triangles get closest to the truth on five of six test
+          surfaces. A new draw can change the order. The freeform engine is a line-for-line JavaScript port of my
+          <a href="https://github.com/sbabichenko/Decision-Mesh">Decision Mesh</a>. The right-triangle and rectangular
+          engines are written for this page, grown by the same greedy rule as the freeform triangles.</p>
+      </section>
+    </div>
+
+    <div class="explorer mesh gate dm-tail">
+      <div id="results-rounds" class="stale">
+        <section class="panel">
+          <h2>Round-by-Round Results</h2>
+          <div class="tablewrap" id="rounds"></div>
+          <p class="caption">Each round scores every candidate vertex (the midpoints of the mesh's edges) by how much
+            it would improve the fit. If no candidate mattered, the scores would look like draws from one bell curve, the
+            null. The gate fits the density of all the scores, reads the null's center and spread off the middle of it,
+            estimates the share &pi;<sub>0</sub> that are noise, and admits the candidates that stand out from that null
+            at a controlled false-discovery rate. When the scores have no central peak to read a null from, it falls
+            back to the textbook one. <span id="coinnote">Each coin also has an effect of its own on the log-odds, and the coin variance is
+            the estimator's estimate of their spread, fitted alongside the surface. As the mesh learns the odds, what it
+            can't explain shrinks toward the spread the slider set.</span><span id="sitenote" hidden>Each site also has an
+            effect of its own on the log-odds, and the site variance is the estimator's estimate of their spread, fitted
+            alongside the surface.</span></p>
+        </section>
+      </div>
+
+      <section class="panel own" id="own">
+        <h2>Fit Your Own Data</h2>
+        <p class="caption">A CSV with a header row: two numeric columns for the position and a column of 0/1 outcomes, one
+          row per trial. If each row already counts several trials, give its trials and its successes instead. The file
+          is read in this browser and never uploaded. The <a href="{{ get_url(path='mesh/sample-flips.csv') }}">sample file</a>
+          shows the format.</p>
+        <label class="drop" id="drop"><input type="file" id="file" accept=".csv,.txt,text/csv,text/plain" />
+          <span>Drop a CSV here, or <u>choose a file</u></span></label>
+        <div class="colpick" id="colpick" hidden>
+          <div class="ctl"><label for="colx"><span>Across</span></label><select id="colx"></select></div>
+          <div class="ctl"><label for="coly"><span>Up</span></label><select id="coly"></select></div>
+          <div class="ctl"><label for="colk"><span>Outcome or successes</span></label><select id="colk"></select></div>
+          <div class="ctl"><label for="coln"><span>Trials</span></label><select id="coln"></select></div>
+          <div class="buttons"><button class="primary" id="ownfit">Fit</button></div>
+        </div>
+        <p class="ownmsg" id="ownmsg" aria-live="polite"></p>
+      </section>
+
+      <div class="notes">
+        <p>The estimators are <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a>
+          and <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a>, compiled from
+          their C++ with Emscripten. On my test designs the browser builds
+          reproduce the native meshes to 1e-11. The two share
+          the gate and the model for the coin effects and differ in geometry: right triangles cut only through their hypotenuse, with a
+          plane in each; rectangles cut across either axis, with a bilinear fit in each. Half the sites are held out:
+          the mesh never sees them, and the deviance card scores the fit on them. A site&rsquo;s deviance is
+          2[<i>k</i>&thinsp;log(<i>k</i>&thinsp;/&thinsp;<i>n p</i>) + (<i>n</i>&minus;<i>k</i>)&thinsp;log((<i>n</i>&minus;<i>k</i>)&thinsp;/&thinsp;(<i>n</i>(1&minus;<i>p</i>)))],
+          with <i>k</i> heads in <i>n</i> flips and fitted odds <i>p</i>: zero when <i>p</i> is exactly the share of heads, and
+          larger the less likely the flips are under the fit. Even the true surface scores above zero, because each coin has
+          its own effect and flips are random, so it sets the floor. The coins are drawn on this page from
+          the odds you pick, plus a normal effect per coin on the log-odds, with the standard deviation on the slider
+          (0.25 to start). Set it to zero and the coins are plain binomial.</p>
+      </div>
+      <details class="cite">
+        <summary>Cite it</summary>
+<pre>@software{triangular_decision_mesh,
+  author = {Babichenko, Sam},
+  title  = {triangular-decision-mesh: an adaptive right-triangle mesh regression with a false-discovery gate},
+  year   = {2026},
+  url    = {https://github.com/sbabichenko/triangular-decision-mesh}
+}
+
+@software{rectangular_decision_mesh,
+  author = {Babichenko, Sam},
+  title  = {rectangular-decision-mesh: an adaptive rectangular mesh regression with a false-discovery gate},
+  year   = {2026},
+  url    = {https://github.com/sbabichenko/rectangular-decision-mesh}
+}</pre>
+      </details>
+
+      <nav class="dm-end">
+        <a class="primary" href="{{ get_url(path='decision-mesh/detail/') }}">The Decision Mesh, in Detail</a>
+        <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a>
+        <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a>
+      </nav>
+    </div>
+    </main>
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='mesh/gate.js', cachebust=true) }}"></script>
+    <script>
+      // The story and the race load their scripts when their drawings come within 200px of the window, so the page
+      // runs only the live fit at load. Scripts added this way run in the order given (async = false).
+      (function () {
+        "use strict";
+        function load(el) {
+          for (const src of el.dataset.src.split(" ")) { const s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); }
+        }
+        const lazy = new Map([[document.getElementById("story"), document.getElementById("gatehow")],
+                              [document.querySelector("#race .stage"), document.getElementById("race")]]);
+        if (!("IntersectionObserver" in window)) { lazy.forEach(load); return; }
+        const io = new IntersectionObserver((es) => {
+          for (const e of es) if (e.isIntersecting) { io.unobserve(e.target); load(lazy.get(e.target)); }
+        }, { rootMargin: "200px 0px 200px 0px" });
+        lazy.forEach((_, el) => io.observe(el));
+      })();
+    </script>
+  </body>
+</html>

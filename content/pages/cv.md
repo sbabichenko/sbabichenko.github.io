@@ -54,7 +54,7 @@ Solo-authored, submitted March 2026. The core of the dissertation. In a two-play
 
 ## Selected Projects
 
-**Decision Mesh** &middot; [sbabichenko.com/gate](/gate/) &middot; [github.com/sbabichenko/triangular-decision-mesh](https://github.com/sbabichenko/triangular-decision-mesh)\
+**Decision Mesh** &middot; [sbabichenko.com/decision-mesh](/decision-mesh/) &middot; [github.com/sbabichenko/triangular-decision-mesh](https://github.com/sbabichenko/triangular-decision-mesh)\
 Adaptive, continuous regression, inspired by decision trees, that refines only where a false-discovery gate finds support, and decomposes the data into a surface, unit-level effects, and noise. The rectangular version cuts one axis at a time and scales to higher dimensions.
 
 **Multi-agent traffic simulation** (Waymo Open Motion Dataset)\
