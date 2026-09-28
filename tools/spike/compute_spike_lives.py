@@ -150,30 +150,30 @@ def longer(path, window, nodes):
 
 # Chapter 1: a finite horizon, so the spike's aftermath is cut off at T
 cached("ch1", lambda: finite("ch1", "A finite horizon", "Player 1 kicks the state, and since it knows it did, it starts pulling the "
-           "state back at once. Player 2 sees the kick only through its noisy signal and leans against it too. Near the "
-           "end of the game there is little left to gain, so a late kick is left to stand.",
+           "state back at once. Player 2 sees the spike only through its noisy signal and leans against it too. Near the "
+           "end of the game there is little left to gain, so a late spike is left to stand.",
            ns.load(ns.example("ch1_two_player_finite")), "player1", [("X", "the state"), ("D2", "player 2's response")],
            milestones=[peak("2 pushes back hardest", 1)]))
 
 # Chapter 2: a public signal seen with different delays (tools/spike/models/ch2_delayed_public.yaml). Player 2 sees
-# the public signal a lag late; grey, its response if it saw the public signal at once
+# the public signal late; grey, its response if it saw the public signal at once
 M2 = str(Path(__file__).resolve().parent / "models" / "ch2_delayed_public.yaml")
 def ch2():
     lag = ns.load(M2).to_dict()["params"]["Delta"]
     on_time = ns.load(M2).to_dict(); on_time["params"]["Delta"] = 0.0
     finite("delay", "A late public signal", "Both players watch a public signal as well as their own. Player 1 kicked the state and "
-           "pulls it back itself. Player 2 sees the public signal a lag late, so until then it pushes back on its private "
-           "signal alone, less than it would with the public news on time (grey).",
+           "pulls it back itself. Player 2 sees the public signal late, so until then it pushes back on its private "
+           "signal alone, less than it would with the public news on time (gray).",
            ns.load(M2), "player1", [("X", "the state"), ("D2", "player 2's response")],
            marks=[{"at": lag, "label": "2 sees it in public"}], milestones=[peak("2 pushes back hardest", 1)],
            reference=(ns.Model.from_dict(on_time), "D2", "player 2's response, public news on time"))
 cached("delay", ch2)
 
 # Chapter 3: no clock; the life is a fixed shape in the spike's age
-cached("ch3", lambda: stationary("ch3", "No clock", "The stationary game has no deadline: a spike's life is the same shape whenever it "
-               "happens. Player 1 undoes most of its own kick, player 2 helps, and the state returns all the way home.",
+cached("ch3", lambda: stationary("ch3", "No end", "The stationary game has no deadline: a spike's life is the same shape whenever it "
+               "happens. Player 1 undoes most of its own spike, player 2 helps, and the state returns all the way home.",
                both(ns.solve(longer(ns.example("ch3_two_player"), 6.0, 48)), "player1", [("X", "the state"), ("D2", "player 2's response")]),
-               milestones=[peak("2 pushes back hardest", 1), first_below("half the kick is gone", 0, 0.5)]))
+               milestones=[peak("2 pushes back hardest", 1), first_below("half the spike is gone", 0, 0.5)]))
 
 # Chapter 4: a Kyle-Back market with two informed traders (tests/test_ch4.py's two-trader model, checked there against
 # the dissertation's grid solver). Dashed: the permanent part of the price impact, the market maker's own update

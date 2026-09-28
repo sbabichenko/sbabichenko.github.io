@@ -180,6 +180,7 @@
 .idea .ideahead h1 { font-family: Newsreader, Georgia, serif; font-weight: 400; font-size: clamp(2.6rem, 6.5vw, 5.2rem); line-height: 1; letter-spacing: -0.03em;
   max-width: 14ch; margin: 0 0 1.4rem; }
 .idea .ideahead .lede { font-family: Newsreader, Georgia, serif; font-size: 1.3rem; line-height: 1.5; color: var(--ink-2); max-width: 36rem; margin: 0; }
+.idea .ideahead .lede + .lede { margin-top: 0.9rem; }
 .idea .fx { margin: 0.4rem 0 1rem; color: var(--ink); }
 .idea .fx svg { display: block; max-width: 100%; height: auto; width: 23rem; }
 .idea .step a { color: var(--accent); text-decoration: none; }
@@ -389,3 +390,17 @@
 }
 .risk .routes .rname small { display: block; font-weight: 400; color: var(--ink-3); font-size: 0.74rem; margin-top: 2px; }
 .risk .legend i.dot { background: none; border-top: 3px dotted; height: 0; width: 16px; border-radius: 0; }
+
+/* ---------------------------------------------------------------- /dissertation/wedge: the math tucked away, and the tug slider */
+#wedgepage .ideafoot > p:first-child + p { font-family: Newsreader, Georgia, serif; font-size: 1.3rem; line-height: 1.5; }
+#wedgepage details.math { margin: 0.2rem 0 0.8rem; border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 4%, var(--paper)); pointer-events: auto; }
+#wedgepage details.math > summary { cursor: pointer; padding: 0.5rem 0.8rem; font: 600 0.85rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); list-style-position: inside; }
+#wedgepage details.math[open] > summary { border-bottom: 1px solid var(--rule); margin-bottom: 0.5rem; }
+#wedgepage details.math > :not(summary) { margin-left: 0.8rem; margin-right: 0.8rem; }
+#wedgepage details.math p.small { background: none; }
+#wedgepage .tugctl { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0.2rem 0 0.9rem; pointer-events: auto;
+  font: 0.9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); }
+#wedgepage .tugctl input { flex: 1 1 10rem; min-width: 0; accent-color: var(--accent); }
+#wedgepage .tugval { font: 0.9rem ui-monospace, Menlo, monospace; color: var(--accent); min-width: 5.5em; }
+#wedgepage .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; padding: 0; }

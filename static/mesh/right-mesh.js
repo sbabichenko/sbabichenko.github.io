@@ -108,7 +108,7 @@
       return v;
     }
 
-    // cut f through its hypotenuse's midpoint, completing the neighbour first when it needs it
+    // cut f through its hypotenuse's midpoint, completing the neighbor first when it needs it
     bisect(f) {
       for (let guard = 0; guard < 64; ++guard) {
         const g = this.across(f);

@@ -90,7 +90,7 @@
               <i>G</i>(<i>D</i>) &minus; <i>D</i> relative to <i>D</i>. The plain update moves halfway from <i>D</i> to
               <i>G</i>(<i>D</i>). Anderson acceleration remembers the last fifteen steps and their residuals and takes the
               combination of them with the smallest residual, fitted by least squares.</p>
-            <p class="small">A small ridge term in that fit (Tikhonov regularisation) keeps repeated or zero directions
+            <p class="small">A small ridge term in that fit (Tikhonov regularization) keeps repeated or zero directions
               from breaking it. If an accelerated step more than doubles the residual, the memory is cleared and a plain
               step is taken. If Anderson stalls, a Newton&ndash;Krylov polish (Newton&rsquo;s method with its linear
               systems solved iteratively) takes over. Both runs in the drawing start
@@ -108,7 +108,7 @@
               found a minimum. Refinement solves again with 1.5 times the nodes and compares.</p>
             <p class="small">Stability is the spectral radius of the best-response map at the equilibrium, the factor by
               which a small deviation shrinks per round of best responses. Below 1,
-              players who started near it and kept best-responding to each other, without damping, would find it. <span id="refineline"></span></p>
+              players who started near it and kept best-responding to each other, without damping, would return to it. <span id="refineline"></span></p>
           </div>
           <div class="step" data-scene="quadrant">
             <p>In a stationary game the calendar drops out and only ages remain: a kernel depends on how long ago the shock
@@ -153,7 +153,7 @@
         </div>
         <p class="note">The finite game: <i>dX</i> = (<i>D</i>&sup1; + <i>D</i>&sup2;) <i>dt</i> + <i>dW</i>&#8304;, player <i>i</i>
           sees <i>dY</i><sup><i>i</i></sup> = &radic;<i>p</i><sub><i>i</i></sub> <i>X dt</i> + <i>dW</i><sup><i>i</i></sup> and
-          minimises <i>E</i>&int;<sub>0</sub><sup>1</sup>[(<i>X</i> &minus; <i>b</i><sub><i>i</i></sub>)&sup2; + <i>r</i><sub><i>i</i></sub>(<i>D</i><sup><i>i</i></sup>)&sup2;]<i>dt</i>
+          minimizes <i>E</i>&int;<sub>0</sub><sup>1</sup>[(<i>X</i> &minus; <i>b</i><sub><i>i</i></sub>)&sup2; + <i>r</i><sub><i>i</i></sub>(<i>D</i><sup><i>i</i></sup>)&sup2;]<i>dt</i>
           with <i>p</i><sub>1</sub> = <i>p</i><sub>2</sub> = 9, <i>r</i><sub>1</sub> = <i>r</i><sub>2</sub> = 0.1, <i>b</i> = &plusmn;1, 12 nodes per side.
           The stationary game: the same state and signals with <i>p</i><sub>1</sub> = 3, <i>p</i><sub>2</sub> = 10, flow loss
           &frac12;<i>X</i>&sup2; + &frac12;<i>r</i><sub><i>i</i></sub>(<i>D</i><sup><i>i</i></sup>)&sup2;, <i>r</i><sub>1</sub> = <i>r</i><sub>2</sub> = 1.

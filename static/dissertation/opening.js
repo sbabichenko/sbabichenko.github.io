@@ -506,7 +506,7 @@
     const nowl = text(g, 0, 112, "now, t", "label warmt");
     const key = text(g, 60, 150, "", "mono", "start");
     key.innerHTML = '<tspan style="fill:var(--accent)">Ŵ¹ₜ(u)</tspan>, <tspan style="fill:var(--warm)">Ŵ²ₜ(u)</tspan>: each player\'s estimate, at t, of the shock at u';
-    const cap = text(g, 300, 560, "grey: the shocks themselves, which neither player sees", "mono");
+    const cap = text(g, 300, 560, "gray: the shocks themselves, which neither player sees", "mono");
     const put = (b, v, on) => { b.setAttribute("y", v >= 0 ? Y0 - v * S : Y0); b.setAttribute("height", Math.abs(v) * S); b.style.opacity = on ? 1 : 0; };
     return {
       g,

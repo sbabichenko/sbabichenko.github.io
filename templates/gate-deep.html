@@ -1,4 +1,4 @@
-{#- /gate/deep: the decision mesh's algorithm one level below /gate/how, one step per screen beside a drawing
+{#- /decision-mesh/detail: the decision mesh's algorithm one level below the story on /decision-mesh, one step per screen beside a drawing
     (static/mesh/gate-deep.js). The page draws coin flips, fits them with both estimators in the page's worker
     (static/mesh/fit-worker.js with its candidate trace), and draws from those runs. Four drawings are sketches and
     say so; the first is computed on the page with the engine's splitting rule. -#}
@@ -13,12 +13,12 @@
 
     <main class="opening idea gatedeep" id="gatedeep" data-worker="{{ get_url(path='mesh/fit-worker.js', cachebust=true) }}">
       <section class="ideahead">
-        <p class="eyebrow"><a href="{{ get_url(path='') }}#projects">Projects</a> &middot; <a href="{{ get_url(path='mesh/') }}">Decision Mesh</a> &middot; <a href="{{ get_url(path='gate/') }}">Live fit</a> &middot; in detail</p>
+        <p class="eyebrow"><a href="{{ get_url(path='') }}#projects">Projects</a> &middot; <a href="{{ get_url(path='decision-mesh/') }}">Decision Mesh</a> &middot; in detail</p>
         <h1>The Decision Mesh, in Detail</h1>
-        <p class="lede">The <a href="{{ get_url(path='gate/how/') }}">illustrated gate</a> follows one fit from start to
+        <p class="lede">The <a href="{{ get_url(path='decision-mesh/') }}#how">illustrated gate</a> follows one fit from start to
           finish. This page goes one level down: how a triangle is split, how a height is stored, where a candidate&rsquo;s
           score and its <i>z</i> come from, how the null is fitted, how candidates are admitted, and when the fit stops.
-          Both estimators run in your browser on coin flips drawn on this page. Drawings that are sketches say so.</p>
+          Both estimators run in your browser on coin flips drawn on this page.</p>
         <div class="howbar">
           <label>The odds <select id="truth"><option value="peaks" selected>Three peaks</option><option value="hills">A hill and a pit</option><option value="ring">A ring</option></select></label>
           <label>Coin effects, sd <input type="range" id="coinsd" min="0" max="1" step="0.05" value="0.25" /> <span class="val" id="coinsdval">0.25</span></label>
@@ -36,7 +36,7 @@
               its longest edge. Both halves are right triangles again, and each half&rsquo;s longest edge is one of the old
               triangle&rsquo;s short edges.</p>
             <p class="small">A vertex asked for in the middle of a short edge forces the triangle to split its long edge
-              first, and that split can force a neighbour in turn. This chain is the <em>conformity closure</em>: it keeps
+              first, and that split can force a neighbor in turn. This chain is the <em>conformity closure</em>: it keeps
               every vertex at a corner of each triangle around it, never in the middle of an edge. The run starts from the
               square cut along one diagonal and split evenly to <span data-v="faces0">&hellip;</span> faces. The drawing
               then asks for five splits near the run&rsquo;s deepest vertex, with the engine&rsquo;s rule computed on this
@@ -50,7 +50,7 @@
               <em>surplus</em>.</p>
             <p class="small">Changing one surplus moves that vertex and everything finer built on it. The surface changes by
               the surplus times a <em>tent</em>: a function that is 1 at the vertex and falls linearly to 0 at the
-              neighbouring vertices of its level. Level by level, the tents add up to the whole surface, and on a smooth
+              neighboring vertices of its level. Level by level, the tents add up to the whole surface, and on a smooth
               surface the deep surpluses are small. That is why a prior can pull each surplus toward zero. This drawing is a
               one-dimensional sketch.</p>
           </div>
@@ -71,9 +71,9 @@
               tent&rsquo;s height at the site times <i>k</i> &minus; <i>np</i>, summed over the sites under the tent. Each
               term has variance tent&sup2; &times; <i>np</i>(1 &minus; <i>p</i>): the site&rsquo;s Fisher information, which
               measures how sharply its flips pin down its odds, weighted by the tent. The candidate drawn is the one with the
-              largest round-0 |<i>z</i>| among the centres of the starting squares. Its sites are drawn against the final fit
+              largest round-0 |<i>z</i>| among the centers of the starting squares. Its sites are drawn against the final fit
               with the surface flattened across the square. With coin effects the engine replaces <i>k</i> &minus; <i>np</i>
-              by the site&rsquo;s residual after its coin effect is estimated, centred on its expected value, and
+              by the site&rsquo;s residual after its coin effect is estimated, centered on its expected value, and
               <i>np</i>(1 &minus; <i>p</i>) by that residual&rsquo;s information, which is smaller. A candidate with fewer
               than 10 sites under its tent is not scored.</p>
           </div>
@@ -108,7 +108,7 @@
             <p class="small">The scores are counted into 72 bins, each score split between its two nearest bins. A Poisson
               regression of the counts on a degree-6 polynomial in <i>z</i> gives a smooth log-density. A normal&rsquo;s
               log-density is a parabola, and near zero the null dominates, so a parabola is fitted to the log-density over
-              |<i>z</i>| &le; 2 (central matching). Its peak gives the null&rsquo;s centre, its curvature the spread, and its
+              |<i>z</i>| &le; 2 (central matching). Its peak gives the null&rsquo;s center, its curvature the spread, and its
               height <i>&pi;</i><sub>0</sub>, the share of candidates that are noise. Recomputed on this page from round
               0&rsquo;s scores: <span data-v="lnull">&hellip;</span>. The engine&rsquo;s: <span data-v="enull">&hellip;</span>.
               The spread is held between 0.35 and 6 (3 in the rectangle engine).</p>
@@ -126,7 +126,7 @@
           </div>
           <div class="step" data-scene="rescore">
             <h2>Admitting One at a Time</h2>
-            <p>Tents at neighbouring vertices overlap. If two candidates sit on the same bump in the data, both score well,
+            <p>Tents at neighboring vertices overlap. If two candidates sit on the same bump in the data, both score well,
               but once one is admitted the other has less left to explain.</p>
             <p class="small">So the selected candidates are admitted one at a time, best first, and each is scored again
               against the surface the earlier admissions left. The surplus committed is the one from the new score. In this
@@ -169,7 +169,7 @@
               surface, and it can be cut along either axis, so each cell offers both cuts as candidates and the gate
               picks.</p>
             <p class="small">It starts from an 8 &times; 8 grid with the corners and the two midlines free. Cutting a cell
-              leaves its neighbour with a vertex in the middle of an edge, a <em>hanging</em> vertex (orange). Its parents
+              leaves its neighbor with a vertex in the middle of an edge, a <em>hanging</em> vertex (orange). Its parents
               are the ends of that edge, so it sits on the edge&rsquo;s line and the surface stays continuous without a
               closure. <span data-v="hang">&hellip;</span> Its null&rsquo;s spread is capped at 3, and a round counts toward
               the three that stop the fit whenever it admits nothing, not only when it selects nothing. On the held-out half
@@ -182,10 +182,10 @@
 
       <a class="skip-pill" href="#more" data-from="#story">Skip to the end</a>
       <section class="ideafoot" id="more">
-        <p>The same run, told as a story rather than taken apart, is on the <a href="{{ get_url(path='gate/how/') }}">illustrated gate</a>.</p>
+        <p>The same run, told as a story rather than taken apart, is on the <a href="{{ get_url(path='decision-mesh/') }}#how">illustrated gate</a>.</p>
         <div class="cta">
-          <a class="primary" href="{{ get_url(path='gate/') }}#truth=drawing">Fit your own drawing</a>
-          <a href="{{ get_url(path='gate/how/') }}">The gate, step by step</a>
+          <a class="primary" href="{{ get_url(path='decision-mesh/') }}#truth=drawing">Fit your own drawing</a>
+          <a href="{{ get_url(path='decision-mesh/') }}#how">The gate, step by step</a>
         </div>
         <p class="note">The runs: 6,000 sites on the unit square, each flipping a coin between 10 and 30 times, with odds
           from the picture chosen above plus a normal effect per coin on the log-odds, fitted by

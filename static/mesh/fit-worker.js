@@ -105,7 +105,7 @@ onmessage = async (ev) => {
   }, [tri.buffer]);
 };
 
-// For the illustrated gate (/gate/how/): every scored candidate of every round with the segment it would
+// For the illustrated gate (the story on /decision-mesh): every scored candidate of every round with the segment it would
 // bisect, every vertex with its depth, surplus and prior, the gate's account of each round, and the surface.
 // The triangular build writes the candidates to run_trace.csv (tools/trimesh/trace.patch), the rectangular
 // one to run_candidates.csv, which it always writes.

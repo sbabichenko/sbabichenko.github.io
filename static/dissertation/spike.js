@@ -156,7 +156,7 @@
             for (let k = kmax + 1; k < c.length; ++k) rest += "L" + X(k * row.du).toFixed(1) + "," + Y(a * c[k]).toFixed(1);
             el("path", { class: "ahead", d: rest, stroke: COLORS[j] }, lg);
           }
-          if (life.perm[j]) {                                    // the permanent part, dashed, in the same colour
+          if (life.perm[j]) {                                    // the permanent part, dashed, in the same color
             let pd = "";
             for (let k = 0; k <= kmax; ++k) pd += (k ? "L" : "M") + X(k * row.du).toFixed(1) + "," + Y(a * life.perm[j][k]).toFixed(1);
             el("path", { class: "perm", d: pd, stroke: COLORS[j] }, lg);
@@ -176,7 +176,7 @@
   }
 
   // "When someone is watching": the privy trader's order rate after the market maker's quote spike, expecting the
-  // market maker to play on (blip, blue) or to hold still (frozen, grey), from the same equilibrium
+  // market maker to play on (blip, blue) or to hold still (frozen, gray), from the same equilibrium
   function watchPanel(w) {
     const svg = document.getElementById("watch");
     if (!svg) return;

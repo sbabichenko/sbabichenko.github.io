@@ -12,8 +12,12 @@ assets live under `static/`, so `zola serve` shows them like any other page.
   `noisestate-mt.{js,wasm,worker.js}` (threaded), rebuilt in the port's repository with `make wasm wasm-mt` and copied
   here. `worker.js` picks the threaded build when the page is cross-origin isolated, which
   `coi-serviceworker.js` (MIT, scoped to `/lqg/`) arranges on GitHub Pages; the page reloads once on a first visit.
-- `/mesh`: the Decision Mesh demo. `content/mesh.md` and `templates/mesh.html`; `static/mesh/decision-mesh.js` is a
-  port of `DecisionMesh.py` (its squared error matches the Python's to 1e-12), `static/mesh/mesh-demo.js` draws it.
+- `/decision-mesh`: the Decision Mesh. `content/decision-mesh.md` and `templates/decision-mesh.html`: the live fit
+  (`static/mesh/gate.js`, the WebAssembly estimators in `static/mesh/fit-worker.js`), the illustrated gate
+  (`static/mesh/gate-how.js`, `gate-how.css`) and the geometry race (`static/mesh/decision-mesh.js`, a port of
+  `DecisionMesh.py` whose squared error matches the Python's to 1e-12, drawn by `static/mesh/mesh-demo.js`). The story
+  and the race load their scripts when scrolled near. `/decision-mesh/detail` is `content/decision-mesh-detail.md`
+  and `templates/gate-deep.html`. The old `/gate/`, `/gate/how/`, `/mesh/` and `/gate/deep/` are aliases.
   It reuses the explorer's stylesheet.
 
 Presets in the explorer are model files in `PRESETS` at the top of `explorer.js`, each with its sliders; a new tab is
