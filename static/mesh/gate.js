@@ -1,4 +1,4 @@
-// /gate: coin flips on a square, fitted by the triangular decision-mesh estimator itself (fit-worker.js runs
+// /decision-mesh, the live fit: coin flips on a square, fitted by the triangular decision-mesh estimator itself (fit-worker.js runs
 // triangular-decision-mesh/core compiled to WebAssembly). This file makes the data, sends it to the worker,
 // and draws what comes back: the truth, the data, the fitted mesh, and the gate's account of every round.
 // A visitor can also fit a CSV of their own (see "your own data" below); it is read here and never leaves the page.
@@ -69,10 +69,10 @@
     return { x, y, n, k, csv: rows.join("\n") + "\n" };
   }
 
-  // ------------------------------------------------------------------ colour and rasters
+  // ------------------------------------------------------------------ color and rasters
   const D = 200, VMAX = 2.2;
-  let CENTRE = BASE;         // the log-odds at the middle of the colour scale: the coins' background, or a file's overall rate
-  // low odds orange, high odds blue: the same meaning as the illustrated pages (/gate/how, /gate/deep)
+  let CENTRE = BASE;         // the log-odds at the middle of the color scale: the coins' background, or a file's overall rate
+  // low odds orange, high odds blue: the same meaning as the illustrated pages (the story on this page, /decision-mesh/detail)
   function ramp() {
     const hex = (h) => [1, 3, 5].map((q) => parseInt(h.slice(q, q + 2), 16));
     const s = isDark()
@@ -86,7 +86,7 @@
     return lut;
   }
   let LUT = ramp();
-  const colour = (logit) => {
+  const color = (logit) => {
     const q = Math.max(0, Math.min(255, Math.round((((logit - CENTRE) / VMAX) * 0.5 + 0.5) * 255)));
     return [LUT[3 * q], LUT[3 * q + 1], LUT[3 * q + 2]];
   };
@@ -131,7 +131,7 @@
         g[r * D + c] = fit.baseline + l1 * ah + l2 * bh + l3 * ch;
       }
     }
-    // the mesh spans the data's bounding box; a pixel just outside it takes its nearest neighbour in the row
+    // the mesh spans the data's bounding box; a pixel just outside it takes its nearest neighbor in the row
     for (let r = 0; r < D; ++r) {
       let last = NaN;
       for (let c = 0; c < D; ++c) { const k = r * D + c; if (g[k] === g[k]) last = g[k]; else if (last === last) g[k] = last; }
@@ -148,7 +148,7 @@
     fitCanvas(canvas);
     const d = img.data, empty = isDark() ? [31, 32, 34] : [255, 255, 240];
     for (let k = 0; k < D * D; ++k) {
-      const v = g[k], rgb = v === v ? colour(v) : empty;
+      const v = g[k], rgb = v === v ? color(v) : empty;
       d[4 * k] = rgb[0]; d[4 * k + 1] = rgb[1]; d[4 * k + 2] = rgb[2]; d[4 * k + 3] = 255;
     }
     offctx.putImageData(img, 0, 0);
@@ -180,7 +180,7 @@
     if (!S.data) return;
     const { x, y, n, k } = S.data, rad = Math.max(1.2, W / Math.sqrt(x.length) * 0.42);
     for (let i = 0; i < x.length; ++i) {
-      const rgb = colour(Math.log((k[i] + 0.5) / (n[i] - k[i] + 0.5)));
+      const rgb = color(Math.log((k[i] + 0.5) / (n[i] - k[i] + 0.5)));
       ctx.fillStyle = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
       ctx.fillRect(x[i] * W - rad, (1 - y[i]) * W - rad, 2 * rad, 2 * rad);
     }
@@ -222,7 +222,7 @@
 
   function drawScale() {
     const stops = [];
-    for (let q = 0; q <= 8; ++q) { const t = CENTRE + ((q / 8) * 2 - 1) * VMAX, rgb = colour(t); stops.push(`rgb(${rgb[0]},${rgb[1]},${rgb[2]})`); }
+    for (let q = 0; q <= 8; ++q) { const t = CENTRE + ((q / 8) * 2 - 1) * VMAX, rgb = color(t); stops.push(`rgb(${rgb[0]},${rgb[1]},${rgb[2]})`); }
     const pct = (t) => Math.round(100 * expit(t)) + "%";
     $("scale").innerHTML = `${pct(CENTRE - VMAX)} <i style="background:linear-gradient(90deg,${stops.join(",")})"></i> ${pct(CENTRE + VMAX)} chance of ${S.user ? "success" : "heads"}`;
   }
@@ -294,17 +294,17 @@
     ]).map(([k, v, d]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`).join("");
 
     const cap = f.engine === "rect" ? 3 : 6;             // each engine's upper bound on the null's spread
-    const rule = (r) => (r.method === "lindsey" ? `<span title="the null's centre and spread were read off the middle of this round's own scores">empirical null</span>`
-      : r.method === "BH-fallback" ? `<span title="the textbook null, centred at 0 with spread 1, with the Benjamini-Hochberg rule">theoretical null (BH)</span>`
+    const rule = (r) => (r.method === "lindsey" ? `<span title="the null's center and spread were read off the middle of this round's own scores">empirical null</span>`
+      : r.method === "BH-fallback" ? `<span title="the textbook null, centered at 0 with spread 1, with the Benjamini-Hochberg rule">theoretical null (BH)</span>`
       : r.method === "defer-invalid-null" ? "deferred" : r.method || "–");
     const cols = ROUND_COLOURS();
     $("rounds").innerHTML = `<table class="diag"><thead><tr><th>Round</th><th title="candidate vertices given a score this round">Scored</th>`
-      + `<th title="where the scores of candidates that change nothing are centred: 0 in textbook theory, read off the data here">Null centre</th>`
+      + `<th title="where the scores of candidates that change nothing are centered: 0 in textbook theory, read off the data here">Null center</th>`
       + `<th title="how widely those scores spread: 1 in textbook theory; &quot;cap&quot; marks the widest the estimator allows">Null spread</th>`
       + `<th title="the estimated share of this round's candidates that are only noise">&pi;<sub>0</sub></th><th>Rule</th><th>Admitted</th>`
       + `<th title="the fitted spread of each ${S.user ? "site" : "coin"}'s own effect on the log-odds">${S.user ? "Site" : "Coin"} variance</th></tr></thead><tbody>` +
       rounds.map((r) => `<tr${r.admitted ? "" : ' class="none"'}><td class="mono"><i class="dot" style="background:${cols[Math.min(cols.length - 1, r.round)]}"></i>${r.round}</td><td class="mono">${r.candidates}</td><td class="mono">${fmt(r.nullMean, 2)}</td><td class="mono">${fmt(r.nullSd, 2)}${r.nullSd >= cap - 1e-3 ? " <span class='cap'>cap</span>" : ""}</td><td class="mono">${fmt(r.pi0, 2)}</td><td>${rule(r)}</td><td class="mono"><b>${r.admitted}</b></td><td class="mono">${fmt(r.poolVariance, 4)}</td></tr>`).join("") +
-      `</tbody></table><p class="caption">Grey rows admitted nothing. The run ends after three rounds in a row that
+      `</tbody></table><p class="caption">Gray rows admitted nothing. The run ends after three rounds in a row that
       ${f.engine === "rect" ? "admit" : "select"} nothing; between them the estimator refits the ${S.user ? "site" : "coin"} variance and scores again.</p>`;
 
     // what happened, in the gate's own terms
@@ -313,13 +313,15 @@
       ? `Admitted ${admitted} vertices, then stopped: the last round scored ${last.candidates} candidates and none cleared the gate.`
       : `Admitted nothing: the fit is the starting mesh.`;
     if (r0 && !admitted && r0.method === "lindsey" && r0.nullSd > 2.5) say += ` In round 0 the empirical null came out ${fmt(r0.nullSd, 1)} times as wide as the textbook one${r0.nullSd >= cap - 1e-3 ? " (its cap)" : ""}, so it took in the scores that stood out and nothing cleared the gate.`;
-    else if (r0 && r0.method === "BH-fallback") say += " In round 0 the scores had no central peak to fit a null to, so the gate used the theoretical null.";
+    else if (r0 && r0.method === "BH-fallback") say += " In round 0 the scores had no central peak to fit a null to, so the gate used the textbook null.";
     else if (!admitted && !S.user && $("truth").value === "nothing") say += " There was nothing to find.";
     $("statustext").textContent = say + ` ${Math.round(f.ms)} ms.`;
   }
 
   // ------------------------------------------------------------------ the worker
   let worker;
+  // the summary cards under the fit and the round-by-round table further down the page dim while a fit is running
+  const stale = (on) => ["results", "results-rounds"].forEach((id) => $(id) && $(id).classList.toggle("stale", on));
   function setChip(kind, text) { const c = $("chip"); c.className = "chip " + kind; c.textContent = text; }
   function startWorker() {
     worker = new Worker($("gate").dataset.worker);
@@ -339,7 +341,7 @@
       S.busy = false;
       S.fit = m; S.fitG = fitGrid(m);
       if (window.siteTally) window.siteTally("fit", 1, S.user ? `a decision mesh on ${S.user.rows.toLocaleString()} rows of your own data` : `a decision mesh on ${opts().sites.toLocaleString()} sites of coin flips`);
-      $("results").classList.remove("stale");
+      stale(false);
       setChip("ok", "Fitted"); report(); drawFit();
       if (S.queued) run();
     };
@@ -357,7 +359,7 @@
     if (S.user) {                                        // a visitor's file: its sites as they are, no truth, no hash
       S.data = S.user.data; S.truthG = null;
       drawData();
-      $("results").classList.add("stale");
+      stale(true);
       S.busy = true; S.id += 1;
       setChip("busy", "Fitting");
       $("statustext").textContent = `The ${o.engine === "rect" ? "rectangular" : "right-triangle"} estimator is fitting ${S.user.sites.toLocaleString()} sites from ${S.user.name}…`;
@@ -367,7 +369,7 @@
     S.truthG = truthGrid(o.truth);
     S.data = makeData(o.truth, o.sites, o.flips, o.seed, o.sd);
     drawTruth(); drawData();
-    $("results").classList.add("stale");
+    stale(true);
     S.busy = true; S.id += 1;
     setChip("busy", "Fitting");
     $("statustext").textContent = `The ${o.engine === "rect" ? "rectangular" : "right-triangle"} estimator is fitting ${o.sites.toLocaleString()} sites…`;
@@ -405,7 +407,10 @@
   const qLabel = () => { $("qval").textContent = gateQ().toFixed(2); };
   $("q").addEventListener("input", qLabel); $("q").addEventListener("change", soon); qLabel();
   // a link on the page (or the back button) that changes the settings runs them
-  window.addEventListener("hashchange", () => { if (S.user) { S.user = null; setOwnView(false); ownSay(""); } readHash(); syncTools(); sdLabel(); qLabel(); run(); });
+  // (a link to a section of the page, such as #how, changes the hash too, and leaves the fit alone)
+  window.addEventListener("hashchange", () => {
+    if (!/(^|&)(engine|truth|sites|flips|seed|sd|q)=/.test(location.hash.slice(1))) return;
+    if (S.user) { S.user = null; setOwnView(false); ownSay(""); } readHash(); syncTools(); sdLabel(); qLabel(); run(); });
   // hold to shake: the coins keep being flipped while the button is held, the flips redrawn each time, and the
   // mesh is fitted once to wherever they land when it is let go
   let holdT = 0, shaking = false, swallow = false;
@@ -559,7 +564,7 @@
       data: { x: Float64Array.from(sx), y: Float64Array.from(sy), n: Int32Array.from(sn), k: Int32Array.from(sk), csv: lines.join("\n") + "\n" },
     };
   }
-  // the page shown for a file: no truth panel and no coin controls, the axes named, the colours centred on its rate
+  // the page shown for a file: no truth panel and no coin controls, the axes named, the colors centered on its rate
   const short = (v) => { const a = Math.abs(v); return a >= 1000 ? Math.round(v).toLocaleString() : a !== 0 && a < 1e-3 ? v.toExponential(2) : String(+v.toPrecision(4)); };
   const coinCaption = $("cvdata").closest("figure").querySelector("figcaption").innerHTML;
   function setOwnView(on) {

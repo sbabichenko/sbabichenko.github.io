@@ -29,16 +29,13 @@
           </div>
           <span id="many-note" class="hint" hidden>Spikes arrive at random, in both directions, and every row lives through the same one; tap a chart to send one.</span>
         </div>
-        <p class="howto" id="howto">Drag the age slider, or drag across any chart. Milestones light up as the spike passes them;
-          one that the game ends before is struck out.</p>
+        <p class="howto" id="howto">Drag the age slider, or drag across any chart.</p>
         <div id="strips"></div>
-        <p class="note">Each row is the response to a single spike. The player who made it knows it did, and carries on
-          playing its best given that (Chapter 6&rsquo;s blip convention); everyone else keeps their equilibrium plan and
-          reacts to what they see. The finite games
-          last 1 time unit, so a spike&rsquo;s life there depends on how much of the game is left,
-          and &ldquo;when in the game&rdquo; moves it. The stationary games have no clock, so every spike lives the same
-          life. Each row is one small example of its chapter&rsquo;s model, described under it, with parameters chosen to make the
-          picture clear rather than the chapter&rsquo;s own. Computed with <a href="{{ get_url(path='noisestate/') }}">noisestate</a> (its development version); each row&rsquo;s vertical scale is its own.</p>
+        <p class="note">Each row is the response to a single spike. The player who made it carries on playing its best;
+          everyone else keeps their plan and reacts to what they see. In the finite games a spike&rsquo;s life depends on
+          how much of the game is left; the stationary games have no end. Each row is a small example of its
+          chapter&rsquo;s model, with parameters picked for the picture, computed with
+          <a href="{{ get_url(path='noisestate/') }}">noisestate</a>. Each row&rsquo;s vertical scale is its own.</p>
       </section>
 
       <section class="lemma" id="lemma">
@@ -46,7 +43,7 @@
         <p class="lede2">After a spike, the player who made it can hold still (a <em>frozen</em> spike) or keep playing its
           best knowing what it did (a <em>blip</em>). The lives above use blips. The two tell different stories, yet they
           pick out the same equilibrium, because each can be built out of the other: they are two ways of listing the
-          same moves. Here is that, in the numbers of Chapter 3&rsquo;s game.</p>
+          same moves.</p>
         <figure class="build">
           <div class="build-controls">
             <div class="modes" role="group" aria-label="Which way to build">
@@ -56,7 +53,7 @@
             <label class="scrub"><span id="build-what">frozen spikes added</span> <input type="range" id="build-n" min="0" max="30" value="0" /><span class="clock" id="build-count">0</span></label>
             <button type="button" id="build-play">&#9654; Build</button>
           </div>
-          <svg id="build-svg" role="img" aria-label="The state after player 1's kick, built up from the other kind of spike"></svg>
+          <svg id="build-svg" role="img" aria-label="The state after player 1's spike, built up from the other kind of spike"></svg>
           <div class="legend" id="build-legend"></div>
           <figcaption id="build-caption"></figcaption>
         </figure>
@@ -64,22 +61,21 @@
           <svg id="lemma-bowls" role="img" aria-label="Player 1's extra cost against the size of a change to its strategy, three ways"></svg>
           <div class="legend" id="lemma-bowls-legend"></div>
           <label class="scrub lemma-scrub">size of the change <input type="range" id="lemma-eps" min="-1000" max="1000" value="190" /></label>
-          <figcaption>So the first-order test is the same in either basis. Player 1&rsquo;s extra cost from a small change
+          <figcaption>So the first-order condition is the same in either basis. Player 1&rsquo;s extra cost from a small change
             to its strategy, then holding still or playing on: both curves are flat at zero, because a move that helped
             in one list would be a combination of moves in the other, and none of those helps. The two part only at
             second order: holding still after a change costs more. Counted as if nobody reacted, the same change looks
             profitable; the bottom is flat only because the others react.</figcaption>
         </figure>
         <h3>When someone is watching</h3>
-        <p class="lede2">With nobody privy to the slip, how the deviator carries on after it is invisible to the others:
-          they see only its effects, and the two conventions describe the same equilibrium. A privy player sees the slip
-          itself, so its best reply depends on what it expects the deviator to do next. Holding still would itself be a
-          string of further slips, each of which the privy player sees and answers; playing on is not. Chapter 6 settles
-          this with the blip: privy players expect the deviator to treat the slip as bygone and carry on playing its
-          best, not to read it as a sign of what the deviator will do later. The deviator&rsquo;s own first-order
+        <p class="lede2">With nobody privy to the spike, how the deviator carries on after it is invisible to the others:
+          they see only its effects, and the two conventions describe the same equilibrium. A privy player sees the spike
+          itself, so its best response depends on what it expects the deviator to do next. Holding still would itself be a
+          string of further spikes, each of which the privy player sees and answers; playing on is not. Chapter 6 settles
+          this with the blip: privy players expect the deviator to treat the spike as bygone and carry on playing its
+          best. The deviator&rsquo;s own first-order
           condition is the same under either convention; what the privy players expect, and so how they respond, is
-          not. That is why the lives above use the blip, and why Chapter 6&rsquo;s privy trader sells into the bad quote
-          expecting the market maker to go on working off its inventory.</p>
+          not. So the lives above use the blip.</p>
         <figure class="watchfig">
           <svg id="watch" role="img" aria-label="The privy trader's orders after the market maker's quote spike, expecting it to play on or to hold still"></svg>
           <div class="legend" id="watch-legend"></div>

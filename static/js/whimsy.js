@@ -276,7 +276,7 @@
     };
     const here = location.pathname;
     const own = /\/dissertation\//.test(here) ? ["loop", "impulse", "triangle"] : /\/cv\//.test(here) ? ["bridge"]
-      : /\/(gate|mesh)\//.test(here) ? ["discovery", "bisect"] : /\/noisestate\//.test(here) ? ["impulse", "triangle"]
+      : /\/decision-mesh\//.test(here) ? ["discovery", "bisect"] : /\/noisestate\//.test(here) ? ["impulse", "triangle"]
       : /\/writing\//.test(here) ? ["shrink", "tail"] : [];
     const pool = [...own, ...["walk", "tail", "bisect", "coin"].filter((k) => !own.includes(k))];
     DRAW[pool[doodles % pool.length]]();
@@ -292,7 +292,7 @@
   (function progressLine() {
     const bar = document.getElementById("progress");
     if (!bar) return;
-    const mode = /^\/(gate|mesh)(\/|$)/.test(location.pathname) ? "mesh" : "walk";
+    const mode = /^\/decision-mesh(\/|$)/.test(location.pathname) ? "mesh" : "walk";
     // pages without their own reading script: the share of the page scrolled, never sliding back while scrolling
     // down (figures that load late make the page taller under the reader)
     if (bar.hasAttribute("data-auto")) {

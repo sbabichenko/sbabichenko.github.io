@@ -11,7 +11,7 @@ const PRESETS = {
       The common shock moves the state; neither player observes it directly.</p>
       <div class="eq"><div class="tex" data-tex="dX = (D^1 + D^2)\\,dt + \\sigma\\,dW^0, \\qquad X_0 = 0">dX = (D<sup>1</sup> + D<sup>2</sup>) dt + &sigma; dW<sup>0</sup>, &nbsp; X<sub>0</sub> = 0</div>
       <div class="tex" data-tex="dY^i = \\sqrt{p_i}\\,X\\,dt + dW^i">dY<sup>i</sup> = &radic;p<sub>i</sub> X dt + dW<sup>i</sup></div>
-      <div class="tex" data-tex="\\text{player } i \\text{ minimises } \\mathbb{E}\\int_0^T \\big[(X - b_i)^2 + r_i\\,(D^i)^2\\big]\\,dt">player i minimises E &int;<sub>0</sub><sup>T</sup> [ (X &minus; b<sub>i</sub>)<sup>2</sup> + r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup> ] dt</div></div>
+      <div class="tex" data-tex="\\text{player } i \\text{ minimizes } \\mathbb{E}\\int_0^T \\big[(X - b_i)^2 + r_i\\,(D^i)^2\\big]\\,dt">player i minimizes E &int;<sub>0</sub><sup>T</sup> [ (X &minus; b<sub>i</sub>)<sup>2</sup> + r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup> ] dt</div></div>
       <p class="small muted" style="margin:0">p<sub>i</sub> is signal precision. Reported costs include the constant b<sub>i</sub><sup>2</sup>T.</p>`,
     yaml: `name: ch1_tracking_with_targets
 params: {p1: 9.0, p2: 9.0, r1: 0.1, r2: 0.1, b1: 1.0, b2: -1.0, sigma: 1.0, T: 1.0}
@@ -52,7 +52,7 @@ numerics: {nodes: 12}
       Responses are kernels in shock age: how a unit shock of a given age still moves the state or a control.</p>
       <div class="eq"><div class="tex" data-tex="dX = (D^1 + D^2)\\,dt + dW^0">dX = (D<sup>1</sup> + D<sup>2</sup>) dt + dW<sup>0</sup></div>
       <div class="tex" data-tex="dY^i = \\sqrt{p_i}\\,X\\,dt + dW^i">dY<sup>i</sup> = &radic;p<sub>i</sub> X dt + dW<sup>i</sup></div>
-      <div class="tex" data-tex="\\text{player } i \\text{ minimises the average of } \\tfrac12 (X - b_i)^2 + \\tfrac12 r_i\\,(D^i)^2">player i minimises the average of &frac12; (X &minus; b<sub>i</sub>)<sup>2</sup> + &frac12; r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup></div></div>
+      <div class="tex" data-tex="\\text{player } i \\text{ minimizes the average of } \\tfrac12 (X - b_i)^2 + \\tfrac12 r_i\\,(D^i)^2">player i minimizes the average of &frac12; (X &minus; b<sub>i</sub>)<sup>2</sup> + &frac12; r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup></div></div>
       <p class="small muted" style="margin:0">b<sub>i</sub> is player i&rsquo;s target. Reported costs include the constant &frac12; b<sub>i</sub><sup>2</sup>.</p>`,
     yaml: `name: ch3_stationary_tracking
 params: {p1: 3.0, p2: 10.0, r1: 1.0, r2: 1.0, b1: 1.0, b2: -1.0}
@@ -93,7 +93,7 @@ numerics: {nodes: 32}
       noise flow. A competitive market maker sets the price from the order flow alone.</p>
       <div class="eq"><div class="tex" data-tex="dV = \\sigma_V\\,dW^V, \\qquad \\text{order flow } dZ = D^1\\,dt + \\sigma_Z\\,dW^Z">dV = &sigma;<sub>V</sub> dW<sup>V</sup>, &nbsp; order flow dZ = D<sup>1</sup> dt + &sigma;<sub>Z</sub> dW<sup>Z</sup></div>
       <div class="tex" data-tex="\\text{trader sees } dY^1 = \\gamma_1 (V - P)\\,dt + dW^1 \\text{ and the flow}">trader sees dY<sup>1</sup> = &gamma;<sub>1</sub> (V &minus; P) dt + dW<sup>1</sup> and the flow</div>
-      <div class="tex" data-tex="\\text{trader maximises } \\mathbb{E}\\int e^{-\\rho t}\\big[D^1 (V - P) - \\varepsilon\\,(D^1)^2\\big]\\,dt, \\qquad P = \\mathbb{E}[V \\mid \\text{flow}]">trader maximises E &int; e<sup>&minus;&rho;t</sup> [ D<sup>1</sup>(V &minus; P) &minus; &epsilon; (D<sup>1</sup>)<sup>2</sup> ] dt, &nbsp; P = E[V | flow]</div></div>
+      <div class="tex" data-tex="\\text{trader maximizes } \\mathbb{E}\\int e^{-\\rho t}\\big[D^1 (V - P) - \\varepsilon\\,(D^1)^2\\big]\\,dt, \\qquad P = \\mathbb{E}[V \\mid \\text{flow}]">trader maximizes E &int; e<sup>&minus;&rho;t</sup> [ D<sup>1</sup>(V &minus; P) &minus; &epsilon; (D<sup>1</sup>)<sup>2</sup> ] dt, &nbsp; P = E[V | flow]</div></div>
       <p class="small muted" style="margin:0">Costs are flow losses, so the trader's profit shows as a negative number.
       The market maker's number omits the V<sup>2</sup> term and is not a welfare measure. Small trading costs make the
       fixed point hard to reach; the status bar says when a solve did not converge.</p>`,
@@ -135,11 +135,11 @@ numerics: {nodes: 16}
     tab: "Supply-chain cycle",
     ch: "Ch. 5",
     title: "Three firms in a supply-chain cycle",
-    desc: `<p class="small muted" style="margin:0">Chapter 5. Firm i buys from firm i - 1 and sells to firm i + 1 and to consumers, around a cycle of three.
+    desc: `<p class="small muted" style="margin:0">Chapter 5. Firm i buys from firm i - 1 and sells to firm i + 1 and to households, around a cycle of three.
       Each firm sets a price P<sub>i</sub> and an order o<sub>i</sub>, which take effect after a delay &tau;, and sees only noisy signals:
       its own sales, its supplier's price, its customer's order book and the order upstream. Demand, cost and firm-level shocks drive the market.</p>
       <div class="eq"><div class="tex" data-tex="\\text{sales}_i = q + (\\theta - 1)\\cdot\\text{price index} - \\theta P_i + \\eta_i \\qquad (\\text{all prices at lag } \\tau)">sales<sub>i</sub> = q + (&theta; &minus; 1) &middot; price index &minus; &theta; P<sub>i</sub> + &eta;<sub>i</sub> &nbsp; (all prices at lag &tau;)</div>
-      <div class="tex" data-tex="\\text{firm } i \\text{ minimises the average of } (\\text{price deviation})^2 + m\\,(\\text{inventory mismatch})^2 + r\\,o_i^2 + \\cdots - 2\\kappa\\,(\\text{revenue terms})">firm i minimises the average of (price deviation)<sup>2</sup> + m (inventory mismatch)<sup>2</sup> + r o<sub>i</sub><sup>2</sup> + &hellip; &minus; 2&kappa; (revenue terms)</div></div>
+      <div class="tex" data-tex="\\text{firm } i \\text{ minimizes the average of } (\\text{price deviation})^2 + m\\,(\\text{inventory mismatch})^2 + r\\,o_i^2 + \\cdots - 2\\kappa\\,(\\text{revenue terms})">firm i minimizes the average of (price deviation)<sup>2</sup> + m (inventory mismatch)<sup>2</sup> + r o<sub>i</sub><sup>2</sup> + &hellip; &minus; 2&kappa; (revenue terms)</div></div>
       <p class="small muted" style="margin:0">The firms are symmetric, so the solver finds one firm's strategy and relabels it around the cycle.
       This is the heaviest game on the page: a solve takes a few seconds on the quick grid and about half a minute on the dissertation's.</p>`,
     yaml: `name: ch5_cycle_market
@@ -310,7 +310,7 @@ numerics: {nodes: 8, unit: 0.5, unit_range: 4.0}
       apply: (d, v) => { d.horizon.window = v; d.numerics.unit_range = v >= 16 ? 8 : 4; } },
     defaultVar: "P0", defaultCtl: "P0",
     approx: "Expected on this tab: none of the grids it offers reaches the solver's strict 1e-6 target.",
-    // nineteen shocks: the response plot shows one group at a time, each firm's shocks in that firm's colour
+    // nineteen shocks: the response plot shows one group at a time, each firm's shocks in that firm's color
     channelGroups: [["demand and cost shocks", (c) => !/^w_\d_\d$/.test(c)], ["signal noise, firm 0", (c) => /^w_0_\d$/.test(c)],
       ["signal noise, firm 1", (c) => /^w_1_\d$/.test(c)], ["signal noise, firm 2", (c) => /^w_2_\d$/.test(c)], ["all nineteen", () => true]],
     channelStyle: (res, c) => {
@@ -329,7 +329,7 @@ numerics: {nodes: 8, unit: 0.5, unit_range: 4.0}
       so the players move from the old equilibrium toward the new one. After T the new stationary equilibrium takes over.</p>
       <div class="eq"><div class="tex" data-tex="dX = (-aX + D^1 + D^2)\\,dt + dW^0">dX = (&minus;a X + D<sup>1</sup> + D<sup>2</sup>) dt + dW<sup>0</sup></div>
       <div class="tex" data-tex="dY^i = \\sqrt{p_i(t)}\\,X\\,dt + dW^i, \\qquad p_1(t) = p_1^{\\text{before}} \\text{ for } t &lt; 0,\\ p_1 \\text{ after}">dY<sup>i</sup> = &radic;p<sub>i</sub>(t) X dt + dW<sup>i</sup>, &nbsp; p<sub>1</sub>(t) = p<sub>1</sub><sup>before</sup> for t &lt; 0, p<sub>1</sub> after</div>
-      <div class="tex" data-tex="\\text{player } i \\text{ minimises } \\mathbb{E}\\int_0^T \\big[\\tfrac12 (X - b_i)^2 + \\tfrac12 r_i\\,(D^i)^2\\big]\\,dt, \\text{ then the new stationary flow}">player i minimises E &int;<sub>0</sub><sup>T</sup> [ &frac12; (X &minus; b<sub>i</sub>)<sup>2</sup> + &frac12; r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup> ] dt, then the new stationary flow</div></div>
+      <div class="tex" data-tex="\\text{player } i \\text{ minimizes } \\mathbb{E}\\int_0^T \\big[\\tfrac12 (X - b_i)^2 + \\tfrac12 r_i\\,(D^i)^2\\big]\\,dt, \\text{ then the new stationary flow}">player i minimizes E &int;<sub>0</sub><sup>T</sup> [ &frac12; (X &minus; b<sub>i</sub>)<sup>2</sup> + &frac12; r<sub>i</sub> (D<sup>i</sup>)<sup>2</sup> ] dt, then the new stationary flow</div></div>
       <p class="small muted" style="margin:0">b<sub>i</sub> is player i&rsquo;s target, the same before and after 0. Reported costs leave out the constant &frac12; b<sub>i</sub><sup>2</sup> per unit time, which no strategy changes.</p>
       <p class="small muted" style="margin:0">The strip carries the old shocks on a band of depth L = 3 below s = 0.
       "Until settled" lets the solver pick T: it marches T = 0, 3, 6, &hellip; until the best-response rules on the last window are within 2% of the new stationary ones.</p>`,
@@ -543,7 +543,7 @@ let solveStart = 0, timerHandle = null, progress = null;
 const $ = (id) => document.getElementById(id);
 const fmt = (x, d = 4) => { if (x === null || x === undefined || !isFinite(x)) return "–"; const s = Number(x).toFixed(d); return /^-0(\.0*)?$/.test(s) ? s.slice(1) : s; };   // no "-0.0000"
 const fmtE = (x) => (x === null || x === undefined || !isFinite(x)) ? "–" : Number(x).toExponential(1);
-// the explorer's colours live on its root element (they follow the site's light and dark themes)
+// the explorer's colors live on its root element (they follow the site's light and dark themes)
 const css = (v) => getComputedStyle(document.querySelector(".explorer") || document.documentElement).getPropertyValue(v).trim();
 const isDark = () => document.documentElement.classList.contains("dark");
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -841,7 +841,7 @@ function renderControls() {
     const sel = wrap.querySelector("select"); sel.value = v;
     sel.addEventListener("change", () => { values[game][key] = +sel.value; writeHash(); requestSolve(0); });
   };
-  if (def.grid) numSelect("ctl-grid", def.grid.label, "A longer window resolves the slow-decaying responses; it costs time.", def.grid.options, def.grid.key);
+  if (def.grid) numSelect("ctl-grid", def.grid.label, "A longer window holds the slow-decaying responses; it costs time.", def.grid.options, def.grid.key);
   if (def.window) numSelect("ctl-window", def.window.label, def.window.hint, def.window.options, def.window.key);
   if (def.nodes) numSelect("ctl-nodes", "Grid (nodes per side)", "More nodes are more accurate and slower.", def.nodes.options, "nodes");
   renderOptions(box);
@@ -1266,7 +1266,7 @@ const titleOf = (s) => ({ text: s, font: { size: 13 }, x: 0, xanchor: "left", xr
 const palette = () => ["--c3", "--c1", "--c2", "--c4", "--c5", "--c6"].map(css);
 const line = (x, y, name, color, extra) => Object.assign({ x, y, name, type: "scatter", mode: "lines", line: { color, width: 2 } }, extra || {});
 const nonzero = (arr) => arr.some((v) => v !== null && Math.abs(v) > 1e-12);
-// one colour per player on every panel of a tab, the same one the cost sweep and the transition use: the model's
+// one color per player on every panel of a tab, the same one the cost sweep and the transition use: the model's
 // agents in order take --c1, --c2, --c4, ...; a state, which no one controls, is drawn in ink (--c3)
 function agentColor(res, a) { const pal = palette(), i = (res.agents || []).findIndex((q) => q.name === a); return i < 0 ? pal[0] : pal[(i + 1) % pal.length]; }
 function ownerColor(res, name) { const a = (res.agents || []).find((q) => q.controls.includes(name)); return a ? agentColor(res, a.name) : css("--c3"); }
@@ -1334,7 +1334,7 @@ function renderFinite(res, out, keepVar, keepCtl) {
       if (!curves) continue;
       if (!curves.some((cv) => nonzero(cv.v))) continue;
       const div = document.createElement("div"); div.className = "plot"; box.appendChild(div);
-      // the dates in the colour of whoever the quantity belongs to, later dates darker
+      // the dates in the color of whoever the quantity belongs to, later dates darker
       plotly("newPlot", div, curves.map((cv, i) => line(cv.s, cv.v, `t = ${fmt(cv.t, 2)}`, ownerColor(res, v), { opacity: 0.3 + 0.7 * (curves.length > 1 ? i / (curves.length - 1) : 1) })),
         baseLayout({ title: titleOf(chLabel(res, c) + (tr && (res.transition.initial || []).includes(c) ? " (initial shock)" : "")),
           xaxis: { ...baseLayout().xaxis, title: { text: "shock time s" }, range: [smin, T] },
@@ -1460,7 +1460,7 @@ function renderPaths(res, out) {
       ${many ? `<label for="pshow" class="small muted" style="margin-left:12px">Show</label><select id="pshow"><option value="c">controls</option><option value="s">states</option><option value="a">all</option></select>` : ""}</div>
     <div class="legend pathkey"><span><i style="opacity:1;height:2px"></i>draw 1</span><span><i style="opacity:0.55;height:1.5px"></i>draw 2</span><span><i style="opacity:0.3;height:1px"></i>draw 3</span><span><i class="band"></i>&plusmn; 2 sd</span><span><i class="dots"></i>mean</span></div>
     <div class="grid3" id="pgrid"></div>
-    <p class="caption">Each panel is in its player's colour, ink for a state. Three draws of the shocks pushed through the equilibrium${stat ? ", over two lag windows of the stationary game" : res.kind === "transition" ? ", old shocks before time 0 included" : ""}. The band is the mean plus and minus two standard deviations. The shocks are drawn in your browser, so a new draw is instant.</p></section>`);
+    <p class="caption">Each panel is in its player's color, ink for a state. Three draws of the shocks pushed through the equilibrium${stat ? ", over two lag windows of the stationary game" : res.kind === "transition" ? ", old shocks before time 0 included" : ""}. The band is the mean plus and minus two standard deviations. The shocks are drawn in your browser, so a new draw is instant.</p></section>`);
   const draw = () => {
     const sim = simulatePaths(res, 3, pathSeed), box = out.querySelector("#pgrid"); box.innerHTML = "";
     out.querySelector("#seedlab").textContent = `draw ${pathSeed}`;
@@ -1492,14 +1492,14 @@ function renderSurface(res, out, names) {
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Response surface</h2>
     <div class="row"><label for="svar" class="small muted">Response of</label><select id="svar">${pairs.map(([nm, c], i) => `<option value="${i}">${esc(label(nm))} to ${esc(chLabel(res, c))}</option>`).join("")}</select></div>
     <div class="plot tall" id="psurf"></div>
-    <p class="caption">Each row is a date t, each column a shock time s: the colour is how much a unit shock at s moves the quantity at t. Grey is where s is after t: a shock cannot move anything before it strikes, so there is nothing to show. Rows of the shock-response plots below are horizontal slices of this picture.${res.kind === "transition" ? " Columns left of s = 0 are the old regime's shocks." : ""} The colour is on a square-root scale, so weak responses still show.</p></section>`);
+    <p class="caption">Each row is a date t, each column a shock time s: the color is how much a unit shock at s moves the quantity at t. Gray is where s is after t: a shock cannot move anything before it strikes, so there is nothing to show. Rows of the shock-response plots below are horizontal slices of this picture.${res.kind === "transition" ? " Columns left of s = 0 are the old regime's shocks." : ""} The color is on a square-root scale, so weak responses still show.</p></section>`);
   const draw = (i) => {
     const [nm, c] = pairs[i], rows = P.kernels[nm][c], M = P.times.length - 1, nb = P.band;
     const sgrid = Array.from({ length: nb + M }, (_, k) => (k - nb + 0.5) * P.h);
     const z = rows.map((r) => sgrid.map((_, k) => (k < r.length ? r[k] : null)));
     let mx = 0; for (const r of z) for (const v of r) if (v !== null) mx = Math.max(mx, Math.abs(v));
-    // colour on a signed square-root scale, so a response a tenth of the peak still shows at a third of the colour;
-    // the colour bar and the hover read the response itself
+    // color on a signed square-root scale, so a response a tenth of the peak still shows at a third of the color;
+    // the color bar and the hover read the response itself
     const m = mx || 1, sq = (v) => (v === null ? null : Math.sign(v) * Math.sqrt(Math.abs(v) / m));
     const tv = [-1, -0.5, -0.1, 0, 0.1, 0.5, 1].map((f) => f * m);
     plotly("react", "psurf", [{ type: "heatmap", x: sgrid, y: P.times, z: z.map((r) => r.map(sq)), zmin: -1, zmax: 1, colorscale: [[0, css("--c2")], [0.5, isDark() ? "rgb(31,32,34)" : "rgb(255,255,240)"], [1, css("--c1")]], hoverongaps: false,
@@ -1763,7 +1763,7 @@ $("saveyaml").onclick = () => {
 $("loadexample").onclick = () => { customYaml = EXAMPLES[$("example").value]; $("yaml").value = customYaml; renderParamControls(); writeHash(); };
 $("yaml").addEventListener("input", () => { customYaml = $("yaml").value; });
 $("yaml").addEventListener("change", () => { renderParamControls(); writeHash(); });
-// the site's theme switch (and the system's) redraws the plots in the new colours
+// the site's theme switch (and the system's) redraws the plots in the new colors
 document.body.addEventListener("set-theme", () => setTimeout(() => { if (lastResult) { renderResults(lastResult); plotSnapshot = null; } }, 30));
 readHash(); renderAll(); writeHash(); startWorker();
 // a link or the back button that changes the hash (writeHash replaces it without firing this) opens that game

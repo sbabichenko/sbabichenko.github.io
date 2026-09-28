@@ -2,7 +2,7 @@
 // drawn from noisestate's numbers for the Chapter 3 game (tools/spike/compute_spike_lives.py -> spike/lemma.json).
 // The builder: deviations add up, so a blip's life is the frozen life of the kick plus the frozen lives of the small
 // later spikes its follow-up is made of (B = F + c * F, c the follow-up D^{1<-1}), and a frozen spike's life is a blip's
-// minus blips cancelling its follow-up, round after round (F = B + w * B, w = -c + c*c - ...); the sums are computed
+// minus blips canceling its follow-up, round after round (F = B + w * B, w = -c + c*c - ...); the sums are computed
 // here from the stored lives and shown as they converge.  The bowls: player 1's extra cost against the size of a change
 // to its strategy, J(e) - J(0) = slope e + curvature e^2, followed either way and counted as if nobody reacted.
 (function () {
@@ -53,7 +53,7 @@
       }
       return out;
     }
-    // a blip from frozen spikes: the follow-up as NSP spikes, at the centres of cells of width DT, each of its mass there
+    // a blip from frozen spikes: the follow-up as NSP spikes, at the centers of cells of width DT, each of its mass there
     const DT = 0.1, NSP = Math.round(SHOW / DT);
     const spikes = Array.from({ length: NSP }, (_, j) => {
       const lo = Math.round((j * DT) / du), hi = Math.round(((j + 1) * DT) / du);
@@ -79,11 +79,11 @@
     const slider = document.getElementById("build-n"), count = document.getElementById("build-count"), what = document.getElementById("build-what");
     const caption = document.getElementById("build-caption"), play = document.getElementById("build-play");
     const CAPTIONS = {
-      blip: "Player 1\u2019s blip is its kick followed by its own follow-up, and the follow-up is just more small spikes, later "
+      blip: "In Chapter 3\u2019s game, player 1\u2019s blip is its spike followed by its own follow-up, and the follow-up is just more small spikes, later "
           + "(the bars below). Each frozen spike moves the state along the frozen life, shifted to when it happens and scaled "
           + "by its size; add them up and you get the blip\u2019s life. The small steps come from spacing the spikes apart; they shrink as the spikes get finer.",
       frozen: "The other way round: a frozen spike is a blip minus blips that cancel its follow-up. Those corrections have "
-          + "follow-ups of their own, cancelled in the next round, and so on. The leftover shrinks every round, because a "
+          + "follow-ups of their own, canceled in the next round, and so on. The leftover shrinks every round, because a "
           + "follow-up only reaches forward in time, so the rounds settle on the frozen life."};
 
     function drawBuild() {
@@ -95,7 +95,7 @@
       el("line", { class: "zero", x1: 0, x2: W, y1: Y(0), y2: Y(0) }, svgC);
       const target = mode === "blip" ? B : F, start = mode === "blip" ? F : B;
       const sum = mode === "blip" ? blipSums[step] : frozenSums[step];
-      el("path", { class: "curve", d: path(start), stroke: mode === "blip" ? COLORS.frozen : COLORS.blip, opacity: 0.55 }, svgC);   // blip always blue, frozen always grey
+      el("path", { class: "curve", d: path(start), stroke: mode === "blip" ? COLORS.frozen : COLORS.blip, opacity: 0.55 }, svgC);   // blip always blue, frozen always gray
       el("path", { class: "target", d: path(target), stroke: mode === "blip" ? COLORS.blip : COLORS.frozen }, svgC);
       if (mode === "blip" && step > 0) {                   // the latest frozen spike's own contribution, faint
         const sp = spikes[step - 1];
@@ -119,7 +119,7 @@
       for (let k = 0; k <= SHOW; ++k) el("text", { x: X(k), y: H - 4, "text-anchor": k ? (k === SHOW ? "end" : "middle") : "start" }, svgC).textContent = k;
       const box = document.getElementById("build-legend");
       box.innerHTML = mode === "blip"
-        ? `<span><i style="background:var(--ink-3)"></i>the kick, held still</span><span><i style="background:var(--accent)"></i>the blip (target)</span><span><i style="background:var(--ink)"></i>the sum so far</span><span>gap to the blip <b>${gap(sum, target).toFixed(3)}</b></span>`
+        ? `<span><i style="background:var(--ink-3)"></i>the spike, held still</span><span><i style="background:var(--accent)"></i>the blip (target)</span><span><i style="background:var(--ink)"></i>the sum so far</span><span>gap to the blip <b>${gap(sum, target).toFixed(3)}</b></span>`
         : `<span><i style="background:var(--accent);opacity:.55"></i>the blip we start from</span><span><i style="background:var(--ink-3)"></i>the frozen spike (target)</span><span><i style="background:var(--ink)"></i>after ${step} round${step === 1 ? "" : "s"}</span><span>gap <b>${gap(sum, target).toFixed(3)}</b></span>`;
       caption.textContent = CAPTIONS[mode];
       count.textContent = step;

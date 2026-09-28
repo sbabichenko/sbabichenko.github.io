@@ -27,9 +27,9 @@
     const box = document.getElementById(id); box.innerHTML = "";
     return items.map(([color, label, dash]) => { const s = document.createElement("span"); s.innerHTML = (dash ? `<i class="${dash === "dot" ? "dot" : "dash"}" style="border-top-color:${color}"></i>` : `<i style="background:${color}"></i>`) + `${label} <b></b>`; box.appendChild(s); return s.querySelector("b"); });
   };
-  // Anything reweighted by e^{theta C} is drawn dashed blue, unfilled, with hollow centres: it is where a derivative is
+  // Anything reweighted by e^{theta C} is drawn dashed blue, unfilled, with hollow centers: it is where a derivative is
   // evaluated, not something the player believes, so it never shares the belief's solid-past, dashed-forecast style.
-  // The dash carries that meaning, not the colour: later sections draw the risk-averse equilibrium itself in solid blue.
+  // The dash carries that meaning, not the color: later sections draw the risk-averse equilibrium itself in solid blue.
   const RW = { stroke: "var(--accent)", "stroke-dasharray": "6 4", "stroke-width": 1.7, fill: "none" };
   const hollow = (cx, cy, svg, r = 5) => el("circle", { r, cx, cy, fill: "var(--paper)", stroke: "var(--accent)", "stroke-width": 2.2 }, svg);
   const size = (svg, H) => { const W = Math.max(240, svg.clientWidth || 500); svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("height", H); svg.innerHTML = ""; return W; };
@@ -45,14 +45,14 @@
     const rth = document.getElementById("theta-1d-read"), rmu = document.getElementById("mu-1d-read");
     const wl = legend("why-legend", [["var(--ink-3)", "belief"], ["var(--warm)", "weight e<sup><i>&theta;C</i></sup>,&nbsp;log scale", true], ["var(--accent)", "belief &times; weight (not a belief)", true]]);
     const al = legend("affine-legend", [["var(--ink-3)", "no risk aversion"], ["var(--accent)", "this \u03b8"]]);
-    const centre = (mu, th) => (mu + th * S * S * B) / (1 - th * A * S * S);
+    const center = (mu, th) => (mu + th * S * S * B) / (1 - th * A * S * S);
     function draw() {
       const th = (sth.value / 100) * TH, mu = smu.value / 100;
       rth.innerHTML = `${(sth.value / 100).toFixed(2)} &nbsp;(<i>&theta;</i> = ${th.toFixed(2)})`;
-      rmu.textContent = `belief centred at ${mu.toFixed(2)}`;
+      rmu.textContent = `belief centered at ${mu.toFixed(2)}`;
       // the densities on a grid, and the averages of the line by summation
       // the grid follows both curves out to many sd, so neither is cut off (the drawing then shows the blow-up near theta*)
-      const sdT = S / Math.sqrt(1 - th * A * S * S), cT = centre(mu, th);
+      const sdT = S / Math.sqrt(1 - th * A * S * S), cT = center(mu, th);
       const lo = Math.min(-3, mu - 4 * S), hi = Math.max(5, cT + 4 * sdT), NG = Math.ceil((hi - lo) / 0.004), dw = (hi - lo) / NG;
       const ws = Array.from({ length: NG + 1 }, (_, k) => lo + k * dw);
       const bel = ws.map((w) => Math.exp(-0.5 * ((w - mu) / S) ** 2));
@@ -74,7 +74,7 @@
       }
       el("path", { class: "curve", d: path(pb, Yd), stroke: "var(--ink-3)" }, svg);
       el("path", { class: "curve", d: path(pt, Yd), ...RW }, svg);
-      // the line below, and each curve's centre dropped onto it
+      // the line below, and each curve's center dropped onto it
       const g = (w) => G0 + G1 * w, glo = g(lo), ghi = g(hi), Yg = (v) => TOP + 6 + ((ghi - v) / (ghi - glo)) * (H - TOP - 26);
       el("line", { class: "zero", x1: 0, x2: W, y1: Yg(0), y2: Yg(0) }, svg);
       el("line", { class: "curve", x1: X(lo), x2: X(hi), y1: Yg(glo), y2: Yg(ghi), stroke: "var(--ink)", "stroke-width": 1.6 }, svg);
@@ -91,15 +91,15 @@
       wl[2].textContent = `average ${avg(pt).toFixed(3)} = line at ${mt.toFixed(2)}: ${g(mt).toFixed(3)}`;
       // the affine map
       svg = document.getElementById("affine"); W = size(svg, H);
-      const m0 = -1.5, m1 = 1.5, clo = Math.min(-2, centre(m0, th) - 0.5), chi = Math.max(7, centre(m1, th) + 0.5);
+      const m0 = -1.5, m1 = 1.5, clo = Math.min(-2, center(m0, th) - 0.5), chi = Math.max(7, center(m1, th) + 0.5);
       const Xm = (v) => ((v - m0) / (m1 - m0)) * W, Yc = (v) => 8 + ((chi - Math.max(clo, Math.min(chi, v))) / (chi - clo)) * (H - 30);
       el("line", { class: "zero", x1: 0, x2: W, y1: Yc(0), y2: Yc(0) }, svg);
       el("line", { class: "zero", x1: Xm(0), x2: Xm(0), y1: 8, y2: H - 22 }, svg);
       el("line", { class: "curve", x1: Xm(m0), x2: Xm(m1), y1: Yc(m0), y2: Yc(m1), stroke: "var(--ink-3)", "stroke-dasharray": "5 4" }, svg);
-      el("line", { class: "curve", x1: Xm(m0), x2: Xm(m1), y1: Yc(centre(m0, th)), y2: Yc(centre(m1, th)), stroke: "var(--accent)" }, svg);
+      el("line", { class: "curve", x1: Xm(m0), x2: Xm(m1), y1: Yc(center(m0, th)), y2: Yc(center(m1, th)), stroke: "var(--accent)" }, svg);
       el("circle", { class: "dot", r: 5, cx: Xm(mu), cy: Yc(mu), fill: "var(--ink-3)" }, svg);
-      hollow(Xm(mu), Yc(centre(mu, th)), svg);
-      el("text", { x: W - 4, y: H - 6, "text-anchor": "end" }, svg).textContent = "the belief's centre \u2192";
+      hollow(Xm(mu), Yc(center(mu, th)), svg);
+      el("text", { x: W - 4, y: H - 6, "text-anchor": "end" }, svg).textContent = "the belief's center \u2192";
       el("text", { x: 4, y: 20 }, svg).textContent = "where a deviation is judged";
       const slope = 1 / (1 - th * A * S * S), shift = th * S * S * B / (1 - th * A * S * S);
       al[0].textContent = "the belief itself";
@@ -142,7 +142,7 @@
       el("text", { x: X(hi) - 4, y: H - 5, "text-anchor": "end" }, svg).textContent = "the past shock";
       el("text", { x: X(lo) + 4, y: 12 }, svg).textContent = "the next shock (up)";
       el("text", { x: X(hi) - 4, y: 12, "text-anchor": "end" }, svg).textContent = "costly: up and to the right";
-      const gauss2 = (m, C, color, rw, cls) => {                       // the one-standard-deviation ellipse and its centre
+      const gauss2 = (m, C, color, rw, cls) => {                       // the one-standard-deviation ellipse and its center
         const tr = C[0][0] + C[1][1], det = C[0][0] * C[1][1] - C[0][1] * C[0][1], disc = Math.sqrt(Math.max(0, tr * tr / 4 - det));
         const l1 = tr / 2 + disc, l2 = tr / 2 - disc, ang = Math.abs(C[0][1]) > 1e-12 ? Math.atan2(l1 - C[0][0], C[0][1]) : (C[0][0] >= C[1][1] ? 0 : Math.PI / 2);
         let dpath = "";
@@ -157,8 +157,8 @@
       };
       gauss2([0.6, 0], [[0.5, 0], [0, 1]], "var(--ink-3)");
       gauss2(mt, Ct, "var(--accent)", true);
-      tl[0].textContent = "centre (0.60, 0.00)";
-      tl[1].textContent = `centre (${mt[0].toFixed(2)}, ${mt[1].toFixed(2)})`;
+      tl[0].textContent = "center (0.60, 0.00)";
+      tl[1].textContent = `center (${mt[0].toFixed(2)}, ${mt[1].toFixed(2)})`;
     }
 
     function state(i) {
@@ -340,7 +340,7 @@
   // keeps the prior Gaussian while theta < theta* = 1 / (2 (1 + RHO)).  Route 1 (the solver): weight the plane, then
   // read it along the line x = x0.  Route 2 (the appendix): read the line first (the belief about y given x0, which
   // moves with x0 through the correlation), then weight it by e^{theta C(x0, y)}.  By Bayes' rule both end on the same
-  // curve; each is computed its own way and normalised on a wide grid.  The shock to come runs across in every panel.
+  // curve; each is computed its own way and normalized on a wide grid.  The shock to come runs across in every panel.
   (function () {
     const sth = document.getElementById("theta-eq2"), sx = document.getElementById("seen-eq2");
     if (!sth || !sx) return;
@@ -400,7 +400,7 @@
       profile("r2b", [[belief, { stroke: "var(--ink-3)", "stroke-width": 1.8 }]], top).dot(mean(belief));
       const c2 = profile("r2c", [[belief, faint], [start, { ...RW, "stroke-width": 1.4 }], [now, DOT]], top); c2.mark(mean(now), "var(--warm)");
       const c3 = (v) => (Math.abs(v) < 5e-4 ? 0 : v).toFixed(3);
-      lg[0].textContent = `centre ${c3(mean(belief))}`; lg[1].textContent = `centre ${c3(mean(start))}`; lg[2].textContent = `centre ${c3(mean(now))}`;
+      lg[0].textContent = `center ${c3(mean(belief))}`; lg[1].textContent = `center ${c3(mean(start))}`; lg[2].textContent = `center ${c3(mean(now))}`;
     }
     sth.addEventListener("input", draw); sx.addEventListener("input", draw);
     draw();

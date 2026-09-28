@@ -1,10 +1,10 @@
-// /gate/deep: the decision mesh one level below /gate/how. The page draws coin flips, fits them with both engines in
+// /decision-mesh/detail: the decision mesh one level below the story on /decision-mesh. The page draws coin flips, fits them with both engines in
 // fit-worker.js (candidate trace on), and builds each scene from the two runs. Sources, as cited below:
 //   tri  = ~/triangular-decision-mesh/core   (fit/refine.cpp, fit/gate.cpp, estimator/*.cpp, mesh/*.cpp, docs/MODEL.md)
 //   rect = ~/rectangular-decision-mesh/core  (fit/refine.cpp, fit/gate.cpp, docs/WRITEUP_2026-09-23.md)
 // Live from the runs: basis2d (rect), score, lindsey, select, overlap, variance, stop, rect, and the numbers under
 // refit and bias. Computed on the page with the engine's rule from the run's starting mesh: bisect. Sketches, and
-// labelled so on the stage: basis1d, the vector picture in refit, the top of bias, rescore.
+// labeled so on the stage: basis1d, the vector picture in refit, the top of bias, rescore.
 (function () {
   "use strict";
   const root = document.getElementById("gatedeep");
@@ -58,7 +58,7 @@
     return out;
   }
 
-  // ------------------------------------------------------------------ the data (the same odds and flips as /gate/how)
+  // ------------------------------------------------------------------ the data (the same odds and flips as the story on /decision-mesh)
   const BASE = -1, SITES = 6000, FLIPS = 20;
   let POOL_SD = 0.25;
   const TRUTHS = {
@@ -81,7 +81,7 @@
     return { x, y, n, k, csv: rows.join("\n") + "\n" };
   }
 
-  // ------------------------------------------------------------------ colour: log-odds against the background
+  // ------------------------------------------------------------------ color: log-odds against the background
   function rgbOf(css) {
     const c = document.createElement("canvas").getContext("2d"); c.fillStyle = "#000"; c.fillStyle = css;
     const s = c.fillStyle; if (s[0] === "#") return [1, 3, 5].map((i) => parseInt(s.slice(i, i + 2), 16));
@@ -405,7 +405,7 @@
       } };
     })();
 
-    // the candidate the next three scenes follow: among round 0's candidates at the centres of the starting squares
+    // the candidate the next three scenes follow: among round 0's candidates at the centers of the starting squares
     // (the midpoints of the 128-face mesh's diagonals, inactive at round 0), the largest |z|
     const sqC = r0.filter((c) => c.seg && Math.abs(Math.abs(c.seg[2] - c.seg[0]) - 0.125) < 1e-9 && Math.abs(Math.abs(c.seg[3] - c.seg[1]) - 0.125) < 1e-9)
       .sort((a, b) => Math.abs(b.z) - Math.abs(a.z))[0] || r0.filter((c) => c.seg).sort((a, b) => Math.abs(b.z) - Math.abs(a.z))[0];
@@ -602,8 +602,8 @@
       const pp = []; for (let z = -WB; z <= WB + 1e-9; z += 0.05) pp.push([XB(z), YB(par(z))]);
       const pa = stroke(low, poly(pp), "warm", 2);
       text(low, Bx.x + Bx.w, Bx.y - 14, "the parabola fitted over |z| ≤ 2", "tiny warmt", "end");
-      const cap = text(g, 300, 580, `on this page: centre ${fmt(LN.d0, 3)}, spread ${fmt(LN.s0, 3)}, π₀ ${fmt(LN.pi0, 3)}`, "tiny");
-      setV("lnull", `centre ${fmt(LN.d0, 3)}, spread ${fmt(LN.s0, 3)}, π₀ ${fmt(LN.pi0, 3)}`);
+      const cap = text(g, 300, 580, `on this page: center ${fmt(LN.d0, 3)}, spread ${fmt(LN.s0, 3)}, π₀ ${fmt(LN.pi0, 3)}`, "tiny");
+      setV("lnull", `center ${fmt(LN.d0, 3)}, spread ${fmt(LN.s0, 3)}, π₀ ${fmt(LN.pi0, 3)}`);
       setV("enull", cal0 ? `${fmt(cal0.nullMean, 3)}, ${fmt(cal0.nullSd, 3)}, ${fmt(cal0.pi0, 3)}` : "not reported");
       return { g, update(t) {
         const n = Math.floor(seg(t, 0, 0.25) * bars.length); bars.forEach((b, i) => fade(b, i < n ? 0.22 : 0));
@@ -639,7 +639,7 @@
         for (const z of [-W, -4, 0, 4, W]) text(q, X(z), y + 28, fmt(z, 0), "tiny");
         return q;
       });
-      const cap = text(g, 300, 552, "one tick per round-0 candidate at its z; coloured: taken by the rule", "tiny");
+      const cap = text(g, 300, 552, "one tick per round-0 candidate at its z; colored: taken by the rule", "tiny");
       setV("nLfdr", String(engineK)); setV("nBH", String(kbh)); setV("nNaive", String(selN.size));
       return { g, update(t) { panels.forEach((p, i) => fade(p, seg(t, 0.05 + i * 0.2, 0.2 + i * 0.2))); fade(cap, seg(t, 0.5, 0.65)); } };
     })();

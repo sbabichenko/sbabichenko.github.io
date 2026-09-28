@@ -1,5 +1,5 @@
 {#- /noisestate/risk: what a player's CARA (entropic) risk aversion does, in two places where the answer is exact.
-    Section 1 reads static/noisestate/risk/cost.json (tools/risk/compute_risk.py: player 1's realised cost in Chapter
+    Section 1 reads static/noisestate/risk/cost.json (tools/risk/compute_risk.py: player 1's realized cost in Chapter
     1's tracking game as a sum of weighted chi-squares); section 2 is the risk-sensitive regulator's closed form.
     static/noisestate/risk.js draws both. -#}
 <!doctype html>
@@ -13,11 +13,16 @@
       <section class="ideahead">
         <p class="eyebrow"><a href="{{ get_url(path='noisestate/') }}">Noise-State Game Explorer</a> &middot; risk aversion</p>
         <h1>Risk Aversion, Entropically</h1>
-        <p class="lede">A risk-averse player, with a coefficient <i>&theta;</i>, minimises
+        <p class="lede">A driver on an icy road stays farther from the edge than the average skid calls for. The games
+          of the dissertation cannot say why: with quadratic costs and Gaussian shocks, a player cares only about
+          averages, and can ignore what it has not seen yet. The usual way to add risk aversion reads it as pessimism, a
+          player acting as if the world were worse than it believes. In a game that is costly. Each player would carry
+          its own pessimism, the others would have to forecast it, and the hierarchy of beliefs about beliefs would
+          return.</p>
+        <p class="lede">It does not. A risk-averse player, with a coefficient <i>&theta;</i>, minimizes
           <i>&theta;</i><sup>&minus;1</sup>&thinsp;log&thinsp;E&thinsp;<i>e</i><sup><i>&theta;C</i></sup> of its cost <i>C</i>: the certain cost it would
           trade its uncertain one for. It believes exactly what a risk-neutral player would. What changes is where it
-          judges a deviation from its plan: at a point moved by an affine map of its beliefs. Here is why, and what
-          follows.</p>
+          judges a deviation from its plan: at a point moved by an affine map of its beliefs.</p>
       </section>
 
       <section class="rsec">
@@ -25,30 +30,29 @@
         <p class="lede2">Whether a small change to a plan pays is a derivative: the change in cost, averaged over the
           outcomes the player thinks possible. For a risk-neutral player that average is taken with its beliefs. For a
           risk-averse one, differentiating log&thinsp;E&thinsp;<i>e</i><sup><i>&theta;C</i></sup> gives the same average with every
-          outcome weighted by <i>e</i><sup><i>&theta;C</i></sup>: the costly outcomes count for more. Two facts make that
-          simple. The weight is the exponential of a quadratic, so weighted Gaussian beliefs are Gaussian again, with a
-          moved centre. And the change in cost from a small deviation is a straight line in the shocks, and the
+          outcome weighted by <i>e</i><sup><i>&theta;C</i></sup>: the costly outcomes count for more. The weight is the exponential of a quadratic, so weighted Gaussian densities are Gaussian again, with a
+          moved center. And the change in cost from a small deviation is a straight line in the shocks, and the
           average of a straight line is the line at the average. So the risk-averse judgment is the risk-neutral one,
-          taken at the moved centre.</p>
+          taken at the moved center.</p>
         <div class="rcontrols">
           <label class="scrub"><span><i>&theta;</i> / <i>&theta;</i>*</span> <input type="range" id="theta-1d" min="0" max="95" value="55" /><span class="clock" id="theta-1d-read"></span></label>
           <label class="scrub"><span>what the player has seen</span> <input type="range" id="mu-1d" min="-150" max="150" value="60" /><span class="clock" id="mu-1d-read"></span></label>
         </div>
         <div class="rgrid">
           <figure>
-            <svg id="why" role="img" aria-label="A belief, the weight e to the theta C, the weighted belief, and the marginal cost line"></svg>
+            <svg id="why" role="img" aria-label="A belief, the weight e to the theta C, the weighted curve, and the marginal cost line"></svg>
             <div class="legend" id="why-legend"></div>
-            <figcaption>One shock <i>w</i>. Grey: the player&rsquo;s belief about it. Orange: the weight
+            <figcaption>One shock <i>w</i>. Gray: the player&rsquo;s belief about it. Orange: the weight
               <i>e</i><sup><i>&theta;C</i></sup> on a log scale, where it is the parabola <i>&theta;C</i>, the cost <i>C</i>
               being quadratic in <i>w</i>. Dashed blue: the belief times the
               weight, again a bell curve, shifted and widened. It is not a new belief: the player
-              still believes the grey curve, and the blue one only says how much each outcome counts in the average that
+              still believes the gray curve, and the blue one only says how much each outcome counts in the average that
               judges a deviation. Below: the change in cost from a small deviation, a
               straight line in <i>w</i>. Its average under each curve (computed by summing over <i>w</i>) equals the line
-              at that curve&rsquo;s centre.</figcaption>
+              at that curve&rsquo;s center.</figcaption>
           </figure>
           <figure>
-            <svg id="affine" role="img" aria-label="The weighted centre against the belief's centre: a straight line"></svg>
+            <svg id="affine" role="img" aria-label="The weighted center against the belief's center: a straight line"></svg>
             <div class="legend" id="affine-legend"></div>
             <figcaption>Where the judgment is taken, against what the player believes. Wherever the belief sits, the judgment point moves
               by the same stretch and the same shift: an affine map, steeper as <i>&theta;</i> grows. At <i>&theta;</i>* the
@@ -56,7 +60,7 @@
           </figure>
         </div>
         <p class="rnote">Here the belief is <i>w</i> ~ N(<i>&mu;</i>, 0.8&sup2;), the cost <i>C</i> = &frac12;<i>w</i>&sup2; +
-          &frac12;<i>w</i>, so the weighted centre is (<i>&mu;</i> + <i>&theta;</i>&middot;0.8&sup2;&middot;&frac12;) / (1 &minus;
+          &frac12;<i>w</i>, so the weighted center is (<i>&mu;</i> + <i>&theta;</i>&middot;0.8&sup2;&middot;&frac12;) / (1 &minus;
           <i>&theta;</i>&middot;0.8&sup2;), and <i>&theta;</i>* = 1/0.8&sup2;. With many shocks the stretch is
           (<i>I</i> &minus; <i>&theta;</i>&Sigma;<i>K</i>)<sup>&minus;1</sup>, &Sigma; the uncertainty and <i>K</i> the cost&rsquo;s quadratic
           part, and the shift comes from its linear part: the appendix to Chapter 1.</p>
@@ -64,11 +68,11 @@
 
       <section class="rsec">
         <h2>A past shock and a future one</h2>
-        <p class="lede2">With more than one shock the moved centre can land where the belief puts nothing. Take a shock
+        <p class="lede2">With more than one shock the moved center can land where the belief expects nothing. Take a shock
           that has happened, seen through noise, and one still to come, with the cost the square of their sum. The
-          belief about the future shock is centred at zero; the weighted one is not, because the costly outcomes are
+          belief about the future shock is centered at zero; the weighted one is not, because the costly outcomes are
           the ones where both push the same way. A risk-neutral player can ignore what it has not seen yet. A
-          risk-averse one cannot: certainty equivalence fails exactly here.</p>
+          risk-averse one cannot: certainty equivalence fails here.</p>
         <div class="rcontrols">
           <label class="scrub"><span><i>&theta;</i> / <i>&theta;</i>*</span> <input type="range" id="theta-toy" min="0" max="95" value="58" /><span class="clock" id="theta-toy-read"></span></label>
         </div>
@@ -76,9 +80,9 @@
           <figure class="wide toyfig">
             <svg id="toy" role="img" aria-label="Two shocks: the belief and the same weighted by cost"></svg>
             <div class="legend" id="toy-legend"></div>
-            <figcaption>Grey: what the player believes, the past shock about 0.6 and the next one anybody&rsquo;s guess.
+            <figcaption>Gray: what the player believes, the past shock about 0.6 and the next one anybody&rsquo;s guess.
               Dashed blue: the same belief with every outcome weighted by <i>e</i><sup><i>&theta;C</i></sup>. It leans along the
-              costly diagonal, and its hollow centre, the point where a deviation is judged, moves off zero on the future
+              costly diagonal, and its hollow center, the point where a deviation is judged, moves off zero on the future
               shock&rsquo;s axis. The player does not expect the next shock to push; it weighs the outcomes where it
               does.</figcaption>
           </figure>
@@ -101,7 +105,7 @@
           <figure class="wide">
             <svg id="state" role="img" aria-label="Player 1's estimate and forecast of the state, and the same weighted by cost"></svg>
             <div class="legend" id="state-legend"></div>
-            <figcaption>Grey: what player 1 believes, its estimate of the state so far and its forecast of the rest;
+            <figcaption>Gray: what player 1 believes, its estimate of the state so far and its forecast of the rest;
               the thin dark line is what actually happened. Dashed blue: the same path averaged over outcomes weighted by
               their cost, where the risk-averse player judges a change in its plan. It is neither an estimate nor a
               forecast: it leans up, past and future, because the outcomes
@@ -113,12 +117,12 @@
             <figcaption>The judgment itself: how much player 1&rsquo;s cost changes if, now, it pushes a little harder
               against the state. With its belief the answer is zero (up to the time cells), as it must be: the plan is
               optimal for a risk-neutral player. Cost-weighted, the push lowers the cost, more so as <i>&theta;</i> grows:
-              a risk-averse player would push harder. That is where <a href="#eq-section">the equilibrium below</a> goes.</figcaption>
+              a risk-averse player would push harder, as in <a href="#eq-section">the equilibrium below</a>.</figcaption>
           </figure>
           <figure class="wide">
             <svg id="shocks" role="img" aria-label="Player 1's noise-state, shock by shock, and the same weighted by cost"></svg>
-            <figcaption>Shock by shock: player 1&rsquo;s estimate of each shock path (grey) and the same averaged over
-              outcomes weighted by their cost (dashed blue, not an estimate). Every future shock averages zero in the belief, flat after the
+            <figcaption>Shock by shock: player 1&rsquo;s estimate of each shock path (gray) and the same averaged over
+              outcomes weighted by their cost (dashed blue). Every future shock averages zero in the belief, flat after the
               line; weighted by cost, the future shocks average a drift that pushes the state further, and the past is
               weighted toward the bigger pushes. Thin dark line: what actually happened.</figcaption>
           </figure>
@@ -165,7 +169,7 @@
           <figcaption>In every panel the shock still to come runs across. In the squares the shock already seen runs up,
             and the dark line is its value; conditioning on it reads the square along that line. The two shocks are
             correlated, so what was seen moves the player&rsquo;s belief. The last panel draws both routes&rsquo; curves: they
-            are one curve. Its centre (the circle) is the point at which a derivative of the cost is taken, the same
+            are one curve. Its center (the circle) is the point at which a derivative of the cost is taken, the same
             either way. In symbols: <i>e</i><sup><i>&theta;C</i>(<i>x</i>,<i>y</i>)</sup><i>p</i>(<i>x</i>, <i>y</i>) read at
             <i>x</i> = <i>x</i><sub>0</sub> is <i>e</i><sup><i>&theta;C</i>(<i>x</i><sub>0</sub>,<i>y</i>)</sup><i>p</i>(<i>y</i> | <i>x</i><sub>0</sub>),
             up to a constant. The prior is standard normal with correlation 0.6, and <i>&theta;</i>* = 1/3.2; near it the
@@ -177,8 +181,7 @@
         <h2>An equilibrium of risk-averse players</h2>
         <p class="lede2">Now let both players of the tracking game be risk averse, and let each best-respond to the
           other. Every player then judges its plan at its risk-adjusted noise-state, and so the kernels, the adjoints and the costs
-          that define each player&rsquo;s adjustment all come from the risk-averse players themselves: one fixed point,
-          not a correction to the risk-neutral one.</p>
+          that define each player&rsquo;s adjustment all come from the risk-averse players themselves.</p>
         <div class="rcontrols">
           <label class="scrub"><span><i>&theta;</i></span> <input type="range" id="theta-eq" min="0" max="30" value="10" /><span class="clock" id="theta-eq-read"></span></label>
         </div>
@@ -195,7 +198,7 @@
             <figcaption>Each player&rsquo;s entropic cost rises with <i>&theta;</i> here. Its expected cost first
               falls, a little, to its lowest near <i>&theta;</i> = 0.9: when both push harder, both gain on average, which
               suggests the risk-neutral players each leave some of the pushing to the other. Far enough out, they over-insure, and at <i>&theta;</i> &asymp;
-              3.04 the equilibrium breaks down. That is later than <a href="#state">the tracking game&rsquo;s</a> <i>&theta;</i>* = 1.93: here the players push
+              3.04 the equilibrium breaks down. That is higher than <a href="#state">the tracking game&rsquo;s</a> <i>&theta;</i>* = 1.93: here the players push
               harder, damp the shocks, and so can bear more risk aversion.</figcaption>
           </figure>
         </div>
@@ -223,7 +226,7 @@
             <figcaption>The state under both controllers, driven by the same shocks, with the band each keeps it in most of the time (two standard deviations): the risk-averse one&rsquo;s is tighter.</figcaption>
           </figure>
         </div>
-        <p class="rnote">The gain is the risk-sensitive regulator&rsquo;s closed form; minimising the exact entropic cost
+        <p class="rnote">The gain is the risk-sensitive regulator&rsquo;s closed form; minimizing the exact entropic cost
           rate of the controlled process over the gain gives the same number at every <i>&theta;</i>.</p>
       </section>
 
