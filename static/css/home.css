@@ -334,6 +334,7 @@ body:has(.home .hero) { overflow-x: clip; }
   --nscw: 1.6px; --nshw: 1.8px; --nsmw: 0.4; --nsink: 0.8; --nsfaint: 0.44; --nswx: 0.8; --nsglow: 0.26; }
 .dark .home .demo.nsheads-card .shot.nsheads { --nscw: 1.8px; --nshw: 2px; --nsmw: 0.55; --nsink: 0.85; --nsfaint: 0.52; --nswx: 0.85; --nsglow: 0.42; }
 /* the pictures are clipped by their own frame now (the card no longer clips), with the card's top corners */
+.home .shot.nsheads { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
 .home .shot.nsheads .pics { position: absolute; inset: 0; overflow: hidden; border-radius: 13px 13px 0 0; }
 .home .demo .shot.nsheads img.base { position: absolute; inset: 0; opacity: 0; transition: opacity 0.35s ease, transform 0.4s ease; }
 /* the rest image steps aside while the base shows: both are multiplied onto the paper, so one cannot hide the other */

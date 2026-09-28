@@ -14,7 +14,10 @@
   const $ = (id) => document.getElementById(id);
 
   // ------------------------------------------------------------------ helpers
-  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs || {})) n.setAttribute(k, v); if (parent) parent.appendChild(n); return n; };
+  // a canvas given as an attribute (an image's href) is encoded off the main thread (toBlob) and set when ready
+  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs || {})) if (v instanceof HTMLCanvasElement) v.toBlob((b) => b && n.setAttribute(k, URL.createObjectURL(b))); else n.setAttribute(k, v);
+    if (parent) parent.appendChild(n); return n; };
   const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
   const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
   const seg = (t, a, b) => ease(clamp((t - a) / (b - a)));
@@ -211,7 +214,7 @@
       img.data[o] = r; img.data[o + 1] = g; img.data[o + 2] = b; img.data[o + 3] = al;
     }
     ctx.putImageData(img, 0, 0);
-    return c.toDataURL();
+    return c;
   }
 
   // ------------------------------------------------------------------ the square on the stage
@@ -276,7 +279,7 @@
         const [r, gg, b, al] = ramp(v); ctx.fillStyle = `rgba(${r},${gg},${b},${al / 255})`;
         ctx.beginPath(); ctx.arc(data.x[i] * 2 * N, (1 - data.y[i]) * 2 * N, 3.2, 0, 2 * Math.PI); ctx.fill();
       }
-      const img = el("image", { x: SQ.x, y: SQ.y, width: SQ.s, height: SQ.s, href: c.toDataURL() }, g);
+      const img = el("image", { x: SQ.x, y: SQ.y, width: SQ.s, height: SQ.s, href: c }, g);
       frame(g, `${data.x.length.toLocaleString("en-US")} sites, each dot one site's share of heads`);
       const truth = el("image", { x: SQ.x, y: SQ.y, width: SQ.s, height: SQ.s, href: raster((x, y) => data.tf(x, y) - BASE, 110), opacity: 0 }, g);
       g.insertBefore(truth, img);                            // the true odds come in beneath the dots, not over them
@@ -301,7 +304,7 @@
         ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${o ? 0.75 : 0.25})`;
         ctx.beginPath(); ctx.arc(2 * (X(n + (r() - 0.5) * 0.8) - B.x), 2 * (Y(clamp(v, -ymax, ymax)) - B.y), 2.4, 0, 2 * Math.PI); ctx.fill();
       });
-      const img = el("image", { x: B.x, y: B.y, width: B.w, height: B.h, href: c.toDataURL() }, g);
+      const img = el("image", { x: B.x, y: B.y, width: B.w, height: B.h, href: c }, g);
       const band = [], lo = [];
       for (let n = nmin; n <= nmax; ++n) { band.push([X(n), Y(1.96 / Math.sqrt(n))]); lo.push([X(n), Y(-1.96 / Math.sqrt(n))]); }
       const up = stroke(g, "M" + band.map((q) => q.join(",")).join(" L"), "warm", 2), dn = stroke(g, "M" + lo.map((q) => q.join(",")).join(" L"), "warm", 2);
@@ -384,7 +387,7 @@
         const c = document.createElement("canvas"), N = 2 * w; c.width = c.height = N;
         const ctx = c.getContext("2d");
         z.forEach((v, i) => { const [r, gg, b, al] = ramp(clamp(v, -3, 3) * (2.2 / 3)); ctx.fillStyle = `rgba(${r},${gg},${b},${al / 255})`; ctx.beginPath(); ctx.arc(data.x[i] * N, (1 - data.y[i]) * N, 3.4, 0, 2 * Math.PI); ctx.fill(); });
-        return c.toDataURL();
+        return c;
       };
       const A = el("g", {}, g), Bg = el("g", {}, g);
       el("image", { x: x0, y: y0, width: w, height: w, href: map(zFlat) }, A); el("rect", { x: x0, y: y0, width: w, height: w, class: "frame" }, A);
@@ -830,7 +833,12 @@
     if (d.user) { svg.style.opacity = 1; status(run ? "the story follows the coins: back to them above to refit it" : "the story follows the coins, not a file"); return; }
     show(d);
   });
-  new MutationObserver(() => { if (run) build(data, run); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  let wasDark = document.documentElement.classList.contains("dark");   // only a change of theme, not every class on <html>
+  new MutationObserver(() => { const d = document.documentElement.classList.contains("dark"); if (d === wasDark) return; wasDark = d; if (!run) return;
+    // the story's drawing is redrawn at once when it is on screen; off screen it waits until the new theme is in
+    const r = svg.getBoundingClientRect();
+    if (r.bottom > 0 && r.top < window.innerHeight) build(data, run); else setTimeout(() => { if (run) build(data, run); }, 700); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
   // ------------------------------------------------------------------ scroll to scene (the page's own reading line
   // is data-auto, drawn by whimsy.js)

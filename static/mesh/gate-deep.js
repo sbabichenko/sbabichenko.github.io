@@ -913,7 +913,9 @@
   $("coinsd").addEventListener("change", fitNow);
   $("truth").addEventListener("change", fitNow);
   $("again").addEventListener("click", () => { root.dataset.seed = (+(root.dataset.seed || 1) % 97) + 1; fitNow(); });
-  new MutationObserver(() => { if (runs) build(data, runs.tri, runs.rect); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  let wasDark = document.documentElement.classList.contains("dark");   // only a change of theme, not every class on <html>
+  new MutationObserver(() => { const d = document.documentElement.classList.contains("dark"); if (d === wasDark) return; wasDark = d; if (runs) build(data, runs.tri, runs.rect); })
+    .observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
   // ------------------------------------------------------------------ scroll to scene, and the progress line
   const bar = document.getElementById("progress");
