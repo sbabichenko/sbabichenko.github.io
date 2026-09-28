@@ -34,6 +34,49 @@
   const hollow = (cx, cy, svg, r = 5) => el("circle", { r, cx, cy, fill: "var(--paper)", stroke: "var(--accent)", "stroke-width": 2.2 }, svg);
   const size = (svg, H) => { const W = Math.max(240, svg.clientWidth || 500); svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("height", H); svg.innerHTML = ""; return W; };
 
+  // ------------------------------------------------------------------ the header drawing: one shock, the #why figure's math at mu = 0
+  // The belief N(0, S^2) stays still; the cost-weighted curve N(m_theta, S^2 / (1 - theta S^2)) with C = w^2 / 2 + w / 2 slides
+  // and widens as theta breathes between 0 and 0.7 theta*.  One frozen frame under reduced motion.
+  (function () {
+    const svg = document.getElementById("headfig");
+    if (!svg) return;
+    const S = 0.8, B = 0.5, TH = 1 / (S * S), W = 360, H = 200, lo = -3.2, hi = 5.2, BASE = H - 22, TOP = 34, PEAK = 1 / (S * Math.sqrt(2 * Math.PI));
+    const X = (w) => ((w - lo) / (hi - lo)) * W, Y = (p) => BASE - (p / PEAK) * (BASE - TOP);
+    const dens = (w, m, sd) => Math.exp(-0.5 * ((w - m) / sd) ** 2) / (sd * Math.sqrt(2 * Math.PI));
+    const curve = (m, sd) => { let d = ""; for (let k = 0; k <= 160; ++k) { const w = lo + (k / 160) * (hi - lo); d += (k ? "L" : "M") + X(w).toFixed(1) + "," + Y(dens(w, m, sd)).toFixed(1); } return d; };
+    el("line", { class: "axis", x1: 0, x2: W, y1: BASE, y2: BASE }, svg);
+    el("line", { class: "mark", x1: X(0), x2: X(0), y1: TOP, y2: BASE, stroke: "var(--ink-3)", "stroke-dasharray": "2 3", "stroke-width": 1, opacity: 0.7 }, svg);
+    el("path", { class: "curve", d: curve(0, S), stroke: "var(--ink-3)" }, svg);
+    const drop = el("line", { class: "mark", y2: BASE, stroke: "var(--accent)", "stroke-dasharray": "2 3", "stroke-width": 1, opacity: 0.7 }, svg);
+    const tilt = el("path", { class: "curve", ...RW, "stroke-width": 2 }, svg);
+    el("circle", { class: "dot", r: 4.5, cx: X(0), cy: BASE, fill: "var(--ink-3)" }, svg);
+    const ring = hollow(X(0), BASE, svg, 4.5);
+    el("text", { x: X(0), y: TOP - 10, "text-anchor": "middle", style: "fill: var(--ink-2)" }, svg).textContent = "what it believes";
+    const lab = el("text", { style: "fill: var(--accent)" }, svg);
+    const l1 = el("tspan", {}, lab), l2 = el("tspan", {}, lab); l1.textContent = "how much each"; l2.textContent = "outcome counts";
+    function frame(f) {                                  // f = theta / theta*
+      const th = f * TH, m = (th * S * S * B) / (1 - th * S * S), sd = S / Math.sqrt(1 - th * S * S);
+      tilt.setAttribute("d", curve(m, sd));
+      drop.setAttribute("x1", X(m)); drop.setAttribute("x2", X(m)); drop.setAttribute("y1", Y(dens(m, m, sd)));
+      ring.setAttribute("cx", X(m));
+      const wx = m + 1.15 * sd, x = X(wx) + 8, y = Y(dens(wx, m, sd)) - 6;   // beside the right flank, where the curves differ
+      for (const [t, dy] of [[l1, 0], [l2, 15]]) { t.setAttribute("x", x.toFixed(1)); t.setAttribute("y", (y + dy).toFixed(1)); }
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { frame(0.6); return; }
+    let on = true, running = false, age = 2500, last = null;   // age advances only while drawn, so a pause resumes where it
+    // stopped; it starts a quarter-cycle in, so the first frame a reader sees already has the two curves apart
+    const tick = (t) => {
+      if (!on) { running = false; last = null; return; }
+      if (last !== null) age += Math.min(t - last, 100);
+      last = t;
+      frame(0.35 * (1 - Math.cos((2 * Math.PI * age) / 10000)));
+      requestAnimationFrame(tick);
+    };
+    const start = () => { if (!running) { running = true; requestAnimationFrame(tick); } };
+    frame(0.35);
+    new IntersectionObserver((es) => { on = es[es.length - 1].isIntersecting; if (on) start(); }).observe(svg);
+  })();
+
   // ------------------------------------------------------------------ judging a deviation: one shock
   // Belief w ~ N(mu, S^2), cost C = a w^2 / 2 + b w; the weight e^{theta C} makes the belief N(m_theta, S^2 / (1 - theta a S^2))
   // with m_theta = (mu + theta S^2 b) / (1 - theta a S^2), affine in mu; theta* = 1 / (a S^2).  The change in cost from a

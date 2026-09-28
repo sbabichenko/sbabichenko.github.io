@@ -1,6 +1,6 @@
-// /decision-mesh, "How the Gate Decides": the decision-mesh gate told in steps. The section draws coin flips from
-// the chosen odds, sends them to fit-worker.js with the candidate trace on, and builds every scene from what comes
-// back: each round's scored candidates with the segment each would split, the gate's empirical null, the lfdr
+// /decision-mesh, "How the Gate Decides": the decision-mesh gate told in steps. The section narrates the live fit
+// above it (gate.js): the same coins, settings and engine, from the same worker, which returns the candidate trace
+// with each fit on the coins. Every scene is built from that run: each round's scored candidates with the segment each would split, the gate's empirical null, the lfdr
 // cutoff, the admissions, the pool variance by round, the admitted surpluses by depth, and the final surface. Only
 // the "corrections" scene is a sketch (a one-dimensional toy computed here), and its caption says so.
 (function () {
@@ -89,30 +89,102 @@
     return (v) => { const t = (clamp(v, -9, 9) - mm) / ms; let eta = 0, p = 1; for (let k = 0; k <= DEG; ++k) { eta += p * beta[k]; p *= t; } return Math.exp(clamp(eta, -30, 30)) / (M * d); };
   }
 
-  // ------------------------------------------------------------------ the data (the same odds as the live fit above it)
-  const BASE = -1, SITES = 6000, FLIPS = 20;
-  let POOL_SD = 0.25;   // the coin effects' sd on the log-odds, from the slider
-  const TRUTHS = {
-    hills: (x, y) => BASE + 1.8 * Math.exp(-((x - 0.3) ** 2 + (y - 0.7) ** 2) / 0.02) - 1.5 * Math.exp(-((x - 0.7) ** 2 + (y - 0.3) ** 2) / 0.03),
-    peaks: (x, y) => BASE + 1.6 * Math.exp(-((x - 0.25) ** 2 + (y - 0.3) ** 2) / 0.006) + 1.1 * Math.exp(-((x - 0.7) ** 2 + (y - 0.7) ** 2) / 0.008) - 1.4 * Math.exp(-((x - 0.72) ** 2 + (y - 0.22) ** 2) / 0.01),
-    ring: (x, y) => BASE + 1.4 * Math.exp(-((Math.hypot(x - 0.5, y - 0.5) - 0.28) ** 2) / 0.004),
-  };
-  const expit = (t) => 1 / (1 + Math.exp(-t));
-  function makeData(truth, seed) {
-    const r = mulberry32(seed * 7919 + 17), f = TRUTHS[truth];
-    const x = new Float64Array(SITES), y = new Float64Array(SITES), n = new Int32Array(SITES), k = new Int32Array(SITES), u = new Float64Array(SITES);
-    const rows = [];          // no header row: the engines read a headerless design as x, y, trials, heads
-    for (let i = 0; i < SITES; ++i) {
-      x[i] = r(); y[i] = r();
-      n[i] = Math.max(1, Math.round(FLIPS * (0.5 + r())));
-      u[i] = POOL_SD * gauss(r);                         // the coin's own effect: what the two axes don't describe
-      const p = expit(f(x[i], y[i]) + u[i]);
-      let kk = 0; for (let j = 0; j < n[i]; ++j) if (r() < p) ++kk;
-      k[i] = kk;
-      rows.push(x[i].toFixed(5) + "," + y[i].toFixed(5) + "," + n[i] + "," + k[i]);
+  // The mesh's growth, replayed from the trace, for the admissions scene. The fit returns only its final cells; the
+  // mesh it starts from is the uniform one with rounds[0].faces cells, and every selected candidate splits the
+  // cells whose edge it is the midpoint of (a turned-back one is split in too, and stays a vertex that isn't free).
+  // For right triangles a split first splits any neighbor whose longest edge is not that edge (the closure), and
+  // split() returns each new line with its depth in that chain. The caller checks the replay ends on the fit's cells.
+  function meshReplay(fit, G) {
+    const Q = 4096, I = (v) => Math.round(v * Q), key = (p) => p[0] + "," + p[1];
+    const same = (a, b) => a[0] === b[0] && a[1] === b[1];
+    if (fit.engine === "rect") {
+      let cells = [];
+      for (let i = 0; i < G; ++i) for (let j = 0; j < G; ++j) cells.push([I(i / G), I(j / G), I((i + 1) / G), I((j + 1) / G)]);
+      const initial = [];
+      for (let i = 0; i <= G; ++i) { initial.push([i / G, 0, i / G, 1]); initial.push([0, i / G, 1, i / G]); }
+      return {
+        initial,
+        split(x, y) {
+          const X = I(x), Y = I(y), out = [], next = [];
+          for (const c of cells) {
+            const [x0, y0, x1, y1] = c, mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
+            if ((X === x0 || X === x1) && Y === my) { next.push([x0, y0, x1, my], [x0, my, x1, y1]); out.push([[x0 / Q, my / Q, x1 / Q, my / Q], 0]); }
+            else if ((Y === y0 || Y === y1) && X === mx) { next.push([x0, y0, mx, y1], [mx, y0, x1, y1]); out.push([[mx / Q, y0 / Q, mx / Q, y1 / Q], 0]); }
+            else next.push(c);
+          }
+          cells = next;
+          return out;
+        },
+        cells: () => cells.map((c) => c.map((v) => v / Q)),
+      };
     }
-    return { x, y, n, k, u, csv: rows.join("\n") + "\n" };
+    // right triangles: { r: the right-angle corner, p, q: the longest edge }
+    let tris = [];
+    const orient = new Map();   // cell -> true when its diagonal runs (i, j)-(i+1, j+1)
+    {
+      const t = fit.tri, K = fit.stride, n = t.length / K, h = 1 / G, eps = 1e-9;
+      for (let k = 0; k < n; ++k) {
+        const P = [0, 3, 6].map((o) => [t[K * k + o], t[K * k + o + 1]]);
+        const xs = P.map((p) => p[0]), ys = P.map((p) => p[1]);
+        const x0 = Math.min(...xs), y0 = Math.min(...ys);
+        if (Math.abs(Math.max(...xs) - x0 - h) > eps || Math.abs(Math.max(...ys) - y0 - h) > eps) continue;
+        const i = Math.round(x0 / h), j = Math.round(y0 / h);
+        if (Math.abs(i * h - x0) > eps || Math.abs(j * h - y0) > eps) continue;
+        // the corner of the cell not in the triangle says which diagonal it has
+        const has = (x, y) => P.some((p) => Math.abs(p[0] - x) < eps && Math.abs(p[1] - y) < eps);
+        const main = has(x0, y0) && has(x0 + h, y0 + h);
+        orient.set(i + "," + j, main);
+      }
+      const par = [null, null];
+      for (const [k, m] of orient) { const [i, j] = k.split(",").map(Number), s = (i + j) & 1; if (par[s] === null) par[s] = m; else if (par[s] !== m) return null; }
+      if (par[0] === null && par[1] === null) return null;
+      if (par[0] === null) par[0] = !par[1];
+      if (par[1] === null) par[1] = !par[0];
+      for (let i = 0; i < G; ++i) for (let j = 0; j < G; ++j) {
+        const a = [I(i / G), I(j / G)], b = [I((i + 1) / G), I(j / G)], c = [I((i + 1) / G), I((j + 1) / G)], d = [I(i / G), I((j + 1) / G)];
+        if (par[(i + j) & 1]) tris.push({ r: b, p: a, q: c }, { r: d, p: a, q: c });
+        else tris.push({ r: a, p: b, q: d }, { r: c, p: b, q: d });
+      }
+    }
+    const initial = [], seen = new Set();
+    for (const T of tris) for (const [u, v] of [[T.r, T.p], [T.r, T.q], [T.p, T.q]]) {
+      const k = [key(u), key(v)].sort().join("|"); if (seen.has(k)) continue; seen.add(k);
+      initial.push([u[0] / Q, u[1] / Q, v[0] / Q, v[1] / Q]);
+    }
+    const hasEdge = (T, u, v) => { const S = [T.r, T.p, T.q]; return S.some((s) => same(s, u)) && S.some((s) => same(s, v)); };
+    const isHyp = (T, u, v) => (same(T.p, u) && same(T.q, v)) || (same(T.p, v) && same(T.q, u));
+    function bisect(u, v, level, out) {
+      for (let guard = 0; guard < 64; ++guard) {
+        const bad = tris.find((T) => hasEdge(T, u, v) && !isHyp(T, u, v));
+        if (!bad) break;
+        bisect(bad.p, bad.q, level + 1, out);
+      }
+      const m = [(u[0] + v[0]) / 2, (u[1] + v[1]) / 2], next = [];
+      for (const T of tris) {
+        if (!isHyp(T, u, v)) { next.push(T); continue; }
+        next.push({ r: m, p: T.p, q: T.r }, { r: m, p: T.q, q: T.r });
+        out.push([[m[0] / Q, m[1] / Q, T.r[0] / Q, T.r[1] / Q], level]);
+      }
+      tris = next;
+    }
+    return {
+      initial,
+      split(x, y) {
+        const m = [I(x), I(y)];
+        if (tris.some((T) => same(T.r, m) || same(T.p, m) || same(T.q, m))) return [];
+        // the edge m is the midpoint of
+        for (const T of tris) for (const [u, v] of [[T.r, T.p], [T.r, T.q], [T.p, T.q]]) {
+          if (u[0] + v[0] === 2 * m[0] && u[1] + v[1] === 2 * m[1]) { const out = []; bisect(u, v, 0, out); return out; }
+        }
+        return null;
+      },
+      cells: () => tris.map((T) => [T.r, T.p, T.q].map((p) => [p[0] / Q, p[1] / Q])),
+    };
   }
+
+  // ------------------------------------------------------------------ the data: the live fit's run (gate.js)
+  const BASE = -1;           // the coins' background log-odds, as in gate.js
+  const expit = (t) => 1 / (1 + Math.exp(-t));
 
   // ------------------------------------------------------------------ color: log-odds against the background
   function rgbOf(css) {
@@ -203,8 +275,8 @@
         ctx.beginPath(); ctx.arc(data.x[i] * 2 * N, (1 - data.y[i]) * 2 * N, 3.2, 0, 2 * Math.PI); ctx.fill();
       }
       const img = el("image", { x: SQ.x, y: SQ.y, width: SQ.s, height: SQ.s, href: c.toDataURL() }, g);
-      frame(g, "6,000 sites, each dot one site's share of heads");
-      const truth = el("image", { x: SQ.x, y: SQ.y, width: SQ.s, height: SQ.s, href: raster((x, y) => TRUTHS[data.truth](x, y) - BASE, 110), opacity: 0 }, g);
+      frame(g, `${data.x.length.toLocaleString("en-US")} sites, each dot one site's share of heads`);
+      const truth = el("image", { x: SQ.x, y: SQ.y, width: SQ.s, height: SQ.s, href: raster((x, y) => data.tf(x, y) - BASE, 110), opacity: 0 }, g);
       g.insertBefore(truth, img);                            // the true odds come in beneath the dots, not over them
       const tl = text(g, SQ.x + SQ.s, SQ.y + SQ.s + 26, "the odds the coins really have", "mono", "end");
       const leg = el("g", {}, g);
@@ -215,8 +287,8 @@
     // 1b. the funnel: how far a binomial may stray is known from its mean ---------------------------------------
     scenes.funnel = (() => {
       const g = group("funnel");
-      const B = { x: 80, y: 110, w: 440, h: 360 }, nmax = Math.max(...data.n), ymax = 1.1;
-      const X = (n) => B.x + ((n - 0.5 * FLIPS) / (nmax - 0.5 * FLIPS + 1)) * B.w, Y = (v) => B.y + B.h / 2 - (v / ymax) * (B.h / 2);
+      const B = { x: 80, y: 110, w: 440, h: 360 }, nmin = Math.min(...data.n), nmax = Math.max(...data.n), ymax = 1.1;
+      const X = (n) => B.x + ((n - nmin) / (nmax - nmin + 1)) * B.w, Y = (v) => B.y + B.h / 2 - (v / ymax) * (B.h / 2);
       text(g, B.x, B.y - 30, "share of heads minus the fitted odds, per unit of a coin's spread", "mono", "start");
       line(g, B.x, B.y + B.h, B.x + B.w, B.y + B.h, "", 1); line(g, B.x, Y(0), B.x + B.w, Y(0), "soft", 1);
       const c = document.createElement("canvas"); c.width = 2 * B.w; c.height = 2 * B.h;
@@ -229,9 +301,9 @@
       });
       const img = el("image", { x: B.x, y: B.y, width: B.w, height: B.h, href: c.toDataURL() }, g);
       const band = [], lo = [];
-      for (let n = Math.ceil(0.5 * FLIPS); n <= nmax; ++n) { band.push([X(n), Y(1.96 / Math.sqrt(n))]); lo.push([X(n), Y(-1.96 / Math.sqrt(n))]); }
+      for (let n = nmin; n <= nmax; ++n) { band.push([X(n), Y(1.96 / Math.sqrt(n))]); lo.push([X(n), Y(-1.96 / Math.sqrt(n))]); }
       const up = stroke(g, "M" + band.map((q) => q.join(",")).join(" L"), "warm", 2), dn = stroke(g, "M" + lo.map((q) => q.join(",")).join(" L"), "warm", 2);
-      text(g, B.x, B.y + B.h + 18, `${Math.ceil(0.5 * FLIPS)} flips`, "tiny", "start"); text(g, B.x + B.w, B.y + B.h + 18, `${nmax} flips`, "tiny", "end");
+      text(g, B.x, B.y + B.h + 18, `${nmin} flips`, "tiny", "start"); text(g, B.x + B.w, B.y + B.h + 18, `${nmax} flips`, "tiny", "end");
       const lab = text(g, B.x + 6, B.y + B.h - 10, "a binomial stays between the lines 95% of the time", "label warmt halo", "start");
       const cap = text(g, 300, B.y + B.h + 50, `outside: ${pct(outside)} of sites, not 5%; mean squared residual ${disp(zFit).toFixed(2)}, not 1`, "mono");
       return { g, update(t) { fade(img, seg(t, 0, 0.2)); up.set(seg(t, 0.25, 0.5)); dn.set(seg(t, 0.25, 0.5)); fade(lab, seg(t, 0.45, 0.6)); fade(cap, seg(t, 0.6, 0.75)); } };
@@ -242,7 +314,7 @@
     // coin's own effect, the part of its odds the two axes don't describe. Both are known here, since the page drew them.
     scenes.wrongmean = (() => {
       const g = group("wrongmean");
-      const tf = TRUTHS[data.truth];
+      const tf = data.tf;
       const zTrue = resid(tf);
       // per site: the whole miss, the squared residual, and what the miss predicts: 1 + n p(1 − p) miss², to first order
       const sites = (logit, z) => Array.from(data.x, (_, i) => {
@@ -483,49 +555,136 @@
     })();
 
     // 7. lfdr, best first, and the running mean -------------------------------------------------------------------
+    // The cutoff q sweeps slowly while the scene is on screen (reduced motion: the live fit's q, still), and the run it
+    // takes moves with it, in the drawing and in the text. This is the gate's rule applied to round 0's scores at each
+    // q, not a refit: at the live fit's q it takes what the fit selected, and that q stays marked.
+    const qLive = data.q, byL = [...r0].sort((a, b) => a.lfdr - b.lfdr || Math.abs(b.z) - Math.abs(a.z));
+    const runOf = (q) => { let cum = 0, k = 0; byL.forEach((c, i) => { cum += c.lfdr; if (cum / (i + 1) <= q) k = i + 1; }); return k; };
+    const QLO = 0.03, QHI = 0.4, QPER = 14;   // the sweep: 3% to 40% and back, evenly in log q, every 14 s
+    const u0 = clamp(Math.log(qLive / QLO) / Math.log(QHI / QLO)), ph0 = Math.acos(1 - 2 * u0);
+    const qAt = (s) => QLO * Math.pow(QHI / QLO, (1 - Math.cos(ph0 + (2 * Math.PI * s) / QPER)) / 2);
     scenes.lfdr = (() => {
       const g = group("lfdr");
-      const byL = [...r0].sort((a, b) => a.lfdr - b.lfdr || Math.abs(b.z) - Math.abs(a.z));
-      const K = Math.min(byL.length, Math.max(40, Math.min(90, cal0.prefix * 2 + 20))), x0 = 70, w = 460, y0 = 130, h = 330, bw = w / K;
+      const K = Math.min(byL.length, Math.max(40, Math.min(110, runOf(QHI) + 12))), x0 = 70, w = 460, y0 = 130, h = 330, bw = w / K;
       text(g, x0, 100, `round 0, best ${K} of ${byL.length} candidates by lfdr`, "mono", "start");
+      const pre = el("g", {}, g), shade = el("rect", { x: x0, y: y0 - 6, width: 0, height: h + 6, class: "shade" }, pre), runT = text(pre, x0 + 10, y0 + 12, "", "label acc", "start");
       line(g, x0, y0 + h, x0 + w, y0 + h, "", 1);
       for (const v of [0, 0.5, 1]) text(g, x0 - 8, y0 + h - v * h + 4, pct(v), "tiny", "end");
-      const bars = byL.slice(0, K).map((c, i) => el("rect", { x: x0 + i * bw + 0.5, y: y0 + h - c.lfdr * h, width: Math.max(1, bw - 1), height: Math.max(0.5, c.lfdr * h), class: c.selected ? (c.z > 0 ? "pos" : "neg") : "ink", opacity: c.selected ? 0.85 : 0.2 }, g));
+      // each bar is marked real or noise by one fixed draw, noise with the chance its lfdr gives: what a calibrated
+      // lfdr means, so the run's share of noise sits near q (an illustration; the draws are not the run's truth)
+      const rd = mulberry32(71), real = byL.slice(0, K).map((c) => rd() >= c.lfdr);
+      const bars = byL.slice(0, K).map((c, i) => el("rect", { x: x0 + i * bw + 0.5, y: y0 + h - c.lfdr * h, width: Math.max(1, bw - 1), height: Math.max(0.5, c.lfdr * h) }, g));
       let cum = 0; const run = byL.slice(0, K).map((c, i) => { cum += c.lfdr; return [x0 + (i + 0.5) * bw, y0 + h - (cum / (i + 1)) * h]; });
       const runL = stroke(g, "M" + run.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" L"), "", 2);
+      const mine = el("g", {}, g);         // the live fit's q, for reference
+      line(mine, x0, y0 + h - qLive * h, x0 + w, y0 + h - qLive * h, "soft", 1.2).setAttribute("stroke-dasharray", "2 4");
+      text(mine, x0 + 6, y0 + h - qLive * h - 5, `your q ${pct(qLive)}`, "tiny", "start");
       const cut = el("g", {}, g);
-      line(cut, x0, y0 + h - 0.1 * h, x0 + w, y0 + h - 0.1 * h, "warm", 1.4).setAttribute("stroke-dasharray", "6 4");
-      text(cut, x0 + w, y0 + h - 0.1 * h - 8, "10%", "label warmt", "end");
-      const pre = el("g", {}, g), k = byL.filter((c) => c.selected).length;
-      if (k) { el("rect", { x: x0, y: y0 - 6, width: k * bw, height: h + 6, class: "shade" }, pre); text(pre, x0 + k * bw + 6, y0 + 12, `the run: ${k}`, "label acc", "start"); }
-      else text(pre, x0 + 10, y0 + 12, "no run: nothing selected", "label", "start");
-      const cap = text(g, 300, y0 + h + 40, "bars: each candidate's lfdr; line: the running mean", "mono");
-      return { g, update(t) {
+      const cutL = line(cut, x0, 0, x0 + w, 0, "warm", 1.4); cutL.setAttribute("stroke-dasharray", "6 4");
+      const cutT = text(cut, x0 + w, 0, "", "label warmt halo", "end");
+      const cap = text(g, 300, y0 + h + 40, reduced ? "bars: each candidate's lfdr; blue real, gray noise, drawn by that chance" : "bars: each candidate's lfdr; blue real, gray noise, drawn by that chance; q sweeps", "mono");
+      let lastK = -1, lastQ = "";
+      const show = (q) => {
+        const Y = y0 + h - q * h, qs = pct(q);
+        cutL.setAttribute("y1", Y); cutL.setAttribute("y2", Y); cutT.setAttribute("y", Y - 8);
+        if (qs !== lastQ) { lastQ = qs; cutT.textContent = `q = ${qs}`; setV("q", qs); }
+        const k = runOf(q);
+        if (k === lastK) return;
+        lastK = k; setV("prefix0", String(k));
+        bars.forEach((b, i) => { const on = i < k; b.setAttribute("class", real[i] ? "pos" : "noise"); b.setAttribute("opacity", on ? 0.9 : 0.25); });
+        const realIn = real.slice(0, Math.min(k, K)).filter(Boolean).length;
+        shade.setAttribute("width", Math.min(k, K) * bw);
+        runT.setAttribute("x", x0 + Math.min(k, K) * bw + 6);
+        runT.textContent = k ? `the run: ${k}, ${k - realIn} noise` : "no run: nothing selected";
+        runT.setAttribute("text-anchor", k > 0.7 * K ? "end" : "start");
+        if (k > 0.7 * K) runT.setAttribute("x", x0 + Math.min(k, K) * bw - 6);
+      };
+      return { g, live: !reduced, leave() { lastK = -1; lastQ = ""; show(qLive); }, update(t, s) {
         const n = Math.floor(seg(t, 0, 0.4) * bars.length);
         bars.forEach((b, i) => { b.style.opacity = i < n ? "" : 0; });
-        runL.set(seg(t, 0.35, 0.65)); fade(cut, seg(t, 0.3, 0.4)); fade(pre, seg(t, 0.65, 0.8)); fade(cap, seg(t, 0.1, 0.25));
+        runL.set(seg(t, 0.35, 0.65)); fade(cut, seg(t, 0.3, 0.4)); fade(mine, seg(t, 0.3, 0.4)); fade(pre, seg(t, 0.65, 0.8)); fade(cap, seg(t, 0.1, 0.25));
+        show(s == null ? qLive : qAt(s));
+        return s != null;
       } };
     })();
 
     // 8. admission: round 0's selections, admitted or turned back -----------------------------------------------------
+    // Time-driven while it is on screen: the selections are taken best first, each lighting the segment it splits,
+    // then the new lines grow from its midpoint (the closure's a beat later, one step of the chain at a time), then
+    // its dot, or a cross if re-scoring turned it back. The first few go slowly; the rest at about four a second.
     scenes.admit = (() => {
       const g = group("admit");
-      const sel = r0.filter((c) => c.selected);
-      frame(g, `round 0: ${sel.length} selected`);
-      const after = meshLines(g, fit); after.style.opacity = 0;
-      const segs = sel.map((c) => c.seg ? line(g, sx(c.seg[0]), sy(c.seg[1]), sx(c.seg[2]), sy(c.seg[3]), c.z > 0 ? "posS" : "negS", 1.8) : null);
-      const marks = sel.map((c) => {
+      const sel = r0.filter((c) => c.selected).sort((a, b) => a.lfdr - b.lfdr || Math.abs(b.z) - Math.abs(a.z));
+      el("rect", { x: SQ.x, y: SQ.y, width: SQ.s, height: SQ.s, class: "frame" }, g);
+      const head = text(g, SQ.x, SQ.y - 12, "", "mono", "start");
+      // the replay, checked against the fit's own cells: every round's selections, in order
+      const G0 = Math.round(Math.sqrt(fit.rounds[0].faces / (fit.engine === "rect" ? 1 : 2)));
+      let rp = null;
+      try {
+        const chk = meshReplay(fit, G0);
+        if (chk) {
+          let ok = true;
+          for (const c of [...cands].filter((c) => c.selected).sort((a, b) => a.round - b.round)) if (chk.split(c.x, c.y) === null) ok = false;
+          const K = fit.stride, n = fit.tri.length / K, k5 = (v) => v.toFixed(5);
+          const norm = (pts) => pts.map((p) => p.map(k5).join(",")).sort().join("|");
+          const fin = new Set();
+          for (let i = 0; i < n; ++i) fin.add(fit.engine === "rect" ? Array.from(fit.tri.slice(K * i, K * i + 4), k5).join(",") : norm([0, 3, 6].map((o) => [fit.tri[K * i + o], fit.tri[K * i + o + 1]])));
+          const mine = chk.cells().map((c) => (fit.engine === "rect" ? c.map(k5).join(",") : norm(c)));
+          if (ok && mine.length === n && mine.every((m) => fin.has(m))) rp = meshReplay(fit, G0);
+        }
+      } catch (e) { rp = null; }
+      if (rp) el("path", { d: rp.initial.map((s) => `M${sx(s[0])},${sy(s[1])}L${sx(s[2])},${sy(s[3])}`).join(""), class: "meshline" }, g);
+      else meshLines(g, fit);                    // no replay: the mesh the fit ends with, as before
+      D.vertices.filter((v) => v.free && !v.admitted).forEach((v) => el("circle", { cx: sx(v.x), cy: sy(v.y), r: 4, class: "ink" }, g));
+      // the schedule: step i starts at S[i] seconds and lasts d[i]
+      const N = sel.length, d = [], S = [];
+      const slow = Math.min(N, 8);
+      for (let i = 0; i < slow; ++i) d.push(1.1 * Math.pow(0.88, i));
+      const used = d.reduce((a, b) => a + b, 0), rest = clamp((16 - used) / Math.max(1, N - slow), 0.18, 0.45);
+      for (let i = slow; i < N; ++i) d.push(rest);
+      d.reduce((a, b, i) => { S[i] = a; return a + b; }, 0.4);
+      const END = N ? S[N - 1] + d[N - 1] : 0.4;
+      const hl = [], splits = [], marks = [];
+      const fresh = el("g", {}, g);
+      sel.forEach((c, i) => {
+        hl.push(c.seg ? line(fresh, sx(c.seg[0]), sy(c.seg[1]), sx(c.seg[2]), sy(c.seg[3]), c.z > 0 ? "posS" : "negS", 2.6) : null);
+        const out = rp ? rp.split(c.x, c.y) || [] : [];
+        for (const [s, lev] of out) {
+          const L = line(fresh, sx(s[0]), sy(s[1]), sx(s[0]), sy(s[1]), lev ? "" : "accent", 1.8);
+          splits.push({ L, x0: sx(s[0]), y0: sy(s[1]), x1: sx(s[2]), y1: sy(s[3]), at: S[i] + d[i] * (0.3 + 0.25 * lev), grow: Math.min(0.35, 0.45 * d[i] + 0.1), state: -1 });
+        }
         const q = el("g", {}, g);
-        if (c.admitted) el("circle", { cx: sx(c.x), cy: sy(c.y), r: 6, class: c.z > 0 ? "pos" : "neg" }, q);
-        else { const X = sx(c.x), Y = sy(c.y); line(q, X - 6, Y - 6, X + 6, Y + 6, "", 2); line(q, X - 6, Y + 6, X + 6, Y - 6, "", 2); }
-        return q;
+        if (c.admitted) el("circle", { cx: sx(c.x), cy: sy(c.y), r: 4.5, class: c.z > 0 ? "pos" : "neg" }, q);
+        else { const X = sx(c.x), Y = sy(c.y); line(q, X - 5, Y - 5, X + 5, Y + 5, "", 2); line(q, X - 5, Y + 5, X + 5, Y - 5, "", 2); }
+        marks.push(q);
       });
-      const na = sel.filter((c) => c.admitted).length;
-      const cap = text(g, 300, SQ.y + SQ.s + 28, na === sel.length ? `all ${na} admitted (dots); faint: the mesh the fit ends with` : `${na} admitted (dots), ${sel.length - na} turned back on re-scoring (crosses); faint: the mesh the fit ends with`, "tiny");
-      return { g, update(t) {
-        const n = Math.floor(seg(t, 0.05, 0.7) * sel.length);
-        segs.forEach((s, i) => s && fade(s, i < n ? 0.9 : 0)); marks.forEach((m, i) => fade(m, i < n ? 1 : 0));
-        fade(after, seg(t, 0.7, 0.85)); fade(cap, seg(t, 0.7, 0.85));
+      const na = sel.filter((c) => c.admitted).length, closure = rp && fit.engine !== "rect";
+      const cap = el("g", {}, g);
+      text(cap, 300, SQ.y + SQ.s + 24, !N ? "round 0 selected nothing" : na === N ? `all ${na} admitted (dots)` : `${na} admitted (dots), ${N - na} turned back on re-scoring (crosses)`, "tiny");
+      if (rp && N) text(cap, 300, SQ.y + SQ.s + 40, closure ? "blue: the splits; black: neighbors split so no vertex sits mid-edge" : "blue: the splits", "tiny");
+      let shown = -1;
+      return { g, live: true, update(t, s) {
+        const now = s == null ? Infinity : s;
+        let k = 0;
+        for (let i = 0; i < N; ++i) {
+          const a = now - S[i];
+          if (a >= d[i] * 0.55) k = i + 1;
+          if (hl[i]) { hl[i].style.opacity = a < 0 ? 0 : a < d[i] ? 0.95 : Math.max(0, 0.95 - (a - d[i]) / 0.9); }
+          marks[i].style.opacity = a >= d[i] * 0.55 ? 1 : 0;
+        }
+        for (const q of splits) {
+          const a = now - q.at, st = a < 0 ? 0 : a < q.grow ? 1 : a < q.grow + 1.2 ? 2 : 3;
+          if (st === q.state && st !== 1 && st !== 2) continue;
+          q.state = st;
+          if (st === 0) { q.L.style.opacity = 0; continue; }
+          const f = st === 1 ? ease(a / q.grow) : 1;
+          q.L.setAttribute("x2", q.x0 + (q.x1 - q.x0) * f); q.L.setAttribute("y2", q.y0 + (q.y1 - q.y0) * f);
+          if (st === 3) { q.L.setAttribute("class", "meshnew"); q.L.style.opacity = ""; continue; }
+          q.L.style.opacity = st === 2 ? 1 - 0.6 * (a - q.grow) / 1.2 : 1;
+        }
+        if (k !== shown) { shown = k; head.textContent = k < N ? `round 0: ${N} selected, best first · ${k} done` : `round 0: ${N} selected`; }
+        fade(cap, (now - END) / 0.8);
+        return now < END + 1.6;
       } };
     })();
 
@@ -554,14 +713,14 @@
     scenes.variance = (() => {
       const g = group("variance");
       // pool variance by round
-      const pv = fit.rounds.map((r) => r.poolVariance).concat([fit.poolVariance]), truth = POOL_SD * POOL_SD;
+      const pv = fit.rounds.map((r) => r.poolVariance).concat([fit.poolVariance]), truth = data.sd * data.sd;
       const A = { x: 80, y: 110, w: 200, h: 230 }, vmax = Math.max(...pv, truth) * 1.1;
       const AX = (i) => A.x + (i / Math.max(1, pv.length - 1)) * A.w, AY = (v) => A.y + A.h - (v / vmax) * A.h;
       const a = el("g", {}, g);
       text(a, A.x - 10, A.y - 30, "coin variance, by round", "mono", "start");
       line(a, A.x, A.y + A.h, A.x + A.w, A.y + A.h, "", 1); line(a, A.x, A.y, A.x, A.y + A.h, "", 1);
       const tl = line(a, A.x, AY(truth), A.x + A.w, AY(truth), "warm", 1.4); tl.setAttribute("stroke-dasharray", "5 4");
-      text(a, A.x + A.w, A.y + A.h - 12, `dashed: the true ${POOL_SD.toFixed(2)}²`, "tiny", "end");
+      text(a, A.x + A.w, A.y + A.h - 12, `dashed: the true ${data.sd.toFixed(2)}²`, "tiny", "end");
       const pl = stroke(a, "M" + pv.map((v, i) => `${AX(i).toFixed(1)},${AY(v).toFixed(1)}`).join(" L"), "accent", 2.2);
       const pd = pv.map((v, i) => el("circle", { cx: AX(i), cy: AY(v), r: 4, class: "pos" }, a));
       text(a, A.x, A.y + A.h + 16, "start", "tiny", "start"); text(a, A.x + A.w, A.y + A.h + 16, "final", "tiny", "end");
@@ -593,7 +752,7 @@
       const g = group("done");
       const surf = (x, y) => fitLogit(x, y) - BASE;
       const w = 250, gap = 20, x0 = 300 - w - gap / 2, x1 = 300 + gap / 2, y0 = 150;
-      el("image", { x: x0, y: y0, width: w, height: w, href: raster((x, y) => TRUTHS[data.truth](x, y) - BASE, 100) }, g);
+      el("image", { x: x0, y: y0, width: w, height: w, href: raster((x, y) => data.tf(x, y) - BASE, 100) }, g);
       el("rect", { x: x0, y: y0, width: w, height: w, class: "frame" }, g);
       const fitImg = el("image", { x: x1, y: y0, width: w, height: w, href: raster(surf, 100) }, g);
       el("rect", { x: x1, y: y0, width: w, height: w, class: "frame" }, g);
@@ -620,10 +779,18 @@
     setV("admit0", !sel0.length ? "Round 0 selected nothing." : adm0 === sel0.length ? `Round 0 selected ${sel0.length}, and all ${adm0} were admitted.`
       : `Round 0 selected ${sel0.length}: ${adm0} admitted, ${sel0.length - adm0} turned back on re-scoring.`);
     setV("nrounds", String(rounds.length));
+    // the run's settings, in the text
+    const words = { 3000: "Three thousand", 6000: "Six thousand", 12000: "Twelve thousand", 5: "five", 10: "ten", 20: "twenty", 40: "forty", 80: "eighty", 160: "a hundred and sixty" };
+    setV("sitesWord", words[data.x.length] || data.x.length.toLocaleString("en-US"));
+    setV("flipsWord", words[data.flips] || String(data.flips));
+    setV("sites", data.x.length.toLocaleString("en-US")); setV("flips", String(data.flips));
+    setV("nlo", String(Math.min(...data.n))); setV("nhi", String(Math.max(...data.n)));
+    setV("q", pct(data.q));
+    setV("qsweep", reduced ? "" : ` (q sweeping; your q is ${pct(data.q)})`);
     // with its standard error, and the floor: the true surface scored on the same sites (paired gap)
     const H = (() => {
       const h = fit.heldout; if (!h || !h.rows || !h.rows.n.length) return null;
-      const R = h.rows, m = R.n.length, f = TRUTHS[data.truth], lg = (t) => 1 / (1 + Math.exp(-t));
+      const R = h.rows, m = R.n.length, f = data.tf, lg = (t) => 1 / (1 + Math.exp(-t));
       const dev = (k, n, p) => { p = Math.min(1 - 1e-6, Math.max(1e-6, p)); return (k > 0 ? 2 * k * Math.log(k / (n * p)) : 0) + (n - k > 0 ? 2 * (n - k) * Math.log((n - k) / (n * (1 - p))) : 0); };
       const a = [], b = [];
       for (let i = 0; i < m; ++i) { a.push(dev(R.k[i], R.n[i], R.p[i])); b.push(dev(R.k[i], R.n[i], lg(f(R.x[i], R.y[i])))); }
@@ -637,37 +804,31 @@
     active = null; measure();
   }
 
-  // ------------------------------------------------------------------ the run
-  let worker = null, seq = 0, want = null, data = null;
+  // ------------------------------------------------------------------ the run: the live fit's, from gate.js
+  let data = null;
   function status(s, busy) { const n = $("gh-status"); n.textContent = s; n.classList.toggle("busy", !!busy); }
-  function fitNow() {
-    const engine = $("gh-engine").value, truth = $("gh-truth").value, seed = +(root.dataset.seed || 1);
-    POOL_SD = +$("gh-coinsd").value;
-    root.dataset.engine = engine;
-    data = makeData(truth, seed); data.truth = truth;
-    if (!worker) { worker = new Worker(root.dataset.worker); worker.onmessage = onMsg; worker.onerror = () => status("the estimator failed to load"); }
-    want = ++seq;
-    status("Fitting…", true);
-    if (!svg.firstChild || svg.querySelector(".stagebusy")) { svg.textContent = ""; text(svg, 300, 300, "fitting…", "stagebusy"); }
-    else svg.style.opacity = 0.35;
-    worker.postMessage({ id: want, engine, design: data.csv, seed: 7, detail: true });
-  }
-  function onMsg(ev) {
-    const m = ev.data;
-    if (m.type === "ready") return;
-    if (m.id !== want) return;
+  function show(r) {
+    if (!r || !r.fit || !r.fit.detail) return false;
+    run = r.fit;
+    data = { ...r.data, tf: r.tf, sd: r.sd, q: r.q, flips: r.flips };
     svg.style.opacity = 1;
-    if (m.type === "error") { status("the fit failed: " + m.message); return; }
-    run = m;
-    status(`${m.engine === "rect" ? "rectangles" : "right triangles"} · ${(m.ms / 1000).toFixed(1)} s in your browser`);
-    build(data, m);
+    status(`${run.engine === "rect" ? "rectangles" : "right triangles"} · ${(run.ms / 1000).toFixed(1)} s in your browser`);
+    root.dataset.engine = run.engine;
+    build(data, run);
+    return true;
   }
-  const sdLabel = () => { $("gh-coinsdval").textContent = (+$("gh-coinsd").value).toFixed(2); };
-  $("gh-coinsd").addEventListener("input", sdLabel);
-  $("gh-coinsd").addEventListener("change", fitNow);
-  $("gh-engine").addEventListener("change", fitNow);
-  $("gh-truth").addEventListener("change", fitNow);
-  $("gh-again").addEventListener("click", () => { root.dataset.seed = (+(root.dataset.seed || 1) % 97) + 1; fitNow(); });
+  const G = window.gateDemo;
+  document.addEventListener("gatefitstart", (ev) => {
+    if (ev.detail.user) return;                       // a visitor's file: the story stays on the last coins
+    status("Fitting…", true);
+    if (svg.firstChild && !svg.querySelector(".stagebusy")) svg.style.opacity = 0.35;
+  });
+  document.addEventListener("gatefit", (ev) => {
+    const d = ev.detail;
+    if (d.error) { svg.style.opacity = 1; status("the fit failed: " + d.error); return; }
+    if (d.user) { svg.style.opacity = 1; status(run ? "the story follows the coins: back to them above to refit it" : "the story follows the coins, not a file"); return; }
+    show(d);
+  });
   new MutationObserver(() => { if (run) build(data, run); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
   // ------------------------------------------------------------------ scroll to scene (the page's own reading line
@@ -680,19 +841,45 @@
     const r = best.getBoundingClientRect();
     prog = clamp((vh * 0.85 - r.top) / (r.height * 0.9));
     if (best !== active) {
-      active = best;
+      const was = active && scenes[active.dataset.scene];
+      if (was && was.leave) was.leave();
+      active = best; clock = 0; lastNow = null;     // a scene that moves by itself starts over each time it is reached
       for (const s of steps) s.classList.toggle("on", s === best);
       for (const [name, sc] of Object.entries(scenes)) sc.g.style.opacity = name === best.dataset.scene ? 1 : 0;
     }
+    queueDraw();
   }
   window.addEventListener("scroll", measure, { passive: true });
   window.addEventListener("resize", measure);
-  (function frameLoop(now) {
-    const story = document.getElementById("story").getBoundingClientRect();
-    if (active && story.top < window.innerHeight && story.bottom > 0) { const sc = scenes[active.dataset.scene]; if (sc) sc.update(reduced ? 1 : prog, now); }
-    requestAnimationFrame(frameLoop);
-  })(performance.now());
-  fitNow();
+  // A scene is redrawn only when the reading position or the scene changes, except the two that move by themselves
+  // (live: the admissions and the sweeping q), which run on their own clock, counted only while the story is on
+  // screen, and stop asking for frames when they are finished or scrolled away. With reduced motion every scene is
+  // drawn once, finished (the sweep at the live fit's q), and left alone until another takes its place.
+  const storyEl = document.getElementById("story");
+  let drawnScene = null, drawnProg = -1, queued = false, clock = 0, lastNow = null;
+  function redraw(now) {
+    queued = false;
+    const sc = active && scenes[active.dataset.scene];
+    if (!sc) return;
+    if (sc.live && !reduced) {
+      const r = storyEl.getBoundingClientRect();
+      if (r.top >= window.innerHeight || r.bottom <= 0) { lastNow = null; return; }   // paused; a scroll back resumes it
+      if (lastNow !== null) clock += Math.min(100, Math.max(0, now - lastNow));
+      drawnScene = sc; drawnProg = -1;
+      if (sc.update(prog, clock / 1000)) { lastNow = now; queued = true; requestAnimationFrame(redraw); }
+      else lastNow = null;
+      return;
+    }
+    const p = reduced ? 1 : prog;
+    if (sc === drawnScene && p === drawnProg) return;
+    drawnScene = sc; drawnProg = p;
+    sc.update(p, null);
+  }
+  function queueDraw() { if (!queued) { queued = true; requestAnimationFrame(redraw); } }
+  if (!(G && G.run && show(G.run))) {
+    if (G && G.user) status("the story follows the coins, not a file");
+    else { status("Fitting…", true); text(svg, 300, 300, "fitting…", "stagebusy"); }
+  }
   measure();
   // On a phone the drawing's labels are set larger (the page's stylesheet). A label that would then run past the
   // drawing's edge, 600 units wide, is shrunk back until it fits, measured from where it is anchored.

@@ -47,10 +47,12 @@
         <h2>Projects</h2>
         <div class="demos">
           <article class="demo">
-            <a class="shot" href="{{ get_url(path='noisestate/') }}" tabindex="-1" aria-hidden="true">
-              <img class="img-light" loading="lazy" decoding="async" src="{{ get_url(path='images/card-noisestate-light.webp') }}" alt="" width="480" height="240" />
-              <img class="img-dark" loading="lazy" decoding="async" src="{{ get_url(path='images/card-noisestate-dark.webp') }}" alt="" width="480" height="240" />
-            </a>
+            {#- a live sketch: drag across it to set how clearly the two players see (static/js/cards.js) -#}
+            <div class="shot tug" id="card-tug" tabindex="0" role="slider" aria-valuemin="0.01" aria-valuemax="1000" aria-valuenow="9"
+                 aria-label="Two players with opposite targets: how clearly they see each other, precision p"
+                 data-curves="{{ get_url(path='js/card-noisestate.json', cachebust=true) }}">
+              <svg aria-hidden="true" focusable="false"></svg>
+            </div>
             <div class="body">
               <h3><a href="{{ get_url(path='noisestate/') }}">Noise-State Calculus</a></h3>
               <p>My dissertation. Actions move the state, the state sets what others observe, and what they observe sets
@@ -67,11 +69,17 @@
             </div>
           </article>
           <article class="demo">
-            <a class="shot" href="{{ get_url(path='decision-mesh/') }}" tabindex="-1" aria-hidden="true">
-              <img class="img-light" loading="lazy" decoding="async" src="{{ get_url(path='images/card-gate-light.webp') }}" alt="" width="480" height="240" />
-              <img class="img-dark" loading="lazy" decoding="async" src="{{ get_url(path='images/card-gate-dark.webp') }}" alt="" width="480" height="240" />
-            </a>
+            {#- scribble on the picture to draw odds; the estimator fits them on the right (static/js/cards.js) -#}
+            <div class="shot draw" id="card-mesh" data-worker="{{ get_url(path='mesh/fit-worker.js', cachebust=true) }}"
+                 aria-label="Draw odds on the picture; the estimator fits them">
+              <img class="img-light" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-gate-light.webp') }}" alt="" width="480" height="240" />
+              <img class="img-dark" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-gate-dark.webp') }}" alt="" width="480" height="240" />
+              <canvas aria-hidden="true"></canvas>
+              <span class="status" aria-live="polite"></span>
+              <button type="button" class="clear">clear</button>
+            </div>
             <div class="body">
+              <span class="hint" aria-hidden="true">scribble on the faces</span>
               <h3><a href="{{ get_url(path='decision-mesh/') }}">Decision Mesh</a></h3>
               <p>Thousands of coins, each flipped a few times, and odds that change somewhere on the square.
                 The estimator adds detail only where a false-discovery gate says the flips justify it, then
@@ -131,5 +139,6 @@
     <script src="{{ get_url(path='js/heroink.js', cachebust=true) }}"></script>
     <script src="{{ get_url(path='js/formula.js', cachebust=true) }}"></script>
     <script src="{{ get_url(path='dissertation/detour.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='js/cards.js', cachebust=true) }}" defer></script>
   </body>
 </html>
