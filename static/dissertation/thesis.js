@@ -205,7 +205,7 @@
     if (!fig.classList.contains("webfig")) big.className = "print";     // print conversions need their white ground
     zoom.querySelector(".fz-scroll").appendChild(big);
     zoom.querySelector("button").addEventListener("click", () => closeZoom(false));
-    (paper.closest(".thesis") || document.body).appendChild(zoom);   // inside .thesis, where the colours are defined
+    (paper.closest(".thesis") || document.body).appendChild(zoom);   // inside .thesis, where the colors are defined
     document.documentElement.style.overflow = "hidden";
     history.pushState({ figzoom: true }, "");                           // the back button closes it
     const sc = zoom.querySelector(".fz-scroll");

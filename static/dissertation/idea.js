@@ -404,7 +404,7 @@
     const nowl = text(g, 0, 82, "now, t", "label warmt");
     text(g, 50, 110, "player 1's signal", "mono", "start");
     const lab = text(g, 50, 560, "Ŵ¹ₜ(u): player 1's estimate, at t, of the shock at u", "label acc", "start");
-    text(g, 50, 585, "grey: the true shocks, which nobody sees", "mono", "start");
+    text(g, 50, 585, "gray: the true shocks, which nobody sees", "mono", "start");
     return { g, update(t) {
       const k = 4 + Math.round(seg(t, 0.05, 0.9) * (N - 5));
       sig.forEach((c, j) => fade(c, j <= k ? 0.75 : 0));

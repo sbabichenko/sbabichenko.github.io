@@ -255,3 +255,13 @@
    notices and draws to fit; on a phone the canvas is the column's width anyway) */
 body:has(.home .hero) { overflow-x: clip; }
 .home #heroink { left: 50%; width: 100vw; transform: translateX(-50%); }
+
+/* project cards: the picture and title open the demo; the row below lists the project's other pages */
+.home .demo .shot { display: block; }
+.home .demo h3 a { color: inherit; }
+.home .demo h3 a:hover { color: var(--accent); }
+.home .demo .go { align-self: flex-start; }
+.home .demo .more { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 0.9rem; padding-top: 0.8rem; border-top: 1px solid var(--rule-2); }
+.home .demo .more a { font-size: 0.85rem; color: var(--ink-2); border-bottom: 1px solid transparent; }
+.home .demo .more a:hover { color: var(--accent); border-bottom-color: currentColor; }
+.home #projects .work { margin-top: 1.6rem; }

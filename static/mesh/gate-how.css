@@ -1,17 +1,69 @@
-/* /gate/how: the illustrated gate. Layout and inks come from dissertation/opening.css; this adds the controls,
-   the engine-specific paragraphs and the colours the run is drawn in. */
+/* /decision-mesh, "How the Gate Decides": the illustrated gate as a section of the page. The story layout and the
+   paper-and-pencil inks are the dissertation's (dissertation/opening.css), copied here and scoped to .gatehow, since
+   that sheet's unscoped .stage and .cards would restyle the live fit and the race. This adds the controls, the
+   engine-specific paragraphs and the colors the run is drawn in. */
+.gatehow {
+  --paper: #fffff0;
+  --sheet: #fffdf6;
+  --ink: #1b1b20;
+  --ink-2: #4a4a55;
+  --ink-3: #8a8a93;
+  --rule: rgba(20, 20, 30, 0.1);
+  --accent: #1f3fd0;
+  --warm: #b4461f;
+  color: var(--ink);
+  padding: 2rem 0 0;
+}
+.dark .gatehow {
+  --paper: #1f2022;
+  --sheet: #25262a;
+  --ink: #ecedf1;
+  --ink-2: #b2b3bc;
+  --ink-3: #7c7d86;
+  --rule: rgba(255, 255, 255, 0.12);
+  --accent: #8fb0ff;
+  --warm: #ee8a5e;
+  color-scheme: dark;   /* the controls' native parts (a select's list and arrow) in dark too, or WebKit draws them white */
+}
 .gatehow[data-engine="tri"] [data-engine="rect"],
 .gatehow[data-engine="rect"] [data-engine="tri"] { display: none; }
-.gatehow .howbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: 2rem 0 0; font: 0.9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); }
-.gatehow .howbar label { display: inline-flex; align-items: center; gap: 8px; }
-.gatehow .howbar select, .gatehow .howbar button { font: inherit; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px; padding: 0.35rem 0.8rem; }
-.gatehow .howbar button { cursor: pointer; }
-.gatehow .howbar button:hover { border-color: var(--accent); }
-.gatehow .howstatus { font: 0.78rem ui-monospace, Menlo, monospace; letter-spacing: 0.06em; color: var(--ink-3); }
-.gatehow .howstatus.busy::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 7px; animation: howpulse 1s infinite ease-in-out; }
-@keyframes howpulse { 50% { opacity: 0.2; } }
+.gatehow a { color: var(--accent); text-decoration: none; }
+
+/* the head and foot of the section, on the page's column */
+.gatehow .howhead, .gatehow .howfoot { max-width: 1120px; margin: 0 auto; padding: 0 16px; box-sizing: border-box; }
+.gatehow .howhead .lede { font-family: Newsreader, Georgia, serif; font-size: 1.2rem; line-height: 1.5; color: var(--ink-2); max-width: 40rem; margin: 0; }
+.gatehow .howfoot { padding-bottom: 2rem; }
+.gatehow .howfoot .note { font: 0.84rem/1.55 ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); max-width: 44rem; margin: 0; }
+
+/* the story: text on the left, the drawing held on the right */
+.gatehow .story { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); width: min(1100px, calc(100% - 40px)); margin: 0 auto; }
+.gatehow .stage { grid-column: 2; grid-row: 1; position: sticky; top: 0; height: 100vh; height: 100svh; display: flex; align-items: center; justify-content: center; }
+.gatehow .stage > svg { width: min(100%, 78vh); height: auto; overflow: visible; }
+.gatehow .steps { grid-column: 1; grid-row: 1; padding: 30vh 0 40vh; }
+.gatehow .step { min-height: 88vh; display: flex; flex-direction: column; justify-content: center; max-width: 30rem; opacity: 0.22; transition: opacity 0.5s; }
+.gatehow .step.on { opacity: 1; }
+.gatehow .step p { font-family: Newsreader, Georgia, serif; font-size: clamp(1.45rem, 2.6vw, 2.05rem); line-height: 1.3; letter-spacing: -0.01em; margin: 0 0 0.8rem; }
+.gatehow .step p.small { font-size: clamp(1.05rem, 1.7vw, 1.25rem); color: var(--ink-2); }
+.gatehow .step em { font-style: italic; color: var(--accent); }
 .gatehow [data-v] { font-variant-numeric: tabular-nums; }
-.gatehow .step em { font-style: italic; }
+
+/* the drawing's inks */
+#stage { color: var(--ink); font-family: Newsreader, Georgia, serif; }
+#stage .pencil { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+#stage .soft { opacity: 0.35; }
+#stage .accent { stroke: var(--accent); }
+#stage .warm { stroke: var(--warm); }
+#stage .fillacc { fill: var(--accent); }
+#stage .fillink { fill: var(--ink-2); }
+#stage .fillwarm { fill: var(--warm); }
+#stage text { fill: currentColor; font-size: 17px; }
+#stage text.label { font-size: 15px; }
+#stage text.mono { font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 0.08em; fill: var(--ink-3); }
+#stage text.src { font: 11px ui-sans-serif, system-ui, sans-serif; fill: var(--ink-3); }
+#stage text.acc { fill: var(--accent); }
+#stage text.warmt { fill: var(--warm); }
+#stage text.halo { paint-order: stroke; stroke: var(--paper); stroke-width: 6px; stroke-linejoin: round; }
+#stage .box { fill: var(--sheet); }
 #stage .pos { fill: var(--accent); }
 #stage .neg { fill: var(--warm); }
 #stage .posS { stroke: var(--accent); }
@@ -27,15 +79,37 @@
 #stage text.tiny.acc { fill: var(--accent); }
 #stage text.tiny.halo { paint-order: stroke; stroke: var(--paper); stroke-width: 4px; stroke-linejoin: round; }
 #stage .stagebusy { font: 12px ui-monospace, Menlo, monospace; letter-spacing: 0.08em; fill: var(--ink-3); }
+
+/* the controls */
+.gatehow .howbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: 1.2rem 0 0; font: 0.9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); }
+.gatehow .howbar label { display: inline-flex; align-items: center; gap: 8px; }
+.gatehow .howbar select, .gatehow .howbar button { font: inherit; color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); border-radius: 999px; padding: 0.35rem 0.8rem; }
+.gatehow .howbar button { cursor: pointer; }
+.gatehow .howbar button:hover { border-color: var(--accent); }
 .gatehow .howbar input[type=range] { width: 120px; accent-color: var(--accent); }
 .gatehow .howbar .val { font: 0.8rem ui-monospace, Menlo, monospace; color: var(--ink); min-width: 2.2em; }
-/* on a phone the drawing is shown at about half its size: its labels are set larger to stay readable */
+.gatehow .howstatus { font: 0.78rem ui-monospace, Menlo, monospace; letter-spacing: 0.06em; color: var(--ink-3); }
+.gatehow .howstatus.busy::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 7px; animation: howpulse 1s infinite ease-in-out; }
+@keyframes howpulse { 50% { opacity: 0.2; } }
+.gatehow :is(button, select, input, a):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* phones: the drawing on top, the text scrolls over it. The drawing is shown at about half its size, so its labels
+   are set larger to stay readable. */
 @media (max-width: 820px) {
+  .gatehow .story { grid-template-columns: 1fr; width: 100%; }
+  .gatehow .stage { grid-column: 1; height: 52vh; height: 52svh; top: 3.5rem; z-index: 1; background: linear-gradient(var(--paper) 88%, transparent); }
+  .gatehow .stage > svg { width: min(92vw, 46vh); }
+  .gatehow .steps { grid-column: 1; grid-row: 1; padding: 58vh 20px 30vh; position: relative; z-index: 2; pointer-events: none; }
+  .gatehow .step { min-height: 70vh; justify-content: flex-end; padding-bottom: calc(6vh + 3rem); }
+  .gatehow .step p { font-size: 1.3rem; background: color-mix(in srgb, var(--paper) 92%, transparent); padding: 0.4rem 0.2rem; border-radius: 4px; }
+  .gatehow .step p.small { font-size: 1.02rem; }
   .gatehow #stage text { font-size: 19px; }
   .gatehow #stage text.label { font-size: 18px; }
   .gatehow #stage text.mono { font-size: 13px; letter-spacing: 0.02em; }
   .gatehow #stage text.small { font-size: 15px; }
   .gatehow #stage text.tiny { font-size: 13px; }
 }
-/* dark theme: the controls' native parts (a select's list and arrow) in dark too, or WebKit draws them white */
-.dark .gatehow { color-scheme: dark; }
+@media (prefers-reduced-motion: reduce) {
+  .gatehow .step { transition: none; }
+  .gatehow .howstatus.busy::before { animation: none; }
+}

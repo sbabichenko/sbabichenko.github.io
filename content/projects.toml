@@ -12,6 +12,7 @@ links = [
 
 [[project]]
 name = "Forecasting and Manipulating the Forecasts of Others"
+list = true
 desc = "Solo-authored, 2026. Finite-player games in which actions both move payoffs and reshape what opponents learn. In a two-player benchmark, the information wedge explains why pooling gains are mostly strategic, why optimal precision allocation can starve an inefficient player of information, and why signal precision changes the policy rules themselves."
 tags = ["research", "game theory"]
 image = "images/card-noisestate"

@@ -1,7 +1,6 @@
-// /dissertation/wedge: the information wedge, in steps. Four diagrams, then three drawings solved live by the
+// /dissertation/wedge: the information wedge, in steps. Four diagrams, then two drawings solved live by the
 // explorer's solver (static/noisestate/worker.js) on the Chapter 1 tracking game: player 1's first-order condition split into
-// its physical part and the wedge; the wedge shrinking as player 2's signal is blurred; and information starvation. Then
-// the game of chicken, drawn.
+// its physical part and the wedge; and the tug of war, where both players' precision p sets how hard they push.
 (function () {
   "use strict";
   const NS = "http://www.w3.org/2000/svg";
@@ -37,27 +36,23 @@
   // ------------------------------------------------------------------ the solver, run in the background
   const MODEL = {"name":"ch1_tracking_with_targets","params":{"p1":9,"p2":9,"r1":0.1,"r2":0.1,"b1":1,"b2":-1,"sigma":1,"T":1},"channels":["w0","w1","w2"],"states":{"X":{"drift":{"D1":1,"D2":1},"noise":{"w0":"sigma"}}},"agents":{"player1":{"controls":["D1"],"signals":{"y1":{"drift":{"X":"sqrt(p1)"},"noise":{"w1":1}}},"loss":[[1,"X","X"],["-2*b1","X"],["r1","D1","D1"]]},"player2":{"controls":["D2"],"signals":{"y2":{"drift":{"X":"sqrt(p2)"},"noise":{"w2":1}}},"loss":[[1,"X","X"],["-2*b2","X"],["r2","D2","D2"]]}},"horizon":{"kind":"finite","T":"T"},"numerics":{"nodes":12}};
   const model = (params) => { const m = JSON.parse(JSON.stringify(MODEL)); Object.assign(m.params, params); return m; };
-  const SWEEP = [100, 30, 9, 3, 1, 0.3, 0.1, 0.03, 0.01];
-  const STARVE = [0.02, 0.1, 0.25, 0.4, 0.5, 0.6, 0.75, 0.9, 0.98];
-  const R = { base: null, sweep: [], starve: [], full: null };
+  // the tug of war: both players at precision p. The default, p = 9, goes first: it also feeds the split drawing.
+  const TUG = [9, 0.01, 1000, 1, 100, 3, 30, 0.3, 0.1];
+  const R = { base: null, tug: {} };
   const status = document.getElementById("solvestate");
-  const jobs = [{ kind: "base", params: {} }]
-    .concat(SWEEP.map((p2) => ({ kind: "sweep", p2, params: { p2 } })))
-    .concat([{ kind: "full", params: { p1: 1e4, p2: 1e4, r1: 0.05, r2: 0.2, sigma: 0.5 } }])
-    // the starvation drawing uses Figure 1.5's parameters: total precision 20, sigma = 0.5, (r1, r2) = (0.05, 0.2)
-    .concat(STARVE.map((f) => ({ kind: "starve", f, params: { p1: 20 * f, p2: 20 * (1 - f), r1: 0.05, r2: 0.2, sigma: 0.5 } })));
+  const jobs = TUG.map((p) => ({ p, params: { p1: p, p2: p } }));
   let done = 0, t0 = performance.now();
   const maxAbs = (a) => a.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
   function onResult(job, res) {
     done++;
-    if (!res.ok) return;
-    if (job.kind === "base") R.base = res.samples.foc.D1;
-    else if (job.kind === "sweep") {
-      const f = res.samples.foc.D1;
-      R.sweep.push({ p2: job.p2, wedge: Object.values(f.channels).reduce((m, d) => Math.max(m, maxAbs(d.wedge)), 0), foc: f });
-      R.sweep.sort((a, b) => b.p2 - a.p2);
-    } else if (job.kind === "full") R.full = res.costs.player1 + res.costs.player2 + 2;
-    else { R.starve.push({ f: job.f, J: res.costs.player1 + res.costs.player2 + 2 }); R.starve.sort((a, b) => a.f - b.f); }
+    if (res.ok) {
+      const f = res.samples.foc.D1, ch = Object.values(f.channels);
+      if (job.p === 9) R.base = f;
+      // the wedge's share of player 1's first-order condition: its largest size over the physical part's, across shocks
+      const wedge = Math.max(...ch.map((d) => maxAbs(d.wedge))) / (Math.max(...ch.map((d) => maxAbs(d.physical))) || 1);
+      R.tug[job.p] = { t: res.samples.mean_t, D1: res.samples.means.D1, D2: res.samples.means.D2, X: res.samples.means.X,
+        J1: res.costs.player1, J2: res.costs.player2, wedge };
+    }
     for (const w of waits) w.textContent = `solving… ${done} of ${jobs.length}`;
     if (status) {
       status.textContent = done < jobs.length ? `Solving: ${done} of ${jobs.length} equilibria…` : `Solved ${jobs.length} equilibria in your browser, in ${((performance.now() - t0) / 1000).toFixed(1)} s.`;
@@ -264,7 +259,7 @@
         el("path", { d: pencil(s.map((v, i) => [sx(v), sy(f.channels[c].physical[i])]), 20 + k, 0.1), class: "pencil", "stroke-width": 2 }, live);
         el("path", { d: pencil(s.map((v, i) => [sx(v), sy(f.channels[c].wedge[i])]), 30 + k, 0.1), class: "pencil accent", "stroke-width": 2.6 }, live);
       });
-      // the legend names each line by a sample of it, not by a colour (the physical part is white on the dark theme)
+      // the legend names each line by a sample of it, not by a color (the physical part is white on the dark theme)
       el("line", { x1: 60, y1: 555, x2: 84, y2: 555, class: "pencil", "stroke-width": 2 }, live);
       text(live, 92, 560, "physical part", "label", "start");
       el("line", { x1: 250, y1: 555, x2: 274, y2: 555, class: "pencil accent", "stroke-width": 2.6 }, live);
@@ -275,128 +270,72 @@
     return { g, update(t) { if (R.base && !drawn) draw(); fade(wait, R.base ? 0 : 1); fade(live, seg(t, 0.05, 0.25)); } };
   })();
 
-  // ------------------------------------------------------------------ 6. cut the loop: the wedge shrinks with player 2's precision
-  scenes.cut = (() => {
-    const g = group("cut"), live = el("g", {}, g), wait = waiting(g);
-    let n = 0;
-    const X = (p) => 80 + (440 * (Math.log10(100) - Math.log10(p))) / (Math.log10(100) - Math.log10(0.01));
+  // ------------------------------------------------------------------ 6. the tug of war: both see more, both push less
+  scenes.tug = (() => {
+    // the two mean pushes over the game, player 1 up and player 2 down, with the mean state flat at zero between them and
+    // the no-information limit (T - t)/r dotted. The slider sets both players' precision p on a log scale; between two
+    // solved values of p the curves and numbers are interpolated in log p.
+    const g = group("tug"), live = el("g", {}, g), wait = waiting(g);
+    const input = document.getElementById("tug-p"), val = document.getElementById("tug-val"), read = document.getElementById("tug-read");
+    const X0 = 80, W = 440, Y0 = 285, S = 17.5, r = MODEL.params.r1;      // 17.5 px per unit of push; the open-loop start 10 sits 175 px out
+    const sx = (t) => X0 + W * t, sy = (v) => Y0 - S * v;
+    const grid = TUG.slice().sort((a, b) => a - b);
+    // the fixed parts: axes, the dotted no-information limit on both sides, labels
+    const fixed = el("g", {}, live);
+    el("line", { x1: X0, y1: sy(11), x2: X0, y2: sy(-11), class: "pencil soft", "stroke-width": 1 }, fixed);
+    text(fixed, X0 - 10, sy(10) + 4, "10", "mono", "end"); text(fixed, X0 - 10, sy(-10) + 4, "−10", "mono", "end"); text(fixed, X0 - 10, Y0 + 4, "0", "mono", "end");
+    text(fixed, X0, sy(-11) + 22, "t = 0", "mono", "start"); text(fixed, X0 + W, sy(-11) + 22, "t = 1", "mono", "end");
+    for (const sg of [1, -1]) {
+      const pts = []; for (let k = 0; k <= 20; ++k) pts.push([sx(k / 20), sy(sg * (1 - k / 20) / r)]);
+      el("path", { d: pencil(pts, sg > 0 ? 81 : 82, 0.2), class: "pencil soft", "stroke-width": 1.6, "stroke-dasharray": "2 5" }, fixed);
+    }
+    text(fixed, sx(0.02), sy(10) - 12, "if nobody were watching: (T − t)/r", "mono", "start");
+    const d1 = el("path", { class: "pencil accent", "stroke-width": 2.6 }, live);
+    const d2 = el("path", { class: "pencil warm", "stroke-width": 2.6 }, live);
+    const xs = el("path", { class: "pencil", "stroke-width": 2.2 }, live);
+    const l1 = text(live, 0, 0, "player 1 pushes up", "label acc", "start"), l2 = text(live, 0, 0, "player 2 pushes down", "label warmt", "start");
+    text(live, sx(0.6), Y0 - 9, "the state stays at 0", "label");
+    const pl = text(live, 300, 36, "", "label");
+    const r1 = text(live, 300, 536, "", "label"), r2 = text(live, 300, 561, "", "label"), r3 = text(live, 300, 586, "", "label acc");
+    let drawn = null;
+    const lerp = (a, b, w) => a + (b - a) * w;
+    function at(lp) {
+      // the two solved neighbours of log10 p, and the weight between them
+      const L = grid.map(Math.log10);
+      let k = 1; while (k < grid.length - 1 && L[k] < lp) k++;
+      const a = R.tug[grid[k - 1]], b = R.tug[grid[k]], w = clamp((lp - L[k - 1]) / (L[k] - L[k - 1]));
+      if (!a || !b) return null;
+      const mix = (u, v) => u.map((x, i) => lerp(x, v[i], w));
+      return { t: a.t, D1: mix(a.D1, b.D1), D2: mix(a.D2, b.D2), X: mix(a.X, b.X), J1: lerp(a.J1, b.J1, w), J2: lerp(a.J2, b.J2, w), wedge: lerp(a.wedge, b.wedge, w) };
+    }
+    const fmtP = (p) => (p >= 10 ? Math.round(p).toString() : p >= 1 ? p.toFixed(1).replace(/\.0$/, "") : p.toPrecision(1));
     function draw() {
-      live.innerHTML = "";
-      const mx = Math.max(...R.sweep.map((q) => q.wedge)) || 1, Y = (v) => 470 - (v / mx) * 300;
-      el("line", { x1: 70, y1: 470, x2: 530, y2: 470, class: "pencil soft", "stroke-width": 1 }, live);
-      const pts = R.sweep.map((q) => [X(q.p2), Y(q.wedge)]);
-      if (pts.length > 1) live.appendChild(el("path", { d: pencil(pts, 50, 0.2), class: "pencil accent", "stroke-width": 2.6 }));
-      R.sweep.forEach((q) => el("circle", { cx: X(q.p2), cy: Y(q.wedge), r: 4.5, class: "fillacc" }, live));
-      for (const p of [100, 1, 0.01]) text(live, X(p), 495, String(p), "mono");
-      text(live, 300, 530, "player 2's signal precision p₂  →  blurred", "mono");
-      text(live, 70, 140, "size of player 1's wedge", "label acc", "start");
-      const last = R.sweep[R.sweep.length - 1];
-      if (last && last.p2 <= 0.01) {
-        text(live, X(0.01) - 6, Y(last.wedge) - 18, `${last.wedge.toExponential(0)}`, "mono acc", "end");
-        text(live, 300, 575, "blind player 2: no wedge for player 1", "label");
-      }
-      n = R.sweep.length;
+      // the slider snaps to a solved p when it is near one, so the grid's own numbers are the ones read at it
+      let lp = input ? Number(input.value) : Math.log10(9);
+      for (const p of grid) if (Math.abs(Math.log10(p) - lp) < 0.04) lp = Math.log10(p);
+      const q = at(lp), key = lp + ":" + done;
+      if (key === drawn) return;
+      const p = Math.pow(10, lp);
+      if (val) val.textContent = "p = " + fmtP(p);
+      if (!q) { fade(live, 0); fade(wait, 1); return; }
+      drawn = key; fade(wait, 0);
+      d1.setAttribute("d", pencil(q.t.map((t, i) => [sx(t), sy(q.D1[i])]), 83, 0.15));
+      d2.setAttribute("d", pencil(q.t.map((t, i) => [sx(t), sy(q.D2[i])]), 84, 0.15));
+      xs.setAttribute("d", pencil(q.t.map((t, i) => [sx(t), sy(q.X[i])]), 85, 0.15));
+      // each player's label sits between its curve and the state, clear of the curve over the label's width
+      const span = q.t.map((t, i) => i).filter((i) => q.t[i] <= 0.34);
+      l1.setAttribute("x", sx(0.02)); l1.setAttribute("y", Math.max(...span.map((i) => sy(q.D1[i]))) + 20);
+      l2.setAttribute("x", sx(0.02)); l2.setAttribute("y", Math.min(...span.map((i) => sy(q.D2[i]))) - 9);
+      pl.textContent = `both players see with precision p = ${fmtP(p)}`;
+      r1.textContent = `player 1's first push: ${q.D1[0].toFixed(2)}`;
+      r2.textContent = `each player's cost: ${q.J1.toFixed(2)} and ${q.J2.toFixed(2)}`;
+      r3.textContent = `the wedge: ${(100 * q.wedge).toFixed(1)}% of player 1's first-order condition`;
+      if (read) read.textContent = `At p = ${fmtP(p)}: player 1's first push ${q.D1[0].toFixed(2)}, each player's cost ${q.J1.toFixed(2)}, the wedge ${(100 * q.wedge).toFixed(1)}% of player 1's first-order condition.`;
     }
-    const marker = el("line", { y1: 150, y2: 470, class: "pencil warm", "stroke-width": 1.4, "stroke-dasharray": "3 5" }, g);
+    if (input) input.addEventListener("input", () => { drawn = null; draw(); });
     return { g, update(t) {
-      if (R.sweep.length !== n) draw();
-      fade(wait, R.sweep.length ? 0 : 1); fade(live, seg(t, 0.02, 0.2));
-      const lp = 2 - 4 * seg(t, 0.2, 0.85), x = X(Math.pow(10, lp));
-      marker.setAttribute("x1", x); marker.setAttribute("x2", x); fade(marker, R.sweep.length > 1 ? seg(t, 0.15, 0.25) : 0);
-    } };
-  })();
-
-  // ------------------------------------------------------------------ 7. information starvation
-  scenes.starve = (() => {
-    const g = group("starve"), live = el("g", {}, g), wait = waiting(g);
-    let n = 0;
-    const X = (f) => 80 + 440 * f;
-    function draw() {
-      live.innerHTML = "";
-      const Js = R.starve.map((q) => q.J).concat(R.full ? [R.full] : []);
-      const lo = Math.min(...Js) - 0.1, hi = Math.max(...Js) + 0.1, Y = (v) => 470 - ((v - lo) / (hi - lo)) * 300;
-      el("line", { x1: 70, y1: 470, x2: 530, y2: 470, class: "pencil soft", "stroke-width": 1 }, live);
-      const pts = R.starve.map((q) => [X(q.f), Y(q.J)]);
-      if (pts.length > 1) live.appendChild(el("path", { d: pencil(pts, 60, 0.2), class: "pencil warm", "stroke-width": 2.6 }));
-      R.starve.forEach((q) => el("circle", { cx: X(q.f), cy: Y(q.J), r: 4.5, class: "fillwarm" }, live));
-      if (R.full) {
-        const y = Y(R.full);
-        el("line", { x1: 80, y1: y, x2: 520, y2: y, class: "pencil soft", "stroke-width": 1.2, "stroke-dasharray": "5 5" }, live);
-        text(live, 520, y - 8, "if both had precision 10⁴", "mono", "end");
-      }
-      const even = R.starve.find((q) => q.f === 0.5);
-      if (even) { el("circle", { cx: X(0.5), cy: Y(even.J), r: 9, class: "pencil", "stroke-width": 1.4 }, live); text(live, X(0.5), Y(even.J) - 18, "split evenly", "mono"); }
-      for (const f of [0, 0.5, 1]) text(live, X(f), 495, f === 0 ? "all to player 2" : f === 1 ? "all to player 1" : "half", "mono");
-      text(live, 70, 140, "the players' total cost", "label warmt", "start");
-      text(live, 300, 540, "share of the precision budget given to player 1", "mono");
-      // a lens to run along the curve: it reads the total cost at any split, between the solved points
-      if (R.starve.length > 1) {
-        const lens = el("g", { class: "lens" }, live);
-        lens.style.opacity = 0;
-        el("circle", { r: 20, class: "pencil", "stroke-width": 1.6, fill: "none" }, lens);
-        el("line", { x1: 14, y1: 14, x2: 30, y2: 30, class: "pencil", "stroke-width": 3, "stroke-linecap": "round" }, lens);
-        const read = text(live, 300, 118, "", "mono");
-        read.style.opacity = 0;
-        const hit = el("rect", { x: 70, y: 130, width: 460, height: 350, fill: "transparent" }, live);
-        hit.style.pointerEvents = "all"; hit.style.cursor = "ew-resize";
-        const svg = live.ownerSVGElement, qs = R.starve.slice().sort((a, b) => a.f - b.f);
-        const at = (ev) => {
-          const m = svg.getScreenCTM(); if (!m) return;
-          const p = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(m.inverse());
-          const f = Math.min(1, Math.max(0, (p.x - 80) / 440));
-          let k = 1; while (k < qs.length - 1 && qs[k].f < f) k++;
-          const a = qs[k - 1], b = qs[k], w = b.f === a.f ? 0 : (f - a.f) / (b.f - a.f), J = a.J + (b.J - a.J) * Math.min(1, Math.max(0, w));
-          lens.setAttribute("transform", `translate(${X(f)} ${Y(J)})`);
-          lens.style.opacity = 1; read.style.opacity = 1;
-          read.textContent = `${Math.round(f * 100)}% to player 1: total cost ${J.toFixed(3)}`;
-        };
-        hit.addEventListener("pointermove", at);
-        hit.addEventListener("pointerdown", at);
-        hit.addEventListener("pointerleave", () => { lens.style.opacity = 0; read.style.opacity = 0; });
-      }
-      n = R.starve.length;
-    }
-    return { g, update(t) { if (R.starve.length !== n) draw(); fade(wait, R.starve.length ? 0 : 1); fade(live, seg(t, 0.05, 0.25)); } };
-  })();
-
-  // ------------------------------------------------------------------ 8. chicken: the wheel goes out the window
-  scenes.chicken = (() => {
-    const g = group("chicken"), GY = 330;
-    g.setAttribute("transform", "translate(300 300) scale(1.25) translate(-300 -300)");
-    const road = stroke(g, pencil([[70, GY], [540, GY]], 70, 0.4), "soft", 1.4);
-    const dashes = el("g", {}, g);
-    for (let x = 84; x < 530; x += 44) el("line", { x1: x, y1: GY + 16, x2: x + 18, y2: GY + 16, class: "pencil soft", "stroke-width": 1.2 }, dashes);
-    // a car in profile, facing right, standing on (0, 0); the right-hand one is the same car mirrored
-    function car(seed, cls) {
-      const c = el("g", {}, g);
-      el("path", { d: pencil([[-65, -20], [-66, -44], [-36, -49], [-22, -76], [18, -76], [36, -49], [62, -45], [66, -22], [-65, -20]], seed, 0.8), class: "box pencil " + cls, "stroke-width": 1.8 }, c);
-      el("path", { d: pencil([[-17, -70], [13, -70], [27, -51], [-28, -51], [-17, -70]], seed + 1, 0.6), class: "pencil soft", "stroke-width": 1.3 }, c);
-      el("circle", { cx: -2, cy: -60, r: 7, class: "box pencil", "stroke-width": 1.4 }, c);
-      for (const x of [-38, 38]) { el("circle", { cx: x, cy: -13, r: 13, class: "box pencil", "stroke-width": 1.8 }, c); el("circle", { cx: x, cy: -13, r: 3, class: "pencil", "stroke-width": 1.4 }, c); }
-      return c;
-    }
-    const left = car(71, ""), right = car(75, "warm");
-    const hands = el("g", {}, right);
-    for (const [x0, x1] of [[-8, -16], [6, 12]]) {
-      el("path", { d: pencil([[x0, -68], [x0 - 1, -84], [x1, -100]], 80 + x0, 0.5), class: "pencil warm", "stroke-width": 2 }, hands);
-      el("circle", { cx: x1, cy: -106, r: 6, class: "box pencil warm", "stroke-width": 1.6 }, hands);
-    }
-    const wheel = el("g", {}, g);
-    el("circle", { r: 14, class: "box pencil warm", "stroke-width": 2.2 }, wheel);
-    for (const a of [-90, 30, 150]) el("line", { x1: 0, y1: 0, x2: 13 * Math.cos((a * Math.PI) / 180), y2: 13 * Math.sin((a * Math.PI) / 180), class: "pencil warm", "stroke-width": 1.6 }, wheel);
-    const lWheel = text(g, 530, GY + 36, "steering wheel", "mono", "end"), lHands = text(g, 418, 214, "hands out", "mono warmt", "start"), lSwerve = text(g, 205, GY + 82, "swerve", "mono");
-    return { g, update(t) {
-      road.set(seg(t, 0, 0.12)); fade(dashes, seg(t, 0.05, 0.15));
-      const drive = seg(t, 0.05, 0.6), lx = 100 + 120 * drive, rx = 500 - 110 * drive;
-      const sw = seg(t, 0.7, 0.88);
-      left.setAttribute("transform", `translate(${lx + 10 * sw} ${GY + 34 * sw}) rotate(${14 * sw})`);
-      right.setAttribute("transform", `translate(${rx} ${GY}) scale(-1 1)`);
-      fade(left, seg(t, 0.02, 0.1)); fade(right, seg(t, 0.02, 0.1));
-      const u = seg(t, 0.3, 0.62), x0 = rx - 2, y0 = GY - 60, x1 = 525, y1 = GY - 14;
-      wheel.setAttribute("transform", `translate(${x0 + (x1 - x0) * u} ${y0 + (y1 - y0) * u - 4 * 150 * u * (1 - u)}) rotate(${540 * u})`);
-      fade(wheel, t > 0.3 ? 1 : 0); fade(lWheel, seg(t, 0.6, 0.7));
-      fade(hands, seg(t, 0.55, 0.68)); fade(lHands, seg(t, 0.6, 0.7));
-      fade(lSwerve, seg(t, 0.78, 0.88));
+      if (input && input.disabled && done === jobs.length) input.disabled = false;
+      draw(); if (drawn) fade(live, seg(t, 0.05, 0.25));
     } };
   })();
 

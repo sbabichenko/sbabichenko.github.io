@@ -6,7 +6,7 @@
 # Usage: EIGEN_DIR=/path/holding/Eigen tools/trimesh/build_wasm.sh /path/to/triangular-decision-mesh/core [out] [name] [patch]
 # An optional fourth argument is a patch applied to a copy of the sources first. The site's triangular build
 # uses tools/trimesh/trace.patch, which adds one thing: with DMESH_TRACE set, each gate round's scored
-# candidates are written to a CSV for the illustrated gate (/gate/how/). Nothing the fit computes changes.
+# candidates are written to a CSV for the illustrated gate (/decision-mesh/). Nothing the fit computes changes.
 set -e
 SRC=${1:?path to triangular-decision-mesh/core}
 OUT=${2:-$(dirname "$0")/../../static/mesh}

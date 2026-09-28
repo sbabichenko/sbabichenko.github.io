@@ -126,8 +126,8 @@
   }
   const nodeKernel = (res, ctl, ch) => res.kernels[ctl][ch];
   const peak = (a) => a.reduce((m, v) => Math.max(m, Math.abs(v)), 0) || 1;
-  // a dot per node, its area the value's size; by default its colour is the sign (orange above 0, blue below). With a
-  // colour of its own (ink, or "acc" for the accent) the dot is filled above 0 and hollow below.
+  // a dot per node, its area the value's size; by default its color is the sign (orange above 0, blue below). With a
+  // color of its own (ink, or "acc" for the accent) the dot is filled above 0 and hollow below.
   function dotField(g, res, vals, X, Y, rmax, scale, own) {
     const n = res.nodes.t.length, m = scale || peak(vals);
     for (let k = 0; k < n; ++k) {

@@ -1,13 +1,13 @@
-// /gate/how: the decision-mesh gate told in steps. The page draws coin flips from the chosen odds, sends them to
-// fit-worker.js with the candidate trace on, and builds every scene from what comes back: each round's scored
-// candidates with the segment each would split, the gate's empirical null, the lfdr cutoff, the admissions, the
-// pool variance by round, the admitted surpluses by depth, and the final surface. Only the "corrections" scene is
-// a sketch (a one-dimensional toy computed here), and its caption says so.
+// /decision-mesh, "How the Gate Decides": the decision-mesh gate told in steps. The section draws coin flips from
+// the chosen odds, sends them to fit-worker.js with the candidate trace on, and builds every scene from what comes
+// back: each round's scored candidates with the segment each would split, the gate's empirical null, the lfdr
+// cutoff, the admissions, the pool variance by round, the admitted surpluses by depth, and the final surface. Only
+// the "corrections" scene is a sketch (a one-dimensional toy computed here), and its caption says so.
 (function () {
   "use strict";
   const root = document.getElementById("gatehow");
   const svg = document.getElementById("stage");
-  const steps = [...document.querySelectorAll(".step")];
+  const steps = root ? [...root.querySelectorAll(".step")] : [];
   if (!root || !svg) return;
   const NS = "http://www.w3.org/2000/svg";
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -89,7 +89,7 @@
     return (v) => { const t = (clamp(v, -9, 9) - mm) / ms; let eta = 0, p = 1; for (let k = 0; k <= DEG; ++k) { eta += p * beta[k]; p *= t; } return Math.exp(clamp(eta, -30, 30)) / (M * d); };
   }
 
-  // ------------------------------------------------------------------ the data (the same odds as /gate)
+  // ------------------------------------------------------------------ the data (the same odds as the live fit above it)
   const BASE = -1, SITES = 6000, FLIPS = 20;
   let POOL_SD = 0.25;   // the coin effects' sd on the log-odds, from the slider
   const TRUTHS = {
@@ -114,7 +114,7 @@
     return { x, y, n, k, u, csv: rows.join("\n") + "\n" };
   }
 
-  // ------------------------------------------------------------------ colour: log-odds against the background
+  // ------------------------------------------------------------------ color: log-odds against the background
   function rgbOf(css) {
     const c = document.createElement("canvas").getContext("2d"); c.fillStyle = "#000"; c.fillStyle = css;
     const s = c.fillStyle; if (s[0] === "#") return [1, 3, 5].map((i) => parseInt(s.slice(i, i + 2), 16));
@@ -176,7 +176,7 @@
     const byRound = (r) => cands.filter((c) => c.round === r);
     const r0 = byRound(0), cal = D.calib, cal0 = cal.find((c) => c.round === 0) || cal[0];
     const zmax = Math.max(4, ...r0.map((c) => Math.abs(c.z)));
-    // the fitted log-odds at any point: the baseline plus the surface, bilinear between the dump's grid centres
+    // the fitted log-odds at any point: the baseline plus the surface, bilinear between the dump's grid centers
     const SG = D.surface, SN = Math.round(Math.sqrt(SG.f.length));
     const fitLogit = (x, y) => {
       const gx = clamp(x * SN - 0.5, 0, SN - 1.001), gy = clamp(y * SN - 0.5, 0, SN - 1.001), i = Math.floor(gx), j = Math.floor(gy), u = gx - i, v = gy - j;
@@ -302,7 +302,7 @@
       } };
     })();
 
-    // 1c. two kinds of excess: shared by neighbours, or each site's own ------------------------------------------
+    // 1c. two kinds of excess: shared by neighbors, or each site's own ------------------------------------------
     scenes.coherent = (() => {
       const g = group("coherent");
       const w = 250, gap = 20, x0 = 300 - w - gap / 2, x1 = 300 + gap / 2, y0 = 150;
@@ -315,7 +315,7 @@
       const A = el("g", {}, g), Bg = el("g", {}, g);
       el("image", { x: x0, y: y0, width: w, height: w, href: map(zFlat) }, A); el("rect", { x: x0, y: y0, width: w, height: w, class: "frame" }, A);
       text(A, x0, y0 - 12, "against a flat surface", "mono", "start");
-      text(A, x0 + w / 2, y0 + w + 24, "coherent: neighbours share it", "label");
+      text(A, x0 + w / 2, y0 + w + 24, "coherent: neighbors share it", "label");
       text(A, x0 + w / 2, y0 + w + 42, `mean squared residual ${disp(zFlat).toFixed(2)}`, "tiny");
       el("image", { x: x1, y: y0, width: w, height: w, href: map(zFit) }, Bg); el("rect", { x: x1, y: y0, width: w, height: w, class: "frame" }, Bg);
       text(Bg, x1, y0 - 12, "against the final fit", "mono", "start");
@@ -405,7 +405,7 @@
       const X = (u) => 90 + u * 420;
       // panel a: residuals and their expected values
       const A = el("g", {}, g), Ay = 170, As = 70;
-      text(A, 70, 70, "1 · centre each residual on its own expected value", "mono", "start");
+      text(A, 70, 70, "1 · center each residual on its own expected value", "mono", "start");
       line(A, 80, Ay, 520, Ay, "soft", 1);
       const dotsA = U.map((u, i) => el("circle", { cx: X(u), cy: Ay - As * R[i], r: 3.2, class: "ink" }, A));
       const ticks = U.map((u, i) => line(A, X(u) - 5, Ay - As * E[i], X(u) + 5, Ay - As * E[i], "warm", 1.6));
@@ -422,7 +422,7 @@
       // panel c: the result
       const C = el("g", {}, g);
       text(C, 70, 462, "3 · remove the shrinkage bias, divide by the standard deviation", "mono", "start");
-      const zl = text(C, 300, 506, "z  =  (centred score on the remainder − shrinkage bias) / sd", "label");
+      const zl = text(C, 300, 506, "z  =  (centered score on the remainder − shrinkage bias) / sd", "label");
       const cap = text(g, 300, 570, "a one-dimensional sketch, not the run", "tiny");
       return { g, update(t) {
         const u = seg(t, 0.12, 0.32);
@@ -457,16 +457,16 @@
       text(g, 70, 90, `round 0: ${r0.length} scores`, "mono", "start");
       const H = histogram(g, r0, cal0, { x: 70, y: 120, w: 460, h: 300 });
       H.sbars.forEach((b) => b.remove());
-      // The null is matched to the centre of a smooth fit to the whole histogram, not to the bars. A degree-6 curve
+      // The null is matched to the center of a smooth fit to the whole histogram, not to the bars. A degree-6 curve
       // across z from -9.5 to 9.5 cannot follow a sharp peak, so when the bars peak sharply the null comes out wider
       // than they are. Drawn here so that gap reads as the method's, and counted so the reader can check which null
-      // carries the centre: the scores within |z| <= 2 against what each drawn curve puts there.
+      // carries the center: the scores within |z| <= 2 against what each drawn curve puts there.
       const dens = lindseyDensity(r0.map((c) => c.z));
       const smooth = dens ? el("path", { d: (() => { const p = []; for (let z = H.lo; z <= H.hi + 1e-9; z += (H.hi - H.lo) / 240) p.push([H.X(z), H.Y(dens(z) * H.M * H.bw)]); return "M" + p.map((q) => q[0].toFixed(1) + "," + q[1].toFixed(1)).join(" L"); })(), class: "pencil", "stroke-width": 1.4, fill: "none" }, g) : null;
       const l1 = el("g", {}, g), l2 = el("g", {}, g), l3 = el("g", {}, g), l4 = el("g", {}, g);
       line(l1, 80, 470, 110, 470, "soft", 1.4).setAttribute("stroke-dasharray", "4 4"); text(l1, 118, 474, "the textbook null, N(0, 1)", "tiny", "start");
-      line(l2, 80, 492, 110, 492, "accent", 2); text(l2, 118, 496, `this round's null: centre ${fmt(cal0.nullMean)}, spread ${fmt(cal0.nullSd)}, share ${pct(cal0.pi0)}`, "tiny", "start");
-      if (smooth) { line(l3, 80, 514, 110, 514, "", 1.4); text(l3, 118, 518, "the smooth fit its centre is matched to", "tiny", "start"); }
+      line(l2, 80, 492, 110, 492, "accent", 2); text(l2, 118, 496, `this round's null: center ${fmt(cal0.nullMean)}, spread ${fmt(cal0.nullSd)}, share ${pct(cal0.pi0)}`, "tiny", "start");
+      if (smooth) { line(l3, 80, 514, 110, 514, "", 1.4); text(l3, 118, 518, "the smooth fit its center is matched to", "tiny", "start"); }
       const inC = r0.filter((c) => Math.abs(c.z) <= 2).length;
       const ownC = cal0.pi0 * r0.length * (Phi((2 - cal0.nullMean) / cal0.nullSd) - Phi((-2 - cal0.nullMean) / cal0.nullSd));
       const tbC = r0.length * (Phi(2) - Phi(-2));
@@ -607,7 +607,7 @@
     })();
 
     // the numbers in the text
-    const setV = (k, s) => document.querySelectorAll(`[data-v="${k}"]`).forEach((n) => { n.textContent = s; });
+    const setV = (k, s) => root.querySelectorAll(`[data-v="${k}"]`).forEach((n) => { n.textContent = s; });
     setV("M0", String(r0.length));
     setV("outside", pct(outside));
     setV("dispFlat", disp(zFlat).toFixed(2)); setV("dispFit", disp(zFit).toFixed(2));
@@ -639,10 +639,10 @@
 
   // ------------------------------------------------------------------ the run
   let worker = null, seq = 0, want = null, data = null;
-  function status(s, busy) { const n = $("howstatus"); n.textContent = s; n.classList.toggle("busy", !!busy); }
+  function status(s, busy) { const n = $("gh-status"); n.textContent = s; n.classList.toggle("busy", !!busy); }
   function fitNow() {
-    const engine = $("engine").value, truth = $("truth").value, seed = +(root.dataset.seed || 1);
-    POOL_SD = +$("coinsd").value;
+    const engine = $("gh-engine").value, truth = $("gh-truth").value, seed = +(root.dataset.seed || 1);
+    POOL_SD = +$("gh-coinsd").value;
     root.dataset.engine = engine;
     data = makeData(truth, seed); data.truth = truth;
     if (!worker) { worker = new Worker(root.dataset.worker); worker.onmessage = onMsg; worker.onerror = () => status("the estimator failed to load"); }
@@ -662,21 +662,20 @@
     status(`${m.engine === "rect" ? "rectangles" : "right triangles"} · ${(m.ms / 1000).toFixed(1)} s in your browser`);
     build(data, m);
   }
-  const sdLabel = () => { $("coinsdval").textContent = (+$("coinsd").value).toFixed(2); };
-  $("coinsd").addEventListener("input", sdLabel);
-  $("coinsd").addEventListener("change", fitNow);
-  $("engine").addEventListener("change", fitNow);
-  $("truth").addEventListener("change", fitNow);
-  $("again").addEventListener("click", () => { root.dataset.seed = (+(root.dataset.seed || 1) % 97) + 1; fitNow(); });
+  const sdLabel = () => { $("gh-coinsdval").textContent = (+$("gh-coinsd").value).toFixed(2); };
+  $("gh-coinsd").addEventListener("input", sdLabel);
+  $("gh-coinsd").addEventListener("change", fitNow);
+  $("gh-engine").addEventListener("change", fitNow);
+  $("gh-truth").addEventListener("change", fitNow);
+  $("gh-again").addEventListener("click", () => { root.dataset.seed = (+(root.dataset.seed || 1) % 97) + 1; fitNow(); });
   new MutationObserver(() => { if (run) build(data, run); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
 
-  // ------------------------------------------------------------------ scroll to scene, and the progress line
-  const bar = document.getElementById("progress");
+  // ------------------------------------------------------------------ scroll to scene (the page's own reading line
+  // is data-auto, drawn by whimsy.js)
   function measure() {
     const vh = window.innerHeight;
     let best = null, bestD = Infinity;
     for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - (window.readLine ? window.readLine() : vh * 0.55)); if (d < bestD) { bestD = d; best = s; } }
-    if (bar) { const h = document.documentElement.scrollHeight - vh; bar.style.width = (h > 0 ? (100 * window.scrollY) / h : 0) + "%"; }
     if (!best) return;
     const r = best.getBoundingClientRect();
     prog = clamp((vh * 0.85 - r.top) / (r.height * 0.9));
