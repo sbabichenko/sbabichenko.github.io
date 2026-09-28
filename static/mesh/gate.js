@@ -25,10 +25,10 @@
     nothing: { name: "Nothing at all", f: () => BASE },
     drawing: { name: "Your drawing", f: (x, y) => sampleDrawing(x, y) },
   };
-  function sampleDrawing(x, y) {
+  function sampleDrawing(x, y, g = drawing) {
     const gx = Math.min(G - 1.001, Math.max(0, x * (G - 1))), gy = Math.min(G - 1.001, Math.max(0, y * (G - 1)));
     const i = Math.floor(gx), j = Math.floor(gy), u = gx - i, v = gy - j;
-    const a = drawing[j * G + i], b = drawing[j * G + i + 1], c = drawing[(j + 1) * G + i], d = drawing[(j + 1) * G + i + 1];
+    const a = g[j * G + i], b = g[j * G + i + 1], c = g[(j + 1) * G + i], d = g[(j + 1) * G + i + 1];
     return (a * (1 - u) + b * u) * (1 - v) + (c * (1 - u) + d * u) * v;
   }
   function brush(x, y, amount, radius) {
@@ -58,15 +58,16 @@
 
   function makeData(truth, sites, flips, seed, sd) {
     const r = mulberry32(seed * 7919 + 17), f = TRUTHS[truth].f;
-    const x = new Float64Array(sites), y = new Float64Array(sites), n = new Int32Array(sites), k = new Int32Array(sites);
+    const x = new Float64Array(sites), y = new Float64Array(sites), n = new Int32Array(sites), k = new Int32Array(sites), u = new Float64Array(sites);
     const rows = [];          // no header row: the engines read a headerless design as x, y, trials, heads
     for (let i = 0; i < sites; ++i) {
       x[i] = r(); y[i] = r();
       n[i] = Math.max(1, Math.round(flips * (0.5 + r())));
-      k[i] = binomial(r, n[i], expit(f(x[i], y[i]) + sd * gauss(r)));
+      u[i] = sd * gauss(r);                              // the coin's own effect: what the two axes don't describe
+      k[i] = binomial(r, n[i], expit(f(x[i], y[i]) + u[i]));
       rows.push(x[i].toFixed(5) + "," + y[i].toFixed(5) + "," + n[i] + "," + k[i]);
     }
-    return { x, y, n, k, csv: rows.join("\n") + "\n" };
+    return { x, y, n, k, u, csv: rows.join("\n") + "\n" };
   }
 
   // ------------------------------------------------------------------ color and rasters
@@ -159,7 +160,9 @@
   }
 
   // ------------------------------------------------------------------ state
-  const S = { data: null, fit: null, truthG: null, fitG: null, busy: false, queued: false, id: 0, ready: false, user: null };
+  // S.run is the last finished fit on the coins, with the coins and settings it was run on: the story below the fit
+  // (gate-how.js) narrates it, and hears of each new one by a "gatefit" event (and of each start by "gatefitstart")
+  const S = { data: null, fit: null, truthG: null, fitG: null, busy: false, queued: false, id: 0, ready: false, user: null, pending: null, run: null };
   window.gateDemo = S;
   const opts = () => ({ engine: $("engine").value, truth: $("truth").value, sites: +$("sites").value, flips: +$("flips").value, seed: +$("seed").value, sd: coinSd(), q: gateQ() });
 
@@ -330,6 +333,7 @@
       if (m.type === "ready") { S.ready = true; run(); return; }
       if (m.type === "error") {
         S.busy = false; setChip("bad", "Error");
+        document.dispatchEvent(new CustomEvent("gatefit", { detail: { error: m.message } }));
         let text = m.message;
         if (S.user && (m.log || []).some((l) => /unidentified/.test(l)))
           text = "The estimator could not separate the sites' own effects from the noise: most sites have too few trials. Give it sites with more trials each, or plain 0/1 rows, which this page groups into sites.";
@@ -340,6 +344,11 @@
       if (m.id !== S.id) { S.busy = false; if (S.queued) run(); return; }
       S.busy = false;
       S.fit = m; S.fitG = fitGrid(m);
+      if (S.pending && S.pending.id === m.id) {
+        const P = S.pending;
+        if (P.user) document.dispatchEvent(new CustomEvent("gatefit", { detail: { user: true } }));
+        else { S.run = { ...P, fit: m }; document.dispatchEvent(new CustomEvent("gatefit", { detail: S.run })); }
+      }
       if (window.siteTally) window.siteTally("fit", 1, S.user ? `a decision mesh on ${S.user.rows.toLocaleString()} rows of your own data` : `a decision mesh on ${opts().sites.toLocaleString()} sites of coin flips`);
       stale(false);
       setChip("ok", "Fitted"); report(); drawFit();
@@ -363,6 +372,8 @@
       S.busy = true; S.id += 1;
       setChip("busy", "Fitting");
       $("statustext").textContent = `The ${o.engine === "rect" ? "rectangular" : "right-triangle"} estimator is fitting ${S.user.sites.toLocaleString()} sites from ${S.user.name}…`;
+      S.pending = { id: S.id, user: true };
+      document.dispatchEvent(new CustomEvent("gatefitstart", { detail: S.pending }));
       worker.postMessage({ id: S.id, engine: o.engine, design: S.user.data.csv, seed: 7, q: o.q });
       return;
     }
@@ -373,8 +384,17 @@
     S.busy = true; S.id += 1;
     setChip("busy", "Fitting");
     $("statustext").textContent = `The ${o.engine === "rect" ? "rectangular" : "right-triangle"} estimator is fitting ${o.sites.toLocaleString()} sites…`;
-    worker.postMessage({ id: S.id, engine: o.engine, design: S.data.csv, seed: 7, q: o.q });
+    // the story narrates this run, so the worker also returns the gate's trace (detail: true); the fit is the same
+    S.pending = { id: S.id, data: S.data, ...o, tf: truthOf(o.truth) };
+    document.dispatchEvent(new CustomEvent("gatefitstart", { detail: S.pending }));
+    worker.postMessage({ id: S.id, engine: o.engine, design: S.data.csv, seed: 7, q: o.q, detail: true });
     writeHash();
+  }
+  // the odds a run was drawn from, kept as they were: a drawing painted on later changes the next run, not this one
+  function truthOf(name) {
+    if (name !== "drawing") return TRUTHS[name].f;
+    const snap = drawing.slice();
+    return (x, y) => sampleDrawing(x, y, snap);
   }
   let timer = 0;
   const soon = () => { clearTimeout(timer); timer = setTimeout(run, 180); };

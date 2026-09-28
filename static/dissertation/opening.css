@@ -50,6 +50,10 @@
   text-decoration: none; background: color-mix(in srgb, var(--sheet) 80%, transparent); backdrop-filter: blur(4px); }
 .cover .cta a:hover { border-color: var(--accent); color: var(--accent); }
 .cover .cta a.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.cover .ctamore { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 0.9rem 0 0; opacity: 0; transition: opacity 0.5s 0.3s; font: 0.88rem ui-sans-serif, system-ui, sans-serif; }
+.cover.in .ctamore { opacity: 1; }
+.cover .ctamore a { color: var(--ink-2); border-bottom: 1px solid var(--rule); }
+.cover .ctamore a:hover { color: var(--accent); border-bottom-color: currentColor; }
 .dark .cover .cta a.primary { color: #10131f; }
 .cover .scrollhint { position: absolute; left: 50%; bottom: 1.4rem; transform: translateX(-50%); font: 0.72rem ui-monospace, Menlo, monospace;
   letter-spacing: 0.2em; color: var(--ink-3); margin: 0; animation: nudge 2.4s ease-in-out infinite; }
@@ -331,6 +335,16 @@
 .spike .lemma h3 { font-family: Newsreader, Georgia, serif; font-weight: 400; font-size: 1.45rem; margin: 2rem 0 0.5rem; }
 
 /* ---------------------------------------------------------------- /noisestate/risk */
+.risk .ideahead { display: grid; grid-template-columns: minmax(0, 36rem) minmax(0, 1fr); column-gap: 3.5rem; }
+.risk .ideahead > .eyebrow, .risk .ideahead > h1 { grid-column: 1 / -1; }
+.risk .ideahead > .lede { grid-column: 1; }
+.risk .headfig { grid-column: 2; grid-row: 3 / span 2; align-self: center; margin: 0; }
+.risk .headfig svg { max-width: 24rem; margin: 0 auto; font: 12.5px ui-sans-serif, system-ui, sans-serif; }
+@media (max-width: 900px) {
+  .risk .ideahead { grid-template-columns: minmax(0, 1fr); }
+  .risk .headfig { grid-column: 1; grid-row: auto; margin-top: 1.6rem; }
+  .risk .headfig svg { max-width: 20rem; margin: 0; }
+}
 .risk .rsec { width: min(1100px, calc(100% - 32px)); margin: 3rem auto 0; }
 .risk .rsec h2 { font-family: Newsreader, Georgia, serif; font-weight: 400; font-size: clamp(1.7rem, 3.4vw, 2.3rem); line-height: 1.1; margin: 0 0 0.6rem; }
 .risk .lede2 { font-family: Newsreader, Georgia, serif; font-size: 1.12rem; line-height: 1.5; color: var(--ink-2); max-width: 42rem; margin: 0 0 1rem; }
@@ -391,14 +405,8 @@
 .risk .routes .rname small { display: block; font-weight: 400; color: var(--ink-3); font-size: 0.74rem; margin-top: 2px; }
 .risk .legend i.dot { background: none; border-top: 3px dotted; height: 0; width: 16px; border-radius: 0; }
 
-/* ---------------------------------------------------------------- /dissertation/wedge: the math tucked away, and the tug slider */
+/* ---------------------------------------------------------------- /dissertation/wedge: the tug slider */
 #wedgepage .ideafoot > p:first-child + p { font-family: Newsreader, Georgia, serif; font-size: 1.3rem; line-height: 1.5; }
-#wedgepage details.math { margin: 0.2rem 0 0.8rem; border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 6px;
-  background: color-mix(in srgb, var(--accent) 4%, var(--paper)); pointer-events: auto; }
-#wedgepage details.math > summary { cursor: pointer; padding: 0.5rem 0.8rem; font: 600 0.85rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); list-style-position: inside; }
-#wedgepage details.math[open] > summary { border-bottom: 1px solid var(--rule); margin-bottom: 0.5rem; }
-#wedgepage details.math > :not(summary) { margin-left: 0.8rem; margin-right: 0.8rem; }
-#wedgepage details.math p.small { background: none; }
 #wedgepage .tugctl { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin: 0.2rem 0 0.9rem; pointer-events: auto;
   font: 0.9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); }
 #wedgepage .tugctl input { flex: 1 1 10rem; min-width: 0; accent-color: var(--accent); }
