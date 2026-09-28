@@ -94,7 +94,9 @@
   }
   function ramp(v) {
     const t = clamp(v / 2.2, -1, 1), to = t > 0 ? INK.acc : INK.warm, a = Math.pow(Math.abs(t), 0.8);
-    return INK.paper.map((p, i) => Math.round(p + (to[i] - p) * a));
+    // the ink at coverage a (as alpha), not blended into a flat paper colour: over the textured paper it reads the
+    // same, and the grain shows through
+    return [to[0], to[1], to[2], Math.round(255 * a)];
   }
 
   // ------------------------------------------------------------------ the square on the stage
@@ -384,8 +386,8 @@
           for (let j = j0; j < j1; ++j) for (let i = i0; i < i1; ++i) {
             const u = ((i + 0.5) / N - c[0]) / (c[2] - c[0]), w = ((j + 0.5) / N - c[1]) / (c[3] - c[1]);
             const h = (H[0] * (1 - u) + H[1] * u) * (1 - w) + (H[2] * (1 - u) + H[3] * u) * w;
-            const [r, gg, b] = ramp(R.baseline + h - BASE), o = 4 * ((N - 1 - j) * N + i);
-            img.data[o] = r; img.data[o + 1] = gg; img.data[o + 2] = b; img.data[o + 3] = 255;
+            const [r, gg, b, al] = ramp(R.baseline + h - BASE), o = 4 * ((N - 1 - j) * N + i);
+            img.data[o] = r; img.data[o + 1] = gg; img.data[o + 2] = b; img.data[o + 3] = al;
           }
         }
         ctx.putImageData(img, 0, 0);
@@ -915,15 +917,19 @@
 
   // ------------------------------------------------------------------ scroll to scene, and the progress line
   const bar = document.getElementById("progress");
+  // A step's progress runs from 0 as it becomes the active step (its top at the reading line) to 1 once 70% of it has
+  // passed the line, so its drawing builds while the paragraph is read, on the way down as well as up.
   function measure() {
-    const vh = window.innerHeight;
+    const vh = window.innerHeight, line = window.readLine ? window.readLine() : vh * 0.55;
     let best = null, bestD = Infinity;
-    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - (window.readLine ? window.readLine() : vh * 0.55)); if (d < bestD) { bestD = d; best = s; } }
+    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - line); if (d < bestD) { bestD = d; best = s; } }
     if (bar) { const h = document.documentElement.scrollHeight - vh; bar.style.width = (h > 0 ? (100 * window.scrollY) / h : 0) + "%"; }
     if (!best) return;
     const r = best.getBoundingClientRect();
-    prog = clamp((vh * 0.85 - r.top) / (r.height * 0.9));
+    prog = clamp((line - r.top) / (r.height * 0.7));
     if (best !== active) {
+      // reached from above, a drawing builds from nothing; from below, or rebuilt in place (active reset), it is there
+      shown = active && steps.indexOf(best) > steps.indexOf(active) ? 0 : prog; lastDraw = null;
       active = best;
       for (const s of steps) s.classList.toggle("on", s === best);
       for (const [name, sc] of Object.entries(scenes)) sc.g.style.opacity = name === best.dataset.scene ? 1 : 0;
@@ -934,12 +940,20 @@
   window.addEventListener("resize", measure);
   // A scene is redrawn only when the reading position or the scene changes, or while a scene is still moving toward
   // it (update() returns true); with reduced motion a scene is drawn once, finished, until another takes its place.
-  let drawnScene = null, drawnProg = -1, queued = false, moving = false;
+  // The drawing follows the reading position no faster than PACE a second, so a flick of the wheel is caught up
+  // over a moment rather than skipped.
+  const PACE = 0.9;
+  let drawnScene = null, drawnProg = -1, queued = false, moving = false, shown = 0, lastDraw = null;
   function redraw(now) {
     queued = false;
     const sc = active && scenes[active.dataset.scene];
     if (!sc) return;
-    const p = reduced ? 1 : prog;
+    const dt = lastDraw === null ? 0 : Math.min(0.05, (now - lastDraw) / 1000);
+    shown = reduced ? 1 : Math.abs(prog - shown) <= PACE * dt ? prog : shown + Math.sign(prog - shown) * PACE * dt;
+    const chasing = !reduced && shown !== prog;
+    lastDraw = chasing ? now : null;
+    if (chasing) queueDraw();
+    const p = shown;
     if (sc === drawnScene && p === drawnProg && !moving) return;
     drawnScene = sc; drawnProg = p;
     moving = !!sc.update(p, now) && !reduced;

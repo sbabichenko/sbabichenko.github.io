@@ -10,15 +10,11 @@
 // On a touch screen a quick touch that moves is a scroll; drawing starts once a finger has rested on the picture for
 // a fifth of a second (a tap drops a single dab of odds), so the card never takes the page's scrolling.
 //
-// Noise-State Calculus: the two-player tracking game with opposite targets, drawn in the pencil style of
-// /dissertation/wedge. Dragging across the card sets how clearly both players see each other (precision p from
-// 0.01 to 1000, log scale); the curves were solved ahead of time by the explorer's solver
-// (tools/cards/make_card_curves.js writes static/js/card-noisestate.json) and are interpolated in log p here.
+// Noise-State Calculus: the picture is baked (images/card-nsheads-*) and its hover is CSS (home.css and
+// partials/card-nsheads.html). A touch screen has no hover, so a tap on the picture toggles the same state.
 (function () {
   "use strict";
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const isDark = () => document.documentElement.classList.contains("dark");
-  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
   function mulberry32(a) {
     return function () {
       a |= 0; a = (a + 0x6d2b79f5) | 0;
@@ -38,12 +34,13 @@
     const clearBtn = shot.querySelector(".clear"), status = shot.querySelector(".status");
     const imgs = [...shot.querySelectorAll("img")];
 
-    // the image's composition, in its own 960 x 480 pixels: two squares of side 532, the drawing at (-53, -52)
-    // and the fit at (480, -52), each cropped by the frame (measured from the image itself)
-    const CW = 960, CH = 480, SQ = 532, LX = -53, RX = 480, TOP = -52;
+    // the image's composition, in its own 960 x 480 pixels: two squares of side 532, the drawing and the fit, each
+    // centred in its own half (at x -26 and 454, y -52) and cropped the same way by it, so a point of the drawing and
+    // the same point of the fit sit at the same place in their halves. MID splits the halves; each paints only its own.
+    const CW = 960, CH = 480, SQ = 532, MID = CW / 2, LX = (MID - SQ) / 2, RX = MID + (MID - SQ) / 2, TOP = -52;
     cv.width = CW; cv.height = CH;
     const BASE = -1, VMAX = 2.2, G = 64, D = 160;
-    const SITES = 3000, FLIPS = 20, SD = 0.25;
+    const SITES = 8000, FLIPS = 30, SD = 0.25;   // enough coins that the fit follows a scribble closely
     const drawing = new Float32Array(G * G);
     function brush(x, y, amount, radius) {
       for (let j = 0; j < G; ++j) for (let i = 0; i < G; ++i) {
@@ -68,7 +65,7 @@
     let LUT;
     function ramp() {
       const hex = (h) => [1, 3, 5].map((q) => parseInt(h.slice(q, q + 2), 16));
-      const s = (isDark() ? ["#2b6cf0", "#5b8ff9", "#2a2b30", "#f0845c", "#f5c451"] : ["#1d4ed8", "#6d9cf5", "#f7f6ee", "#ef7a55", "#b91c1c"]).map(hex);
+      const s = (isDark() ? ["#2b6cf0", "#5b8ff9", "#2a2b30", "#f0845c", "#f5c451"] : ["#1d4ed8", "#6d9cf5", "#f7f6ee", "#f29a58", "#d9591c"]).map(hex);
       LUT = new Uint8ClampedArray(256 * 3);
       for (let q = 0; q < 256; ++q) {
         const t = (q / 255) * 4, a = Math.min(3, Math.floor(t)), u = t - a;
@@ -86,7 +83,7 @@
         d[k] = rgb[0]; d[k + 1] = rgb[1]; d[k + 2] = rgb[2]; d[k + 3] = 255;
       }
       offctx.putImageData(raster, 0, 0);
-      ctx.save(); ctx.beginPath(); ctx.rect(x0 < RX ? 0 : RX, 0, x0 < RX ? RX : CW - RX, CH); ctx.clip();
+      ctx.save(); ctx.beginPath(); const left = x0 === LX; ctx.rect(left ? 0 : MID, 0, left ? MID : CW - MID, CH); ctx.clip();   // each square only in its own half
       ctx.imageSmoothingEnabled = true; ctx.drawImage(off, x0, TOP, SQ, SQ); ctx.restore();
     }
     const paper = () => (isDark() ? "#2a2b30" : "#f7f6ee");
@@ -98,13 +95,14 @@
     function drawRight() {
       if (S.fitG) { drawFit(); return; }
       if (S.data) { drawCoins(); return; }
+      if (S.blank) { ctx.fillStyle = paper(); ctx.fillRect(MID, 0, CW - MID, CH); return; }   // cleared: nothing drawn yet
       const im = currentImg();       // until something has been fitted, the right half is the image's own
-      if (im && im.complete && im.naturalWidth) ctx.drawImage(im, im.naturalWidth / 2, 0, im.naturalWidth / 2, im.naturalHeight, RX, 0, CW - RX, CH);
-      else { ctx.fillStyle = paper(); ctx.fillRect(RX, 0, CW - RX, CH); }
+      if (im && im.complete && im.naturalWidth) ctx.drawImage(im, im.naturalWidth / 2, 0, im.naturalWidth / 2, im.naturalHeight, MID, 0, CW - MID, CH);
+      else { ctx.fillStyle = paper(); ctx.fillRect(MID, 0, CW - MID, CH); }
     }
     function drawCoins() {
-      ctx.save(); ctx.beginPath(); ctx.rect(RX, 0, CW - RX, CH); ctx.clip();
-      ctx.fillStyle = paper(); ctx.fillRect(RX, 0, CW - RX, CH);
+      ctx.save(); ctx.beginPath(); ctx.rect(MID, 0, CW - MID, CH); ctx.clip();
+      ctx.fillStyle = paper(); ctx.fillRect(MID, 0, CW - MID, CH);
       const { x, y, n, k } = S.data, rad = (SQ / Math.sqrt(x.length)) * 0.42;
       for (let i = 0; i < x.length; ++i) {
         const rgb = color(Math.log((k[i] + 0.5) / (n[i] - k[i] + 0.5)));
@@ -142,7 +140,7 @@
       paintSquare(RX, (u, v) => { const c = Math.min(D - 1, Math.floor(u * D)), r = Math.min(D - 1, Math.floor((1 - v) * D)), h = g[r * D + c]; return h === h ? h : BASE; });
       const [x0, x1, y0, y1] = fit.bounds;
       const X = (u) => RX + (x0 + u * (x1 - x0)) * SQ, Y = (u) => TOP + (1 - (y0 + u * (y1 - y0))) * SQ;
-      ctx.save(); ctx.beginPath(); ctx.rect(RX, 0, CW - RX, CH); ctx.clip();
+      ctx.save(); ctx.beginPath(); ctx.rect(MID, 0, CW - MID, CH); ctx.clip();
       // the mesh lines and the admitted points, as on /decision-mesh (and in the image) at this size
       ctx.strokeStyle = isDark() ? "rgba(255,255,255,0.28)" : "rgba(20,20,30,0.34)";
       ctx.lineWidth = SQ / 420;
@@ -172,8 +170,13 @@
         x[i] = r(); y[i] = r(); n[i] = Math.max(1, Math.round(FLIPS * (0.5 + r())));
         const p = 1 / (1 + Math.exp(-(sample(x[i], y[i], snap) + SD * gauss(r))));
         let h = 0; for (let f = 0; f < n[i]; ++f) if (r() < p) ++h;
-        k[i] = h; rows.push(x[i].toFixed(5) + "," + y[i].toFixed(5) + "," + n[i] + "," + h);
+        k[i] = h;
       }
+      // the estimator gets the coins pooled into a BIN x BIN grid of cells (flips and heads summed): the fit's cost
+      // grows with its rows, and on a card the pooled cells lose nothing visible, at about half the time
+      const BIN = 40, bn = new Int32Array(BIN * BIN), bk = new Int32Array(BIN * BIN);
+      for (let i = 0; i < SITES; ++i) { const c = Math.min(BIN - 1, Math.floor(y[i] * BIN)) * BIN + Math.min(BIN - 1, Math.floor(x[i] * BIN)); bn[c] += n[i]; bk[c] += k[i]; }
+      for (let c = 0; c < BIN * BIN; ++c) if (bn[c]) rows.push((((c % BIN) + 0.5) / BIN).toFixed(5) + "," + ((Math.floor(c / BIN) + 0.5) / BIN).toFixed(5) + "," + bn[c] + "," + bk[c]);
       return { x, y, n, k, csv: rows.join("\n") + "\n" };
     }
     function say(s) { status.textContent = s; }
@@ -201,7 +204,7 @@
     function fit() {
       S.data = makeData(); S.fit = null; S.fitG = null; S.id += 1;
       drawRight(); S.shownAt = performance.now();
-      const msg = { id: S.id, engine: "tri", design: S.data.csv, seed: 7, q: 0.1 };
+      const msg = { id: S.id, engine: "tri", design: S.data.csv, seed: 7, q: 0.3, split: false };   // every coin fits; a looser gate
       warm();
       if (S.ready) S.worker.postMessage(msg); else S.queued = msg;
       say(S.ready ? `fitting ${SITES.toLocaleString()} coins…` : "loading the estimator…");
@@ -211,9 +214,11 @@
       S.live = true; shot.classList.add("live");
       drawAll();
     }
+    // clear wipes the card, face and all, to a blank sheet of odds to draw on; the picture comes back on the next visit
     function clear() {
-      S.live = false; S.id += 1; S.queued = null; S.data = null; S.fit = null; S.fitG = null; clearTimeout(S.timer);
-      smile(); shot.classList.remove("live", "inking"); say("");
+      S.id += 1; S.queued = null; S.data = null; S.fit = null; S.fitG = null; clearTimeout(S.timer);
+      drawing.fill(BASE); S.blank = true; shot.classList.remove("inking");
+      S.live = false; goLive(); say("");
     }
     clearBtn.addEventListener("click", (ev) => { ev.stopPropagation(); clear(); });
     clearBtn.addEventListener("pointerdown", (ev) => ev.stopPropagation());
@@ -223,14 +228,17 @@
     // the canvas fills the frame the way the image does (object-fit: cover), so a point on screen maps to the
     // image's pixels, and from either half to the same unit square
     function toUnit(clientX, clientY) {
-      const r = cv.getBoundingClientRect(), s = Math.max(r.width / CW, r.height / CH);
+      const r = shot.getBoundingClientRect(), s = Math.max(r.width / CW, r.height / CH);   // the frame, which the canvas fills (the canvas is hidden until the first touch)
       const cx = (clientX - r.left - (r.width - CW * s) / 2) / s, cy = (clientY - r.top - (r.height - CH * s) / 2) / s;
-      return [(cx - (cx < RX ? LX : RX)) / SQ, 1 - (cy - TOP) / SQ];
+      return [(cx - (cx < MID ? LX : RX)) / SQ, 1 - (cy - TOP) / SQ];
     }
     const INK = 0.22;                     // log-odds added under the pen per move event
     let inking = false, lower = false;
+    // a touch that lands off the drawn square (the crop's margins, the strip between the halves) draws nothing
+    const inside = (x, y) => x >= -0.02 && x <= 1.02 && y >= -0.02 && y <= 1.02;
     function dab(clientX, clientY, amount) {
       const [x, y] = toUnit(clientX, clientY);
+      if (!inside(x, y)) return;
       brush(x, y, lower ? -amount : amount, 0.045);
       drawLeft();
     }
@@ -239,8 +247,16 @@
 
     // mouse and pen: draw at once
     shot.addEventListener("pointerenter", (ev) => { if (ev.pointerType !== "touch") warm(); });
+    // the drawing affordance is CSS (home.css); a touch screen, which has no hover, gets the sketch frames once,
+    // briefly, when the card first comes into view
+    if (window.matchMedia("(hover: none) and (pointer: coarse)").matches && "IntersectionObserver" in window) {
+      const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect();
+        shot.classList.add("peek"); setTimeout(() => shot.classList.remove("peek"), 1800); } }, { threshold: 0.6 });
+      io.observe(shot);
+    }
     shot.addEventListener("pointerdown", (ev) => {
       if (ev.pointerType === "touch" || ev.button !== 0) return;
+      if (!inside(...toUnit(ev.clientX, ev.clientY))) return;
       ev.preventDefault(); lower = ev.shiftKey; shot.setPointerCapture(ev.pointerId); begin(ev.clientX, ev.clientY);
     });
     shot.addEventListener("pointermove", (ev) => { if (ev.pointerType !== "touch" && inking) { lower = ev.shiftKey; dab(ev.clientX, ev.clientY, INK); } });
@@ -259,7 +275,7 @@
       if (ev.touches.length !== 1) { clearTimeout(hold); hold = 0; return; }
       const p = ev.touches[0]; t0 = { x: p.clientX, y: p.clientY, at: performance.now() }; moved = false; lower = false;
       clearTimeout(hold);
-      hold = setTimeout(() => { hold = 0; if (!moved) begin(t0.x, t0.y); }, HOLD);
+      hold = setTimeout(() => { hold = 0; if (!moved && t0 && inside(...toUnit(t0.x, t0.y))) begin(t0.x, t0.y); }, HOLD);
     }, { passive: true });
     shot.addEventListener("touchmove", (ev) => {
       const p = ev.touches[0];
@@ -268,7 +284,7 @@
     }, { passive: false });
     shot.addEventListener("touchend", (ev) => {
       if (inking) { ev.preventDefault(); end(); return; }
-      if (hold && !moved && t0) {                // a tap: one dab of odds, then the fit
+      if (hold && !moved && t0 && inside(...toUnit(t0.x, t0.y))) {   // a tap on the square: one dab of odds, then the fit
         clearTimeout(hold); hold = 0; ev.preventDefault();
         begin(t0.x, t0.y); dab(t0.x, t0.y, 0.6); end();
       }
@@ -278,138 +294,141 @@
   })();
 
   // ================================================================== Noise-State Calculus
-  (function tugCard() {
-    const shot = document.getElementById("card-tug");
+  (function headsCard() {
+    const shot = document.querySelector(".home .shot.nsheads"), card = shot && shot.closest(".demo"), rim = card && card.querySelector(".nsheads-rim");
     if (!shot) return;
-    const NS = "http://www.w3.org/2000/svg";
-    const svg = shot.querySelector("svg");
-    const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs || {})) n.setAttribute(k, v); if (parent) parent.appendChild(n); return n; };
-    const text = (g, x, y, s, cls, anchor = "start") => { const t = el("text", { x, y, class: cls || "", "text-anchor": anchor }, g); t.textContent = s; return t; };
-    function pencil(pts, seed, wob = 0.6) {
-      const r = mulberry32(seed);
+    // a touch screen has no hover: a tap on the picture toggles the same state
+    const touch = window.matchMedia("(hover: none) and (pointer: coarse)");
+    shot.addEventListener("click", () => { if (touch.matches) card.classList.toggle("on"); });
+    thinking();
+    if (!rim) return;
+    // the two thought-cloud rims, laid out once for the card's size (and again when it changes size): scallops along a
+    // rounded rectangle just outside the card, one per player, a few pixels apart and with their own hand wobble, and
+    // the bubble trails that lead up to them from the heads. CSS fades them in and out; nothing here runs per frame.
+    const PAD = 12;
+    function scallops(W, H, inset, step, seed) {
+      const r = mulberry32(seed), x0 = inset, y0 = inset, w = W - 2 * inset, h = H - 2 * inset, R = 16;
+      const straight = [w - 2 * R, h - 2 * R], arc = (Math.PI / 2) * R, P = 2 * (straight[0] + straight[1]) + 4 * arc;
+      const at = (d) => {                     // the point at distance d along the rounded rectangle, clockwise from its top-left
+        d = ((d % P) + P) % P;
+        const segs = [["l", straight[0], x0 + R, y0, 1, 0], ["a", arc, x0 + w - R, y0 + R, -Math.PI / 2], ["l", straight[1], x0 + w, y0 + R, 0, 1], ["a", arc, x0 + w - R, y0 + h - R, 0],
+          ["l", straight[0], x0 + w - R, y0 + h, -1, 0], ["a", arc, x0 + R, y0 + h - R, Math.PI / 2], ["l", straight[1], x0, y0 + h - R, 0, -1], ["a", arc, x0 + R, y0 + R, Math.PI]];
+        for (const [kind, len, ax, ay, p, q] of segs) {
+          if (d <= len) return kind === "l" ? [ax + p * d, ay + q * d] : [ax + R * Math.cos(p + d / R), ay + R * Math.sin(p + d / R)];
+          d -= len;
+        }
+        return [x0 + R, y0];
+      };
+      const n = Math.max(12, Math.round(P / step)), off = r() * P / n;
+      const pts = Array.from({ length: n }, (_, k) => at(off + (k * P) / n));
       let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
-      for (let i = 1; i < pts.length; ++i) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; d += ` Q${((x0 + x1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)},${((y0 + y1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`; }
-      return d;
-    }
-    const LO = -2, HI = 3, START = Math.log10(9);
-    let lp = START, C = null, W = 0, H = 0, parts = null, touched = false;
-
-    function curvesAt(q) {
-      const L = C.logp; let k = 1; while (k < L.length - 1 && L[k] < q) k++;
-      const w = clamp((q - L[k - 1]) / (L[k] - L[k - 1]));
-      const mix = (A) => A[k - 1].map((a, i) => a + (A[k][i] - a) * w);
-      return { D1: mix(C.D1), D2: mix(C.D2), X: mix(C.X) };
-    }
-    const fmtP = (p) => (p >= 10 ? Math.round(p).toString() : p >= 1 ? p.toFixed(1).replace(/\.0$/, "") : p.toPrecision(1));
-
-    // the fixed parts are laid out for the frame's size in CSS pixels, so the text stays its size on any card
-    function layout() {
-      const r = svg.getBoundingClientRect();
-      W = Math.max(200, r.width); H = Math.max(100, r.height);
-      svg.setAttribute("viewBox", `0 0 ${W.toFixed(1)} ${H.toFixed(1)}`);
-      svg.textContent = "";
-      const small = W < 420;
-      const m = { l: small ? 14 : 22, r: small ? 12 : 20, t: small ? 28 : 36, b: small ? 34 : 42 };
-      const X0 = m.l, PW = W - m.l - m.r, Y0 = m.t + (H - m.t - m.b) / 2, S = (H - m.t - m.b) / 2 / 10.6;
-      const sx = (t) => X0 + PW * t, sy = (v) => Y0 - S * v;
-      const fixed = el("g", {}, svg);
-      for (const sg of [1, -1]) {
-        const pts = []; for (let k = 0; k <= 20; ++k) pts.push([sx(k / 20), sy((sg * (1 - k / 20)) / C.r)]);
-        el("path", { d: pencil(pts, sg > 0 ? 81 : 82, 0.2), class: "pencil soft", "stroke-width": 1.4, "stroke-dasharray": "2 5" }, fixed);
+      for (let k = 1; k <= n; ++k) {
+        const [x, y] = pts[k % n], [px, py] = pts[k - 1], c = Math.hypot(x - px, y - py), rr = c * (0.56 + 0.1 * r());
+        d += ` A${rr.toFixed(1)},${rr.toFixed(1)} 0 0 1 ${x.toFixed(1)},${y.toFixed(1)}`;   // clockwise arcs bulge outward
       }
-      text(fixed, sx(1), sy(10) - 4, small ? "dotted: if nobody watched" : "dotted: if nobody were watching, (T − t)/r", "mono", "end");
-      text(fixed, sx(0.03), Y0 - 6, "the state stays at 0", "label");
-      const d1 = el("path", { class: "pencil accent", "stroke-width": 2.4 }, svg);
-      const d2 = el("path", { class: "pencil warm", "stroke-width": 2.4 }, svg);
-      const xs = el("path", { class: "pencil", "stroke-width": 1.8 }, svg);
-      // each player's label on the outside of its curve, over the late stretch where the curve is low: clear of the
-      // dotted line there too, which bounds every curve
-      const lx = sx(0.985), lt = small ? 0.62 : 0.55;
-      text(fixed, lx, sy((1 - lt) / C.r) - 6, "player 1 pushes up", "label acc", "end");
-      text(fixed, lx, sy(-(1 - lt) / C.r) + (small ? 13 : 15), "player 2 pushes down", "label warmt", "end");
-      const pv = text(svg, m.l, small ? 17 : 21, "", "mono pv");
-      // the dial along the foot: where p sits between blurry and sharp
-      const foot = H - (small ? 9 : 12);
-      const ta = m.l + 34, tb = W - m.r - 34, ty = foot - (small ? 16 : 19);
-      text(svg, m.l, ty + 3.5, "0.01", "mono");
-      text(svg, W - m.r, ty + 3.5, "1000", "mono", "end");
-      el("path", { d: pencil([[ta, ty], [(ta + tb) / 2, ty], [tb, ty]], 86, 0.3), class: "pencil soft", "stroke-width": 1.2 }, svg);
-      text(svg, W / 2, foot, "drag: how clearly they see each other", "mono cap", "middle");
-      const tick = el("circle", { r: 4, class: "fillacc" }, svg);
-      parts = { sx, sy, d1, d2, xs, pv, tick, ta, tb, ty, m };
-      draw();
+      return d + " Z";
     }
-    function draw() {
-      if (!parts || !C) return;
-      const { sx, sy, d1, d2, xs, pv, tick, ta, tb, ty } = parts, q = curvesAt(lp), t = C.t;
-      d1.setAttribute("d", pencil(t.map((u, i) => [sx(u), sy(q.D1[i])]), 83, 0.15));
-      d2.setAttribute("d", pencil(t.map((u, i) => [sx(u), sy(q.D2[i])]), 84, 0.15));
-      xs.setAttribute("d", pencil(t.map((u, i) => [sx(u), sy(q.X[i])]), 85, 0.15));
-      const p = Math.pow(10, lp);
-      pv.textContent = `p = ${fmtP(p)} \u00b7 ${W < 420 ? "" : "player 1's "}first push ${q.D1[0].toFixed(2)}`;
-      tick.setAttribute("cx", (ta + (tb - ta) * (lp - LO) / (HI - LO)).toFixed(1)); tick.setAttribute("cy", ty.toFixed(1));
-      shot.setAttribute("aria-valuenow", p.toPrecision(3));
-      shot.setAttribute("aria-valuetext", `precision ${fmtP(p)}: player 1's first push ${q.D1[0].toFixed(2)}`);
+    function layout() {
+      const W = card.offsetWidth + 2 * PAD, H = card.offsetHeight + 2 * PAD;
+      if (!W || !H) return;
+      rim.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      const [blue, warm] = rim.querySelectorAll(".scallop");
+      blue.setAttribute("d", scallops(W, H, 7, 30, 71));
+      warm.setAttribute("d", scallops(W, H, 3, 34, 73));
+      // a trail of four bubbles from each head up to that player's own rim, growing as it rises and leaning a little
+      // toward the middle: it starts just off the forehead (a point of the picture, 480 x 240 units, drawn by the same
+      // prototype as the images) and its last bubble sits against the rim's inner edge. The picture is cropped to the
+      // card ("slice") and zooms by 1.04 on hover, so the start is mapped through both.
+      const sw = shot.offsetWidth, sh = shot.offsetHeight, k = Math.max(sw / 480, sh / 240), Z = 1.04;
+      const pic = ([u, v]) => [PAD + shot.offsetLeft + sw / 2 + Z * (u - 240) * k, PAD + shot.offsetTop + sh / 2 + Z * (v - 120) * k];
+      const R = [2, 2.9, 3.8, 4.8].map((r) => r * Math.min(1, Math.max(0.8, k)));
+      [["acc", [128, 45], 7], ["warm", [352, 45], 3]].forEach(([c, at, inset]) => {
+        const [x0, y0] = pic(at), y1 = inset + R[3] + 1.5, lean = (at[0] < 240 ? 1 : -1) * 0.32 * (y0 - y1);
+        rim.querySelectorAll(".tail." + c).forEach((b, j) => {
+          const t = [0, 0.3, 0.62, 1][j], x = x0 + lean * t * t, y = y0 + (y1 - y0) * t;   // a gentle curve, steeper at the start
+          b.setAttribute("cx", x.toFixed(1)); b.setAttribute("cy", y.toFixed(1)); b.setAttribute("r", R[j].toFixed(1));
+        });
+      });
     }
-    const set = (q) => { lp = clamp(q, LO, HI); draw(); };
+    layout();
+    if ("ResizeObserver" in window) new ResizeObserver(layout).observe(card);
 
-    // idle: one slow sweep, blurry to sharp and back to the start, when the card first comes into view
-    let sweeping = 0;
-    function sweep() {
-      if (reduced || touched) return;
-      const t0 = performance.now(), dur = 5200;
-      const path = (u) => {              // 9 -> 0.01 -> 1000 -> 9, eased
-        const e = (s) => (s < 0.5 ? 2 * s * s : 1 - Math.pow(-2 * s + 2, 2) / 2);
-        if (u < 0.25) return START + (LO - START) * e(u / 0.25);
-        if (u < 0.75) return LO + (HI - LO) * e((u - 0.25) / 0.5);
-        return HI + (START - HI) * e((u - 0.75) / 0.25);
-      };
-      const step = (now) => {
-        if (touched) { sweeping = 0; return; }
-        const u = (now - t0) / dur;
-        set(path(Math.min(1, u)));
-        sweeping = u < 1 ? requestAnimationFrame(step) : 0;
-      };
-      sweeping = requestAnimationFrame(step);
+    // ---------------------------------------------------------------- the card thinks
+    // Every 3 to 5 s a new shock lands at the right end of the row, the row moves over by one (the oldest leaves at
+    // the left), and each head's bars move with it and take the new signal in: E[w_u | y_i,0..t] for the 14 latest
+    // shocks, in each head from its own noisy signal (which carries the other's action). The states are the
+    // generator's own model run on past the picture (js/card-nsheads-think.json, from scratch nsheads think/seq.py);
+    // the first is the picture itself. It goes on during the hover too: each shock is one group (its ink tick and the
+    // blue and warm ticks it splits into on hover, which always sit at the current estimates in the two heads), and
+    // every bar and every shock keeps its element as it moves, so a step is one transition of transforms for all of
+    // them (no per-frame script). It waits while the card is off screen or the tab is hidden, and does not run at all
+    // under reduced motion.
+    function thinking() {
+      const ov = shot.querySelector(".ov"), think = ov && ov.querySelector(".think");
+      if (!think || !shot.dataset.think || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const K = 19, kept = (g) => [2, 8, 12].includes(g % 15);        // which shocks stay as ink on hover (by identity)
+      const heads = [...think.querySelectorAll(".tk")].map((g) => ({ x0: +g.dataset.x0, sl: +g.dataset.sl, y: +g.dataset.y,
+        i: g.classList.contains("h1") ? 1 : 0, slots: [...g.querySelectorAll("rect")] }));
+      const sg = think.querySelector(".shocks"), row = { x0: +sg.dataset.x0, sl: +sg.dataset.sl, y: +sg.dataset.y,
+        slots: [...sg.querySelectorAll(".sh")].map((g) => ({ g, ink: g.querySelector(".ink"), pb: g.querySelector(".pb"), pw: g.querySelector(".pw") })) };
+      let D = null, s = 0, timer = 0, seen = false, loading = false;
+      const scale = (v) => (v >= 0 ? 1 : -1) * Math.max(Math.abs(v) * K, 1);
+      const place = (r, x, y, v) => { r.style.transform = `translate(${x.toFixed(3)}px, ${y.toFixed(3)}px) scale(1, ${v === null ? 0 : scale(v).toFixed(3)})`; };
+      const sy = (el, v) => { el.style.transform = `scale(1, ${v === null ? 0 : scale(v).toFixed(3)})`; };
+      // one shock's group at slot u of state t: its ink tick at the truth, its pair at the two heads' estimates (the
+      // pair's --k takes it back to the truth where the hover's split starts)
+      function shock(o, u, t, x) {
+        const gi = t + u, w = D.w[gi], ms = [D.m[t][0][u], D.m[t][1][u]];
+        o.g.style.transform = `translate(${x.toFixed(3)}px, ${row.y}px)`; o.g.style.setProperty("--d", (0.02 * Math.max(0, u)).toFixed(2) + "s");
+        sy(o.ink, w);
+        [o.pb, o.pw].forEach((p, i) => { sy(p, ms[i]); p.firstChild.style.setProperty("--k", ((w * K) / scale(ms[i])).toFixed(3)); });
+      }
+      function identity(o, gi) {             // set once, when a shock lands: kept or not, and how far its pair steps aside
+        const k = kept(gi); o.g.classList.toggle("kept", k);
+        o.pb.firstChild.style.setProperty("--sx", (k ? -4.9 : -2.1) + "px"); o.pw.firstChild.style.setProperty("--sx", (k ? 4.9 : 2.1) + "px");
+      }
+      function step() {
+        const wrap = s + 1 >= D.m.length, t = wrap ? 0 : s + 1;
+        // first, in every row at once, the next bar and the next shock wait hidden and flat where they will land (no
+        // transition for that; turning transitions off is for the whole layer, so it happens before anything moves)
+        think.classList.add("snap");
+        heads.forEach((R) => { const inc = R.slots[14]; inc.style.opacity = "0"; place(inc, R.x0 + R.sl * 13.5, R.y, null); });
+        const inc = row.slots[14]; inc.g.style.opacity = "0"; inc.g.style.transform = `translate(${(row.x0 + row.sl * 13.5).toFixed(3)}px, ${row.y}px)`;
+        sy(inc.ink, null); sy(inc.pb, null); sy(inc.pw, null); identity(inc, t + 13);
+        think.getBoundingClientRect(); think.classList.remove("snap"); think.getBoundingClientRect();
+        if (wrap) {                           // the end of the run (about half an hour): back to the picture, in place
+          s = 0;
+          heads.forEach((R) => R.slots.forEach((r, u) => { if (u < 14) { r.style.opacity = ""; place(r, R.x0 + R.sl * (u + 0.5), R.y, D.m[0][R.i][u]); } }));
+          row.slots.forEach((o, u) => { if (u < 14) { o.g.style.opacity = ""; identity(o, u); shock(o, u, 0, row.x0 + row.sl * (u + 0.5)); } });
+          return;
+        }
+        s = t;
+        // then every row moves over by one slot together, each bar and each shock keeping its element, its height
+        // easing to the revised estimate; the oldest slides out at the left and fades, the new one grows in
+        heads.forEach((R) => {
+          const [out, ...stay] = R.slots.slice(0, 14), inb = R.slots[14];
+          place(out, R.x0 - R.sl * 0.5, R.y, D.m[s - 1][R.i][0]); out.style.opacity = "0";
+          stay.forEach((r, u) => place(r, R.x0 + R.sl * (u + 0.5), R.y, D.m[s][R.i][u]));
+          inb.style.opacity = ""; place(inb, R.x0 + R.sl * 13.5, R.y, D.m[s][R.i][13]);
+          R.slots = [...stay, inb, out];
+        });
+        const [out, ...stay] = row.slots.slice(0, 14);
+        out.g.style.transform = `translate(${(row.x0 - row.sl * 0.5).toFixed(3)}px, ${row.y}px)`; out.g.style.opacity = "0";
+        stay.forEach((o, u) => shock(o, u, s, row.x0 + row.sl * (u + 0.5)));
+        inc.g.style.opacity = ""; shock(inc, 13, s, row.x0 + row.sl * 13.5);
+        row.slots = [...stay, inc, out];
+      }
+      function loop() {
+        clearTimeout(timer);
+        timer = setTimeout(() => { if (seen && !document.hidden) step(); loop(); }, 3000 + 2000 * Math.random());
+      }
+      function load() {
+        if (D || loading) return; loading = true;
+        fetch(shot.dataset.think).then((r) => r.json()).then((d) => { D = d; loop(); }).catch(() => {});
+      }
+      if ("IntersectionObserver" in window) new IntersectionObserver((es) => { seen = es.some((e) => e.isIntersecting); if (seen) load(); }).observe(card);
+      else { seen = true; load(); }
+      document.addEventListener("visibilitychange", () => { if (!document.hidden && D) loop(); });
     }
-    const stop = () => { touched = true; if (sweeping) cancelAnimationFrame(sweeping); sweeping = 0; };
-
-    // load the curves when the card comes near the screen (like a lazy image), draw, and sweep once in view
-    let loaded = false, seen = false;
-    function load() {
-      if (loaded) return; loaded = true;
-      fetch(shot.dataset.curves).then((r) => r.json()).then((j) => { C = j; layout(); if (seen) sweep(); })
-        .catch(() => { shot.classList.add("failed"); });
-    }
-    if ("IntersectionObserver" in window) {
-      new IntersectionObserver((es, o) => { if (es.some((e) => e.isIntersecting)) { load(); o.disconnect(); } }, { rootMargin: "400px" }).observe(shot);
-      new IntersectionObserver((es, o) => {
-        if (es.some((e) => e.isIntersecting && e.intersectionRatio > 0.6)) { seen = true; o.disconnect(); if (C) setTimeout(sweep, 500); }
-      }, { threshold: [0.6] }).observe(shot);
-    } else load();
-    if ("ResizeObserver" in window) { let w0 = 0, h0 = 0; new ResizeObserver(() => { const r = svg.getBoundingClientRect(); if (C && (Math.abs(r.width - w0) > 0.5 || Math.abs(r.height - h0) > 0.5)) { w0 = r.width; h0 = r.height; layout(); } }).observe(shot); }
-
-    // drag across: the pointer's place along the card is log p. A touch that starts vertical is a scroll
-    // (touch-action: pan-y hands it to the page), and a press alone does not move p until it moves sideways or lets go
-    let drag = null;
-    const fromX = (clientX) => { const r = svg.getBoundingClientRect(), a = parts.ta * r.width / W, b = parts.tb * r.width / W; return LO + (HI - LO) * clamp((clientX - r.left - a) / (b - a)); };
-    shot.addEventListener("pointerdown", (ev) => {
-      if (!parts || ev.button > 0) return;
-      stop(); drag = { x: ev.clientX, id: ev.pointerId, on: ev.pointerType !== "touch" };
-      if (drag.on) { shot.setPointerCapture(ev.pointerId); set(fromX(ev.clientX)); }
-    });
-    shot.addEventListener("pointermove", (ev) => {
-      if (!drag || ev.pointerId !== drag.id) return;
-      if (!drag.on && Math.abs(ev.clientX - drag.x) > 4) { drag.on = true; try { shot.setPointerCapture(ev.pointerId); } catch (e) { /* gone */ } }
-      if (drag.on) set(fromX(ev.clientX));
-    });
-    shot.addEventListener("pointerup", (ev) => { if (drag && !drag.on) set(fromX(ev.clientX)); drag = null; });
-    shot.addEventListener("pointercancel", () => { drag = null; });
-    shot.addEventListener("keydown", (ev) => {
-      const k = ev.key, d = { ArrowRight: 0.1, ArrowUp: 0.1, ArrowLeft: -0.1, ArrowDown: -0.1, PageUp: 0.5, PageDown: -0.5 }[k];
-      if (d !== undefined) { stop(); set(lp + d); ev.preventDefault(); }
-      else if (k === "Home") { stop(); set(LO); ev.preventDefault(); }
-      else if (k === "End") { stop(); set(HI); ev.preventDefault(); }
-    });
   })();
 })();

@@ -199,14 +199,16 @@
   }
   function ramp(v) {   // v: log-odds minus the background, clipped at ±2.2
     const t = clamp(v / 2.2, -1, 1), to = t > 0 ? INK.acc : INK.warm, a = Math.pow(Math.abs(t), 0.8);
-    return INK.paper.map((p, i) => Math.round(p + (to[i] - p) * a));
+    // the ink at coverage a (as alpha), not blended into a flat paper colour: over the textured paper it reads the
+    // same, and the grain shows through
+    return [to[0], to[1], to[2], Math.round(255 * a)];
   }
   function raster(fn, N) {   // an image of fn(x, y) on an N × N grid, y up
     const c = document.createElement("canvas"); c.width = c.height = N;
     const ctx = c.getContext("2d"), img = ctx.createImageData(N, N);
     for (let j = 0; j < N; ++j) for (let i = 0; i < N; ++i) {
-      const [r, g, b] = ramp(fn((i + 0.5) / N, 1 - (j + 0.5) / N)), o = 4 * (j * N + i);
-      img.data[o] = r; img.data[o + 1] = g; img.data[o + 2] = b; img.data[o + 3] = 255;
+      const [r, g, b, al] = ramp(fn((i + 0.5) / N, 1 - (j + 0.5) / N)), o = 4 * (j * N + i);
+      img.data[o] = r; img.data[o + 1] = g; img.data[o + 2] = b; img.data[o + 3] = al;
     }
     ctx.putImageData(img, 0, 0);
     return c.toDataURL();
@@ -271,7 +273,7 @@
       const ctx = c.getContext("2d");
       for (let i = 0; i < data.x.length; ++i) {
         const p = (data.k[i] + 0.5) / (data.n[i] + 1), v = Math.log(p / (1 - p)) - BASE;
-        const [r, gg, b] = ramp(v); ctx.fillStyle = `rgb(${r},${gg},${b})`;
+        const [r, gg, b, al] = ramp(v); ctx.fillStyle = `rgba(${r},${gg},${b},${al / 255})`;
         ctx.beginPath(); ctx.arc(data.x[i] * 2 * N, (1 - data.y[i]) * 2 * N, 3.2, 0, 2 * Math.PI); ctx.fill();
       }
       const img = el("image", { x: SQ.x, y: SQ.y, width: SQ.s, height: SQ.s, href: c.toDataURL() }, g);
@@ -381,7 +383,7 @@
       const map = (z) => {
         const c = document.createElement("canvas"), N = 2 * w; c.width = c.height = N;
         const ctx = c.getContext("2d");
-        z.forEach((v, i) => { const [r, gg, b] = ramp(clamp(v, -3, 3) * (2.2 / 3)); ctx.fillStyle = `rgb(${r},${gg},${b})`; ctx.beginPath(); ctx.arc(data.x[i] * N, (1 - data.y[i]) * N, 3.4, 0, 2 * Math.PI); ctx.fill(); });
+        z.forEach((v, i) => { const [r, gg, b, al] = ramp(clamp(v, -3, 3) * (2.2 / 3)); ctx.fillStyle = `rgba(${r},${gg},${b},${al / 255})`; ctx.beginPath(); ctx.arc(data.x[i] * N, (1 - data.y[i]) * N, 3.4, 0, 2 * Math.PI); ctx.fill(); });
         return c.toDataURL();
       };
       const A = el("g", {}, g), Bg = el("g", {}, g);
@@ -786,7 +788,6 @@
     setV("sites", data.x.length.toLocaleString("en-US")); setV("flips", String(data.flips));
     setV("nlo", String(Math.min(...data.n))); setV("nhi", String(Math.max(...data.n)));
     setV("q", pct(data.q));
-    setV("qsweep", reduced ? "" : ` (q sweeping; your q is ${pct(data.q)})`);
     // with its standard error, and the floor: the true surface scored on the same sites (paired gap)
     const H = (() => {
       const h = fit.heldout; if (!h || !h.rows || !h.rows.n.length) return null;
@@ -833,16 +834,20 @@
 
   // ------------------------------------------------------------------ scroll to scene (the page's own reading line
   // is data-auto, drawn by whimsy.js)
+  // A step's progress runs from 0 as it becomes the active step (its top at the reading line) to 1 once 70% of it has
+  // passed the line, so its drawing builds while the paragraph is read, on the way down as well as up.
   function measure() {
-    const vh = window.innerHeight;
+    const vh = window.innerHeight, line = window.readLine ? window.readLine() : vh * 0.55;
     let best = null, bestD = Infinity;
-    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - (window.readLine ? window.readLine() : vh * 0.55)); if (d < bestD) { bestD = d; best = s; } }
+    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - line); if (d < bestD) { bestD = d; best = s; } }
     if (!best) return;
     const r = best.getBoundingClientRect();
-    prog = clamp((vh * 0.85 - r.top) / (r.height * 0.9));
+    prog = clamp((line - r.top) / (r.height * 0.7));
     if (best !== active) {
       const was = active && scenes[active.dataset.scene];
       if (was && was.leave) was.leave();
+      // reached from above, a drawing builds from nothing; from below, or rebuilt in place (active reset), it is there
+      shown = active && steps.indexOf(best) > steps.indexOf(active) ? 0 : prog; lastDraw = null;
       active = best; clock = 0; lastNow = null;     // a scene that moves by itself starts over each time it is reached
       for (const s of steps) s.classList.toggle("on", s === best);
       for (const [name, sc] of Object.entries(scenes)) sc.g.style.opacity = name === best.dataset.scene ? 1 : 0;
@@ -856,24 +861,31 @@
   // screen, and stop asking for frames when they are finished or scrolled away. With reduced motion every scene is
   // drawn once, finished (the sweep at the live fit's q), and left alone until another takes its place.
   const storyEl = document.getElementById("story");
-  let drawnScene = null, drawnProg = -1, queued = false, clock = 0, lastNow = null;
+  // The drawing follows the reading position no faster than PACE a second, so a flick of the wheel is caught up
+  // over a moment rather than skipped.
+  const PACE = 0.9;
+  let drawnScene = null, drawnProg = -1, queued = false, clock = 0, lastNow = null, shown = 0, lastDraw = null;
   function redraw(now) {
     queued = false;
     const sc = active && scenes[active.dataset.scene];
     if (!sc) return;
+    const dt = lastDraw === null ? 0 : Math.min(0.05, (now - lastDraw) / 1000);
+    shown = reduced ? 1 : Math.abs(prog - shown) <= PACE * dt ? prog : shown + Math.sign(prog - shown) * PACE * dt;
+    const chasing = !reduced && shown !== prog;
+    lastDraw = chasing ? now : null;
     if (sc.live && !reduced) {
       const r = storyEl.getBoundingClientRect();
-      if (r.top >= window.innerHeight || r.bottom <= 0) { lastNow = null; return; }   // paused; a scroll back resumes it
+      if (r.top >= window.innerHeight || r.bottom <= 0) { lastNow = null; lastDraw = null; return; }   // paused; a scroll back resumes it
       if (lastNow !== null) clock += Math.min(100, Math.max(0, now - lastNow));
       drawnScene = sc; drawnProg = -1;
-      if (sc.update(prog, clock / 1000)) { lastNow = now; queued = true; requestAnimationFrame(redraw); }
+      if (sc.update(shown, clock / 1000) || chasing) { lastNow = now; queued = true; requestAnimationFrame(redraw); }
       else lastNow = null;
       return;
     }
-    const p = reduced ? 1 : prog;
-    if (sc === drawnScene && p === drawnProg) return;
-    drawnScene = sc; drawnProg = p;
-    sc.update(p, null);
+    if (chasing) queueDraw();
+    if (sc === drawnScene && shown === drawnProg) return;
+    drawnScene = sc; drawnProg = shown;
+    sc.update(shown, null);
   }
   function queueDraw() { if (!queued) { queued = true; requestAnimationFrame(redraw); } }
   if (!(G && G.run && show(G.run))) {

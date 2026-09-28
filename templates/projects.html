@@ -33,7 +33,7 @@
         {% endif %}
         <p class="starthere">New here? Start with <a href="{{ get_url(path='dissertation/idea/') }}">the noise-state, explained</a>,
           or <a href="{{ get_url(path='noisestate/') }}">solve a game</a> in your browser.</p>
-        <p class="poke" aria-hidden="true">click the mesh in the background to poke it, or drag to draw a ridge</p>
+        <p class="poke" aria-hidden="true"><span class="for-mouse">click the mesh in the background to poke it, or drag to draw a ridge</span><span class="for-touch">tap the mesh in the background to poke it</span></p>
         {%- set formula = load_data(path="data/formula.json") %}
         <a class="motif" href="{{ get_url(path='dissertation/idea/') }}"
            aria-label="The noise-state: player i's estimate, at time t, of the primitive shock W at an earlier time u, given everything player i knows">
@@ -46,18 +46,26 @@
       <section id="projects">
         <h2>Projects</h2>
         <div class="demos">
-          <article class="demo">
-            {#- a live sketch: drag across it to set how clearly the two players see (static/js/cards.js) -#}
-            <div class="shot tug" id="card-tug" tabindex="0" role="slider" aria-valuemin="0.01" aria-valuemax="1000" aria-valuenow="9"
-                 aria-label="Two players with opposite targets: how clearly they see each other, precision p"
-                 data-curves="{{ get_url(path='js/card-noisestate.json', cachebust=true) }}">
-              <svg aria-hidden="true" focusable="false"></svg>
+          <article class="demo nsheads-card">
+            {#- two heads, each with its own estimate of one shared row of shocks, each picturing the other in a thought
+                cloud. On hover, focus or a tap, the two clouds fade, a trail of bubbles rises from each head, and the
+                card becomes a thought of each player, in that player's colour: each thinks about the one shared world,
+                not about the other's mind; the shocks split into each player's estimate
+                (images/card-nsheads-*, partials/card-nsheads.html, the rim below; static/css/home.css) -#}
+            <div class="shot nsheads" role="img" data-think="{{ get_url(path='js/card-nsheads-think.json', cachebust=true) }}"
+                 aria-label="Two people facing each other, each with their own estimate of a shared row of shocks, each picturing the other; on hover, the pictures of each other leave and the whole card becomes one thought about the shared world">
+              <div class="pics">
+                <img class="img-light" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-rest-light.webp') }}" alt="" width="480" height="240" />
+                <img class="img-dark" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-rest-dark.webp') }}" alt="" width="480" height="240" />
+                <img class="img-light base" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-base-light.webp') }}" alt="" width="480" height="240" />
+                <img class="img-dark base" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-base-dark.webp') }}" alt="" width="480" height="240" />
+              </div>
+              {% include "partials/card-nsheads.html" %}
             </div>
             <div class="body">
               <h3><a href="{{ get_url(path='noisestate/') }}">Noise-State Calculus</a></h3>
-              <p>My dissertation. Actions move the state, the state sets what others observe, and what they observe sets
-                their next actions. I keep that loop intact by tracking beliefs about the primitive shocks. Move a slider
-                and the equilibrium is solved again in about a second.</p>
+              <p>My PhD research. Actions move the state, the state sets what others observe, and what they observe sets
+                their next actions. I keep that loop intact by tracking beliefs about the primitive shocks.</p>
               <a class="go" href="{{ get_url(path='noisestate/') }}">Solve a game <span class="arrow">&rarr;</span></a>
               <div class="more">
                 <a href="{{ get_url(path='dissertation/idea/') }}">The noise-state, explained</a>
@@ -67,6 +75,14 @@
                 <a href="https://github.com/sbabichenko/noisestate" target="_blank" rel="noopener">GitHub</a>
               </div>
             </div>
+            {#- the card as a thought: two scalloped rims, one per player, each thinking about the whole system on its own,
+                and a trail of small bubbles from each head up to its own rim (laid out by static/js/cards.js to the card's
+                size and the picture's crop) -#}
+            <svg class="nsheads-rim" aria-hidden="true" focusable="false">
+              <path class="scallop acc" pathLength="1" /><path class="scallop warm" pathLength="1" />
+              <circle class="tail b1 acc" /><circle class="tail b2 acc" /><circle class="tail b3 acc" /><circle class="tail b4 acc" />
+              <circle class="tail b1 warm" /><circle class="tail b2 warm" /><circle class="tail b3 warm" /><circle class="tail b4 warm" />
+            </svg>
           </article>
           <article class="demo">
             {#- scribble on the picture to draw odds; the estimator fits them on the right (static/js/cards.js) -#}
@@ -75,11 +91,18 @@
               <img class="img-light" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-gate-light.webp') }}" alt="" width="480" height="240" />
               <img class="img-dark" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-gate-dark.webp') }}" alt="" width="480" height="240" />
               <canvas aria-hidden="true"></canvas>
+              {#- the drawing affordance (home.css, cards.js): on hover a dashed sketch frame around each half, the whole of
+                  what can be drawn on (both halves draw onto the same square), and a pencilled "draw here" on the face -#}
+              <div class="drawhint" aria-hidden="true">
+                <svg class="dh-box l" focusable="false"><rect width="100%" height="100%" rx="12" /></svg>
+                <svg class="dh-box r" focusable="false"><rect width="100%" height="100%" rx="12" /></svg>
+                <svg class="dh-pic" viewBox="0 0 960 480" preserveAspectRatio="xMidYMid slice" focusable="false"><text class="dh-text" x="240" y="220" text-anchor="middle">draw here</text></svg>
+              </div>
               <span class="status" aria-live="polite"></span>
               <button type="button" class="clear">clear</button>
             </div>
             <div class="body">
-              <span class="hint" aria-hidden="true">scribble on the faces</span>
+              <span class="hint" aria-hidden="true"><span class="for-mouse">scribble on the faces</span><span class="for-touch">hold, then draw</span></span>
               <h3><a href="{{ get_url(path='decision-mesh/') }}">Decision Mesh</a></h3>
               <p>Thousands of coins, each flipped a few times, and odds that change somewhere on the square.
                 The estimator adds detail only where a false-discovery gate says the flips justify it, then

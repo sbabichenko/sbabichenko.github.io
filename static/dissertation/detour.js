@@ -112,9 +112,22 @@
       kt.innerHTML = `<tspan class="who">Keynes 1936</tspan><tspan x="${vertical ? kx + 34 : kx - 4}" dy="15">the beauty contest</tspan>`;
       stroke(flag, pencil([[kx, ky], vertical ? [kx + 30, ky - 30] : [kx + 2, ky - 30]], 9, 0.6), "soft2", 0.8).set(1);
       parts.push({ set: (t) => { flag.style.opacity = t; bandLabel.style.opacity = t; }, w: [0.01, 0.06] });
-      unmapped = el("text", { x: P(vertical ? 0.55 : 0.28, 0.5)[0], y: P(vertical ? 0.55 : 0.28, 0.5)[1] + 4, class: "mono halo", "text-anchor": "middle",
-        transform: vertical ? `rotate(90 ${P(0.55, 0.5)[0]} ${P(0.55, 0.5)[1]})` : "" }, g);
+      // "unmapped" goes in the band clear of the band's name: measured, then placed in the longer free stretch beside it
+      unmapped = el("text", { class: "mono halo", "text-anchor": "middle" }, g);
       unmapped.textContent = "unmapped";
+      const along = (u) => { const [x, y] = P(u, 0.5); return vertical ? y : x; };
+      const L = bandLabel.getComputedTextLength ? bandLabel.getComputedTextLength() : 0, W = unmapped.getComputedTextLength ? unmapped.getComputedTextLength() : 60;
+      const c = along(vertical ? 0.2 : 0.5), a0 = along(0), a1 = along(1), gap = 28;
+      const before = [a0 + gap, c - L / 2 - gap], after = [c + L / 2 + gap, a1 - gap];
+      const room = (s) => s[1] - s[0];
+      const pick = room(after) >= room(before) ? after : before;
+      const m = room(pick) >= W ? (pick === after ? pick[0] + W / 2 : pick[1] - W / 2) : null;
+      if (m === null) { unmapped.remove(); unmapped = null; }
+      else {
+        const [ux, uy] = vertical ? [P(0, 0.5)[0], m] : [m, P(0, 0.5)[1]];
+        unmapped.setAttribute("x", ux); unmapped.setAttribute("y", uy + 4);
+        if (vertical) unmapped.setAttribute("transform", `rotate(90 ${ux} ${uy})`);
+      }
     }
 
     // the roads: down from the map's edge in their year, a bend, then alongside the band to the present
@@ -177,22 +190,6 @@
       parts.push({ set: (t) => bits.forEach((e, k) => { e.style.opacity = t * n > k ? 0.85 : 0; }), w: [t0, t0 + 0.03] });
     });
     parts.push({ set: (t) => { hatch.style.opacity = 0.9 - 0.55 * t; if (unmapped) unmapped.style.opacity = 1 - t; }, w: [0.9, 0.99] });
-    // under the 2026 label, once the dashes are in: what they are
-    if (!still) {
-      // on a phone under the 2026 label; on a wide screen inside the band, just left of the line that goes through
-      let doorLab;
-      if (vertical) {
-        const [x, y] = P(uT, vEdge - 0.02);
-        doorLab = el("text", { x: x - 8, y: y + 24, class: "lab accl", "text-anchor": "end" }, g);
-        doorLab.textContent = "dashed: each line's own way in";
-      } else {
-        const [x, y] = P(uT, 0.5);
-        doorLab = el("text", { x: x - 10, y: y + 4, class: "lab accl", "text-anchor": "end", style: "paint-order: stroke; stroke: var(--paper); stroke-width: 5px; stroke-linejoin: round" }, g);
-        doorLab.textContent = "dashed: each line's own way in";
-      }
-      parts.push({ set: (t) => { doorLab.style.opacity = t; }, w: [0.93, 0.99] });
-    }
-
     return function (p) { for (const q of parts) q.set(seg(p, q.w[0], q.w[1])); };
   }
 
