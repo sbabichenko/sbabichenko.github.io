@@ -61,9 +61,16 @@
     const q = input.value.trim(), words = norm(q).split(/\s+/).filter(Boolean);
     if (!q) { panel.hidden = true; return; }
     hits = search(q); pick = hits.length ? 0 : -1;
-    panel.innerHTML = hits.length ? hits.map((e, i) => `<a class="hit${i === pick ? " on" : ""}" role="option" href="${hrefOf(e)}" data-i="${i}">
+    // "Theorem 3.2" when there is no Theorem 3.2: say so, and list the ones there are, so the number isn't a dead end
+    let note = "";
+    const m = /^(theorem|proposition|lemma|corollary|definition|remark|assumption|example|figure|table|equation)\s+\(?([a-z]?[\d.]+)\)?$/.exec(norm(q));
+    if (m && !index.entries.some((e) => e.l && norm(e.l).replace(/[()]/g, "") === m[1] + " " + m[2])) {
+      const kind = m[1][0].toUpperCase() + m[1].slice(1), have = index.entries.filter((e) => e.k === "t" && norm(e.l || "").startsWith(m[1] + " ")).map((e) => e.l.split(" ").pop());
+      note = `<p class="none">There is no ${esc(kind)} ${esc(m[2])}.${have.length ? ` The ${esc(m[1])}s are ${have.slice(0, 12).map(esc).join(", ")}.` : ""}</p>`;
+    }
+    panel.innerHTML = note + (hits.length ? hits.map((e, i) => `<a class="hit${i === pick ? " on" : ""}" role="option" href="${hrefOf(e)}" data-i="${i}">
         <span class="where">${esc(index.pages[e.s] || e.s)}${e.l ? " · " + esc(e.l) : ""}</span>${e.x ? `<span class="what">${snippet(e.x, words)}</span>` : ""}</a>`).join("")
-      : `<p class="none">Nothing matches every word of that. No one knows much.</p><svg class="none-detour" viewBox="0 0 160 44" aria-hidden="true"><rect x="96" y="2" width="18" height="40" class="nd-band"/><path class="nd-way" pathLength="1" d="M4,12 C40,10 70,12 90,14 C98,15 92,24 80,26"/><path class="nd-way" pathLength="1" style="animation-delay:.35s" d="M4,24 C38,25 66,22 88,22 C99,22 96,34 82,36"/><path class="nd-way" pathLength="1" style="animation-delay:.7s" d="M4,36 C36,36 64,34 86,32 C97,31 99,8 86,6"/></svg>`;
+      : note ? "" : `<p class="none">Nothing matches every word of that. No one knows much.</p><svg class="none-detour" viewBox="0 0 160 44" aria-hidden="true"><rect x="96" y="2" width="18" height="40" class="nd-band"/><path class="nd-way" pathLength="1" d="M4,12 C40,10 70,12 90,14 C98,15 92,24 80,26"/><path class="nd-way" pathLength="1" style="animation-delay:.35s" d="M4,24 C38,25 66,22 88,22 C99,22 96,34 82,36"/><path class="nd-way" pathLength="1" style="animation-delay:.7s" d="M4,36 C36,36 64,34 86,32 C97,31 99,8 86,6"/></svg>`);
     panel.hidden = false; place();
   }
   function go(e) { try { sessionStorage.setItem("dsearch", input.value.trim()); } catch (x) {} location.href = hrefOf(e); if (panel) panel.hidden = true; }

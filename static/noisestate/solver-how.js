@@ -117,7 +117,7 @@
     const wait = waiting(g);
     const body = el("g", {}, g);
     let built = false;
-    return { g, update(t, now) {
+    return { g, live: false, update(t, now) {        // its anim reads the step's progress, not the clock
       if (!built && ready()) { build(body); built = true; }
       fade(wait, built ? 0 : 1);
       if (built && anim) anim(t, now);
@@ -455,29 +455,48 @@
 
   // ------------------------------------------------------------------ scroll to scene, and the progress line
   const bar = document.getElementById("progress");
-  let active = null, prog2 = 0;
+  // A step's progress runs from 0 as it becomes the active step (its top at the reading line) to 1 once 70% of it has
+  // passed the line, so its drawing builds while the paragraph is read, on the way down as well as up. The drawing
+  // follows that progress no faster than PACE a second: a flick of the wheel is caught up over a moment, not skipped.
+  // Frames are asked for only while something moves, or while solves are still arriving.
+  const PACE = 0.9;
+  let active = null, prog2 = 0, shown = 0, current = null, raf = 0, last = 0, from = null;
   function measure() {
-    const vh = window.innerHeight;
+    const vh = window.innerHeight, line = window.readLine ? window.readLine() : vh * 0.55;
     let best = null, bestD = Infinity;
-    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - (window.readLine ? window.readLine() : vh * 0.55)); if (d < bestD) { bestD = d; best = s; } }
+    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - line); if (d < bestD) { bestD = d; best = s; } }
     if (bar) { const h = document.documentElement.scrollHeight - vh; bar.style.width = (h > 0 ? (100 * window.scrollY) / h : 0) + "%"; }
     if (!best) return;
     const r = best.getBoundingClientRect();
-    prog2 = clamp((vh * 0.85 - r.top) / (r.height * 0.9));
+    prog2 = clamp((line - r.top) / (r.height * 0.7));
     if (best !== active) {
       active = best;
       for (const s of steps) s.classList.toggle("on", s === best);
-      for (const [name, sc] of Object.entries(scenes)) sc.g.style.opacity = name === best.dataset.scene ? 1 : 0;
     }
+    wake();
   }
+  function wake() { if (!raf) raf = requestAnimationFrame(frame); }
   window.addEventListener("scroll", measure, { passive: true });
   window.addEventListener("resize", measure);
-  measure();
-  (function frame(now) {
+  function frame(now) {
+    raf = 0;
+    const dt = last ? Math.min(0.05, (now - last) / 1000) : 0; last = now;
     const story = document.getElementById("story").getBoundingClientRect();
-    if (active && story.top < window.innerHeight && story.bottom > 0) { const sc = scenes[active.dataset.scene]; if (sc) sc.update(reduced ? 1 : prog2, now); }
-    requestAnimationFrame(frame);
-  })(performance.now());
+    if (!active || story.top >= window.innerHeight || story.bottom <= 0) { last = 0; return; }   // asleep until a scroll
+    const want = active.dataset.scene;
+    if (want !== current) {
+      // reached from above, a drawing builds from nothing; from below, it is there already
+      shown = !from || steps.indexOf(active) > steps.indexOf(from) ? 0 : prog2; current = want; from = active;
+      for (const [name, sc] of Object.entries(scenes)) sc.g.style.opacity = name === want ? 1 : 0;
+    }
+    const sc = scenes[want];
+    if (!sc) { last = 0; return; }
+    shown = reduced ? 1 : Math.abs(prog2 - shown) <= PACE * dt ? prog2 : shown + Math.sign(prog2 - shown) * PACE * dt;
+    const busy = sc.update(shown, now);
+    if (busy || (!reduced && shown !== prog2) || done < jobs.length || (sc.live !== undefined ? sc.live : sc.update.length > 1)) raf = requestAnimationFrame(frame);
+    else last = 0;
+  }
+  measure();
   // On a phone the drawing's labels are set larger (the page's stylesheet). A label that would then run past the
   // drawing's edge, 600 units wide, is shrunk back until it fits, measured from where it is anchored.
   const phone = window.matchMedia("(max-width: 820px)");
