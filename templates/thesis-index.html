@@ -139,7 +139,7 @@
 
       <section class="contents" id="contents">
         <h2>Contents</h2>
-        <input class="dsearch" id="dsearch" type="search" placeholder="Search all 250 pages: a word, a phrase, &ldquo;Theorem 3.2&rdquo;" aria-label="Search the dissertation" autocomplete="off" data-base="{{ get_url(path='dissertation/') }}" />
+        <input class="dsearch" id="dsearch" type="search" placeholder="Search all 250 pages: a word, a phrase, &ldquo;Theorem 1.8&rdquo;" aria-label="Search the dissertation" autocomplete="off" data-base="{{ get_url(path='dissertation/') }}" />
         <p class="lede">New to the idea? <a href="{{ get_url(path='dissertation/idea/') }}">From beliefs about beliefs to the
           noise-state</a> explains it with drawings computed live, and <a href="{{ get_url(path='dissertation/wedge/') }}">The price of
           changing someone&rsquo;s mind</a> does the same for the information wedge. Every page below is the dissertation itself, with its numbering, cross-references and citations
@@ -164,7 +164,7 @@
           {%- for m in manifest %}
           <li class="card{% if m.label is starting_with('Chapter') %} chapter{% endif %}">
             <a href="{{ get_url(path='dissertation/' ~ m.slug ~ '/') }}">
-              <span class="num">{% if m.label %}{{ m.label | replace(from="Chapter ", to="") | replace(from="Appendix ", to="") }}{% else %}&middot;{% endif %}</span>
+              {% if m.label %}<span class="num">{{ m.label | replace(from="Chapter ", to="") | replace(from="Appendix ", to="") }}</span>{% endif %}
               <span class="what">{% if m.label %}{{ m.label }}{% else %}&nbsp;{% endif %}</span>
               <span class="t">{{ m.title }}</span>
               <span class="d">{{ blurbs | nth(n=loop.index0) }}</span>

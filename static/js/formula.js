@@ -7,13 +7,13 @@
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduced) return;
   const lines = [...motif.querySelectorAll(".def svg, .bp svg")];
-  let delay = 900;                                             // after the name has settled
+  const delay = 600;                                           // after the name has settled; both lines start together
   lines.forEach((svg, li) => {
     const paths = [...svg.querySelectorAll("path")];
     // order the glyphs left to right by where they sit
     const xs = paths.map((p) => { try { const b = p.getBBox(); const m = p.getCTM(); return m ? m.e + b.x * m.a : b.x; } catch (e) { return 0; } });
     const order = paths.map((p, i) => i).sort((a, b) => xs[a] - xs[b]);
-    const span = li === 0 ? 1900 : 1700, step = span / Math.max(1, paths.length);
+    const span = li === 0 ? 1000 : 900, step = span / Math.max(1, paths.length);
     order.forEach((i, k) => {
       const p = paths[i];
       let len = 0;
@@ -25,11 +25,10 @@
       p.style.strokeLinecap = "round";
       p.style.strokeDasharray = `${len} ${len}`;
       p.style.strokeDashoffset = len;
-      const t0 = delay + k * step, dur = Math.min(900, 250 + len / 6);
+      const t0 = delay + k * step, dur = Math.min(600, 180 + len / 8);
       p.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: dur, delay: t0, easing: "cubic-bezier(.4,.1,.3,1)", fill: "forwards" });
-      p.animate([{ fillOpacity: 0 }, { fillOpacity: 1 }], { duration: 700, delay: t0 + dur * 0.7, fill: "forwards" });
-      p.animate([{ strokeOpacity: 1 }, { strokeOpacity: 0 }], { duration: 900, delay: t0 + dur, fill: "forwards" });
+      p.animate([{ fillOpacity: 0 }, { fillOpacity: 1 }], { duration: 450, delay: t0 + dur * 0.7, fill: "forwards" });
+      p.animate([{ strokeOpacity: 1 }, { strokeOpacity: 0 }], { duration: 600, delay: t0 + dur, fill: "forwards" });
     });
-    delay += span + 250;
   });
 })();

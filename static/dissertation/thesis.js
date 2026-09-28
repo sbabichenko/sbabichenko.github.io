@@ -223,7 +223,7 @@
 
   // ---- previews
   const peek = document.getElementById("peek");
-  if (!peek || window.matchMedia("(hover: none)").matches) return;
+  if (!peek || window.matchMedia("(hover: none) and (pointer: coarse)").matches) return;
   const pages = new Map();                               // url -> Promise<Document>
   const getDoc = (url) => {
     if (!pages.has(url)) pages.set(url, fetch(url).then((r) => r.text()).then((t) => new DOMParser().parseFromString(t, "text/html")));

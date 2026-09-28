@@ -266,13 +266,15 @@
   // mesh: it is drawn wide enough to leave off both sides, with the quiet patch kept under the name.
   function column() {
     const c = cv.getBoundingClientRect(), h = hero.getBoundingClientRect(), k = cv.width / Math.max(1, c.width);
-    return { c0: (h.left - c.left) * k, c1: (h.right - c.left) * k, wide: c.width > h.width + 40 };
+    return { c0: (h.left - c.left) * k, c1: (h.right - c.left) * k, wide: c.width > h.width + 40, h0: h.height * k };
   }
   function geometry() {
-    const W = cv.width, H = cv.height, col = column();
-    const side = col.wide ? Math.max(H * 1.9, W * 1.08) : H * 1.9;
-    const ox = col.wide ? W - side * 0.96 : W - side * 0.92, oy = (H - side) / 2;
-    return { W, H, side, ox, oy, col,
+    // the canvas runs on below the hero (home.css) so the mesh can fade out slowly; its size and placement
+    // still follow the hero's own height H0, so the extra run adds mesh below without rescaling it
+    const W = cv.width, H = cv.height, col = column(), H0 = Math.min(H, col.h0 || H);
+    const side = col.wide ? Math.max(H0 * 2.1, W * 1.08) : H0 * 2.1;
+    const ox = col.wide ? W - side * 0.96 : W - side * 0.92, oy = (H0 - side) / 2;
+    return { W, H, H0, side, ox, oy, col,
       px: (x) => ox + ((x - LO) / (HI - LO)) * side, py: (y) => oy + ((HI - y) / (HI - LO)) * side,
       ux: (X) => LO + ((X - ox) / side) * (HI - LO), uy: (Y) => HI - ((Y - oy) / side) * (HI - LO) };
   }
@@ -288,7 +290,7 @@
     ctx.lineCap = "round";
     // the vignette is per edge, not a CSS mask: a clipped mask cuts lines off square, this fades them
     const { col } = G, cw = col.c1 - col.c0;
-    const fx = col.wide ? col.c0 + cw * 0.84 : W * 0.84, fy = H * 0.5, R = 0.95 * Math.max(W * 0.55, H);
+    const fx = col.wide ? col.c0 + cw * 0.84 : W * 0.84, fy = G.H0 * 0.5, R = 0.95 * Math.max(W * 0.55, G.H0);
     // wide: faint behind the text block (the column's left 55%), full strength everywhere else, out to both edges
     // of the window; the edges of the quiet block are soft, so lines fade in rather than stop
     const ramp = (v) => Math.min(1, Math.max(0, v));
@@ -298,16 +300,27 @@
     const mo = document.querySelector(".hero .motif"), cr = cv.getBoundingClientRect();
     const mr = mo ? (() => { const b = mo.getBoundingClientRect(); return { l: (b.left - cr.left - 24) * dpr, r: (b.right - cr.left + 24) * dpr, t: (b.top - cr.top - 16) * dpr, b: (b.bottom - cr.top + 16) * dpr }; })() : null;
     const lensR = 150 * dpr, lensOn = pointer && now - lensAt < 2500 ? 1 - Math.max(0, (now - lensAt - 1500) / 1000) : 0;
+    // how strongly anything drawn at canvas height y shows: the top fades within the hero; below, the fade starts
+    // partway down the hero and runs slowly to the end of the canvas, eased, so the mesh never visibly stops
+    const bandAt = (y) => {
+      const top = Math.min(1, Math.max(0, y / (0.3 * G.H0))), s = Math.min(1, Math.max(0, (H - y) / (H - 0.62 * G.H0)));
+      return Math.min(top, s * s * (3 - 2 * s));
+    };
+    const dAt = (x, y) => col.wide ? quietAt(x) * 0.78 : Math.hypot(x - fx, (y - fy) * 0.85) / R;
+    // how strongly the settled mesh shows at a point; the drag's highlight never shows less than this
+    const meshAt = (x, y) => { const b = bandAt(y); return (dark ? 0.38 : 0.44) * fade * Math.max(0, (1 - Math.min(1, dAt(x, y))) ** 2) * b * b; };
     const edge = (ax, ay, bx, by, t) => {
       const x0 = px(ax), y0 = py(ay), x1 = px(bx), y1 = py(by);
       const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
-      const d = col.wide ? quietAt(mx) * 0.78 : Math.hypot(mx - fx, (my - fy) * 0.85) / R;
+      const d = dAt(mx, my);
       // the lens reaches past the vignette, so the quiet corner under the name wakes up too
       let lens = 0;
       if (lensOn) { const q = Math.hypot(mx - pointer.x, my - pointer.y) / lensR; if (q < 1) lens = lensOn * (1 - q) * (1 - q); }
       if (d >= 1 && lens === 0) return;
       // and a fade into the top and bottom of the band, so no line stops on the canvas edge
-      const band = Math.min(1, Math.min(my, H - my) / (0.3 * H));
+      // the top fades within the hero; below, the fade starts partway down the hero and runs slowly to the end of
+      // the canvas, eased, so there is no place where the mesh visibly stops, lens or not
+      const band = bandAt(my);
       let v = Math.max(0, (1 - Math.min(1, d)) ** 2) * band * band;
       if (mr && mx > mr.l && mx < mr.r && my > mr.t && my < mr.b) v *= 0.3;
       // shorter edges are drawn lighter, so a finely cut patch keeps the tone of the rest (as pencil gets lighter
@@ -316,7 +329,7 @@
       v *= Math.min(1, 0.4 + len / 50);                   // full strength from about 30 px up: only fine cuts lighten
       const age = (now - t) / 2000;                       // a new cut glows, then settles
       const fresh = age < 1 ? 1 - age : 0;
-      const a = (dark ? 0.38 : 0.44) * fade * v + (dark ? 0.5 : 0.42) * lens * band;
+      const a = (dark ? 0.38 : 0.44) * fade * v + (dark ? 0.5 : 0.42) * lens * band * band;
       ctx.strokeStyle = fresh > 0.02 || lens > 0.05
         ? `rgba(${glow},${a + 0.55 * Math.max(fresh * v, lens * 0.6) * (dark ? 0.32 : 0.28)})`
         : `rgba(${base},${a})`;
@@ -332,9 +345,20 @@
       edge(e.v0.x, e.v0.y, e.v1.x, e.v1.y, t);
     }
     // the ridge being drawn; after the release it dims to a faint trace that stays while the picture does
+    // drawn piece by piece: it comes in from nothing over its first stretch, like a pencil touching down, and it
+    // fades with the mesh toward the bottom, so neither its start nor the fade's edge shows as a hard line
     if (stroke && !stroke.holding && stroke.pts.length > 1) {
-      ctx.strokeStyle = `rgba(${glow},0.45)`; ctx.lineWidth = 1.5 * dpr;
-      ctx.beginPath(); stroke.pts.forEach((q, i) => (i ? ctx.lineTo(q.cx, q.cy) : ctx.moveTo(q.cx, q.cy))); ctx.stroke();
+      ctx.lineWidth = 1.5 * dpr;
+      let run = 0; const lead = 28 * dpr;
+      for (let i = 1; i < stroke.pts.length; ++i) {
+        const a = stroke.pts[i - 1], b = stroke.pts[i];
+        run += Math.hypot(b.cx - a.cx, b.cy - a.cy);
+        const mx = (a.cx + b.cx) / 2, my = (a.cy + b.cy) / 2;
+        const al = Math.max(0.45 * Math.min(1, run / lead) * bandAt(my), 1.25 * meshAt(mx, my));
+        if (al <= 0.01) continue;
+        ctx.strokeStyle = `rgba(${glow},${al})`;
+        ctx.beginPath(); ctx.moveTo(a.cx, a.cy); ctx.lineTo(b.cx, b.cy); ctx.stroke();
+      }
     }
     // a released ridge fades from its start to its end on the ridge's clock, gone when its cuts are done
     if (trace) {
@@ -346,7 +370,9 @@
           // each piece fades over a fifth of the clock, starting in order along the path, the last ending at D
           const u = (i - 0.5) / (n - 1), k = Math.min(1, Math.max(0, 1 - (tr.f - 0.8 * u) / 0.2));
           if (k <= 0) continue;
-          ctx.strokeStyle = `rgba(${glow},${0.45 * k * fade})`;
+          const x_ = (px(tr.pts[i - 1].x) + px(tr.pts[i].x)) / 2, y_ = (py(tr.pts[i - 1].y) + py(tr.pts[i].y)) / 2;
+          const lead = Math.min(1, i / Math.max(1, 0.05 * n));
+          ctx.strokeStyle = `rgba(${glow},${k * Math.max(0.45 * fade * lead * bandAt(y_), 1.25 * meshAt(x_, y_))})`;
           ctx.beginPath(); ctx.moveTo(px(tr.pts[i - 1].x), py(tr.pts[i - 1].y)); ctx.lineTo(px(tr.pts[i].x), py(tr.pts[i].y)); ctx.stroke();
         }
       }
@@ -358,19 +384,19 @@
       m.f = progress(m.R, now);
       const k = Math.max(0, 1 - m.f);
       if (k <= 0) continue;
-      ctx.strokeStyle = `rgba(${glow},${0.6 * Math.sqrt(k) * fade})`;
+      ctx.strokeStyle = `rgba(${glow},${0.6 * Math.sqrt(k) * fade * bandAt(py(m.y))})`;
       ctx.beginPath(); ctx.arc(px(m.x), py(m.y), (5 + 6 * k) * dpr, 0, 2 * Math.PI); ctx.stroke();
     }
     marks = marks.filter((m) => m.f < 1);
     if (nothing) drawRejections(now, G, dark);
     if (stroke && stroke.holding && holdRing) {        // a hold: a small ring breathing under the pointer
       const k = 0.5 + 0.5 * Math.sin((now - holdRing.t) / 90);
-      ctx.strokeStyle = `rgba(${glow},${0.35 + 0.2 * k})`; ctx.lineWidth = 1.3 * dpr;
+      ctx.strokeStyle = `rgba(${glow},${(0.35 + 0.2 * k) * bandAt(holdRing.y)})`; ctx.lineWidth = 1.3 * dpr;
       ctx.beginPath(); ctx.arc(holdRing.x, holdRing.y, (10 + 4 * k) * dpr, 0, 2 * Math.PI); ctx.stroke();
     }
     if (ripple && now - ripple.t < 1100) {             // where the poke landed
       const age = (now - ripple.t) / 1100;
-      ctx.strokeStyle = `rgba(${glow},${0.55 * (1 - age)})`;
+      ctx.strokeStyle = `rgba(${glow},${0.55 * (1 - age) * bandAt(ripple.y)})`;
       ctx.lineWidth = 1.5 * dpr;
       ctx.beginPath(); ctx.arc(ripple.x, ripple.y, (8 + 70 * age) * dpr, 0, 2 * Math.PI); ctx.stroke();
     }
@@ -509,12 +535,15 @@
     poke({ pts: path, r: 0.55, t0: performance.now(), dur: 1600 }, 3, 0.12, 1400, 0.35);
   });
 
-  let acc = 0, settled = 0;
+  let acc = 0, settled = 0, dirty = false;
+  // a theme switch changes the ink colors: redraw at once, even when the mesh is resting and nothing else would draw
+  new MutationObserver(() => { dirty = true; }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
   function frame(now) {
     // about thirty frames a second, only while the figure is on screen and something is moving
     if (!document.hidden && now - settled > 30 && cv.getBoundingClientRect().bottom > 0) {
       const dt = Math.min(120, settled ? now - settled : 32);
       settled = now;
+      const repaint = dirty; dirty = false;
       const lensy = pointer && now - lensAt < 2600;
       if (nothing) {
         draw(now);
@@ -534,7 +563,7 @@
         acc += dt;
         if (pokes ? now - lastPoke > 60000 : acc > 6500) { phase = "out"; acc = 0; }
         // once the last cut's glow has faded there is nothing new to draw, unless the lens is moving
-        if (acc < 2200 || lensy || stroke || (trace && trace.length) || marks.length) draw(now);
+        if (acc < 2200 || lensy || stroke || (trace && trace.length) || marks.length || repaint) draw(now);
       } else {
         acc += dt;
         fade = Math.max(0, 1 - acc / 1600);
