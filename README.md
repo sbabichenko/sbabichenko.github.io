@@ -6,12 +6,13 @@ Most code is adapted from my friend [Daniel's website](https://dtnaylor.com) who
 Two pages run code in the browser. Both are ordinary Zola pages (the site's header, footer and theme) whose
 assets live under `static/`, so `zola serve` shows them like any other page.
 
-- `/lqg`: the noise-state game explorer. `content/lqg.md` and `templates/explorer.html`; the page's code and style
-  are `static/lqg/explorer.js` and `static/lqg/explorer.css` (every rule scoped to `.explorer`). The solver is the C++
-  port of noisestate compiled to WebAssembly: `noisestate.js` (single-threaded, wasm inlined) and
-  `noisestate-mt.{js,wasm,worker.js}` (threaded), rebuilt in the port's repository with `make wasm wasm-mt` and copied
-  here. `worker.js` picks the threaded build when the page is cross-origin isolated, which
-  `coi-serviceworker.js` (MIT, scoped to `/lqg/`) arranges on GitHub Pages; the page reloads once on a first visit.
+- `/noisestate`: the noise-state game explorer. `content/noisestate.md` and `templates/explorer.html`; the page's code
+  and style are `static/noisestate/explorer.js` and `static/noisestate/explorer.css` (every rule scoped to
+  `.explorer`). The solver is the C++ port of noisestate compiled to WebAssembly: `noisestate.{js,wasm}`
+  (single-threaded) and `noisestate-mt.{js,wasm,worker.js}` (threaded), rebuilt in the port's repository and copied
+  here. `worker.js` picks the threaded build when the page is cross-origin isolated, which `coi-serviceworker.js`
+  (MIT) arranges on GitHub Pages; the page reloads once on a first visit. The old `/lqg/` address redirects here
+  (`static/lqg/index.html`).
 - `/decision-mesh`: the Decision Mesh. `content/decision-mesh.md` and `templates/decision-mesh.html`: the live fit
   (`static/mesh/gate.js`, the WebAssembly estimators in `static/mesh/fit-worker.js`), the illustrated gate
   (`static/mesh/gate-how.js`, `gate-how.css`) and the geometry race (`static/mesh/decision-mesh.js`, a port of
