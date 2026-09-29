@@ -280,13 +280,12 @@
         ctx.beginPath(); ctx.arc(data.x[i] * 2 * N, (1 - data.y[i]) * 2 * N, 3.2, 0, 2 * Math.PI); ctx.fill();
       }
       const img = el("image", { x: SQ.x, y: SQ.y, width: SQ.s, height: SQ.s, href: c }, g);
-      frame(g, `${data.x.length.toLocaleString("en-US")} sites, each dot one site's share of heads`);
+      frame(g);
       const truth = el("image", { x: SQ.x, y: SQ.y, width: SQ.s, height: SQ.s, href: raster((x, y) => data.tf(x, y) - BASE, 110), opacity: 0 }, g);
       g.insertBefore(truth, img);                            // the true odds come in beneath the dots, not over them
-      const tl = text(g, SQ.x + SQ.s, SQ.y + SQ.s + 26, "the odds the coins really have", "mono", "end");
       const leg = el("g", {}, g);
       [["more heads than usual", "pos"], ["fewer", "neg"]].forEach(([s, cls], i) => { el("circle", { cx: SQ.x + 6 + i * 170, cy: SQ.y + SQ.s + 22, r: 5, class: cls }, leg); text(leg, SQ.x + 16 + i * 170, SQ.y + SQ.s + 26, s, "tiny", "start"); });
-      return { g, update(t) { fade(img, seg(t, 0, 0.15)); truth.style.opacity = 0.9 * seg(t, 0.55, 0.8); fade(tl, seg(t, 0.6, 0.8)); fade(leg, seg(t, 0.1, 0.25) * (1 - seg(t, 0.55, 0.7))); } };
+      return { g, update(t) { fade(img, seg(t, 0, 0.15)); truth.style.opacity = 0.9 * seg(t, 0.55, 0.8); fade(leg, seg(t, 0.1, 0.25) * (1 - seg(t, 0.55, 0.7))); } };
     })();
 
     // 1b. the funnel: how far a binomial may stray is known from its mean ---------------------------------------
@@ -370,12 +369,11 @@
       const leg = el("g", {}, ch);
       [["against a flat surface", "neg"], ["against the final fit", "pos"], ["against the true surface", "ring"]].forEach(([s2, c], i) => { el("circle", c === "ring" ? { cx: B.x + 14, cy: B.y + 6 + i * 17, r: 5, class: "pencil", "stroke-width": 1.6, fill: "none" } : { cx: B.x + 14, cy: B.y + 6 + i * 17, r: 5, class: c }, leg); text(leg, B.x + 26, B.y + 10 + i * 17, s2, "tiny", "start"); });
       line(leg, B.x + 6, B.y + 57, B.x + 22, B.y + 57, "soft", 1.6); text(leg, B.x + 26, B.y + 61, "1 + n p(1 − p) · error²", "tiny", "start");
-      const cap = text(g, 300, 586, "the true surface is still off by what the axes don't capture", "mono");
       return { g, update(t) {
         fade(top1, seg(t, 0, 0.08)); fade(b1, seg(t, 0.06, 0.14)); fade(b2, seg(t, 0.12, 0.2)); fade(b3, seg(t, 0.18, 0.26));
         fade(ch, seg(t, 0.25, 0.32)); theory.set(seg(t, 0.3, 0.45));
         const n = Math.floor(seg(t, 0.32, 0.55) * d0.length); d0.forEach((d, i) => fade(d, i < n ? 1 : 0));
-        dF.forEach((d) => fade(d, seg(t, 0.55, 0.65))); dT.forEach((d) => fade(d, seg(t, 0.68, 0.78))); fade(leg, seg(t, 0.3, 0.4)); fade(cap, seg(t, 0.75, 0.88));
+        dF.forEach((d) => fade(d, seg(t, 0.55, 0.65))); dT.forEach((d) => fade(d, seg(t, 0.68, 0.78))); fade(leg, seg(t, 0.3, 0.4));
       } };
     })();
 
@@ -392,11 +390,9 @@
       const A = el("g", {}, g), Bg = el("g", {}, g);
       el("image", { x: x0, y: y0, width: w, height: w, href: map(zFlat) }, A); el("rect", { x: x0, y: y0, width: w, height: w, class: "frame" }, A);
       text(A, x0, y0 - 12, "against a flat surface", "mono", "start");
-      text(A, x0 + w / 2, y0 + w + 24, "coherent: neighbors share it", "label");
       text(A, x0 + w / 2, y0 + w + 42, `mean squared residual ${disp(zFlat).toFixed(2)}`, "tiny");
       el("image", { x: x1, y: y0, width: w, height: w, href: map(zFit) }, Bg); el("rect", { x: x1, y: y0, width: w, height: w, class: "frame" }, Bg);
       text(Bg, x1, y0 - 12, "against the final fit", "mono", "start");
-      text(Bg, x1 + w / 2, y0 + w + 24, "incoherent: each site's own", "label");
       text(Bg, x1 + w / 2, y0 + w + 42, `mean squared residual ${disp(zFit).toFixed(2)}`, "tiny");
       text(Bg, x1 + w / 2, y0 + w + 56, `the coin variance alone predicts ${predicted.toFixed(2)}`, "tiny");
       const cap = text(g, 300, y0 + w + 96, "each dot: (heads − n p) / √(n p (1 − p)), blue above, orange below", "tiny");
@@ -427,26 +423,23 @@
       const g = group("surplus");
       const X0 = 110, X1 = 490, XM = 300, base = 430, h0 = 190, h1 = 270, hm = (h0 + h1) / 2, s = 120;
       line(g, 70, base, 530, base, "soft", 1);
-      const par = [[X0, h0, "parent"], [X1, h1, "parent"]].map(([x, h, l]) => { const q = el("g", {}, g); line(q, x, base, x, base - h, "soft", 1); el("circle", { cx: x, cy: base - h, r: 7, class: "ink" }, q); text(q, x, base + 22, l, "mono"); return q; });
+      const par = [[X0, h0], [X1, h1]].map(([x, h]) => { const q = el("g", {}, g); line(q, x, base, x, base - h, "soft", 1); el("circle", { cx: x, cy: base - h, r: 7, class: "ink" }, q); return q; });
       const chord = stroke(g, pencil([[X0, base - h0], [X1, base - h1]], 3, 0.4), "", 1.6);
       const mid = el("circle", { cx: XM, cy: base - hm, r: 7, class: "sheet pencil", "stroke-width": 1.6 }, g);
-      const ml = text(g, XM + 14, base - hm + 26, "not free: the average of its parents", "mono", "start");
       const tent = el("path", { class: "shade" }, g);
       const tentl = el("path", { class: "pencil accent", "stroke-width": 2.2, fill: "none" }, g);
       const arrow = el("g", {}, g);
       const al = line(arrow, XM, base - hm, XM, base - hm, "accent", 1.6);
       const at = text(arrow, XM - 14, base - hm - s / 2, "surplus", "label acc", "end");
       const free = el("circle", { cx: XM, cy: base - hm, r: 7, class: "pos" }, g);
-      const cap = text(g, 300, 520, "the tent: how the surface moves when the surplus does", "mono");
       return { g, update(t) {
         par.forEach((p) => fade(p, seg(t, 0, 0.1))); chord.set(seg(t, 0.05, 0.25));
-        fade(mid, seg(t, 0.2, 0.3)); fade(ml, seg(t, 0.22, 0.32) * (1 - seg(t, 0.45, 0.55)));
+        fade(mid, seg(t, 0.2, 0.3));
         const u = seg(t, 0.45, 0.75), ym = base - hm - s * u;
         free.setAttribute("cy", ym); fade(free, seg(t, 0.45, 0.5));
         al.setAttribute("y2", ym); fade(arrow, seg(t, 0.5, 0.6)); at.setAttribute("y", (base - hm + ym) / 2 + 5);
         const d = `M${X0},${base - h0} L${XM},${ym} L${X1},${base - h1}`;
         tentl.setAttribute("d", d); tent.setAttribute("d", d + " Z"); fade(tentl, seg(t, 0.5, 0.65)); fade(tent, seg(t, 0.55, 0.7));
-        fade(cap, seg(t, 0.7, 0.85));
       } };
     })();
 
@@ -548,7 +541,6 @@
       const ownC = cal0.pi0 * r0.length * (Phi((2 - cal0.nullMean) / cal0.nullSd) - Phi((-2 - cal0.nullMean) / cal0.nullSd));
       const tbC = r0.length * (Phi(2) - Phi(-2));
       text(l4, 80, 544, `within |z| ≤ 2: ${inC} scores; this round's null holds ${Math.round(ownC)}, N(0, 1) ${Math.round(tbC)}`, "tiny", "start");
-      if (smooth) text(l4, 80, 562, "the null is wider than the sharp peak: many null scores really are this spread out", "tiny", "start");
       return { g, update(t) {
         const n = Math.floor(seg(t, 0, 0.35) * H.bars.length);
         H.bars.forEach((b, i) => fade(b, i < n ? 0.22 : 0));
@@ -766,8 +758,7 @@
       const dots = D.vertices.filter((v) => v.admitted).map((v) => el("circle", { cx: sx(v.x), cy: sy(v.y), r: 2.4, class: "ink" }, g));
       Object.assign(SQ, saved);
       text(g, x0, y0 - 12, "the odds", "mono", "start"); text(g, x1, y0 - 12, "the fit, with its mesh", "mono", "start");
-      const cap = text(g, 300, y0 + w + 34, `${D.vertices.filter((v) => v.admitted).length} vertices admitted in ${rounds.length} rounds`, "mono");
-      return { g, update(t) { fade(fitImg, seg(t, 0.05, 0.25)); fade(ml, seg(t, 0.25, 0.45)); dots.forEach((d) => fade(d, seg(t, 0.35, 0.5))); fade(cap, seg(t, 0.4, 0.55)); } };
+      return { g, update(t) { fade(fitImg, seg(t, 0.05, 0.25)); fade(ml, seg(t, 0.25, 0.45)); dots.forEach((d) => fade(d, seg(t, 0.35, 0.5))); } };
     })();
 
     // the numbers in the text

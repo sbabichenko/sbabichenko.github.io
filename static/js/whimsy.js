@@ -370,5 +370,5 @@
   })();
 
   // ---- hello, console
-  try { console.log("%cHello. Everything on this site is computed in your browser.\nThe game solver is also a Python package: pip install noisestate", "font: 13px Georgia, serif; color: #1f3fd0"); } catch (e) {}
+  try { console.log("%cHello, fancy seeing you here. What\u2019s a bot/human like you doing in a place like this?", "font: 13px Georgia, serif; color: #1f3fd0"); } catch (e) {}
 })();

@@ -126,7 +126,6 @@
         el("line", { class: "mark", x1: X(c), x2: X(c), y1: Yd(0), y2: Yg(g(c)), stroke: col, "stroke-dasharray": "3 3", "stroke-width": 1.2 }, svg);
         if (col === "var(--accent)") hollow(X(c), Yg(g(c)), svg, 4.5); else el("circle", { class: "dot", r: 4.5, cx: X(c), cy: Yg(g(c)), fill: col }, svg);
       }
-      if (th > 0.02 * TH) el("text", { x: X(mt) - 9, y: Yg(g(mt)) - 8, "text-anchor": "end", style: "fill: var(--accent)" }, svg).textContent = "judged here";   // the line rises, so up-left is clear
       el("text", { x: 4, y: TOP + 18 }, svg).textContent = "change in cost from a small deviation";
       const step = hi - lo > 40 ? 20 : hi - lo > 16 ? 5 : 2;
       for (let w = Math.ceil((lo + 0.5) / step) * step; w < hi - 0.3; w += step) el("text", { x: X(w), y: H - 4, "text-anchor": "middle" }, svg).textContent = w;

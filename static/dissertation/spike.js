@@ -195,9 +195,6 @@
       el("path", { class: "curve", d: p(w.frozen.D), stroke: "var(--ink-3)" }, svg);
       el("path", { class: "curve", d: p(w.blip.D), stroke: COLORS[0] }, svg);
       el("text", { x: X(0) + 6, y: H - PADB - 8 }, svg).textContent = "the trader\u2019s order rate after its block";
-      const n0 = w.ages.length - 1;
-      el("text", { x: X(SHOW) - 4, y: Y(w.blip.D[n0]) - 7, "text-anchor": "end", style: `fill: ${COLORS[0]}` }, svg).textContent = "buys a little back";
-      el("text", { x: X(SHOW * 0.62), y: Y(w.frozen.D[Math.round(n0 * 0.62)]) + 16, "text-anchor": "end", style: "fill: var(--ink-3)" }, svg).textContent = "keeps selling, harder";
       const n = w.ages.length - 1;
       bs[0].textContent = `${fmt(w.blip.D[n])} at age ${SHOW}; inventory ${fmt(w.blip.Q[n])}`;
       bs[1].textContent = `${fmt(w.frozen.D[n])} at age ${SHOW}; inventory ${fmt(w.frozen.Q[n])}`;

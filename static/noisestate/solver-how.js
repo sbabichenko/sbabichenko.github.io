@@ -215,7 +215,6 @@
     const S0x = 40, S0y = 60, SW = 150, sx = (u) => S0x + SW * u, sy = (t) => S0y + SW * (1 - t);
     el("rect", { x: S0x, y: S0y, width: SW, height: SW, class: "pencil soft", "stroke-width": 1.2 }, g);
     for (let k = 0; k < res.nodes.t.length; ++k) { const t = res.nodes.t[k], u = t > 0 ? res.nodes.a[k] / t : (k % 12) / 11; el("circle", { cx: sx(u).toFixed(1), cy: sy(t).toFixed(1), r: 1.8, fill: "currentColor", opacity: 0.6 }, g); }
-    text(g, S0x + SW / 2, S0y - 10, "the same nodes on a square", "mono");
     stroke(g, pencil([[S0x + SW + 12, S0y + SW * 0.7], [X(0.55) - 40, Y(0.4)]], 7, 1), "soft", 1.3).set(1);
     arrowHead(g, X(0.55) - 40, Y(0.4), Math.atan2(Y(0.4) - (S0y + SW * 0.7), X(0.55) - 40 - (S0x + SW + 12)), "soft");
     const n = Math.round(Math.sqrt(res.nodes.t.length));
@@ -231,15 +230,12 @@
     const S = box(g, 105, 300, "strategies D", 150), F = box(g, 490, 300, "filters and beliefs", 190);
     const top = stroke(g, pencil([[135, 270], [300, 170], [465, 270]], 11, 1.5), "", 1.8), ht = arrowHead(g, 465, 270, 0.62, "");
     const bot = stroke(g, pencil([[465, 330], [300, 430], [135, 330]], 12, 1.5), "accent", 1.8), hb = arrowHead(g, 135, 330, -2.52, "accent");
-    const l1 = text(g, 300, 150, "actions enter others' observations", "mono");
-    const l2 = text(g, 300, 462, "best response, linear in the noise-state", "mono acc");
     const c = text(g, 300, 306, "equilibrium: G(D) = D", "label");
-    const it = text(g, 300, 540, "one pass around the loop is one evaluation of G", "mono");
     return { g, update(t) {
       fade(S, seg(t, 0, 0.1)); fade(F, seg(t, 0.05, 0.15));
-      top.set(seg(t, 0.1, 0.35)); fade(ht, seg(t, 0.33, 0.36)); fade(l1, seg(t, 0.2, 0.35));
-      bot.set(seg(t, 0.35, 0.6)); fade(hb, seg(t, 0.58, 0.61)); fade(l2, seg(t, 0.45, 0.6));
-      fade(c, seg(t, 0.6, 0.75)); fade(it, seg(t, 0.7, 0.85));
+      top.set(seg(t, 0.1, 0.35)); fade(ht, seg(t, 0.33, 0.36));
+      bot.set(seg(t, 0.35, 0.6)); fade(hb, seg(t, 0.58, 0.61));
+      fade(c, seg(t, 0.6, 0.75));
     } };
   })();
 
@@ -254,22 +250,19 @@
     const a1 = stroke(g, pencil([[360, 120], [470, 210]], 21, 1), "", 1.6); const h1 = arrowHead(g, 470, 210, 0.7, "");
     const a2 = stroke(g, pencil([[440, 240], [330, 132]], 22, 1), "", 1.6); const h2 = arrowHead(g, 330, 132, -2.35, "");
     const a3 = stroke(g, pencil([[245, 122], [140, 210]], 23, 1), "", 1.6); const h3 = arrowHead(g, 140, 210, 2.44, "");
-    const la = text(g, 470, 160, "signal, then action", "mono", "start");
     // the time axis: the passive world forward, the value of a push collected over [t, T]
     const ax = stroke(g, pencil([[70, 420], [530, 420]], 24, 0.4), "", 1.6), ha = arrowHead(g, 530, 420, 0, "");
     const t0l = text(g, 70, 448, "0", "mono"), tTl = text(g, 520, 448, "T", "mono"), ttl = text(g, 250, 448, "t", "mono");
     const fw = stroke(g, pencil([[80, 385], [500, 385]], 25, 0.6), "", 1.4), hf = arrowHead(g, 500, 385, 0, "");
-    const lf = text(g, 290, 372, "passive world, forward in time", "mono");
     const br = stroke(g, pencil([[250, 470], [250, 482], [520, 482], [520, 470]], 26, 0.3), "accent", 1.6);
-    const lb = text(g, 385, 506, "value of a push at t: its effects on [t, T]", "mono acc");
     const sol = box(g, 300, 560, "one linear solve for D¹", 230);
     return { g, update(t) {
       fade(X, seg(t, 0, 0.08)); fade(P2, seg(t, 0.03, 0.1)); fade(Y1, seg(t, 0.06, 0.13)); fade(P1, seg(t, 0.08, 0.16));
       a1.set(seg(t, 0.1, 0.22)); fade(h1, seg(t, 0.21, 0.23)); a2.set(seg(t, 0.18, 0.3)); fade(h2, seg(t, 0.29, 0.31));
-      a3.set(seg(t, 0.25, 0.37)); fade(h3, seg(t, 0.36, 0.38)); fade(la, seg(t, 0.2, 0.3));
+      a3.set(seg(t, 0.25, 0.37)); fade(h3, seg(t, 0.36, 0.38));
       ax.set(seg(t, 0.38, 0.5)); fade(ha, seg(t, 0.49, 0.51)); [t0l, tTl, ttl].forEach((n) => fade(n, seg(t, 0.45, 0.52)));
-      fw.set(seg(t, 0.5, 0.65)); fade(hf, seg(t, 0.64, 0.66)); fade(lf, seg(t, 0.55, 0.65));
-      br.set(seg(t, 0.65, 0.78)); fade(lb, seg(t, 0.7, 0.8)); fade(sol, seg(t, 0.8, 0.92));
+      fw.set(seg(t, 0.5, 0.65)); fade(hf, seg(t, 0.64, 0.66));
+      br.set(seg(t, 0.65, 0.78)); fade(sol, seg(t, 0.8, 0.92));
     } };
   })();
 
@@ -294,9 +287,6 @@
     el("line", { x1: PX(0), x2: PX(q.t), y1: PY(0), y2: PY(0), class: "pencil soft", "stroke-width": 1 }, g);
     el("path", { d: poly(q.s.map((s, i) => [PX(s), PY(c.physical[i])])), class: "pencil", "stroke-width": 2 }, g);
     el("path", { d: poly(q.s.map((s, i) => [PX(s), PY(c.wedge[i])])), class: "pencil accent", "stroke-width": 2 }, g);
-    const e = q.s.length - 1;
-    text(g, PX(q.t) + 6, PY(c.physical[e]) + 4, "physical", "mono", "start");
-    text(g, PX(q.t) + 6, PY(c.wedge[e]) + 4, "wedge", "mono acc", "start");
     text(g, PX(0) - 6, PY(0) + 4, "0", "mono", "end");
     text(g, 90, 420, `at t = ${q.t}, on a common scale, against s`, "mono", "start");
   });
@@ -360,8 +350,14 @@
       text(g, 575, y, ok ? "passes" : "fails", "label " + (ok ? "acc" : "warmt"), "end");
     });
     const rf = res.refinement, n0 = Math.round(Math.sqrt(res.nodes.t.length)), rf12 = R.checks12 && R.checks12.refinement;
-    text(g, 30, 130 + 44 * rows.length + 20, `the game at ${n0} nodes, refined at ${rf.nodes}; curvature as smallest over largest`, "mono", "start");
-    if (rf12) text(g, 30, 130 + 44 * rows.length + 40, `at 12 nodes, refinement moves the kernels by ${sci(rf12.kernel_change)}: ${rf12.kernel_change <= 1e-5 ? "passes" : "fails, so these checks use " + n0}`, "mono", "start");
+    // the notes one clause a line, so each stays inside the drawing at every width
+    text(g, 30, 130 + 44 * rows.length + 20, `the game at ${n0} nodes, refined at ${rf.nodes}`, "mono", "start");
+    text(g, 30, 130 + 44 * rows.length + 38, "curvature as smallest over largest", "mono", "start");
+    if (rf12) {
+      const y12 = 130 + 44 * rows.length + 62, pass12 = rf12.kernel_change <= 1e-5;
+      text(g, 30, y12, `at 12 nodes, refinement moves the kernels by ${sci(rf12.kernel_change)}${pass12 ? ", which passes" : ","}`, "mono", "start");
+      if (!pass12) text(g, 30, y12 + 18, `too much, so these checks use ${n0}`, "mono", "start");
+    }
     if (refineLine && rf) refineLine.textContent = `Here, solving again at ${rf.nodes} nodes moves the costs by ${sci(rf.cost_change)} and the kernels by ${sci(rf.kernel_change)}, against tolerances of 10⁻⁶ and 10⁻⁵.`;
   });
 
@@ -386,13 +382,13 @@
     const act = stroke(g, pencil([[AX(0), 470], [AX(1), 470]], 35, 0.3), "accent", 2);
     const nodes = el("g", {}, g);
     for (let k = 0; k < 32; ++k) { const u = 0.5 - 0.5 * Math.cos(Math.PI * k / 31); el("circle", { cx: AX(u).toFixed(1), cy: 470, r: 2.6, class: "fillacc" }, nodes); }
-    const l3 = text(g, AX(0), 500, "0", "mono"), l4 = text(g, AX(1), 500, "L", "mono acc"), l5 = text(g, 300, 540, "where an action kernel is stored: 32 Chebyshev nodes over the age of the shock, 0 to L", "mono");
+    const l3 = text(g, AX(0), 500, "0", "mono"), l4 = text(g, AX(1), 500, "L", "mono acc");
     return { g, update(t) {
       tri.set(seg(t, 0, 0.15)); [lt, ls, l1].forEach((n) => fade(n, seg(t, 0.08, 0.18)));
       arr.set(seg(t, 0.18, 0.28)); fade(ha, seg(t, 0.27, 0.29));
       qa.set(seg(t, 0.28, 0.4)); qb.set(seg(t, 0.28, 0.4)); [la, lb, l2].forEach((n) => fade(n, seg(t, 0.35, 0.45)));
       fade(sq, seg(t, 0.45, 0.55)); sqe.set(seg(t, 0.45, 0.58)); fade(lL, seg(t, 0.5, 0.58)); fade(lL2, seg(t, 0.5, 0.58));
-      act.set(seg(t, 0.6, 0.72)); fade(nodes, seg(t, 0.68, 0.8)); [l3, l4, l5].forEach((n) => fade(n, seg(t, 0.7, 0.8)));
+      act.set(seg(t, 0.6, 0.72)); fade(nodes, seg(t, 0.68, 0.8)); [l3, l4].forEach((n) => fade(n, seg(t, 0.7, 0.8)));
     } };
   })();
 
@@ -425,7 +421,7 @@
     const res = R.transition, tr = res.transition, L = res.window, T = res.T;
     const times = tr.times, path = tr.loss_path.player1, old = tr.old_flows.player1, neu = tr.new_flows.player1;
     const all = path.concat([old, neu]), lo = Math.min(...all), hi = Math.max(...all), pad = 0.15 * (hi - lo || 1);
-    const t0 = -L, t1 = T + L, X = (t) => 70 + 490 * (t - t0) / (t1 - t0), Y = (v) => 420 - 280 * (v - (lo - pad)) / (hi - lo + 2 * pad);
+    const t0 = -L, t1 = T + L, X = (t) => 116 + 444 * (t - t0) / (t1 - t0), Y = (v) => 420 - 280 * (v - (lo - pad)) / (hi - lo + 2 * pad);
     el("rect", { x: X(t0), y: 110, width: X(0) - X(t0), height: 320, fill: "currentColor", opacity: 0.06 }, g);
     el("rect", { x: X(T), y: 110, width: X(t1) - X(T), height: 320, class: "fillacc", opacity: 0.08 }, g);
     text(g, (X(t0) + X(0)) / 2, 100, "old regime", "mono");
@@ -433,19 +429,19 @@
     text(g, (X(T) + X(t1)) / 2, 100, "buffer", "mono acc");
     el("line", { x1: X(t0), x2: X(0), y1: Y(old), y2: Y(old), class: "pencil", "stroke-width": 2 }, g);
     el("line", { x1: X(0), x2: X(t1), y1: Y(neu), y2: Y(neu), class: "pencil soft", "stroke-width": 1.2, "stroke-dasharray": "5 5" }, g);
-    text(g, X(t1), Y(neu) + 18, "new stationary loss", "mono", "end");
-    // the axis: the two stationary flows and the path's peak, the numbers the drawing is about
-    el("line", { x1: 66, x2: 66, y1: 110, y2: 430, class: "pencil soft", "stroke-width": 0.8 }, g);
+    // the axis: the two stationary flows and the path's peak, the numbers the drawing is about; the plot starts far
+    // enough right that "peak 0.225" fits inside the drawing
+    el("line", { x1: 112, x2: 112, y1: 110, y2: 430, class: "pencil soft", "stroke-width": 0.8 }, g);
     const ks = path.reduce((b, v, i) => (v > path[b] ? i : b), 0), yt = [["old", old], ["new", neu]];
     if (path[ks] > old + 0.1 * (hi - lo)) yt.push(["peak", path[ks]]);
-    for (const [k, v] of yt) { el("line", { x1: 62, x2: 66, y1: Y(v), y2: Y(v), class: "pencil", "stroke-width": 1 }, g); text(g, 58, Y(v) + 4, `${k} ${v.toFixed(3)}`, "mono", "end"); }
+    for (const [k, v] of yt) { el("line", { x1: 108, x2: 112, y1: Y(v), y2: Y(v), class: "pencil", "stroke-width": 1 }, g); text(g, 104, Y(v) + 4, `${k} ${v.toFixed(3)}`, "mono", "end"); }
     if (path[ks] > old) text(g, X(times[ks]) + 8, Y(path[ks]) - 6, `at t = ${times[ks].toFixed(2)}, ${(100 * (path[ks] / old - 1)).toFixed(1)}% above the old loss`, "mono", "start");
     const dpath = poly(times.map((t, i) => [X(t), Y(path[i])]));
     const pl = stroke(g, dpath, "accent", 2.2);
     pl.set(1);
     for (const t of [t0, 0, T - L, T, t1]) text(g, X(t), 452, t === t0 ? `−${L}` : String(+t.toFixed(2)), "mono");
-    text(g, 315, 478, "date", "label");
-    text(g, 70, 74, "player 1's loss per unit time", "mono", "start");
+    text(g, 338, 478, "date", "label");
+    text(g, 116, 74, "player 1's loss per unit time", "mono", "start");
     // the range of the settled check
     const by = 520;
     stroke(g, poly([[X(T - L), by - 10], [X(T - L), by], [X(T), by], [X(T), by - 10]]), "", 1.4).set(1);

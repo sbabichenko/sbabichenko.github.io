@@ -29,6 +29,10 @@
           /* in light mode the paper also gets a paper's own warm tone: the site's near-white cream is what made the grain read as dirt */
           html:not(.dark), html:not(.dark) :is(.home, .opening, .thesis, .gatehow) { --paper: #ecdebe; --sheet: #f0e4c8; }
           html:not(.dark) body { background-color: var(--paper); }
+          /* the body's box grows with the page (the theme had it one window tall): browsers carry a body's background out
+             to the whole page, but a renderer that doesn't (a work browser behind a filtering proxy) painted the paper only
+             over the first screen */
+          html body { height: auto; min-height: 100vh; }
           /* the paper runs through everything: the bar at the top is paper, cards and panels are clear (outlines only), and
              pictures, plots and canvases are multiplied onto it, so their white ground becomes the paper and their ink stays ink */
           html :is(.panel, .statusbar, button.tab:not([aria-selected="true"]), article.demo) { background-color: transparent !important; }
@@ -48,11 +52,12 @@
             -webkit-mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent);
                     mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent); opacity: var(--hdr-fade, 0); }
           html:not(.dark) figure { background-color: transparent; }
-          html:not(.dark) :is(figure img, .shot img, .shot canvas, .panel canvas, .js-plotly-plot, main img) { mix-blend-mode: multiply; }
+          /* the dissertation's figures (.webfig) are drawn transparent in the page's inks and need no blend */
+          html:not(.dark) :is(figure img, .shot img, .shot canvas, .panel canvas, .js-plotly-plot, main img):not(.webfig img) { mix-blend-mode: multiply; }
           /* the tile is 768px: a 768-pixel image for ordinary screens (what the browser drew from the 1536 one anyway) and
              the 1536 one for sharp screens */
-          html:not(.dark) { --paper-img: image-set(url({{ get_url(path='images/paper/brown-light.webp') }}) 1x, url({{ get_url(path='images/paper/brown-light-2x.webp') }}) 2x); }
-          html.dark { --paper-img: image-set(url({{ get_url(path='images/paper/brown-dark.webp') }}) 1x, url({{ get_url(path='images/paper/brown-dark-2x.webp') }}) 2x); }
+          html:not(.dark) { --paper-img: image-set(url({{ get_url(path='images/paper/brown-light.webp', cachebust=true) }}) 1x, url({{ get_url(path='images/paper/brown-light-2x.webp', cachebust=true) }}) 2x); }
+          html.dark { --paper-img: image-set(url({{ get_url(path='images/paper/brown-dark.webp', cachebust=true) }}) 1x, url({{ get_url(path='images/paper/brown-dark-2x.webp', cachebust=true) }}) 2x); }
         </style>
         <script>
           (() => {
