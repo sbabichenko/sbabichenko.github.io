@@ -22,8 +22,6 @@
 }
 #stage .pos { fill: var(--accent); }
 #stage .neg { fill: var(--warm); }
-#stage .posS { stroke: var(--accent); }
-#stage .negS { stroke: var(--warm); }
 #stage .ink { fill: currentColor; }
 #stage .frame { fill: none; stroke: var(--rule); stroke-width: 1; }
 #stage .meshline { fill: none; stroke: currentColor; stroke-width: 0.6; stroke-opacity: 0.3; }
