@@ -243,6 +243,7 @@
     </main>
 
     {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='js/sketch.js', cachebust=true) }}"></script>
     <script src="{{ get_url(path='noisestate/risk.js', cachebust=true) }}" data-ns="{{ get_url(path='noisestate/risk/noisestate.json', cachebust=true) }}" data-eq="{{ get_url(path='noisestate/risk/equilibria.json', cachebust=true) }}"></script>
   </body>
 </html>

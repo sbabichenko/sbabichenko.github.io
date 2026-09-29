@@ -96,6 +96,7 @@
     </main>
 
     {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='js/sketch.js', cachebust=true) }}"></script>
     <script src="{{ get_url(path='dissertation/spike-lemma.js', cachebust=true) }}" data-lemma="{{ get_url(path='dissertation/spike/lemma.json', cachebust=true) }}"></script>
     <script src="{{ get_url(path='dissertation/spike.js', cachebust=true) }}" data-lives="{{ get_url(path='dissertation/spike/lives.json', cachebust=true) }}"></script>
   </body>
