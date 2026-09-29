@@ -3,36 +3,14 @@
 // stop at a wall; an orbit; a signal hidden in noise; the two simple questions.
 (function () {
   "use strict";
-  const NS = "http://www.w3.org/2000/svg";
+  const { el, mulberry32, gauss, clamp, seg, fade, text } = Sketch;   // static/js/sketch.js
   const svg = document.getElementById("stage");
   const steps = [...document.querySelectorAll(".step")];
   if (!svg || !steps.length) return;
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v); if (parent) parent.appendChild(e); return e; };
-  function mulberry32(a) { return function () { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-  function gauss(r) { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
-  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
-  const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
-  const seg = (t, a, b) => ease(clamp((t - a) / (b - a)));
-  const fade = (n, t) => { n.style.opacity = clamp(t); };
-  function pencil(pts, seed, wob = 1.2) {
-    const r = mulberry32(seed);
-    let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
-    for (let i = 1; i < pts.length; ++i) {
-      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
-      d += ` Q${((x0 + x1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)},${((y0 + y1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`;
-    }
-    return d;
-  }
-  function stroke(g, d, cls, w = 1.6) {
-    const a = el("path", { d, class: "pencil " + (cls || ""), "stroke-width": w }, g);
-    const b = el("path", { d, class: "pencil soft " + (cls || ""), "stroke-width": w * 0.6, transform: "translate(0.8,0.6)" }, g);
-    const len = a.getTotalLength();
-    for (const p of [a, b]) { p.style.strokeDasharray = `${len} ${len}`; p.style.strokeDashoffset = len; }
-    return { set(t) { const o = len * (1 - clamp(t)); a.style.strokeDashoffset = o; b.style.strokeDashoffset = o; }, a, b };
-  }
+  const pencil = (pts, seed, wob = 1.2) => Sketch.pencil(pts, seed, wob);
+  const stroke = (g, d, cls, w = 1.6) => Sketch.stroke2(g, d, cls, w, "pencil", 0.8, 0.6);
   const line = (g, x1, y1, x2, y2, seed, cls, w) => stroke(g, pencil([[x1, y1], [x2, y2]], seed, 0.8), cls, w);
-  function text(g, x, y, s, cls, anchor = "middle") { const t = el("text", { x, y, class: cls || "", "text-anchor": anchor }, g); t.textContent = s; return t; }
   const scenes = {};
   const group = (name) => { const g = el("g", { "data-scene": name }, svg); g.style.opacity = 0; g.style.transition = "opacity 0.6s"; return g; };
 
@@ -201,12 +179,10 @@
   const PACE = 0.9;
   let active = null, prog = 0, shown = 0, current = null, raf = 0, last = 0, still = null, from = null;
   function measure() {
-    const vh = window.innerHeight, line = window.readLine ? window.readLine() : vh * 0.55;
-    let best = null, bestD = Infinity;
-    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - line); if (d < bestD) { bestD = d; best = s; } }
-    if (!best) return;
-    const r = best.getBoundingClientRect();
-    prog = clamp((line - r.top) / (r.height * 0.7));
+    const at = Sketch.reading(steps);
+    if (!at) return;
+    const best = at.step;
+    prog = at.prog;
     if (best !== active) {
       active = best;
       for (const s of steps) s.classList.toggle("on", s === best);
@@ -231,7 +207,7 @@
     if (!sc) { last = 0; return; }
     // reduced motion: each scene is drawn once, finished and still, when it becomes active
     if (reduced) { if (still !== active) { still = active; sc.update(1, 0, 0); } last = 0; return; }
-    shown = Math.abs(prog - shown) <= PACE * dt ? prog : shown + Math.sign(prog - shown) * PACE * dt;
+    shown = Sketch.follow(shown, prog, dt, PACE);
     const busy = sc.update(shown, now, dt);
     // a scene that moves by itself (its update reads the clock) keeps asking for frames while the story is on screen
     if (busy || shown !== prog || (sc.live !== undefined ? sc.live : sc.update.length > 1)) raf = requestAnimationFrame(frame);

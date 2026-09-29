@@ -7,7 +7,7 @@
 // to its strategy, J(e) - J(0) = slope e + curvature e^2, followed either way and counted as if nobody reacted.
 (function () {
   "use strict";
-  const NS = "http://www.w3.org/2000/svg";
+  const { el } = Sketch;   // static/js/sketch.js
   const me = document.currentScript;
   const svgC = document.getElementById("build-svg"), svgB = document.getElementById("lemma-bowls");
   if (!me || !svgC || !svgB) return;
@@ -22,7 +22,6 @@
       f.before(p);
     }
   };
-  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
   const fmt = (v) => (Math.abs(v) < 0.0005 ? "0.000" : (v < 0 ? "−" : "+") + Math.abs(v).toFixed(3));
   const EMAX = 0.4;                                   // the bowls' range of the change's size
 
