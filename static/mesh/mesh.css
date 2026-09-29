@@ -20,10 +20,7 @@
 .explorer.mesh .meshbar .ctl { display: flex; flex-direction: column; justify-content: space-between; }
 @media (min-width: 700px) { .explorer.mesh .meshbar .ctl label { white-space: nowrap; } }
 .explorer.mesh .ctl input.box { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
-.explorer.mesh .speedctl input[type=range] { width: 110px; accent-color: var(--accent); }
-.explorer.mesh .speedctl .val { font-family: ui-monospace, Menlo, monospace; color: var(--text); min-width: 1.5em; text-align: right; }
 .explorer.mesh .ctl sup { font-size: 0.7em; color: var(--faint); margin-left: 1px; }
-.explorer.mesh .scopenote { font-size: 0.78rem; color: var(--faint); }
 /* the page's patience, beside the chip (mesh-demo.js) */
 .explorer.mesh .glass { width: 14px; height: 20px; flex: none; overflow: visible; }
 .explorer.mesh .glass .frame { fill: none; stroke: var(--muted); stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; }
