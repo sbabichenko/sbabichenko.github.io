@@ -3,45 +3,14 @@
 // Each line of work comes toward the band in its year, bends, and runs alongside it from then on, so over the
 // scroll the band gets outlined by the ways around it. In 2026 one line goes straight through, and each old line's
 // direct route into the band appears. Time runs left to right on a wide screen, top to bottom on a phone.
-// Any <svg data-detour="still"> elsewhere (the home page) gets the finished map, small and without labels.
 (function () {
   "use strict";
-  const NS = "http://www.w3.org/2000/svg";
-  const el = (tag, attrs, parent) => {
-    const e = document.createElementNS(NS, tag);
-    for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v);
-    if (parent) parent.appendChild(e);
-    return e;
-  };
-  function mulberry32(a) {
-    return function () {
-      a |= 0; a = (a + 0x6d2b79f5) | 0;
-      let t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
-  const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
-  const seg = (t, a, b) => ease(clamp((t - a) / (b - a)));
+  const { el, mulberry32, clamp, seg } = Sketch;   // static/js/sketch.js
 
-  // a pencil line through points, each segment bowed a little so it reads as drawn
-  function pencil(pts, seed, wob) {
-    const r = mulberry32(seed);
-    let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
-    for (let i = 1; i < pts.length; ++i) {
-      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
-      d += ` Q${((x0 + x1) / 2 + (r() - 0.5) * wob).toFixed(1)},${((y0 + y1) / 2 + (r() - 0.5) * wob).toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`;
-    }
-    return d;
-  }
-  function stroke(g, d, cls, w) {
-    const a = el("path", { d, class: "pn " + (cls || ""), "stroke-width": w }, g);
-    const b = el("path", { d, class: "pn soft " + (cls || ""), "stroke-width": w * 0.6, transform: "translate(0.7,0.5)" }, g);
-    const len = a.getTotalLength ? a.getTotalLength() : 1000;
-    for (const p of [a, b]) { p.style.strokeDasharray = `${len} ${len}`; p.style.strokeDashoffset = len; }
-    return { a, b, set(t) { const o = len * (1 - clamp(t)); a.style.strokeDashoffset = o; b.style.strokeDashoffset = o; } };
-  }
+  // a pencil line through points, each segment bowed a little (by up to half of wob either way) so it reads as drawn,
+  // and drawn twice, as a pencil goes over its own stroke
+  const pencil = (pts, seed, wob) => Sketch.pencil(pts, seed, wob / 2);
+  const stroke = (g, d, cls, w) => Sketch.stroke2(g, d, cls, w, "pn", 0.7, 0.5);
   // a smooth curve through control points (Catmull-Rom), sampled
   function smooth(cp, n = 10) {
     const out = [];
@@ -75,12 +44,12 @@
   const BAND = [0.44, 0.56];
 
   function draw(svg, opts) {
-    const still = !!opts.still, vertical = !!opts.vertical;
+    const vertical = !!opts.vertical;
     svg.innerHTML = "";
     const W = vertical ? 500 : 1000, H = vertical ? 800 : 560;
     svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
     // u: time, 0 at 1936 and 1 at 2026; v: across the map, the band in the middle
-    const mu = vertical ? [70, 40] : [70, 36], vEdge = still ? 0.06 : vertical ? 0.33 : 0.215;
+    const mu = vertical ? [70, 40] : [70, 36], vEdge = vertical ? 0.33 : 0.215;
     const P = (u, v) => vertical ? [v * W, mu[0] + u * (H - mu[0] - mu[1])] : [mu[0] + u * (W - mu[0] - mu[1]), v * H];
     const U = (year) => (year - Y0) / (Y1 - Y0);
     const g = el("g", {}, svg);
@@ -92,42 +61,40 @@
     const r = mulberry32(7);
     for (let u = 0.004; u < 1; u += vertical ? 0.012 : 0.008) {
       const a = P(u, BAND[0] + 0.004), b = P(u + (vertical ? 0.02 : 0.014), BAND[1] - 0.004);
-      el("path", { d: pencil([a, b], Math.floor(r() * 1e6), 1.5), class: "pn", "stroke-width": still ? 1.6 : 0.7 }, hatch);
+      el("path", { d: pencil([a, b], Math.floor(r() * 1e6), 1.5), class: "pn", "stroke-width": 0.7 }, hatch);
     }
     const edgeA = [], edgeB = [];
     for (let i = 0; i <= 60; ++i) { const u = i / 60; edgeA.push(P(u, BAND[0] + (r() - 0.5) * 0.004)); edgeB.push(P(u, BAND[1] + (r() - 0.5) * 0.004)); }
-    const ew = still ? 6 : 1.3, eA = stroke(band, pencil(edgeA, 3, 1), "", ew), eB = stroke(band, pencil(edgeB, 4, 1), "", ew);
+    const ew = 1.3, eA = stroke(band, pencil(edgeA, 3, 1), "", ew), eB = stroke(band, pencil(edgeB, 4, 1), "", ew);
     parts.push({ set: (t) => { eA.set(t); eB.set(t); hatch.style.opacity = 0.9 * t; }, w: [0.0, 0.07] });
 
     let bandLabel = null, unmapped = null;
-    if (!still) {
-      const [lx, ly] = P(vertical ? 0.2 : 0.5, 0.5);
-      bandLabel = el("text", { x: lx, y: ly + 5, class: "bandname halo", "text-anchor": "middle",
-        transform: vertical ? `rotate(90 ${lx} ${ly})` : "" }, g);
-      bandLabel.textContent = "people who learn from each other’s actions";
-      const [kx, ky] = P(0, BAND[0]);
-      const flag = el("g", { class: "keynes" }, g);
-      el("circle", { cx: kx, cy: ky + (vertical ? 0 : 0), r: 3.2, class: "dot" }, flag);
-      const kt = el("text", { x: vertical ? kx + 34 : kx - 4, y: vertical ? ky - 26 : ky - 34, class: "lab", "text-anchor": vertical ? "start" : "start" }, flag);
-      kt.innerHTML = `<tspan class="who">Keynes 1936</tspan><tspan x="${vertical ? kx + 34 : kx - 4}" dy="15">the beauty contest</tspan>`;
-      stroke(flag, pencil([[kx, ky], vertical ? [kx + 30, ky - 30] : [kx + 2, ky - 30]], 9, 0.6), "soft2", 0.8).set(1);
-      parts.push({ set: (t) => { flag.style.opacity = t; bandLabel.style.opacity = t; }, w: [0.01, 0.06] });
-      // "unmapped" goes in the band clear of the band's name: measured, then placed in the longer free stretch beside it
-      unmapped = el("text", { class: "mono halo", "text-anchor": "middle" }, g);
-      unmapped.textContent = "unmapped";
-      const along = (u) => { const [x, y] = P(u, 0.5); return vertical ? y : x; };
-      const L = bandLabel.getComputedTextLength ? bandLabel.getComputedTextLength() : 0, W = unmapped.getComputedTextLength ? unmapped.getComputedTextLength() : 60;
-      const c = along(vertical ? 0.2 : 0.5), a0 = along(0), a1 = along(1), gap = 28;
-      const before = [a0 + gap, c - L / 2 - gap], after = [c + L / 2 + gap, a1 - gap];
-      const room = (s) => s[1] - s[0];
-      const pick = room(after) >= room(before) ? after : before;
-      const m = room(pick) >= W ? (pick === after ? pick[0] + W / 2 : pick[1] - W / 2) : null;
-      if (m === null) { unmapped.remove(); unmapped = null; }
-      else {
-        const [ux, uy] = vertical ? [P(0, 0.5)[0], m] : [m, P(0, 0.5)[1]];
-        unmapped.setAttribute("x", ux); unmapped.setAttribute("y", uy + 4);
-        if (vertical) unmapped.setAttribute("transform", `rotate(90 ${ux} ${uy})`);
-      }
+    const [lx, ly] = P(vertical ? 0.2 : 0.5, 0.5);
+    bandLabel = el("text", { x: lx, y: ly + 5, class: "bandname halo", "text-anchor": "middle",
+      transform: vertical ? `rotate(90 ${lx} ${ly})` : "" }, g);
+    bandLabel.textContent = "people who learn from each other’s actions";
+    const [kx, ky] = P(0, BAND[0]);
+    const flag = el("g", { class: "keynes" }, g);
+    el("circle", { cx: kx, cy: ky + (vertical ? 0 : 0), r: 3.2, class: "dot" }, flag);
+    const kt = el("text", { x: vertical ? kx + 34 : kx - 4, y: vertical ? ky - 26 : ky - 34, class: "lab", "text-anchor": vertical ? "start" : "start" }, flag);
+    kt.innerHTML = `<tspan class="who">Keynes 1936</tspan><tspan x="${vertical ? kx + 34 : kx - 4}" dy="15">the beauty contest</tspan>`;
+    stroke(flag, pencil([[kx, ky], vertical ? [kx + 30, ky - 30] : [kx + 2, ky - 30]], 9, 0.6), "soft2", 0.8).set(1);
+    parts.push({ set: (t) => { flag.style.opacity = t; bandLabel.style.opacity = t; }, w: [0.01, 0.06] });
+    // "unmapped" goes in the band clear of the band's name: measured, then placed in the longer free stretch beside it
+    unmapped = el("text", { class: "mono halo", "text-anchor": "middle" }, g);
+    unmapped.textContent = "unmapped";
+    const along = (u) => { const [x, y] = P(u, 0.5); return vertical ? y : x; };
+    const L = bandLabel.getComputedTextLength ? bandLabel.getComputedTextLength() : 0, uW = unmapped.getComputedTextLength ? unmapped.getComputedTextLength() : 60;
+    const c = along(vertical ? 0.2 : 0.5), a0 = along(0), a1 = along(1), gap = 28;
+    const before = [a0 + gap, c - L / 2 - gap], after = [c + L / 2 + gap, a1 - gap];
+    const room = (s) => s[1] - s[0];
+    const pick = room(after) >= room(before) ? after : before;
+    const m = room(pick) >= uW ? (pick === after ? pick[0] + uW / 2 : pick[1] - uW / 2) : null;
+    if (m === null) { unmapped.remove(); unmapped = null; }
+    else {
+      const [ux, uy] = vertical ? [P(0, 0.5)[0], m] : [m, P(0, 0.5)[1]];
+      unmapped.setAttribute("x", ux); unmapped.setAttribute("y", uy + 4);
+      if (vertical) unmapped.setAttribute("transform", `rotate(90 ${ux} ${uy})`);
     }
 
     // the roads: down from the map's edge in their year, a bend, then alongside the band to the present
@@ -135,7 +102,7 @@
     const doors = [];
     ROADS.forEach((rd, i) => {
       const u0 = U(rd.y), s = rd.side, sgn = s === 0 ? -1 : 1;
-      const k = lane[s]++, off = still ? 0.034 + 0.033 * k : vertical ? 0.016 + 0.015 * k : 0.022 + 0.021 * k;
+      const k = lane[s]++, off = vertical ? 0.016 + 0.015 * k : 0.022 + 0.021 * k;
       const vBand = s === 0 ? BAND[0] : BAND[1];
       const vRun = vBand + sgn * off, vStart = s === 0 ? vEdge : 1 - vEdge;
       const bend = 0.028;
@@ -145,39 +112,35 @@
               [u0 + 0.038, vBand - sgn * 0.008], [u0 + 0.056, vRun], [u0 + 0.08, vRun], [0.97, vRun]];
       } else cp = [[u0, vStart], [u0, vRun + sgn * 0.05], [u0 + bend * 0.6, vRun + sgn * 0.004], [u0 + bend * 1.6, vRun], [0.97, vRun]];
       const pts = smooth(cp.map(([u, v]) => P(u, v)), 8);
-      const line = stroke(g, pencil(pts, 20 + i, still ? 0.6 : 1.2), "road", still ? 7 : 1.4);
+      const line = stroke(g, pencil(pts, 20 + i, 1.2), "road", 1.4);
       // each road is drawn while its caption is up: one each through Kyle, then the rest together
       const t0 = i < 5 ? [0.08, 0.17, 0.26, 0.34, 0.42][i] : 0.5 + 0.022 * (i - 5), t1 = t0 + (i < 5 ? 0.06 : 0.04);
       parts.push({ set: line.set, w: [t0, t1] });
       doors.push({ from: P(u0 + bend * 1.6, vRun), to: P(u0 + bend * 1.6, 0.5), i });
-      if (!still) {
-        const [x, y] = P(u0, vStart);
-        const lab = el("g", { class: "roadlab" }, g);
-        let tx, ty, anchor;
-        if (vertical) { tx = s === 0 ? x - 8 : x + 8; ty = y - 4; anchor = s === 0 ? "end" : "start"; }
-        else {
-          const nudge = rd.an === "end" ? 8 : rd.an === "start" ? -8 : 0;
-          tx = x + nudge; anchor = rd.an;
-          ty = s === 0 ? y - 26 - rd.row * 36 : y + 20 + rd.row * 36;
-          if (rd.row) stroke(lab, pencil([[x, s === 0 ? ty + 20 : ty - 16], [x, y + (s === 0 ? -3 : 3)]], 40 + i, 0.3), "soft2 dash", 0.7).set(1);
-        }
-        const t = el("text", { x: tx, y: ty, class: "lab", "text-anchor": anchor }, lab);
-        t.innerHTML = `<tspan class="who">${rd.idea}</tspan><tspan x="${tx}" dy="14">${rd.y} · ${rd.sub}</tspan>`;
-        parts.push({ set: (q) => { lab.style.opacity = q; }, w: [t0, t0 + 0.04] });
+      const [x, y] = P(u0, vStart);
+      const lab = el("g", { class: "roadlab" }, g);
+      let tx, ty, anchor;
+      if (vertical) { tx = s === 0 ? x - 8 : x + 8; ty = y - 4; anchor = s === 0 ? "end" : "start"; }
+      else {
+        const nudge = rd.an === "end" ? 8 : rd.an === "start" ? -8 : 0;
+        tx = x + nudge; anchor = rd.an;
+        ty = s === 0 ? y - 26 - rd.row * 36 : y + 20 + rd.row * 36;
+        if (rd.row) stroke(lab, pencil([[x, s === 0 ? ty + 20 : ty - 16], [x, y + (s === 0 ? -3 : 3)]], 40 + i, 0.3), "soft2 dash", 0.7).set(1);
       }
+      const t = el("text", { x: tx, y: ty, class: "lab", "text-anchor": anchor }, lab);
+      t.innerHTML = `<tspan class="who">${rd.idea}</tspan><tspan x="${tx}" dy="14">${rd.y} · ${rd.sub}</tspan>`;
+      parts.push({ set: (q) => { lab.style.opacity = q; }, w: [t0, t0 + 0.04] });
     });
 
     // 2026: straight through
     const uT = 0.985;
-    const thru = stroke(g, pencil(smooth([P(uT, still ? 0.04 : vEdge - 0.02), P(uT, 0.5), P(uT, still ? 0.96 : 1 - vEdge + 0.02)], 12), 99, 0.8), "acc", still ? 11 : 2.4);
+    const thru = stroke(g, pencil(smooth([P(uT, vEdge - 0.02), P(uT, 0.5), P(uT, 1 - vEdge + 0.02)], 12), 99, 0.8), "acc", 2.4);
     parts.push({ set: thru.set, w: [0.8, 0.88] });
-    if (!still) {
-      const [x, y] = vertical ? P(uT, vEdge - 0.02) : P(uT, 1 - vEdge + 0.02);
-      const tx = vertical ? x - 8 : x + 6;
-      const t = el("text", { x: tx, y: vertical ? y - 4 : y + 56, class: "lab accl", "text-anchor": "end" }, g);
-      t.innerHTML = `<tspan class="who">2026</tspan><tspan x="${tx}" dy="14">noise-state calculus</tspan>`;
-      parts.push({ set: (q) => { t.style.opacity = q; }, w: [0.8, 0.83] });
-    }
+    const [x, y] = vertical ? P(uT, vEdge - 0.02) : P(uT, 1 - vEdge + 0.02);
+    const tx = vertical ? x - 8 : x + 6;
+    const t = el("text", { x: tx, y: vertical ? y - 4 : y + 56, class: "lab accl", "text-anchor": "end" }, g);
+    t.innerHTML = `<tspan class="who">2026</tspan><tspan x="${tx}" dy="14">noise-state calculus</tspan>`;
+    parts.push({ set: (q) => { t.style.opacity = q; }, w: [0.8, 0.83] });
     // and then each line's own way in
     doors.forEach((d) => {
       const n = 7, dg = el("g", { class: "door" }, g), bits = [];
@@ -192,9 +155,6 @@
     parts.push({ set: (t) => { hatch.style.opacity = 0.9 - 0.55 * t; if (unmapped) unmapped.style.opacity = 1 - t; }, w: [0.9, 0.99] });
     return function (p) { for (const q of parts) q.set(seg(p, q.w[0], q.w[1])); };
   }
-
-  // the stills
-  document.querySelectorAll("svg[data-detour=still]").forEach((s) => draw(s, { still: true })(1));
 
   // the scrolled map
   const sec = document.getElementById("detour");

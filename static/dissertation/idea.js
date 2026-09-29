@@ -5,7 +5,7 @@
 // player 2's forecast run against player 1's noise-state. The page checks those against direct computations.
 (function () {
   "use strict";
-  const NS = "http://www.w3.org/2000/svg";
+  const { el, mulberry32, gauss, clamp, seg, fade, stroke, text } = Sketch;   // static/js/sketch.js
   const svg = document.getElementById("stage");
   const steps = [...document.querySelectorAll(".step")];
   if (!svg || !steps.length) return;
@@ -13,8 +13,6 @@
 
   // ------------------------------------------------------------------ the model
   const N = 48, RHO = 0.92, SIG = [1.2, 2.0];
-  function mulberry32(a) { return function () { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-  function gauss(r) { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
   const rng = mulberry32(20260924);
   const w = Array.from({ length: N }, () => gauss(rng));
   const e = [Array.from({ length: N }, () => gauss(rng)), Array.from({ length: N }, () => gauss(rng))];
@@ -82,38 +80,11 @@
   window.ideaChecks = { filter: checkFilter, tower: checkTower };
 
   // ------------------------------------------------------------------ drawing helpers
-  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs || {})) n.setAttribute(k, v); if (parent) parent.appendChild(n); return n; };
-  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
-  const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
-  const seg = (t, a, b) => ease(clamp((t - a) / (b - a)));
-  const fade = (n, t) => { n.style.opacity = clamp(t); };
-  // A one-shot motion (a head turning, a sun going up): once the step's progress passes `at` it plays over `dur`
-  // seconds whatever the scroll speed, and runs back if the reader scrolls above `at` again. With reduced motion it
-  // jumps to where it is headed. step(t, dt) returns 0..1, not eased.
-  // a one-shot plays forward once the progress passes `at` going down, and back again if the reader scrolls above `at`
-  // while it is on screen. A drawing that leaves the screen is put straight back to its start (jump(0) below).
-  function oneShot(at, dur) {
-    let v = 0, to = 0;
-    return {
-      step(t, dt) { to = t >= at ? 1 : 0; v = reduced ? to : v + clamp(to - v, -dt / dur, dt / dur); return v; },
-      get moving() { return v !== to; },
-      get playing() { return to === 1 && v < 1; },     // on its way forward: worth finishing before the drawing is put away
-      jump(t) { to = v = t >= at ? 1 : 0; },           // reached from below: already where the progress puts it
-    };
-  }
-  function pencil(pts, seed, wob = 0.6) {
-    const r = mulberry32(seed);
-    let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
-    for (let i = 1; i < pts.length; ++i) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; d += ` Q${((x0 + x1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)},${((y0 + y1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`; }
-    return d;
-  }
-  function stroke(g, d, cls, width = 1.6) {
-    const a = el("path", { d, class: "pencil " + (cls || ""), "stroke-width": width }, g);
-    const len = a.getTotalLength() || 1;
-    a.style.strokeDasharray = `${len} ${len}`; a.style.strokeDashoffset = len;
-    return { a, set(t) { a.style.strokeDashoffset = len * (1 - clamp(t)); } };
-  }
-  function text(g, x, y, s, cls, anchor = "middle") { const t = el("text", { x, y, class: cls || "", "text-anchor": anchor }, g); t.textContent = s; return t; }
+  // A one-shot motion (a head turning, a sun going up) plays forward once the progress passes `at` going down, and back
+  // again if the reader scrolls above `at` while it is on screen. A drawing that leaves the screen is put straight back
+  // to its start (jump(0) below).
+  const oneShot = (at, dur) => Sketch.oneShot(at, dur, reduced);
+  const pencil = (pts, seed, wob = 0.6) => Sketch.pencil(pts, seed, wob);
   const TX = (k) => 60 + (490 * k) / (N - 1);
   function formula(key, x, y, width, parent, anchor = "start") {
     const src = window.IDEA_FX && window.IDEA_FX[key];
@@ -543,13 +514,11 @@
   let active = null, prog = 0, shown = 0, current = null, held = 0, raf = 0, last = 0, still = null;
   let leaving = null, leftT = 0, leftFor = 0, from = null;
   function measure() {
-    const vh = window.innerHeight, line = window.readLine ? window.readLine() : vh * 0.55;
-    let best = null, bestD = Infinity;
-    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - line); if (d < bestD) { bestD = d; best = s; } }
-    if (bar) { const h = document.documentElement.scrollHeight - vh; bar.style.width = (h > 0 ? (100 * window.scrollY) / h : 0) + "%"; }
-    if (!best) return;
-    const r = best.getBoundingClientRect();
-    prog = clamp((line - r.top) / (r.height * 0.7));
+    const at = Sketch.reading(steps);
+    Sketch.progressBar(bar);
+    if (!at) return;
+    const best = at.step;
+    prog = at.prog;
     if (best !== active) {
       active = best;
       for (const s of steps) s.classList.toggle("on", s === best);
@@ -587,7 +556,7 @@
     if (!sc) { last = 0; return; }
     // reduced motion: each scene is drawn once, finished and still, when it becomes active
     if (reduced) { if (still !== active) { still = active; sc.update(1, 0, 0); } last = 0; return; }
-    shown = Math.abs(prog - shown) <= PACE * dt ? prog : shown + Math.sign(prog - shown) * PACE * dt;
+    shown = Sketch.follow(shown, prog, dt, PACE);
     const busy = sc.update(shown, now, dt);
     if (leaving) { leftFor += dt; leaving.update(leftT, now, dt); if (leftFor >= FADE || !leaving.shots.some((s) => s.moving)) { leaving.shots.forEach((s) => s.jump(0)); leaving.update(0, now, 0); leaving = null; } }
     // a scene that moves by itself (its update reads the clock) keeps asking for frames while the story is on screen
