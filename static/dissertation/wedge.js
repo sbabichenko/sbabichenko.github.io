@@ -3,43 +3,17 @@
 // its physical part and the wedge; and the tug of war, where both players' precision p sets how hard they push.
 (function () {
   "use strict";
-  const NS = "http://www.w3.org/2000/svg";
+  const { el, mulberry32, clamp, ease, seg, fade, stroke, text } = Sketch;   // static/js/sketch.js
   const svg = document.getElementById("stage");
   const steps = [...document.querySelectorAll(".step")];
   const page = document.getElementById("wedgepage");
   if (!svg || !steps.length || !page) return;
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs || {})) n.setAttribute(k, v); if (parent) parent.appendChild(n); return n; };
-  function mulberry32(a) { return function () { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
-  const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
-  const seg = (t, a, b) => ease(clamp((t - a) / (b - a)));
   // A one-shot motion (a ball rolling downhill): once the step's progress passes `at` it plays over `dur` seconds
   // whatever the scroll speed, and runs back if the reader scrolls above `at` again. With reduced motion it jumps to
   // where it is headed. step(t, dt) returns 0..1, not eased.
-  function oneShot(at, dur) {
-    let v = 0, to = 0;
-    return {
-      step(t, dt) { to = t >= at ? 1 : 0; v = reduced ? to : v + clamp(to - v, -dt / dur, dt / dur); return v; },
-      get moving() { return v !== to; },
-      get playing() { return to === 1 && v < 1; },     // on its way forward: worth finishing before the drawing is put away
-      jump(t) { to = v = t >= at ? 1 : 0; },           // reached from below: already where the progress puts it
-    };
-  }
-  const fade = (n, t) => { n.style.opacity = clamp(t); };
-  function pencil(pts, seed, wob = 0.6) {
-    const r = mulberry32(seed);
-    let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
-    for (let i = 1; i < pts.length; ++i) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; d += ` Q${((x0 + x1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)},${((y0 + y1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`; }
-    return d;
-  }
-  function stroke(g, d, cls, width = 1.6) {
-    const a = el("path", { d, class: "pencil " + (cls || ""), "stroke-width": width }, g);
-    const len = a.getTotalLength() || 1;
-    a.style.strokeDasharray = `${len} ${len}`; a.style.strokeDashoffset = len;
-    return { a, set(t) { a.style.strokeDashoffset = len * (1 - clamp(t)); } };
-  }
-  function text(g, x, y, s, cls, anchor = "middle") { const t = el("text", { x, y, class: cls || "", "text-anchor": anchor }, g); t.textContent = s; return t; }
+  const oneShot = (at, dur) => Sketch.oneShot(at, dur, reduced);
+  const pencil = (pts, seed, wob = 0.6) => Sketch.pencil(pts, seed, wob);
   function box(g, x, y, label, w) { const b = el("g", {}, g); const W = w || label.length * 9 + 28; el("rect", { x: x - W / 2, y: y - 19, width: W, height: 38, rx: 6, class: "box pencil", "stroke-width": 1.6 }, b); text(b, x, y + 6, label); return b; }
   function arrowHead(g, x, y, ang, cls) { return el("path", { d: `M${x - 10 * Math.cos(ang - 0.45)},${y - 10 * Math.sin(ang - 0.45)} L${x},${y} L${x - 10 * Math.cos(ang + 0.45)},${y - 10 * Math.sin(ang + 0.45)}`, class: "pencil " + (cls || ""), "stroke-width": 1.8 }, g); }
   const scenes = {};
@@ -111,7 +85,7 @@
     const legs = [["p1", "X"], ["X", "y2"], ["y2", "b2"], ["b2", "X"]];
     const paths = legs.map(([a, b], k) => {
       const [x0, y0] = P[a], [x1, y1] = P[b];
-      const mx = (x0 + x1) / 2 + (k === 3 ? -40 : 0), my = (y0 + y1) / 2 + (k === 3 ? 0 : 0);
+      const mx = (x0 + x1) / 2 + (k === 3 ? -40 : 0);
       const d = k === 3 ? pencil([[x0 - 10, y0 - 22], [mx + 10, (y0 + y1) / 2 + 30], [x1 - 20, y1 + 22]], 10 + k, 1) : pencil([[x0 + (x1 > x0 ? 40 : -40), y0 + (y1 > y0 ? 20 : -20)], [x1 - (x1 > x0 ? 40 : -40), y1 - (y1 > y0 ? 22 : -22)]], 10 + k, 1);
       return stroke(g, d, k === 3 ? "warm" : "", 1.8);
     });
@@ -182,7 +156,7 @@
     // equation sits underneath with the wedge's term tinted.
     const g = group("wedge");
     const top = el("g", {}, g), TY = 112;
-    const nPush = box(top, 100, TY, "your push"), nX = box(top, 300, TY, "state X"), nCost = box(top, 500, TY, "your cost");
+    box(top, 100, TY, "your push"); box(top, 300, TY, "state X"); box(top, 500, TY, "your cost");
     const phys = [stroke(g, pencil([[152, TY], [252, TY]], 31, 0.4), "", 2), stroke(g, pencil([[348, TY], [446, TY]], 32, 0.4), "", 2)];
     const physH = [arrowHead(g, 252, TY, 0, ""), arrowHead(g, 446, TY, 0, "")];
     // the loop through player 2, on an ellipse under the state
@@ -230,10 +204,6 @@
   })();
 
   // ------------------------------------------------------------------ plotting helpers for the solved drawings
-  function axes(g, x0, y0, W, H, xlab) {
-    el("line", { x1: x0, y1: y0, x2: x0 + W, y2: y0, class: "pencil soft", "stroke-width": 1 }, g);
-    if (xlab) text(g, x0 + W / 2, y0 + H + 34, xlab, "mono");
-  }
   const waits = [];
   const waiting = (g) => { const t = text(g, 300, 300, "solving…", "mono"); waits.push(t); return t; };
 
@@ -345,13 +315,11 @@
   let active = null, prog = 0, shown = 0, current = null, held = 0, raf = 0, last = 0, still = null;
   let leaving = null, leftT = 0, leftFor = 0, from = null;
   function measure() {
-    const vh = window.innerHeight, line = window.readLine ? window.readLine() : vh * 0.55;
-    let best = null, bestD = Infinity;
-    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - line); if (d < bestD) { bestD = d; best = s; } }
-    if (bar) { const h = document.documentElement.scrollHeight - vh; bar.style.width = (h > 0 ? (100 * window.scrollY) / h : 0) + "%"; }
-    if (!best) return;
-    const r = best.getBoundingClientRect();
-    prog = clamp((line - r.top) / (r.height * 0.7));
+    const at = Sketch.reading(steps);
+    Sketch.progressBar(bar);
+    if (!at) return;
+    const best = at.step;
+    prog = at.prog;
     if (best !== active) {
       active = best;
       for (const s of steps) s.classList.toggle("on", s === best);
@@ -389,7 +357,7 @@
       if (done < jobs.length) raf = requestAnimationFrame(frame); else last = 0;
       return;
     }
-    shown = Math.abs(prog - shown) <= PACE * dt ? prog : shown + Math.sign(prog - shown) * PACE * dt;
+    shown = Sketch.follow(shown, prog, dt, PACE);
     const busy = sc.update(shown, now, dt);
     if (leaving) { leftFor += dt; leaving.update(leftT, now, dt); if (leftFor >= FADE || !leaving.shots.some((s) => s.moving)) leaving = null; }
     // a scene that moves by itself (its update reads the clock) keeps asking for frames while the story is on screen

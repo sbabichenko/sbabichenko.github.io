@@ -23,6 +23,7 @@ article .nw { white-space: nowrap; }
   article p:has(+ ul) { break-after: avoid; }
   #experience + p { break-after: avoid; }   /* keep the two roles on one page */
   article a, .prose article a { color: inherit !important; text-decoration: none !important; font-weight: inherit !important; }
+  article a { white-space: nowrap; }   /* an address or repository name moves to the next line whole, never split at a hyphen */
   article code { font: inherit !important; color: inherit !important; }
   article code::before, article code::after { content: none !important; }
   article section > p:last-child { display: none; }

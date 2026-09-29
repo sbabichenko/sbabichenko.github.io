@@ -33,8 +33,8 @@ runs every script in the dissertation's `numerics/regen_figs.sh` through `websty
 SVGs per figure in `static/dissertation/media/web/`: light and dark, wide and phone (side-by-side panels
 stacked). Each is in Newsreader, with text enlarged only as far as nothing collides. Phone layouts that would
 not come out clean are skipped, and phones then get the wide one. `webfigs.py` then points the chapter pages at
-them; `build.py` runs it after every regeneration. Figures without a script (the TikZ diagrams, fig2, fig12,
-fig13) keep their print conversions.
+them; `build.py` runs it after every regeneration. Every figure now has a web version, so the print conversions
+`build.py` writes (`media/*.webp`) are not kept; the TikZ diagrams' `media/tikz-N.svg` are, as `tikz_web.py`'s input.
 
 ## Which copy of the dissertation
 

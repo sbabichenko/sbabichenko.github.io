@@ -1,4 +1,4 @@
-/* /decision-mesh, "How the Gate Decides": the illustrated gate as a section of the page. The story layout and the
+/* /decisionmesh, "How the Gate Decides": the illustrated gate as a section of the page. The story layout and the
    paper-and-pencil inks are the dissertation's (dissertation/opening.css), copied here and scoped to .gatehow, since
    that sheet's unscoped .stage and .cards would restyle the live fit and the race. This adds the controls, the
    engine-specific paragraphs and the colors the run is drawn in. */
@@ -53,17 +53,12 @@
 #stage .soft { opacity: 0.35; }
 #stage .accent { stroke: var(--accent); }
 #stage .warm { stroke: var(--warm); }
-#stage .fillacc { fill: var(--accent); }
-#stage .fillink { fill: var(--ink-2); }
-#stage .fillwarm { fill: var(--warm); }
 #stage text { fill: currentColor; font-size: 17px; }
 #stage text.label { font-size: 15px; }
 #stage text.mono { font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 0.08em; fill: var(--ink-3); }
-#stage text.src { font: 11px ui-sans-serif, system-ui, sans-serif; fill: var(--ink-3); }
 #stage text.acc { fill: var(--accent); }
 #stage text.warmt { fill: var(--warm); }
 #stage text.halo { paint-order: stroke; stroke: color-mix(in srgb, var(--paper) 60%, transparent); stroke-width: 6px; stroke-linejoin: round; }
-#stage .box { fill: transparent; }   /* clear on the textured paper, as in dissertation/opening.css */
 #stage .pos { fill: var(--accent); }
 #stage .neg { fill: var(--warm); }
 #stage .noise { fill: var(--ink-3); }
@@ -75,7 +70,6 @@
 #stage .meshline { fill: none; stroke: currentColor; stroke-width: 0.6; stroke-opacity: 0.3; }
 #stage .meshnew { fill: none; stroke: currentColor; stroke-width: 0.9; stroke-opacity: 0.6; }   /* a line the admissions added */
 #stage .shade { fill: var(--accent); fill-opacity: 0.13; }
-#stage .shadew { fill: var(--warm); fill-opacity: 0.13; }
 #stage text.small { font-size: 12px; }
 #stage text.tiny { font: 10px ui-monospace, Menlo, monospace; fill: var(--ink-3); }
 #stage text.tiny.acc { fill: var(--accent); }

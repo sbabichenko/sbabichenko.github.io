@@ -119,7 +119,8 @@
       for (const b of document.querySelectorAll(".btn-menu, .btn-dark"))
         b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); b.click(); } });
 
-      // dark theme
+      // dark theme; storage can be blocked (privacy modes, locked-down browsers), so every read and write is guarded
+      const storedDark = () => { try { return localStorage.getItem("dark"); } catch (e) { return null; } };
       const setDark = (isDark) => {
         if (isDark) {
           document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
@@ -137,7 +138,7 @@
       if (htmlClass.contains("dark")) {
         setDark(true);
       } else {
-        const darkVal = localStorage.getItem("dark");
+        const darkVal = storedDark();
         setDark(darkVal ? darkVal === "true" : darkScheme.matches);
       }
 
@@ -149,7 +150,7 @@
       // manual switch
       const btnDark = document.querySelector(".btn-dark");
       btnDark.addEventListener("click", () => {
-        setDark(localStorage.getItem("dark") !== "true");
+        setDark(!htmlClass.contains("dark"));
       });
     </script>
     {% if config.extra.menu %}

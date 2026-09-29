@@ -2,20 +2,12 @@
 // picture. The drawings are plain SVG built here; which one is picked from the chapter number on the page's heading.
 (function () {
   "use strict";
+  const { el, mulberry32, gauss } = Sketch;   // static/js/sketch.js
   const body = document.querySelector(".body");
   const h1 = body && body.querySelector("h1");
   if (!h1) return;
   const num = h1.getAttribute("data-num") || (/^introduction$/i.test(h1.textContent.trim()) ? "intro" : "");
-  const NS = "http://www.w3.org/2000/svg";
-  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs || {})) n.setAttribute(k, v); if (parent) parent.appendChild(n); return n; };
-  function mulberry32(a) { return function () { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-  function gauss(r) { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
-  function pencil(pts, seed, wob = 0.8) {
-    const r = mulberry32(seed);
-    let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
-    for (let i = 1; i < pts.length; ++i) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; d += ` Q${((x0 + x1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)},${((y0 + y1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`; }
-    return d;
-  }
+  const pencil = (pts, seed, wob = 0.8) => Sketch.pencil(pts, seed, wob);
   const svg = el("svg", { viewBox: "0 0 600 150", class: "vignette", "aria-hidden": "true" });
   let order = 0;
   const line = (pts, cls, w = 1.6, seed) => { const p = el("path", { d: pencil(pts, seed || ++order * 7, 0.8), class: "v-line " + (cls || ""), "stroke-width": w }, svg); p.dataset.k = order++; return p; };
