@@ -1,4 +1,4 @@
-{#- /decision-mesh/detail: the decision mesh's algorithm one level below the story on /decision-mesh, one step per screen beside a drawing
+{#- /decisionmesh/detail: the decision mesh's algorithm one level below the story on /decisionmesh, one step per screen beside a drawing
     (static/mesh/gate-deep.js). The page draws coin flips, fits them with both estimators in the page's worker
     (static/mesh/fit-worker.js with its candidate trace), and draws from those runs. Four drawings are sketches and
     say so; the first is computed on the page with the engine's splitting rule. -#}
@@ -13,9 +13,9 @@
 
     <main class="opening idea gatedeep" id="gatedeep" data-worker="{{ get_url(path='mesh/fit-worker.js', cachebust=true) }}">
       <section class="ideahead">
-        <p class="eyebrow"><a href="{{ get_url(path='') }}#projects">Projects</a> &middot; <a href="{{ get_url(path='decision-mesh/') }}">Decision Mesh</a> &middot; in detail</p>
+        <p class="eyebrow"><a href="{{ get_url(path='') }}#projects">Projects</a> &middot; <a href="{{ get_url(path='decisionmesh/') }}">Decision Mesh</a> &middot; in detail</p>
         <h1>The Decision Mesh, in Detail</h1>
-        <p class="lede">The <a href="{{ get_url(path='decision-mesh/') }}#how">illustrated gate</a> follows one fit from start to
+        <p class="lede">The <a href="{{ get_url(path='decisionmesh/') }}#how">illustrated gate</a> follows one fit from start to
           finish. This page goes one level down: how a triangle is split, how a height is stored, where a candidate&rsquo;s
           score and its <i>z</i> come from, how the null is fitted, how candidates are admitted, and when the fit stops.
           Both estimators run in your browser on coin flips drawn on this page.</p>
@@ -184,10 +184,10 @@
 
       <a class="skip-pill" href="#more" data-from="#story">Skip to the end</a>
       <section class="ideafoot" id="more">
-        <p>The same run, told as a story rather than taken apart, is on the <a href="{{ get_url(path='decision-mesh/') }}#how">illustrated gate</a>.</p>
+        <p>The same run, told as a story rather than taken apart, is on the <a href="{{ get_url(path='decisionmesh/') }}#how">illustrated gate</a>.</p>
         <div class="cta">
-          <a class="primary" href="{{ get_url(path='decision-mesh/') }}#truth=drawing">Fit your own drawing</a>
-          <a href="{{ get_url(path='decision-mesh/') }}#how">The gate, step by step</a>
+          <a class="primary" href="{{ get_url(path='decisionmesh/') }}#truth=drawing">Fit your own drawing</a>
+          <a href="{{ get_url(path='decisionmesh/') }}#how">The gate, step by step</a>
         </div>
         <p class="note">The runs: 6,000 sites on the unit square, each flipping a coin between 10 and 30 times, with odds
           from the picture chosen above plus a normal effect per coin on the log-odds, fitted by

@@ -75,7 +75,7 @@
 /* /gate: a label or heading with a gloss in its title is marked, so the tooltip can be found */
 .explorer.gate .meshbar label[title] > span:first-child, .explorer.gate #rounds [title] { text-decoration: underline dotted; text-decoration-color: var(--faint); text-underline-offset: 3px; cursor: help; }
 .explorer.gate .meshbar { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-/* /decision-mesh: the live fit, the story (gate-how.css), the race and the tail are sibling blocks of one page */
+/* /decisionmesh: the live fit, the story (gate-how.css), the race and the tail are sibling blocks of one page */
 .dmesh > .explorer + .explorer, .dmesh > .gatehow + .explorer, .dmesh > .skip-pill + .explorer { padding-top: 2rem; }
 .dmesh > .explorer:not(:last-child) { padding-bottom: 1rem; }
 .dmesh h2.sect { font-family: Newsreader, "Iowan Old Style", Georgia, serif; font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.2rem);

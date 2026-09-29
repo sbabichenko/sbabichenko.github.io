@@ -1,4 +1,4 @@
-// /decision-mesh/detail: the decision mesh one level below the story on /decision-mesh. The page draws coin flips, fits them with both engines in
+// /decisionmesh/detail: the decision mesh one level below the story on /decisionmesh. The page draws coin flips, fits them with both engines in
 // fit-worker.js (candidate trace on), and builds each scene from the two runs. Sources, as cited below:
 //   tri  = ~/triangular-decision-mesh/core   (fit/refine.cpp, fit/gate.cpp, estimator/*.cpp, mesh/*.cpp, docs/MODEL.md)
 //   rect = ~/rectangular-decision-mesh/core  (fit/refine.cpp, fit/gate.cpp, docs/WRITEUP_2026-09-23.md)
@@ -42,7 +42,7 @@
     return out;
   }
 
-  // ------------------------------------------------------------------ the data (the same odds and flips as the story on /decision-mesh)
+  // ------------------------------------------------------------------ the data (the same odds and flips as the story on /decisionmesh)
   const BASE = -1, SITES = 6000, FLIPS = 20;
   let POOL_SD = 0.25;
   const TRUTHS = {
