@@ -115,7 +115,7 @@ agents:
       y1: {drift: {V: gamma1, P: "-gamma1"}, noise: {w1: 1.0}}
       flow: {drift: {}, noise: {wZ: sigma_Z}}
     loss: [[-1.0, D1, V], [1.0, D1, P], [eps, D1, D1]]
-horizon: {kind: stationary, discount: rho, window: 8.0}
+horizon: {kind: stationary, discount: rho, window: 12.0}
 numerics: {nodes: 16}
 `,
     sliders: [
@@ -128,7 +128,7 @@ numerics: {nodes: 16}
     defaultVar: "P", defaultCtl: "D1",
     channelNames: { wV: "value shock", wZ: "noise-trader flow shock", w1: "trader's signal noise" },
     nodes: { def: 16, options: [[12, "12: quick"], [16, "16: the default"], [24, "24: fine, slower"]] },
-    window: { key: "window", check: "window", label: "Lag window", def: 8, options: [[8, "8: the default"], [12, "12: longer"], [16, "16: long, slower"]],
+    window: { key: "window", check: "window", label: "Lag window", def: 12, options: [[8, "8: quick"], [12, "12: the default"], [16, "16: long, slower"]],
       hint: "A longer window holds slow-decaying responses; it costs time.", apply: (d, v) => { d.horizon.window = v; } },
   },
   ch5: {
