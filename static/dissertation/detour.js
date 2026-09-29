@@ -5,42 +5,12 @@
 // direct route into the band appears. Time runs left to right on a wide screen, top to bottom on a phone.
 (function () {
   "use strict";
-  const NS = "http://www.w3.org/2000/svg";
-  const el = (tag, attrs, parent) => {
-    const e = document.createElementNS(NS, tag);
-    for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v);
-    if (parent) parent.appendChild(e);
-    return e;
-  };
-  function mulberry32(a) {
-    return function () {
-      a |= 0; a = (a + 0x6d2b79f5) | 0;
-      let t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
-  const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
-  const seg = (t, a, b) => ease(clamp((t - a) / (b - a)));
+  const { el, mulberry32, clamp, seg } = Sketch;   // static/js/sketch.js
 
-  // a pencil line through points, each segment bowed a little so it reads as drawn
-  function pencil(pts, seed, wob) {
-    const r = mulberry32(seed);
-    let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
-    for (let i = 1; i < pts.length; ++i) {
-      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
-      d += ` Q${((x0 + x1) / 2 + (r() - 0.5) * wob).toFixed(1)},${((y0 + y1) / 2 + (r() - 0.5) * wob).toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`;
-    }
-    return d;
-  }
-  function stroke(g, d, cls, w) {
-    const a = el("path", { d, class: "pn " + (cls || ""), "stroke-width": w }, g);
-    const b = el("path", { d, class: "pn soft " + (cls || ""), "stroke-width": w * 0.6, transform: "translate(0.7,0.5)" }, g);
-    const len = a.getTotalLength ? a.getTotalLength() : 1000;
-    for (const p of [a, b]) { p.style.strokeDasharray = `${len} ${len}`; p.style.strokeDashoffset = len; }
-    return { a, b, set(t) { const o = len * (1 - clamp(t)); a.style.strokeDashoffset = o; b.style.strokeDashoffset = o; } };
-  }
+  // a pencil line through points, each segment bowed a little (by up to half of wob either way) so it reads as drawn,
+  // and drawn twice, as a pencil goes over its own stroke
+  const pencil = (pts, seed, wob) => Sketch.pencil(pts, seed, wob / 2);
+  const stroke = (g, d, cls, w) => Sketch.stroke2(g, d, cls, w, "pn", 0.7, 0.5);
   // a smooth curve through control points (Catmull-Rom), sampled
   function smooth(cp, n = 10) {
     const out = [];
