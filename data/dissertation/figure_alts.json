@@ -2,7 +2,7 @@
  "fig:ex_schematic": "Information-to-action feedback in the worked example.",
  "fig:impulse_w0_first": "Impulse responses to the first state shock dW⁰₀ with p₁=3, p₂=10, and r₁=r₂=0.1.",
  "fig:mean_response_precision": "Equilibrium mean control D̄¹ₜ as signal precision p varies (spectral solution, both players at precision p).",
- "fig:costs_private_vs_pooled": "Equilibrium costs under private signals (dashed) and a pooled signal (solid), with p₁=3 fixed and p₂ varying from 0.1 to 1000 on a logarithmic axis (spectral solution).",
+ "fig:costs_private_vs_pooled": "Equilibrium costs under private signals (player 1 blue, player 2 red) and a pooled signal (grey), and below them the same costs less the squared target, all three cases on one axis, with p₁=3 fixed and p₂ varying from 0.1 to 1000 on a logarithmic axis (spectral solution).",
  "fig:precision_decomposition": "Equilibrium quantities across the precision split, p₁+p₂=P̄=20, with opposing targets, σ=0.5, and asymmetric effort costs (r₁,r₂)=(0.05,0.2).",
  "fig:nsl_fixed_point_loop": "Noise-state fixed-point loop.",
  "fig:delayed_birth_geometry": "Observation and filter geometry under delay.",

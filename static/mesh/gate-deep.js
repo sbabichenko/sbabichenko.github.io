@@ -339,11 +339,9 @@
         }
         levels.push(q);
       }
-      const circ = text(g, 300, 560, "open circles: the parents' average; the stroke from it to the dot: the surplus", "tiny");
       return { g, update(t) {
         const L = Math.min(LMAX, Math.floor(lin(t, 0.04, 0.9) * (LMAX + 1)));
         levels.forEach((q, i) => fade(q, i === L ? 1 : 0));
-        fade(circ, L >= 1 && L <= 3 ? 1 : 0);   // the circles are drawn on levels 1 to 3 only
         cur.setAttribute("d", curve((u) => interp(L, u)));
         prev.setAttribute("d", L ? curve((u) => interp(L - 1, u)) : ""); fade(prev, L ? 0.8 : 0);
         topLab.textContent = L === 0 ? "the two ends, joined by a line" : `the sum of tents through level ${L} (dashed: through level ${L - 1})`;
@@ -586,11 +584,6 @@
       line(leg, 330, 104, 356, 104, "", 1.8); text(leg, 362, 108, "fitted density", "tiny", "start");
       line(leg, 330, 122, 356, 122, "accent", 2.2); text(leg, 362, 126, "π₀ × null", "tiny", "start");
       line(leg, 330, 140, 356, 140, "soft", 1.3).setAttribute("stroke-dasharray", "4 4"); text(leg, 362, 144, "N(0, 1)", "tiny", "start");
-      // the null is matched to the smooth fit, which is wider than the sharp peak of the bars; studies against known
-      // truth (2026-09-27) found that width right: many truly null scores are this spread out
-      text(leg, 330, 166, "the null is wider than the peak:", "tiny", "start");
-      text(leg, 330, 180, "many null scores really are", "tiny", "start");
-      text(leg, 330, 194, "this spread out", "tiny", "start");
       // the log-density near zero and the central parabola
       const Bx = { x: 80, y: 372, w: 440, h: 150 }, WB = 3.5, XB = (z) => Bx.x + ((z + WB) / (2 * WB)) * Bx.w;
       const lf = LN.mids.map((m, b) => [m, Math.log(LN.fbins[b])]).filter(([m]) => Math.abs(m) <= WB);

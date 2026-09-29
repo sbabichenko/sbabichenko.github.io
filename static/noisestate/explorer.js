@@ -320,6 +320,92 @@ numerics: {nodes: 8, unit: 0.5, unit_range: 4.0}
     },
     channelNames: {"w_q": "aggregate demand shock", "w_a0": "cost shock, firm 0", "w_eta0": "demand shock, firm 0", "w_0_0": "sales-signal noise, firm 0", "w_0_1": "price-signal noise, firm 0", "w_0_2": "order-book noise, firm 0", "w_0_3": "upstream-order noise, firm 0", "w_a1": "cost shock, firm 1", "w_eta1": "demand shock, firm 1", "w_1_0": "sales-signal noise, firm 1", "w_1_1": "price-signal noise, firm 1", "w_1_2": "order-book noise, firm 1", "w_1_3": "upstream-order noise, firm 1", "w_a2": "cost shock, firm 2", "w_eta2": "demand shock, firm 2", "w_2_0": "sales-signal noise, firm 2", "w_2_1": "price-signal noise, firm 2", "w_2_2": "order-book noise, firm 2", "w_2_3": "upstream-order noise, firm 2"},
   },
+  ch6: {
+    tab: "Transparent or opaque",
+    ch: "Ch. 6",
+    title: "A strategic market maker: transparent and opaque markets",
+    desc: `<p class="small muted" style="margin:0">Chapter 6. Chapter 4's market with a market maker that is a player: it quotes a price P,
+      absorbs the order flow into an inventory Q and pays &gamma;Q<sup>2</sup> for holding it. The trader sees the quote and trades on it
+      within the instant. The two markets differ only in what the trader sees. In the <b>transparent</b> market the order flow is published,
+      so a quote off the market maker's rule is a deviation the trader can see: it is privy to the market maker. In the <b>opaque</b> market
+      it sees the quote alone and reads a quote off the rule as an unusual run of noise trades: it is naive.</p>
+      <div class="eq"><div class="tex" data-tex="dV = dW^V, \\qquad dQ = -D\\,dt - \\sigma_Z\\,dW^Z, \\qquad \\text{order flow } dZ = D\\,dt + \\sigma_Z\\,dW^Z">dV = dW<sup>V</sup>, &nbsp; dQ = &minus;D dt &minus; &sigma;<sub>Z</sub> dW<sup>Z</sup>, &nbsp; order flow dZ = D dt + &sigma;<sub>Z</sub> dW<sup>Z</sup></div>
+      <div class="tex" data-tex="\\text{trader sees } dY = (V - P)\\,dt + dW^Y \\text{ and } P;\\ \\text{transparent: also the flow}">trader sees dY = (V &minus; P) dt + dW<sup>Y</sup> and P; transparent: also the flow</div>
+      <div class="tex" data-tex="\\text{trader minimizes } \\mathbb{E}\\int e^{-\\rho t}\\big[-(V - P)D + \\varepsilon D^2\\big]\\,dt">trader minimizes E &int; e<sup>&minus;&rho;t</sup> [ &minus;(V &minus; P) D + &epsilon; D<sup>2</sup> ] dt</div>
+      <div class="tex" data-tex="\\text{market maker sees the flow and minimizes } \\mathbb{E}\\int e^{-\\rho t}\\big[(V - P)D + \\gamma Q^2\\big]\\,dt">market maker sees the flow and minimizes E &int; e<sup>&minus;&rho;t</sup> [ (V &minus; P) D + &gamma; Q<sup>2</sup> ] dt</div></div>
+      <p class="small muted" style="margin:0">The page solves both markets on every change. At &gamma; = 0 both are Chapter 4's competitive market;
+      with an inventory cost the market maker quotes against its inventory, and how far depends on what the trader can see.
+      Costs are flow losses, so the trader's profit shows as a negative number.</p>`,
+    yaml: `name: ch6_transparent_market
+params: {eps: 0.2, gamma: 0.1, rho: 0.5, sigma_Z: 1.0}
+shocks: [wV, wZ, wY]
+states:
+  V: {drift: {}, noise: {wV: 1.0}}
+  Q: {drift: {D: -1.0}, noise: {wZ: "-sigma_Z"}}
+agents:
+  market_maker:
+    controls: [P]
+    signals:
+      flow: {drift: {D: 1.0}, noise: {wZ: sigma_Z}}
+    loss: [[1.0, V, D], [-1.0, P, D], [gamma, Q, Q]]
+  trader:
+    controls: [D]
+    monitors: [market_maker]
+    instant: [P]
+    signals:
+      y: {drift: {V: 1.0, P: -1.0}, noise: {wY: 1.0}}
+      flow: {drift: {}, noise: {wZ: sigma_Z}}
+    loss: [[-1.0, V, D], [1.0, P, D], [eps, D, D]]
+horizon: {kind: stationary, discount: rho, window: 8.0}
+numerics: {nodes: 24}
+`,
+    // the opaque market beside it: the trader sees the quote alone, a level it filters, and is naive to the market maker
+    compare: {
+      label: "Opaque", mainLabel: "Transparent",
+      make: (d) => {
+        const m = JSON.parse(JSON.stringify(d)), t = m.agents.trader;
+        m.name = "ch6_opaque_market";
+        delete t.monitors;
+        t.signals = { y: t.signals.y, quote: { level: "P" } };
+        return m;
+      },
+      // the chapter's comparison: the price's response to noise flow, and the trader's answer to a quote off the rule
+      rows: (res, C) => {
+        const blip = (R) => { const W = R.deviation && R.deviation.origins.market_maker; return W ? W.controls.P.samples : null; };
+        const half = (R) => {
+          const q = blip(R); if (!q || !(Math.abs(q.Q[0]) > 0)) return null;
+          const k = q.Q.findIndex((v) => Math.abs(v) <= 0.5 * Math.abs(q.Q[0]));
+          return k < 0 ? null : R.samples.age[k];
+        };
+        const at0 = (R, f) => { const q = blip(R); return q ? f(q) : null; };
+        return [
+          ["Price response to a unit noise-trade shock, at once", res.samples.kernels.P.wZ[0], C.samples.kernels.P.wZ[0]],
+          ["Trader's order when the quote is a unit above its rule: the block at once", at0(res, (q) => -q.Q[0]), at0(C, (q) => -q.Q[0])],
+          ["Quote just after that blip, against its rule", at0(res, (q) => q.P[0]), at0(C, (q) => q.P[0])],
+          ["Half-life of the inventory it leaves", half(res), half(C), 2],
+          ["Trader's profit per unit time", -res.costs.trader, -C.costs.trader],
+        ];
+      },
+      caption: "Costs are flow losses (the trader's profit is negative). ",
+    },
+    deviation: { origin: "market_maker", control: "P", show: ["Q", "D", "P"],
+      caption: (res) => {
+        const eps = (res.model && res.model.params && res.model.params.eps) || 0.2;
+        return `Here the market maker quotes one unit above its rule. The transparent market's trader knows the quote for what it is and sells at once its loss's own reaction, a block of &minus;1/(2&epsilon;) = ${fmt(-1 / (2 * eps), 3)}, which moves the inventory Q at once; the opaque market's trader reads part of the quote as noise traders' flow and sells less. The inventory then unwinds while the market maker quotes against it.`;
+      } },
+    sliders: [
+      { key: "gamma", label: "γ inventory cost", min: 0, max: 0.2, step: 0.01 },
+      { key: "eps", label: "ε trading cost", min: 0.1, max: 1, log: true },
+      { key: "rho", label: "ρ discount rate", min: 0.2, max: 2, step: 0.05 },
+      { key: "sigma_Z", label: "σ_Z noise-flow volatility", min: 0.3, max: 3, step: 0.05 },
+    ],
+    defaultVar: "P", defaultCtl: "D",
+    channelNames: { wV: "value shock", wZ: "noise-trader flow shock", wY: "trader's signal noise" },
+    nodes: { def: 24, options: [[16, "16: quick"], [24, "24: the default"], [32, "32: fine, slower"]] },
+    window: { key: "window", check: "window", label: "Lag window", def: 8, options: [[8, "8: the default"], [12, "12: longer"]],
+      hint: "The chapter's window is 8. A longer one holds the slow unwinding of inventory; from far away the fixed point may not converge.",
+      apply: (d, v) => { d.horizon.window = v; } },
+  },
   tr: {
     tab: "Regime change",
     ch: "Ch. 3",
@@ -425,6 +511,29 @@ numerics: {nodes: 12}
 `,
   "stationary tracking (Ch. 3)": PRESETS.ch3.yaml,
   "Kyle–Back market (Ch. 4)": PRESETS.ch4.yaml,
+  "transparent market with a strategic market maker (Ch. 6)": PRESETS.ch6.yaml,
+  "tracking game, both players privy (Ch. 6)": `# Chapter 6's all-privy corner: each player monitors the other, so a deviation is answered for what it is,
+# with the feedback-Nash gain; without monitors: the all-naive corner, where it is filtered as noise.
+# The panel "A deviation and who sees it" draws the answers.
+name: ch6_privy_tracking
+params: {p1: 3.0, p2: 10.0, r1: 1.0, r2: 1.0}
+shocks: [w0, w1, w2]
+states:
+  X: (D1 + D2) dt + dw0
+agents:
+  player1:
+    controls: D1
+    monitors: player2
+    observes: {y1: sqrt(p1) X dt + dw1}
+    loss: 0.5 X^2 + 0.5 r1 D1^2
+  player2:
+    controls: D2
+    monitors: player1
+    observes: {y2: sqrt(p2) X dt + dw2}
+    loss: 0.5 X^2 + 0.5 r2 D2^2
+horizon: {window: 8.0}
+numerics: {nodes: 24}
+`,
   "change of regime (Ch. 3 transition)": PRESETS.tr.yaml,
   "transition shorter than the past's window, initial shock": `# T = 1 < L = 2: the old shocks stay alive on the buffer; an initial shock xi
 # loads on the state and player 2 sees it at once; player 1 is myopic.
@@ -539,9 +648,9 @@ numerics: {nodes: 10}
 `,
 };
 
-const NAME_LABEL = { X: "state X", V: "value V", P: "price P" };
+const NAME_LABEL = { X: "state X", V: "value V", P: "price P", Q: "inventory Q" };
 const CHANNEL_LABEL = { w0: "common shock W⁰", w1: "signal noise W¹", w2: "signal noise W²", w3: "signal noise W³" };
-const AGENT_LABEL = { player1: "Player 1", player2: "Player 2", market_maker: "Market maker", trader1: "Informed trader", firm0: "Firm 0", firm1: "Firm 1", firm2: "Firm 2" };
+const AGENT_LABEL = { player1: "Player 1", player2: "Player 2", market_maker: "Market maker", trader1: "Informed trader", trader: "Trader", firm0: "Firm 0", firm1: "Firm 1", firm2: "Firm 2" };
 
 // ---------------------------------------------------------------------------------------------
 // State
@@ -550,6 +659,7 @@ const values = {};              // preset -> {slider key: value, nodes}
 const opts = { refine: false, stability: false, march: false };
 const MAX_NODES = 96, MAX_WINDOW = 96;   // how far a "solve again with" button, or a link, may take the grid and the window
 const lastStart = {};
+const lastStartCompare = {};       // preset -> the raw maps of its compared model's last equilibrium
 let solverThreads = 1;
 let prevResult = null;            // the result before the last change, drawn faintly for comparison
 let pathSeed = 1;
@@ -704,6 +814,28 @@ for v in range(N):
 game = ns.Game([q] + [x for v in range(N) for x in (a[v], eta[v])], firms, definitions=defs, ties=[firms],
                horizon=${py.horizon(d.horizon)}, name="${d.name}", numerics=${py.numerics(d.numerics)})
 eq = game.solve()`,
+  ch6: (d) => `${py.head()}
+${py.params(d.params)}
+dwV, dwZ, dwY = ns.shocks("wV", "wZ", "wY")
+V, Q = ns.State("V"), ns.State("Q")
+P, D = ns.Control("P"), ns.Control("D")
+V.d = dwV
+Q.d = -D * dt - sigma_Z * dwZ                            # the market maker absorbs the order flow
+market_maker = ns.Agent("market_maker", controls=P, observes={"flow": D * dt + sigma_Z * dwZ},
+                        loss=V * D - P * D + gamma * Q**2)
+# the transparent market: the trader sees the quote at once and the order flow, so it is privy to the market maker
+trader = ns.Agent("trader", controls=D, monitors=market_maker,
+                  observes={"y": (V - P) * dt + dwY, "flow": sigma_Z * dwZ, "quote": ns.level(P)},
+                  loss=-V * D + P * D + eps * D**2)
+# the opaque market: the quote alone, a level it filters, and naive to the market maker
+opaque_trader = ns.Agent("trader", controls=D, observes={"y": (V - P) * dt + dwY, "quote": ns.level(P, filter=True)},
+                         loss=-V * D + P * D + eps * D**2)
+horizon, numerics = ${py.horizon(d.horizon)}, ${py.numerics(d.numerics)}
+opaque = ns.Game([V, Q], [market_maker, opaque_trader], horizon=horizon, name="ch6_opaque_market", numerics=numerics)
+game = ns.Game([V, Q], [market_maker, trader], horizon=horizon, name="${d.name}", numerics=numerics)
+eq = game.solve()
+# eq_opaque = opaque.solve()
+# the market maker's quote blip, seed age on the x-axis: eq.deviation_response(market_maker, [Q, D, P]).over(ages)`,
   tr: (d) => {
     const b = d.horizon.past.model, march = d.horizon.settle !== undefined;
     const now = Object.keys(d.params).filter((k) => k !== "T");
@@ -806,7 +938,7 @@ function showVal(p, v) {
 
 function renderTabs() {
   const tabs = $("tabs"); tabs.innerHTML = "";
-  const order = ["ch1", "ch3", "tr", "ch4", "ch5", "custom"];
+  const order = ["ch1", "ch3", "tr", "ch4", "ch5", "ch6", "custom"];
   const keys = [...order.filter((g) => PRESETS[g]), ...Object.keys(PRESETS).filter((g) => !order.includes(g))];
   for (const g of keys) {
     const def = PRESETS[g];
@@ -1083,7 +1215,7 @@ function sendSolve() {
   // a warm start: the last equilibrium of this tab, which the solver uses when the shapes match (a parameter moved)
   // and ignores otherwise (a new grid or a new model)
   const request = { ...currentRequest(), return_start: true };
-  if (game !== "custom" && PRESETS[game].naive) request.naive_compare = PRESETS[game].naive;
+  addCompare(request, model, game, lastStartCompare[game]);
   // naive_observers was removed in noisestate 2 (it computed neither of Chapter 6's corners); an old file's key is dropped
   if (game === "custom" && model.naive_observers) { model = { ...model }; delete model.naive_observers; }
   const hk = model.horizon && model.horizon.kind;
@@ -1091,6 +1223,17 @@ function sendSolve() {
   if (lastStart[game]) request.start = lastStart[game];
   else request.start_policy = "coarse";   // a cold solve starts from the same model on a coarser grid
   worker.postMessage({ type: "solve", id: inFlight.id, model: forSolver(model), request });
+}
+// Chapter 6: a tab with a compared model (the opaque market beside the transparent one) sends it along, from its own last
+// equilibrium; a model with monitors or instant observations asks for its deviation worlds (a stationary one: the solver
+// computes them there)
+function addCompare(request, model, g, start) {
+  const def = PRESETS[g];
+  if (g !== "custom" && def.compare) request.compare = { model: forSolver(def.compare.make(model)), label: def.compare.label, ...(start ? { start } : {}) };
+  const ch6 = Object.values(model.agents || {}).some((a) => a && (a.monitors || a.instant || (a.observes && JSON.stringify(a.observes).includes('"level"'))
+    || Object.values(a.signals || {}).some((r) => r && r.level)));
+  const stat = !model.horizon || !model.horizon.kind || model.horizon.kind === "stationary";
+  if ((g !== "custom" && def.deviation) || (g === "custom" && ch6 && stat)) request.deviation = { continuation: "blip" };
 }
 function onSolved(m) {
   const req = inFlight; inFlight = null; stopTimer();
@@ -1102,7 +1245,7 @@ function onSolved(m) {
   rallyEnd(res.ok ? res.evaluations || 0 : 0);
   if (res.ok) settleAdd(res.residual);
   if (res.ok && window.siteTally)
-    window.siteTally("solve", res.naive ? 2 : 1, `${(PRESETS[game] && PRESETS[game].tab) || "your model"}, ${(m.wall || 0).toFixed(1)} s`);
+    window.siteTally("solve", res.compare ? 2 : 1, `${(PRESETS[game] && PRESETS[game].tab) || "your model"}, ${(m.wall || 0).toFixed(1)} s`);
   if (!res.ok) {
     if (req && req.game === game) {
       setStatus("bad", "Error", res.error);
@@ -1113,6 +1256,7 @@ function onSolved(m) {
     return;
   }
   if (res.start && req) { lastStart[req.game] = res.start; delete res.start; }
+  if (res.compare && res.compare.start && req) { if (res.compare.converged) lastStartCompare[req.game] = res.compare.start; delete res.compare.start; }
   if (req && req.game === game) {
     prevResult = lastResult && lastResult.name === res.name && lastResult.kind === res.kind ? lastResult : null;
     lastResult = res;
@@ -1305,10 +1449,11 @@ function renderResults(res) {
     return `<div class="card"><div class="k">${esc(AGENT_LABEL[a] || a)}</div><div class="v">${fmt(shown, 4)} ${delta}</div><div class="d">${split || note}</div></div>`;
   }).join("");
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Equilibrium costs</h2><div class="cards">${cards}</div>
-    <p class="caption">Expected losses at the equilibrium (${esc(costKind(res))}); smaller is better.${prevResult ? " Arrows: the change from the previous solve." : ""}${res.naive && game === "custom" ? " These are the privy equilibrium's; the equilibrium with the model file's naive observers is in the next panel." : ""}</p>
+    <p class="caption">Expected losses at the equilibrium (${esc(costKind(res))}); smaller is better.${prevResult ? " Arrows: the change from the previous solve." : ""}${res.compare ? ` These are the ${esc(((PRESETS[game].compare || {}).mainLabel || "first").toLowerCase())} market's; the ${esc((res.compare.label || "compared").toLowerCase())} one's are in the next panel.` : ""}</p>
     ${res.warnings && res.warnings.length ? `<p class="caption" style="color:var(--warn)">${res.warnings.map(esc).join("<br>")}</p>` : ""}</section>`);
   if (res.kind === "transition") renderTransition(res, out);
-  if (res.naive) renderNaive(res, out);
+  if (res.compare) renderCompare(res, out);
+  if (res.deviation) renderDeviation(res, out);
   if (res.paths) renderPaths(res, out);
   if (res.kind.startsWith("finite") || res.kind === "transition") renderFinite(res, out, keepVar, keepCtl);
   else renderStationary(res, out, keepVar, keepCtl);
@@ -1363,37 +1508,95 @@ function renderFinite(res, out, keepVar, keepCtl) {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Chapter 6: the privy equilibrium (the result) against the same game with naive observers (res.naive)
-function renderNaive(res, out) {
-  const N = res.naive, agents = Object.keys(res.costs), pal = palette();
-  const who = Object.entries(N.naive_observers).map(([a, obs]) => `${AGENT_LABEL[a] || a} treats ${obs.map((o) => AGENT_LABEL[o] || o).join(" and ")} as naive`).join("; ");
+// A second model solved beside the first (res.compare): Chapter 6's opaque market beside the transparent one. Costs side
+// by side, a few numbers the chapter reads off the two markets, and the two equilibria's responses to each shock.
+function renderCompare(res, out) {
+  const C = res.compare, def = PRESETS[game] || {}, pal = palette();
+  const mainLabel = (def.compare && def.compare.mainLabel) || "This model", cmpLabel = C.label || "Compared";
+  if (!C.ok) {
+    out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>${esc(mainLabel)} or ${esc(cmpLabel.toLowerCase())}</h2><p class="caption" style="color:var(--warn)">The ${esc(cmpLabel.toLowerCase())} model could not be solved: ${esc(C.error || "unknown error")}</p></section>`);
+    return;
+  }
+  const agents = Object.keys(res.costs);
   const card = (a, v, cmp) => {
     const d = cmp === undefined ? "" : (() => { const dv = v - cmp; return Math.abs(dv) > 5e-5 ? `<span class="delta ${dv > 0 ? "up" : "down"}">${dv > 0 ? "▲" : "▼"} ${fmt(Math.abs(dv), 4)}</span>` : ""; })();
     return `<div class="card"><div class="k">${esc(AGENT_LABEL[a] || a)}</div><div class="v">${fmt(v, 4)} ${d}</div></div>`;
   };
-  out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Privy or naive</h2>
+  // the chapter's numbers, where the tab defines them: [label, value in this model, value in the compared one]
+  const rows = def.compare && def.compare.rows ? def.compare.rows(res, C) : [];
+  const table = rows.length ? `<div class="tablewrap"><table class="diag"><thead><tr><th></th><th>${esc(mainLabel)}</th><th>${esc(cmpLabel)}</th></tr></thead>
+    <tbody>${rows.map(([l, a, b, d]) => `<tr><td>${l}</td><td class="mono">${fmt(a, d || 3)}</td><td class="mono">${fmt(b, d || 3)}</td></tr>`).join("")}</tbody></table></div>` : "";
+  out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>${esc(mainLabel)} or ${esc(cmpLabel.toLowerCase())}</h2>
     <div class="versus">
-      <div class="side"><h3><span class="swatch" style="background:${pal[1]}"></span>${game === "ch6" ? "Privy (the equilibrium of Chapter 4)" : "Privy: every observer reacts"}</h3><div class="cards">${agents.map((a) => card(a, res.costs[a])).join("")}</div></div>
-      <div class="side"><h3><span class="swatch" style="background:${pal[2]}"></span>Naive: ${esc(who)}</h3><div class="cards">${agents.map((a) => card(a, N.costs[a], res.costs[a])).join("")}</div></div>
+      <div class="side"><h3><svg width="22" height="8" aria-hidden="true" style="vertical-align:middle;margin-right:6px"><line x1="0" y1="4" x2="22" y2="4" stroke="currentColor" stroke-width="2"/></svg>${esc(mainLabel)}</h3><div class="cards">${agents.map((a) => card(a, res.costs[a])).join("")}</div></div>
+      <div class="side"><h3><svg width="22" height="8" aria-hidden="true" style="vertical-align:middle;margin-right:6px"><line x1="0" y1="4" x2="22" y2="4" stroke="currentColor" stroke-width="2" stroke-dasharray="5 3"/></svg>${esc(cmpLabel)}</h3><div class="cards">${agents.map((a) => card(a, C.costs[a], res.costs[a])).join("")}</div></div>
     </div>
-    <div class="row" style="margin-top:12px"><label for="nvar" class="small muted">Response of</label><select id="nvar"></select></div>
-    <div class="plot tall" id="pnaive"></div>
-    <p class="caption">Costs are flow losses${game === "ch6" ? " (a trader's profit is negative)" : ""}. The arrows compare the naive equilibrium with the privy one.
-      The plot overlays the two equilibria's responses to each shock (solid privy, dashed naive).${N.converged ? "" : " The naive solve did not converge; its numbers are its last iterate."}</p></section>`);
-  const S = res.samples, T = N.samples;
+    ${table}
+    <div class="row" style="margin-top:12px"><label for="cvar" class="small muted">Response of</label><select id="cvar"></select></div>
+    <div class="plot tall" id="pcompare"></div>
+    <p class="caption">${def.compare && def.compare.caption ? def.compare.caption : ""}The arrows compare the ${esc(cmpLabel.toLowerCase())} market's costs with the ${esc(mainLabel.toLowerCase())} one's.
+      The plot overlays the two equilibria's responses to each shock (solid ${esc(mainLabel.toLowerCase())}, dashed ${esc(cmpLabel.toLowerCase())}).${C.converged ? "" : ` The ${esc(cmpLabel.toLowerCase())} solve did not converge; its numbers are its last iterate.`}</p></section>`);
+  const S = res.samples, T = C.samples;
   const vars = res.names.concat(res.definitions || []).filter((v) => T.kernels[v]);
-  const sel = out.querySelector("#nvar");
+  const sel = out.querySelector("#cvar");
   sel.innerHTML = vars.map((v) => `<option value="${esc(v)}">${esc(label(v))}</option>`).join("");
-  const def = PRESETS[game] || {};
   sel.value = def.defaultVar && vars.includes(def.defaultVar) ? def.defaultVar : vars[0];
   const draw = () => {
     const v = sel.value, tr = [];
     res.channels.forEach((c, i) => {
       const col = pal[(i + 1) % pal.length];
-      if (nonzero(S.kernels[v][c])) tr.push(line(S.age, S.kernels[v][c], chLabel(res, c) + ", privy", col));
-      if (T.kernels[v] && nonzero(T.kernels[v][c])) tr.push(line(T.age, T.kernels[v][c], chLabel(res, c) + ", naive", col, { line: { color: col, width: 2, dash: "dash" } }));
+      if (nonzero(S.kernels[v][c])) tr.push(line(S.age, S.kernels[v][c], chLabel(res, c) + ", " + mainLabel.toLowerCase(), col));
+      if (T.kernels[v] && T.kernels[v][c] && nonzero(T.kernels[v][c])) tr.push(line(T.age, T.kernels[v][c], chLabel(res, c) + ", " + cmpLabel.toLowerCase(), col, { line: { color: col, width: 2, dash: "dash" } }));
     });
-    plotly("react", "pnaive", tr, baseLayout({ title: titleOf("Response of " + label(v)), xaxis: { ...baseLayout().xaxis, title: { text: "shock age" } } }), plotCfg);
+    plotly("react", "pcompare", tr, baseLayout({ title: titleOf("Response of " + label(v)), xaxis: { ...baseLayout().xaxis, title: { text: "shock age" } } }), plotCfg);
+  };
+  sel.onchange = draw; draw();
+}
+
+// ---------------------------------------------------------------------------------------------
+// Chapter 6: a deviation's world (res.deviation, the solver's deviation_response). A unit impulse of one player's control
+// at age 0, a blip: the players privy to it (its monitors) respond through their response kernels, the others filter it
+// as they filter everything, and the deviator carries on from where the blip left the game. With res.compare, the same
+// blip in the compared model, dashed.
+function renderDeviation(res, out) {
+  const D = res.deviation, def = PRESETS[game] || {}, C = res.compare && res.compare.ok ? res.compare : null;
+  const origins = Object.keys(D.origins);
+  const choices = origins.flatMap((o) => Object.keys(D.origins[o].controls).map((u) => [o, u]));
+  if (!choices.length) return;
+  const want = def.deviation ? `${def.deviation.origin}:${def.deviation.control}` : null;
+  out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>A deviation and who sees it</h2>
+    <div class="row"><label for="dsel" class="small muted">Blip of</label><select id="dsel">${choices.map(([o, u]) => `<option value="${esc(o + ":" + u)}">${esc(label(u))} (${esc(AGENT_LABEL[o] || o)})</option>`).join("")}</select></div>
+    <div class="grid3" id="dgrid"></div><p class="caption" id="dcap"></p></section>`);
+  const sel = out.querySelector("#dsel");
+  if (want && choices.some(([o, u]) => `${o}:${u}` === want)) sel.value = want;
+  const draw = () => {
+    const [o, u] = sel.value.split(":"), W = D.origins[o], x = res.samples.age;
+    const privy = W.privy.filter((a) => a !== o), others = (res.agents || []).map((a) => a.name).filter((a) => a !== o && !W.privy.includes(a));
+    const Wc = C && C.deviation && C.deviation.origins[o] ? C.deviation.origins[o] : null;
+    const who = (list) => list.map((a) => AGENT_LABEL[a] || a).join(" and ");
+    const main = (def.compare && def.compare.mainLabel) || "", cmp = C ? C.label || "compared" : "";
+    let cap = `${esc(AGENT_LABEL[o] || o)} moves ${esc(label(u))} by one unit for an instant at age 0 and then plays on, knowing what it did (the blip). `;
+    cap += privy.length ? `${esc(who(privy))} ${privy.length > 1 ? "are" : "is"} privy to it and ${privy.length > 1 ? "respond" : "responds"} to the deviation itself. ` : "";
+    cap += others.length ? `${esc(who(others))} ${others.length > 1 ? "do" : "does"} not see it for what it is and ${others.length > 1 ? "filter" : "filters"} its effects as noise. ` : "";
+    if (Wc) {
+      const pc = Wc.privy.filter((a) => a !== o), oc = (res.agents || []).map((a) => a.name).filter((a) => a !== o && !Wc.privy.includes(a));
+      cap += `Dashed, the ${esc(cmp.toLowerCase())} market: ${pc.length ? esc(who(pc)) + " privy" : "nobody privy"}${oc.length ? ", " + esc(who(oc)) + " naive" : ""}. `;
+      if (main) cap += `Solid, the ${esc(main.toLowerCase())} one. `;
+    }
+    cap += "Each panel is the response of one quantity against the time since the blip; a control's own blip is a point mass at age 0, not drawn.";
+    if (def.deviation && def.deviation.caption) cap += " " + def.deviation.caption(res, C);
+    out.querySelector("#dcap").innerHTML = cap;
+    const show = def.deviation && def.deviation.show ? def.deviation.show : res.names;
+    const box = out.querySelector("#dgrid"); box.innerHTML = "";
+    for (const q of show) {
+      const y = W.controls[u].samples[q], yc = Wc && Wc.controls[u] ? Wc.controls[u].samples[q] : null;
+      if (!y || (!nonzero(y) && !(yc && nonzero(yc)))) continue;
+      const col = ownerColor(res, q), div = document.createElement("div"); div.className = "plot"; box.appendChild(div);
+      const tr = [line(x, y, main || label(q), col)];
+      if (yc) tr.push(line(C.samples.age, yc, cmp, col, { line: { color: col, width: 2, dash: "dash" } }));
+      plotly("newPlot", div, tr, baseLayout({ title: titleOf(label(q)), xaxis: { ...baseLayout().xaxis, title: { text: "time since the blip" } } }), plotCfg);
+    }
+    if (!box.children.length) box.innerHTML = `<p class="small muted">The blip moves nothing.</p>`;
   };
   sel.onchange = draw; draw();
 }
@@ -1834,7 +2037,7 @@ async function runSweep() {
   if (sweep && sweep.running) { const same = sweep.game === game; stopSweep(); if (same) { updateSweepPanel(); return; } }
   const def = PRESETS[game], s = def.sliders.find((k) => k.key === $("sweepkey").value);
   if (!s) return;
-  sweep = { game, key: s.key, label: s.label, log: !!s.log, xs: sweepPoints(s), i: 0, costs: {}, naive: {}, start: lastStart[game] || null,
+  sweep = { game, key: s.key, label: s.label, log: !!s.log, xs: sweepPoints(s), i: 0, costs: {}, naive: {}, start: lastStart[game] || null, startCompare: lastStartCompare[game] || null,
     base: sweepBase(s.key), running: true, id: ++sweepSeq * 100, t0: performance.now(), failed: 0 };
   updateSweepPanel();
   try { await ensureSweepWorker(); } catch (e) { sweep.running = false; $("sweepnote").textContent = "The sweep could not start: " + e.message; return; }
@@ -1847,7 +2050,8 @@ function nextSweep() {
   const def = PRESETS[S.game];
   const model = modelWith({ [S.key]: S.xs[S.i] });
   const request = { ...currentRequest(), refine: false, stability: false, return_start: true };
-  if (def.naive) request.naive_compare = def.naive;
+  addCompare(request, model, S.game, S.startCompare);
+  delete request.deviation;                                   // the sweep reads the costs only
   if (S.start) request.start = S.start; else request.start_policy = "coarse";
   sweepWorker.postMessage({ type: "solve", id: S.id + S.i, model: forSolver(model), request });
   updateSweepPanel();
@@ -1860,7 +2064,8 @@ function onSweepResult(m) {
   const extra = def.constCost ? def.constCost({ ...values[S.game], [S.key]: x }) : {};
   if (res.ok && res.converged) {
     for (const [a, v] of Object.entries(res.costs)) (S.costs[a] = S.costs[a] || []).push([x, v + (extra[a] || 0)]);
-    if (res.naive && res.naive.converged) for (const [a, v] of Object.entries(res.naive.costs)) (S.naive[a] = S.naive[a] || []).push([x, v + (extra[a] || 0)]);
+    const C = res.compare;
+    if (C && C.ok && C.converged) { for (const [a, v] of Object.entries(C.costs)) (S.naive[a] = S.naive[a] || []).push([x, v + (extra[a] || 0)]); if (C.start) S.startCompare = C.start; }
     if (res.start) S.start = res.start;
   } else S.failed++;
   S.i++;
@@ -1875,7 +2080,7 @@ function drawSweep() {
     const col = pal[(i + 1) % pal.length], P = S.costs[a];
     tr.push({ x: P.map((p) => p[0]), y: P.map((p) => p[1]), name: AGENT_LABEL[a] || a, type: "scatter", mode: "lines+markers", line: { color: col, width: 2 }, marker: { size: 5, color: col } });
     const Q = S.naive[a];
-    if (Q && Q.length) tr.push({ x: Q.map((p) => p[0]), y: Q.map((p) => p[1]), name: (AGENT_LABEL[a] || a) + ", naive", type: "scatter", mode: "lines+markers", line: { color: col, width: 2, dash: "dash" }, marker: { size: 5, color: col, symbol: "circle-open" } });
+    if (Q && Q.length) tr.push({ x: Q.map((p) => p[0]), y: Q.map((p) => p[1]), name: (AGENT_LABEL[a] || a) + ", " + (((PRESETS[S.game].compare || {}).label) || "compared").toLowerCase(), type: "scatter", mode: "lines+markers", line: { color: col, width: 2, dash: "dash" }, marker: { size: 5, color: col, symbol: "circle-open" } });
   });
   const cur = values[game][S.key], L = baseLayout();
   plotly("react", "psweep", tr, baseLayout({
@@ -1909,7 +2114,7 @@ function updateSweepPanel() {
   else if (S.i < S.xs.length) note.textContent = `Stopped after ${S.i} of ${S.xs.length}.`;
   else note.textContent = `${S.xs.length} solves in ${S.wall.toFixed(1)} s${S.failed ? `, ${S.failed} did not converge and are left out` : ""}.`;
   if (!S.running && S.base !== sweepBase(S.key)) note.textContent += " The other parameters have moved since; sweep again to update.";
-  $("sweepcap").textContent = `Each point is a full equilibrium; the dotted line is the slider's current value.${PRESETS[game].naive ? " Dashed: the naive equilibrium." : ""} Checks are off in the sweep.`;
+  $("sweepcap").textContent = `Each point is a full equilibrium; the dotted line is the slider's current value.${PRESETS[game].compare ? ` Solid: the ${(PRESETS[game].compare.mainLabel || "first").toLowerCase()} market; dashed: the ${PRESETS[game].compare.label.toLowerCase()} one.` : ""} Checks are off in the sweep.`;
 }
 $("sweepbtn").onclick = runSweep;
 $("sweepkey").onchange = () => { if (sweep && sweep.game === game && !sweep.running) { sweep = null; } updateSweepPanel(); };

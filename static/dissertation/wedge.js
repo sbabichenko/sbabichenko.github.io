@@ -96,14 +96,10 @@
     const uses = stroke(g, pencil([[270, 190], [150, 272]], 2, 1), "accent", 1.8);
     const acts = stroke(g, pencil([[165, 312], [300, 360], [435, 318]], 3, 1), "", 2);
     const h = arrowHead(g, 435, 318, -0.3, "");
-    const l1 = text(g, 400, 222, "learn", "mono"), l2 = text(g, 150, 150, "act on x̂ as if it were x", "mono acc"), l3 = text(g, 300, 395, "push", "mono");
-    const l4 = text(g, 300, 428, "what you don't know about x", "mono acc");
-    const cap = text(g, 300, 480, "learning and acting, separately", "label");
     return { g, update(t) {
-      fade(me, seg(t, 0, 0.1)); fade(st, seg(t, 0, 0.1)); fade(fog, seg(t, 0.05, 0.2)); fade(l4, seg(t, 0.1, 0.2));
-      sees.set(seg(t, 0.15, 0.3)); fade(l1, seg(t, 0.2, 0.3)); fade(est, seg(t, 0.25, 0.35));
-      uses.set(seg(t, 0.35, 0.5)); fade(l2, seg(t, 0.4, 0.5)); acts.set(seg(t, 0.5, 0.65)); fade(h, seg(t, 0.62, 0.66)); fade(l3, seg(t, 0.55, 0.65));
-      fade(cap, seg(t, 0.7, 0.85));
+      fade(me, seg(t, 0, 0.1)); fade(st, seg(t, 0, 0.1)); fade(fog, seg(t, 0.05, 0.2));
+      sees.set(seg(t, 0.15, 0.3)); fade(est, seg(t, 0.25, 0.35));
+      uses.set(seg(t, 0.35, 0.5)); acts.set(seg(t, 0.5, 0.65)); fade(h, seg(t, 0.62, 0.66));
     } };
   })();
 
@@ -119,16 +115,13 @@
       const d = k === 3 ? pencil([[x0 - 10, y0 - 22], [mx + 10, (y0 + y1) / 2 + 30], [x1 - 20, y1 + 22]], 10 + k, 1) : pencil([[x0 + (x1 > x0 ? 40 : -40), y0 + (y1 > y0 ? 20 : -20)], [x1 - (x1 > x0 ? 40 : -40), y1 - (y1 > y0 ? 22 : -22)]], 10 + k, 1);
       return stroke(g, d, k === 3 ? "warm" : "", 1.8);
     });
-    const labs = [text(g, 170, 190, "you push", "mono"), text(g, 440, 190, "they see it", "mono"), text(g, 440, 410, "they revise", "mono"), text(g, 284, 322, "they push back", "mono warmt", "start")];
     const pulse = el("circle", { r: 8, class: "fillacc" }, g);
-    const cap = text(g, 300, 570, "your action does something and says something", "label");
     return { g, update(t, now) {
       [n1, nx, ny, nb].forEach((n, i) => fade(n, seg(t, i * 0.05, 0.1 + i * 0.05)));
-      paths.forEach((p, i) => p.set(seg(t, 0.15 + i * 0.12, 0.27 + i * 0.12))); labs.forEach((l, i) => fade(l, seg(t, 0.2 + i * 0.12, 0.3 + i * 0.12)));
+      paths.forEach((p, i) => p.set(seg(t, 0.15 + i * 0.12, 0.27 + i * 0.12)));
       const on = t > 0.65 && !reduced;
       fade(pulse, on ? 1 : 0);
       if (on) { const u = (now / 3200) % 1, k = Math.floor(u * 4), v = u * 4 - k, p = paths[k].a, L = p.getTotalLength(), q = p.getPointAtLength(v * L); pulse.setAttribute("cx", q.x); pulse.setAttribute("cy", q.y); }
-      fade(cap, seg(t, 0.7, 0.85));
     } };
   })();
 
@@ -152,11 +145,9 @@
     const push = el("g", {}, g);
     const pa = stroke(push, pencil([[x0, y0 - 30], [x1, y0 - 30]], 7, 0.3), "warm", 2.2);
     const ph = arrowHead(push, x1, y0 - 30, 0, "warm");
-    const pl = text(push, (x0 + x1) / 2, y0 - 40, "a push", "label warmt");
     const drop = el("g", {}, g);
     el("line", { x1: x1 + 14, y1: y0, x2: x1 + 14, y2: y1, class: "pencil", "stroke-width": 1.6, "stroke-dasharray": "3 3" }, drop);
     el("line", { x1: x0 + 6, y1: y0, x2: x1 + 20, y2: y0, class: "pencil soft", "stroke-width": 1, "stroke-dasharray": "2 4" }, drop);
-    text(drop, x1 + 22, (y0 + y1) / 2 + 5, "the future cost falls", "label", "start");
     const ball = el("circle", { r: 10, class: "fillacc" }, g);
     // bottom panel: push size u in [0, 400] px; saving u/2, effort u^2/800, widest gap at u = 200
     const B = el("g", {}, g), X = (u) => 100 + u, Y = (v) => 560 - v;
@@ -169,12 +160,11 @@
     const best = el("g", {}, B);
     el("line", { x1: X(200), y1: Y(0), x2: X(200), y2: Y(100), class: "pencil", "stroke-width": 1.4, "stroke-dasharray": "3 4" }, best);
     el("circle", { cx: X(200), cy: Y(0), r: 4.5, class: "fillacc" }, best);
-    text(best, X(200), Y(0) + 20, "best push", "label");
     const roll = oneShot(0.42, 1.1);                      // the roll is timed, so it is seen whole
     return { g, live: false, shots: [roll], update(t, now, dt) {
       fade(axes, seg(t, 0, 0.1)); curve.set(seg(t, 0, 0.22));
       fade(tan, seg(t, 0.2, 0.3)); fade(lab, seg(t, 0.24, 0.32));
-      pa.set(seg(t, 0.32, 0.42)); fade(ph, seg(t, 0.4, 0.43)); fade(pl, seg(t, 0.34, 0.42));
+      pa.set(seg(t, 0.32, 0.42)); fade(ph, seg(t, 0.4, 0.43));
       const u = ease(roll.step(t, dt)), bx = x0 + (x1 - x0) * u;
       ball.setAttribute("cx", bx); ball.setAttribute("cy", C(bx) - 10); fade(ball, seg(t, 0.14, 0.2));
       fade(drop, seg(u, 0.8, 1));
@@ -195,7 +185,6 @@
     const nPush = box(top, 100, TY, "your push"), nX = box(top, 300, TY, "state X"), nCost = box(top, 500, TY, "your cost");
     const phys = [stroke(g, pencil([[152, TY], [252, TY]], 31, 0.4), "", 2), stroke(g, pencil([[348, TY], [446, TY]], 32, 0.4), "", 2)];
     const physH = [arrowHead(g, 252, TY, 0, ""), arrowHead(g, 446, TY, 0, "")];
-    const physL = text(g, 300, 72, "physical part", "label");
     // the loop through player 2, on an ellipse under the state
     const CX = 300, CY = 236, RX = 158, RY = 110, E = (a) => [CX + RX * Math.cos(a), CY + RY * Math.sin(a)];
     const at = { X: -Math.PI / 2, sig: 0, ns: Math.PI / 2, act: Math.PI };
@@ -210,7 +199,6 @@
       return { s: s_, h: arrowHead(g, ex, ey, Math.atan2(ey - py, ex - px), "accent"), a0, a1 };
     });
     g.appendChild(loopN);                                           // the boxes over the lines
-    const wl = text(g, CX, CY + RY + 42, "information wedge", "label acc");
     // pulses: black along the top, blue round the loop
     const pb = el("circle", { r: 5, class: "fillacc" }, g); pb.style.fill = "currentColor";
     const pw = el("circle", { r: 5.5, class: "fillacc" }, g);
@@ -223,7 +211,6 @@
       n.setAttribute("width", W); n.setAttribute("height", H); n.setAttribute("x", x); n.setAttribute("y", y - H / 2); n.removeAttribute("style"); n.style.color = "var(--ink)";
       f.appendChild(n); return { x, y, W, H };
     };
-    const eqL = text(g, 300, 422, "the backward equation for the shadow price", "mono");
     put("backward1", 50, 462, 500);
     const b2 = put("backward2", 80, 548, 440);
     const hl = b2 ? el("rect", { x: b2.x - 12, y: b2.y - b2.H / 2 - 8, width: b2.W + 24, height: b2.H + 16, rx: 10, class: "fillacc" }, g) : null;
@@ -231,15 +218,14 @@
     return { g, update(t, now) {
       fade(top, seg(t, 0, 0.1));
       phys.forEach((p, k) => p.set(seg(t, 0.06 + 0.06 * k, 0.16 + 0.06 * k))); physH.forEach((h, k) => fade(h, seg(t, 0.15 + 0.06 * k, 0.18 + 0.06 * k)));
-      fade(physL, seg(t, 0.14, 0.24)); fade(loopN, seg(t, 0.24, 0.34));
+      fade(loopN, seg(t, 0.24, 0.34));
       legs.forEach((l, k) => { l.s.set(seg(t, 0.3 + 0.06 * k, 0.4 + 0.06 * k)); fade(l.h, seg(t, 0.39 + 0.06 * k, 0.42 + 0.06 * k)); });
-      fade(wl, seg(t, 0.52, 0.6));
       // the black pulse crosses the top in 2.2 s; the blue one goes round the loop in 4.4 s, pausing at each box
       const u = (now / 2200) % 1, xb = u < 0.5 ? 152 + (252 - 152) * (u / 0.5) : 348 + (446 - 348) * ((u - 0.5) / 0.5);
       pb.setAttribute("cx", xb); pb.setAttribute("cy", TY); fade(pb, seg(t, 0.2, 0.26) * (reduced ? 0 : 1));
       const v = (now / 4400) % 1, k = Math.floor(v * 4), w = Math.min(1, (v * 4 - k) / 0.8), L = legs[k], [wx, wy] = E(L.a0 + (L.a1 - L.a0) * w);
       pw.setAttribute("cx", wx); pw.setAttribute("cy", wy); fade(pw, seg(t, 0.55, 0.62) * (reduced ? 0 : 1));
-      fade(eqL, seg(t, 0.64, 0.74)); fade(f, seg(t, 0.66, 0.8)); if (hl) fade(hl, seg(t, 0.8, 0.9) * 0.14);
+      fade(f, seg(t, 0.66, 0.8)); if (hl) fade(hl, seg(t, 0.8, 0.9) * 0.14);
     } };
   })();
 
@@ -307,8 +293,6 @@
     const d1 = el("path", { class: "pencil accent", "stroke-width": 2.6 }, live);
     const d2 = el("path", { class: "pencil warm", "stroke-width": 2.6 }, live);
     const xs = el("path", { class: "pencil", "stroke-width": 2.2 }, live);
-    const l1 = text(live, 0, 0, "player 1 pushes up", "label acc", "start"), l2 = text(live, 0, 0, "player 2 pushes down", "label warmt", "start");
-    text(live, sx(0.6), Y0 - 9, "the state stays at 0", "label");
     const pl = text(live, 300, 36, "", "label");
     const r1 = text(live, 300, 536, "", "label"), r2 = text(live, 300, 561, "", "label"), r3 = text(live, 300, 586, "", "label acc");
     let drawn = null;
@@ -336,10 +320,6 @@
       d1.setAttribute("d", pencil(q.t.map((t, i) => [sx(t), sy(q.D1[i])]), 83, 0.15));
       d2.setAttribute("d", pencil(q.t.map((t, i) => [sx(t), sy(q.D2[i])]), 84, 0.15));
       xs.setAttribute("d", pencil(q.t.map((t, i) => [sx(t), sy(q.X[i])]), 85, 0.15));
-      // each player's label sits between its curve and the state, clear of the curve over the label's width
-      const span = q.t.map((t, i) => i).filter((i) => q.t[i] <= 0.34);
-      l1.setAttribute("x", sx(0.02)); l1.setAttribute("y", Math.max(...span.map((i) => sy(q.D1[i]))) + 20);
-      l2.setAttribute("x", sx(0.02)); l2.setAttribute("y", Math.min(...span.map((i) => sy(q.D2[i]))) - 9);
       pl.textContent = `both players see with precision p = ${fmtP(p)}`;
       r1.textContent = `player 1's first push: ${q.D1[0].toFixed(2)}`;
       r2.textContent = `each player's cost: ${q.J1.toFixed(2)} and ${q.J2.toFixed(2)}`;

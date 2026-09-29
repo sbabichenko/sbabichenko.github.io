@@ -153,10 +153,9 @@
     for (const p of parts) {
       p.g = el("g", {}, g);
       p.lines = p.build(p.g);
-      // the part, and in Leonard Read's own words who or what brings it (I, Pencil): above the name at the top,
-      // below it at the bottom, clear of the leader
+      // in Leonard Read's own words, who or what brings the part (I, Pencil): above the leader at the top, below it
+      // at the bottom
       p.label = el("g", {}, g);
-      text(p.label, p.lx, p.ly, p.name, "label");
       text(p.label, Math.max(135, Math.min(465, p.lx)), p.ly + (p.ly < 300 ? -20 : 20), p.who, "quote");
       p.lead = el("line", { x1: p.lx, y1: p.ly + (p.ly < 300 ? 8 : -20), x2: p.lx, y2: p.ly + (p.ly < 300 ? 8 : -20), class: "pencil soft", "stroke-dasharray": "3 4" }, g);
     }
@@ -244,14 +243,12 @@
       return stroke(g, pencil([[me.x + dx / L * 30, me.y + dy / L * 30], [o.x - dx / L * 30, o.y - dy / L * 30]], 30 + n, 1), "accent", 1.2);
     });
     looks.forEach((l) => { l.a.style.strokeDasharray = "4 5"; l.b.style.display = "none"; });
-    const lab = text(g, 300, 580, "each sees a corner, and watches what the others do", "mono");
     return {
       g,
       update(t) {
         folk.forEach((f, i) => { fade(f.p, seg(t, 0.02 + i * 0.025, 0.12 + i * 0.025)); fade(f.ring, seg(t, 0.2, 0.35) * 0.9);
           fade(f.lit, seg(t, 0.22, 0.4) * (f === me ? 0.14 : 0.05)); });
         looks.forEach((l, k) => { l.a.style.strokeDashoffset = 0; fade(l.a, seg(t, 0.45 + k * 0.06, 0.55 + k * 0.06)); });
-        fade(lab, seg(t, 0.6, 0.8));
       },
     };
   })();
@@ -274,14 +271,12 @@
     el("circle", { cx: 300, cy: 236, r: 3.5, class: "fillacc" }, tag);
     el("path", { d: "M252,262 L348,262 L348,330 L252,330 Z", class: "box pencil", "stroke-width": 1.6 }, tag);
     text(tag, 300, 304, "price");
-    const lab = text(g, 300, 368, "set by no one", "mono");
     return {
       g,
       update(t, now) {
         folk.forEach((f, i) => fade(f, seg(t, 0.02 + i * 0.04, 0.14 + i * 0.04)));
         arcs.forEach((a, i) => { a.s.set(seg(t, 0.25 + i * 0.05, 0.4 + i * 0.05)); fade(a.head, seg(t, 0.38 + i * 0.05, 0.42 + i * 0.05)); });
         fade(tag, seg(t, 0.55, 0.7)); tag.setAttribute("transform", `rotate(${Math.sin(now / 800) * 4} 300 236)`);
-        fade(lab, seg(t, 0.7, 0.85));
       },
     };
   })();
@@ -301,17 +296,14 @@
     const axis = el("line", { x1: 395, y1: 250, x2: 595, y2: 250, class: "pencil soft", "stroke-width": 1 }, g);
     const old = el("path", { d: pencil(bell(470), 82, 0.2), class: "pencil soft", "stroke-width": 1.4, "stroke-dasharray": "4 4" }, g);
     const now_ = el("path", { class: "pencil accent", "stroke-width": 2 }, g);
-    const bl = text(g, 495, 130, "what you believe it’s worth", "mono");
-    const lab = text(g, 300, 540, "you pay what you believe; the seller shapes what you learn", "mono");
     return {
       g,
       update(t) {
         body.set(seg(t, 0.02, 0.25)); win.set(seg(t, 0.15, 0.3)); wheels.forEach((w) => fade(w, seg(t, 0.2, 0.3)));
         fade(seller, seg(t, 0.25, 0.35)); fade(buyer, seg(t, 0.3, 0.4));
-        fade(axis, seg(t, 0.35, 0.45)); fade(old, seg(t, 0.35, 0.45)); fade(bl, seg(t, 0.38, 0.5));
+        fade(axis, seg(t, 0.35, 0.45)); fade(old, seg(t, 0.35, 0.45));
         fade(bub, seg(t, 0.5, 0.6));
         now_.setAttribute("d", pencil(bell(470 + 55 * seg(t, 0.58, 0.85)), 83, 0.2)); fade(now_, seg(t, 0.55, 0.62));
-        fade(lab, seg(t, 0.75, 0.9));
       },
     };
   })();
@@ -343,7 +335,6 @@
     edges.forEach(([i, j]) => { adj[i].push(j); adj[j].push(i); });
     const pulses = el("g", {}, g), live = [];
     let lastWave = 0;
-    const lab = text(g, 300, 578, "prices carry what the rest of the world needs them to know", "mono");
     // a price moves at one person and spreads, link by link, to everyone
     function wave(src, now) {
       lastWave = now;
@@ -397,14 +388,12 @@
         if (reduced) {
           lines.forEach((l) => l.set(1));
           nodes.forEach((n) => { fade(n.ring, 0.8); });
-          fade(lab, 1);
           hits.style.pointerEvents = "none";      // a click would start a wave that nothing then draws
           frozenWave();
           return;
         }
         lines.forEach((l, k) => l.set(seg(t, 0.02 + (k % 10) * 0.02, 0.35 + (k % 10) * 0.02)));
         nodes.forEach((n, i) => { fade(n.ring, seg(t, 0, 0.2) * 0.8); fade(n.dot, seg(t, 0, 0.15)); });
-        fade(lab, seg(t, 0.3, 0.5));
         hits.style.pointerEvents = t > 0.3 && +g.style.opacity > 0.5 ? "auto" : "none";
         if (t > 0.3 && now - lastWave > 1600) wave(Math.floor(Math.random() * nodes.length), now);   // a price moves somewhere, and spreads
         pulses.innerHTML = "";
@@ -442,7 +431,6 @@
     const [ax, ay] = at(POS.actions, R - 58), [ox, oy] = at(POS.observations, R - 78);
     const chord = stroke(g, pencil([[ax, ay], [ox, oy]], seed + 9, 1), "accent", 1.5);
     chord.a.style.strokeDasharray = "5 6"; chord.b.style.display = "none";
-    const chordLab = text(g, 300, 284, "chord", "mono");
     const nodes = Object.entries(POS).map(([name, a]) => {
       const [x, y] = at(a), w = name.length * 9.2 + 26;
       const n = el("g", {}, g);
@@ -454,7 +442,7 @@
       set(t) {
         nodes.forEach((n, i) => fade(n, seg(t, i * 0.12, i * 0.12 + 0.15)));
         arcs.forEach((a, i) => { a.s.set(seg(t, 0.12 + i * 0.12, 0.3 + i * 0.12)); fade(a.head, seg(t, 0.28 + i * 0.12, 0.32 + i * 0.12)); });
-        chord.a.style.strokeDashoffset = 0; fade(chord.a, seg(t, 0.72, 0.85)); fade(chordLab, seg(t, 0.78, 0.9));
+        chord.a.style.strokeDashoffset = 0; fade(chord.a, seg(t, 0.72, 0.85));
       },
     };
   }
@@ -482,13 +470,11 @@
       const pts = []; for (let x = 60; x <= 380; x += 8) pts.push([x + k * 11, 300 - f(x, k) - k * 9 + 60]);
       curves.push(stroke(g, pencil(pts, 90 + k, 0.5), k === 0 ? "accent" : "", k === 0 ? 2.2 : 1.1));
     }
-    const l1 = text(g, 150, 470, "an ODE: one path", "mono"), l2 = text(g, 420, 170, "a PDE: a whole surface", "mono");
     return {
       g,
       update(t) {
-        curves[0].set(seg(t, 0.02, 0.3)); fade(l1, seg(t, 0.2, 0.35));
+        curves[0].set(seg(t, 0.02, 0.3));
         for (let k = 1; k < N; ++k) curves[k].set(seg(t, 0.3 + k * 0.03, 0.45 + k * 0.03));
-        fade(l2, seg(t, 0.65, 0.8));
       },
     };
   })();
@@ -528,9 +514,9 @@
     const b1 = w.map((_, u) => bar(u, -slot * 0.34, slot * 0.3, "fillacc")), b2 = w.map((_, u) => bar(u, slot * 0.04, slot * 0.3, "fillwarm"));
     const now = el("line", { y1: 120, y2: 500, class: "pencil warm", "stroke-width": 1.4, "stroke-dasharray": "3 4" }, g);
     const nowl = text(g, 0, 112, "now, t", "label warmt");
+    // the key, one word per color: each player's estimates, and the shocks themselves in gray
     const key = text(g, 60, 150, "", "mono", "start");
-    key.innerHTML = '<tspan style="fill:var(--accent)">Ŵ¹ₜ(u)</tspan>, <tspan style="fill:var(--warm)">Ŵ²ₜ(u)</tspan>: each player\'s estimate, at t, of the shock at u';
-    const cap = text(g, 300, 560, "gray: the shocks themselves, which neither player sees", "mono");
+    key.innerHTML = '<tspan style="fill:var(--accent)">player 1</tspan><tspan dx="16" style="fill:var(--warm)">player 2</tspan><tspan dx="16">the shocks</tspan>';
     const put = (b, v, on) => { b.setAttribute("y", v >= 0 ? Y0 - v * S : Y0); b.setAttribute("height", Math.abs(v) * S); b.style.opacity = on ? 1 : 0; };
     return {
       g,
@@ -540,7 +526,7 @@
         for (let u = 0; u < N; ++u) { put(b1[u], u <= k ? est[0][k][u] : 0, u <= k); put(b2[u], u <= k ? est[1][k][u] : 0, u <= k); }
         const xn = X(k) + slot / 2;
         now.setAttribute("x1", xn); now.setAttribute("x2", xn); nowl.setAttribute("x", xn);
-        fade(key, seg(t, 0.05, 0.2)); fade(cap, seg(t, 0.3, 0.5));
+        fade(key, seg(t, 0.05, 0.2));
       },
     };
   })();
@@ -556,29 +542,25 @@
     const A = el("g", {}, g), B = el("g", {}, g);
     el("circle", { cx: 120, cy: 150, r: 26, class: "box pencil", "stroke-width": 1.8 }, A); text(A, 120, 157, "A");
     el("circle", { cx: 480, cy: 150, r: 26, class: "box pencil", "stroke-width": 1.8 }, B); text(B, 480, 157, "B");
-    text(B, 480, 205, "B's belief", "label");
     const push = stroke(g, pencil([[150, 160], [230, 205], [300, 238]], 51, 1.2), "warm", 2);
     const tip = el("path", { d: "M288,226 L300,238 L284,242", class: "pencil warm", "stroke-width": 2 }, g);
-    const act = text(g, 190, 150, "A acts", "label warmt");
     // the shift is B's belief moving; the wedge is its price to A, a separate mark: a tag hung on A's push
-    const sl = text(g, 300, 442, "B's belief moves", "mono acc");
     const tag = el("g", {}, g);
     el("path", { d: pencil([[141, 168], [84, 214], [84, 438]], 53, 0.4), class: "pencil warm", "stroke-width": 1, "stroke-dasharray": "2 4" }, tag);
     el("path", { d: "M84,448 L93,457 L93,478 L75,478 L75,457 Z", class: "pencil warm", "stroke-width": 1.6 }, tag);
     el("circle", { cx: 84, cy: 458, r: 2, class: "pencil warm", "stroke-width": 1.2 }, tag);
     const wl = text(g, 102, 470, "the wedge: what it is worth to A to move B's belief", "mono warmt", "start");
-    const note = text(g, 102, 500, "cut the loop and it is zero", "mono", "start");
     return {
       g,
       update(t, now) {
         fade(A, seg(t, 0, 0.1)); fade(B, seg(t, 0, 0.1)); fade(before, seg(t, 0.02, 0.15));
-        push.set(seg(t, 0.15, 0.4)); fade(tip, seg(t, 0.38, 0.42)); fade(act, seg(t, 0.15, 0.3));
+        push.set(seg(t, 0.15, 0.4)); fade(tip, seg(t, 0.38, 0.42));
         const m = 270 + 70 * seg(t, 0.35, 0.7) + Math.sin(now / 900) * 3 * seg(t, 0.7, 0.8);
         const p0 = bell(270), p1 = bell(m);
         after.setAttribute("d", pencil(p1, 52, 0.2)); fade(after, seg(t, 0.3, 0.4));
         area.setAttribute("d", "M" + p1.map((q) => q.join(",")).join(" L") + " L" + p0.slice().reverse().map((q) => q.join(",")).join(" L") + "Z");
         fade(area, seg(t, 0.45, 0.65) * 0.16);
-        fade(sl, seg(t, 0.5, 0.65)); fade(tag, seg(t, 0.6, 0.72)); fade(wl, seg(t, 0.62, 0.75)); fade(note, seg(t, 0.8, 0.95));
+        fade(tag, seg(t, 0.6, 0.72)); fade(wl, seg(t, 0.62, 0.75));
       },
     };
   })();

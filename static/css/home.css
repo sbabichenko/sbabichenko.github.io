@@ -268,6 +268,7 @@ body:has(.home .hero) { overflow-x: clip; }
 .home .demo .more a { font-size: 0.85rem; color: var(--ink-2); border-bottom: 1px solid transparent; }
 .home .demo .more a:hover { color: var(--accent); border-bottom-color: currentColor; }
 .home #projects .work { margin-top: 1.6rem; }
+.home #projects .work:not(:has(.item)) { display: none; }   /* nothing listed below the cards */
 
 /* ---------------------------------------------------------------- the touchable cards (static/js/cards.js) */
 .home .demo .body { position: relative; }
@@ -292,15 +293,18 @@ body:has(.home .hero) { overflow-x: clip; }
 .home .shot.draw .clear:hover { color: var(--accent); border-color: var(--accent); }
 .home .shot.draw.live :is(.clear, .status) { display: block; }
 
-/* Decision Mesh: the drawing affordance on hover (projects.html .drawhint, cards.js). A pencil cursor; a dashed sketch
-   frame around each half, the whole of what can be drawn on (both halves draw onto the same unit square), a few
-   pixels in from the card's edges and the seam between the halves; and "draw here" pencilled on the face, where the
-   eye is (the small hint beside the title stays for touch screens: "hold, then draw"). Phones: the frames show once,
+/* Decision Mesh: the drawing affordance on hover (projects.html .drawhint, cards.js). A pencil cursor; a dashed
+   rectangle around each half that is exactly where a pointer draws: cards.js maps a point through the picture's cover
+   crop onto the unit square of its half (toUnit) and draws when it lands within 0.02 of it (inside), which, for this
+   picture's composition (two 532-px squares at x -26 and 454, y -52, in 960 x 480), takes in all of each half that
+   shows, from the picture's edge to the seam at its middle; and the picture is the whole of what takes the pointer.
+   So each box is one half of the picture, its stroke just inside it; and "draw here" pencilled on the face, where the
+   eye is (the small hint beside the title stays for touch screens: "hold, then draw"). Phones: the boxes show once,
    briefly, when the card comes into view. */
 .home .shot.draw .drawhint { position: absolute; inset: 0; pointer-events: none; }
-.home .shot.draw .dh-box { position: absolute; top: 6px; bottom: 6px; width: calc(50% - 10px); height: calc(100% - 12px); overflow: visible; }
-.home .shot.draw .dh-box.l { left: 6px; }
-.home .shot.draw .dh-box.r { right: 6px; }
+.home .shot.draw .dh-box { position: absolute; top: 0.75px; bottom: 0.75px; width: calc(50% - 1.5px); height: calc(100% - 1.5px); overflow: visible; }
+.home .shot.draw .dh-box.l { left: 0.75px; }
+.home .shot.draw .dh-box.r { right: 0.75px; }
 .home .shot.draw .dh-box rect { fill: none; stroke: var(--ink-3); stroke-width: 1.3; stroke-dasharray: 6 5; stroke-linecap: round;
   opacity: 0; transition: opacity 0.35s ease; }
 .home .shot.draw .dh-pic { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; transition: transform 0.4s ease; }
@@ -328,19 +332,22 @@ body:has(.home .hero) { overflow-x: clip; }
    sky cloud splits the same way, into a blue and a warm copy a little apart: beliefs about reality, not reality.
    The base image (no clouds, no ticks, no sky cloud) takes over at once, and the overlay (partials/card-nsheads.html)
    fades copies of them away; the rims and trails are the svg at the card's foot, laid out by cards.js to the
-   card's size. Everything is CSS; it reverses on the way out. */
+   card's size. Everything is CSS transitions. On the way out the story runs back, a little faster (about 2.2 s): the
+   world comes back together (0 to 0.94 s), the rims clear (0.59 to 1.32 s), and the minds return, the trails shrinking
+   back last bubble first and the two clouds fading in (1.03 to 2.2 s); then the rest image takes over again. */
 .home .demo.nsheads-card { overflow: visible; }   /* so the rim and the trails sit outside the card */
 .home .demo.nsheads-card .shot.nsheads { position: relative; overflow: visible; -webkit-tap-highlight-color: transparent;
-  --nscw: 1.6px; --nshw: 1.8px; --nsmw: 0.4; --nsink: 0.8; --nsfaint: 0.44; --nswx: 0.8; --nsglow: 0.26; }
-.dark .home .demo.nsheads-card .shot.nsheads { --nscw: 1.8px; --nshw: 2px; --nsmw: 0.55; --nsink: 0.85; --nsfaint: 0.52; --nswx: 0.85; --nsglow: 0.42; }
+  --nscw: 1.6px; --nshw: 1.8px; --nsmw: 0.4; --nsink: 0.8; --nsfaint: 0.44; --nsbird: 0.52; --nswx: 0.8; --nsglow: 0.26; }
+.dark .home .demo.nsheads-card .shot.nsheads { --nscw: 1.8px; --nshw: 2px; --nsmw: 0.55; --nsink: 0.85; --nsfaint: 0.52; --nsbird: 0.6; --nswx: 0.85; --nsglow: 0.42; }
 /* the pictures are clipped by their own frame now (the card no longer clips), with the card's top corners */
 .home .shot.nsheads { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
 .home .shot.nsheads .pics { position: absolute; inset: 0; overflow: hidden; border-radius: 13px 13px 0 0; }
-.home .demo .shot.nsheads img.base { position: absolute; inset: 0; opacity: 0; transition: opacity 0.35s ease, transform 0.4s ease; }
-/* the rest image steps aside while the base shows: both are multiplied onto the paper, so one cannot hide the other */
-.home .demo .shot.nsheads img:not(.base) { transition: opacity 0.35s ease, transform 0.4s ease; }
+.home .demo .shot.nsheads img.base { position: absolute; inset: 0; opacity: 0; transition: opacity 0s linear calc(max(0s, 1.027s - var(--nsout, 0s)) + 1.173s), transform 0.4s ease, clip-path 0.4s ease; }
+/* the rest image steps aside while the base shows: both are multiplied onto the paper, so one cannot hide the other.
+   On the way back both wait for the overlay to have drawn the rest picture again (the gate), then swap in one frame */
+.home .demo .shot.nsheads img:not(.base) { transition: opacity 0s linear calc(max(0s, 1.027s - var(--nsout, 0s)) + 1.173s), transform 0.4s ease, clip-path 0.4s ease; }
 .home .shot.nsheads .ov { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible;
-  color: var(--ink); transition: transform 0.4s ease; }
+  color: var(--ink); transition: transform 0.4s ease, clip-path 0.4s ease; }
 html:not(.dark) .home .shot.nsheads .ov { mix-blend-mode: multiply; }   /* onto the paper, as the images are */
 .dark .home .shot.nsheads .ov { mix-blend-mode: screen; filter: brightness(0.852) contrast(1.418); }   /* as the dark images are (below) */
 .home .demo:hover .shot.nsheads .ov { transform: scale(1.04); }
@@ -350,88 +357,102 @@ html:not(.dark) .home .shot.nsheads .ov { mix-blend-mode: multiply; }   /* onto 
 .home .shot.nsheads .ov .facc { fill: var(--accent); }
 .home .shot.nsheads .ov .fwarm { fill: var(--warm); }
 .home .shot.nsheads .ov .fink { fill: currentColor; }
-.home .shot.nsheads .ov .bb { opacity: 0; }
-.home .shot.nsheads .ov .boost { opacity: 0; transition: opacity 0.3s ease; }
-@keyframes nsheads-fade { from { opacity: 1; } to { opacity: 0; } }   /* a thought cloud just fades where it is */
+/* the copies of the clouds and the sky cloud: shown (.pic visible) from the first moment of the hover until the gate
+   after it, while the base image is the picture; their own opacity is the fade */
+.home .shot.nsheads .ov .pic { visibility: hidden; transition: visibility 0s linear calc(max(0s, 1.027s - var(--nsout, 0s)) + 1.173s); }
+.home .shot.nsheads .ov :is(.nest, .cloud) { opacity: 1; transition: opacity 1.173s ease-in-out max(0s, 1.027s - var(--nsout, 0s)); }
+.home .shot.nsheads .ov .wx { opacity: 1; transition: opacity 0.44s ease max(0s, 0.367s - var(--nsout, 0s)); }
+.home .shot.nsheads .ov .boost { opacity: 0; transition: opacity 0.44s ease max(0s, 0.293s - var(--nsout, 0s)); }
 /* the shared row: each ink tick gives way to a blue and a warm tick, side by side, each drawn at that player's own
    estimate of the shock (--k scales it back to the true height at the start, through the baseline when the estimate
    has the other sign); left to right, a beat apart (--d) */
-@keyframes nsheads-split {       /* out of the ink tick, side by side at the true height, then each to its own estimate */
-  0% { opacity: 0; transform: translateX(0) scaleY(var(--k)); }
-  20% { opacity: 1; transform: translateX(0) scaleY(var(--k)); }
-  50% { opacity: 1; transform: translateX(var(--sx)) scaleY(var(--k)); }
-  100% { opacity: 1; transform: translateX(var(--sx)) scaleY(1); }
-}
 /* the card thinks, at rest and on hover alike (cards.js): every few seconds a new shock lands at the right of the row,
    the row moves over by one, and each head's bars move with it and take the new signal in, each a little differently
    (the generator's own model, run on). Each bar, and each shock (a group: its ink tick and, on hover, the blue and warm
    ticks it splits into, at the current estimates in the two heads), keeps its element as it moves: a unit rect placed
    and sized by transforms, so a step is one transition for all of them together. */
-.home .shot.nsheads .ov .think :is(.tk rect, .sh, .sh > g) { transition: transform 1.1s cubic-bezier(0.45, 0, 0.25, 1), opacity 0.8s ease; }
+.home .shot.nsheads .ov .think :is(.tk rect, .sh, .sh > g) { transition: transform 1.1s cubic-bezier(0.45, 0, 0.25, 1), opacity 1.1s cubic-bezier(0.45, 0, 0.25, 1); }
 .home .shot.nsheads .ov .think .tk rect { transform-box: view-box; transform-origin: 0 0; }
-.home .shot.nsheads .ov .think.snap :is(.tk rect, .sh, .sh > g) { transition: none !important; }
-.home .shot.nsheads .ov .shocks .ink rect { opacity: var(--nsink); transition: opacity 0.3s ease; }
-.home .shot.nsheads .ov .shocks :is(.pb, .pw) rect { opacity: 0; transform: translateX(var(--sx)) scaleY(1); }
-@keyframes nsheads-held { 0%, 25% { opacity: var(--nsink); } 60%, 100% { opacity: 0; } }
-/* the sky cloud: its ink copy thins away while a blue and a warm copy come out of it and slide a little apart,
-   blue left and warm right, like a red/cyan anaglyph (--sx) */
-.home .shot.nsheads .ov .wxsplit path { opacity: 0; transform: translateX(var(--sx)); }
-@keyframes nsheads-wx { 0% { opacity: 0; transform: none; } 30% { opacity: var(--nswx); transform: none; } 100% { opacity: var(--nswx); transform: translateX(var(--sx)); } }
-@keyframes nsheads-wxink { 0%, 30% { opacity: 1; } 90%, 100% { opacity: 0; } }
+.home .shot.nsheads .ov .think.snap :is(.tk rect, .sh, .sh > g, .sh.in rect) { transition: none !important; }
+.home .shot.nsheads .ov .think :is(.tk rect.in, .sh.in, .sh.in > g, .sh.in rect) { transition: none !important; }   /* a newcomer, parked unseen (cards.js) */
+/* on hover, once the entrance has been read, the row drifts on at one steady speed (cards.js): each step as long as the
+   interval between steps, linear; and when the hover ends mid-glide, the rest of that glide eases out (.settle) */
+.home .shot.nsheads .ov .think.flow :is(.tk rect, .sh, .sh > g) { transition: transform 2s linear, opacity 1.8s linear; }   /* the leaver is gone just before it is reused */
+.home .shot.nsheads .ov .think.settle :is(.tk rect, .sh, .sh > g) { transition: transform var(--settle) cubic-bezier(0.333, 0.667, 0.667, 1), opacity var(--settle) cubic-bezier(0.333, 0.667, 0.667, 1); }   /* a quadratic ease-out over twice the time left: it starts at the glide's own speed */
+.home .shot.nsheads .ov .shocks .ink rect { opacity: var(--nsink); transition: opacity 0.235s ease max(0s, calc(0.381s - var(--d, 0s) * 1.467 + 0.323s) - var(--nsout, 0s)); }
+.home .shot.nsheads .ov .shocks .sh.kept .ink rect { transition: opacity 0.587s ease max(0s, 0.147s - var(--nsout, 0s)); }
+/* at rest each pair sits on its ink tick, hidden, at the tick's own height (--k); on the way back each pair, right to
+   left, first takes the true height again, then slides together, then gives way to the ink tick */
+.home .shot.nsheads .ov .shocks :is(.pb, .pw) rect { opacity: 0; translate: 0 0; scale: 1 var(--k);
+  transition: scale 0.264s cubic-bezier(0.4, 0, 0.3, 1) max(0s, calc(0.381s - var(--d, 0s) * 1.467) - var(--nsout, 0s)), translate 0.235s cubic-bezier(0.4, 0, 0.3, 1) max(0s, calc(0.381s - var(--d, 0s) * 1.467 + 0.176s) - var(--nsout, 0s)), opacity 0.176s ease max(0s, calc(0.381s - var(--d, 0s) * 1.467 + 0.381s) - var(--nsout, 0s)); }
+/* the sky cloud and its three birds: each ink copy thins away while a blue and a warm copy come out of it and slide a
+   little apart, blue left and warm right, like a red/cyan anaglyph (--sx) */
+.home .shot.nsheads .ov .wxsplit path { opacity: 0; transform-box: fill-box; transform-origin: center; translate: 0 0; scale: 1;
+  transition: translate 0.66s cubic-bezier(0.4, 0, 0.3, 1) max(0s, 0s - var(--nsout, 0s)), scale 0.66s cubic-bezier(0.4, 0, 0.3, 1) max(0s, 0s - var(--nsout, 0s)), opacity 0.367s ease max(0s, 0.44s - var(--nsout, 0s)); }
 /* the card's rims: two thought clouds around the whole card, one blue and one warm, a little apart. Not one blended
    cloud, which would say the two minds merge: each player, on its own, thinks about the whole system */
 .home .nsheads-card .nsheads-rim { position: absolute; left: -12px; top: -12px; width: calc(100% + 24px); height: calc(100% + 24px);
   pointer-events: none; overflow: visible; }
 .home .nsheads-card .nsheads-rim .scallop { fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round;
-  opacity: 0; transition: opacity 0.25s ease; }
+  opacity: 0; transition: opacity 0.733s ease max(0s, 0.587s - var(--nsout, 0s)); }
 .dark .home .nsheads-card .nsheads-rim .scallop { stroke-width: 1.9; }
 .home .nsheads-card .nsheads-rim .tail { fill: none; stroke-width: 1.4; opacity: 0; transform-box: fill-box; transform-origin: center;
-  transform: scale(0.6); transition: opacity 0.2s ease, transform 0.2s ease; }
+  transform: scale(0.6); transition: opacity 0.44s ease max(0s, 1.4s - var(--nsout, 0s)), transform 0.44s ease-in max(0s, 1.4s - var(--nsout, 0s)); }
+/* on the way back the outer two bubbles go first, before the frame line comes back in across where they were (cards.js);
+   then the rest, the outermost first */
+.home .nsheads-card .nsheads-rim .tail.b2 { transition-delay: max(0s, 1.1s - var(--nsout, 0s)); }
+.home .nsheads-card .nsheads-rim .tail.b3 { transition-delay: max(0s, 0.8s - var(--nsout, 0s)); }
+.home .nsheads-card .nsheads-rim .tail.b4 { transition-delay: max(0s, 0.587s - var(--nsout, 0s)); }
 .dark .home .nsheads-card .nsheads-rim .tail { stroke-width: 1.6; }
 .home .nsheads-card .nsheads-rim .acc { stroke: var(--accent); }
 .home .nsheads-card .nsheads-rim .warm { stroke: var(--warm); }
-.home .demo.nsheads-card { transition: border-color 0.4s ease, top 0.18s, box-shadow 0.18s; }
-@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads img.base { opacity: 1; transition: opacity 0s, transform 0.4s ease; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .shot.nsheads img.base { opacity: 1; transition: opacity 0s, transform 0.4s ease; }
-@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads img:not(.base) { opacity: 0; transition: opacity 0s, transform 0.4s ease; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .shot.nsheads img:not(.base) { opacity: 0; transition: opacity 0s, transform 0.4s ease; }
+.home .demo.nsheads-card { transition: border-color 0.733s ease max(0s, 0.587s - var(--nsout, 0s)), top 0.18s, box-shadow 0.18s; }
+@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads img.base { opacity: 1; transition: opacity 0s, transform 0.4s ease, clip-path 0.4s ease; } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads img.base { opacity: 1; transition: opacity 0s, transform 0.4s ease, clip-path 0.4s ease; }
+@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads img:not(.base) { opacity: 0; transition: opacity 0s, transform 0.4s ease, clip-path 0.4s ease; } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads img:not(.base) { opacity: 0; transition: opacity 0s, transform 0.4s ease, clip-path 0.4s ease; }
+@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .ov .pic { visibility: visible; transition: visibility 0s; } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads .ov .pic { visibility: visible; transition: visibility 0s; }
 /* beat 1 (0 to 1.15 s): the clouds and their small heads fade slowly, gone just as the last trail bubble is in */
-@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads :is(.nest, .cloud) { animation: nsheads-fade 1.15s ease-in-out both; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .shot.nsheads :is(.nest, .cloud) { animation: nsheads-fade 1.15s ease-in-out both; }
+@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads :is(.nest, .cloud) { opacity: 0; transition: opacity 1.15s ease-in-out; } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads :is(.nest, .cloud) { opacity: 0; transition: opacity 1.15s ease-in-out; }
 /* beat 2 (0.15 to 1.15 s), over the clouds' fade: the trails, one bubble at a time from the head outward */
-@media (hover: hover) { .home .demo.nsheads-card:hover .nsheads-rim .tail { opacity: 1; transform: none; transition: opacity 0.25s ease 0.15s, transform 0.25s ease-out 0.15s; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .nsheads-rim .tail { opacity: 1; transform: none; transition: opacity 0.25s ease 0.15s, transform 0.25s ease-out 0.15s; }
-@media (hover: hover) { .home .demo.nsheads-card:hover .nsheads-rim .tail.b2 { transition-delay: 0.4s; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .nsheads-rim .tail.b2 { transition-delay: 0.4s; }
-@media (hover: hover) { .home .demo.nsheads-card:hover .nsheads-rim .tail.b3 { transition-delay: 0.65s; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .nsheads-rim .tail.b3 { transition-delay: 0.65s; }
-@media (hover: hover) { .home .demo.nsheads-card:hover .nsheads-rim .tail.b4 { transition-delay: 0.9s; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .nsheads-rim .tail.b4 { transition-delay: 0.9s; }
+@media (hover: hover) { .home .demo.nsheads-card:hover .nsheads-rim .tail { opacity: 1; transform: none; transition: opacity 0.25s ease max(0s, 0.15s - var(--nsin, 0s)), transform 0.25s ease-out max(0s, 0.15s - var(--nsin, 0s)); } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .nsheads-rim .tail { opacity: 1; transform: none; transition: opacity 0.25s ease max(0s, 0.15s - var(--nsin, 0s)), transform 0.25s ease-out max(0s, 0.15s - var(--nsin, 0s)); }
+@media (hover: hover) { .home .demo.nsheads-card:hover .nsheads-rim .tail.b2 { transition-delay: max(0s, 0.4s - var(--nsin, 0s)); } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .nsheads-rim .tail.b2 { transition-delay: max(0s, 0.4s - var(--nsin, 0s)); }
+@media (hover: hover) { .home .demo.nsheads-card:hover .nsheads-rim .tail.b3 { transition-delay: max(0s, 0.8s - var(--nsin, 0s)); } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .nsheads-rim .tail.b3 { transition-delay: max(0s, 0.8s - var(--nsin, 0s)); }
+@media (hover: hover) { .home .demo.nsheads-card:hover .nsheads-rim .tail.b4 { transition-delay: max(0s, 1.15s - var(--nsin, 0s)); } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .nsheads-rim .tail.b4 { transition-delay: max(0s, 1.15s - var(--nsin, 0s)); }
 /* beat 3 (1.2 to 1.8 s), once the last bubble is there: each player's rim fades in */
-@media (hover: hover) { .home .demo.nsheads-card:hover .nsheads-rim .scallop { opacity: 1; transition: opacity 0.6s ease 1.2s; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .nsheads-rim .scallop { opacity: 1; transition: opacity 0.6s ease 1.2s; }
-@media (hover: hover) { .home .demo.nsheads-card:hover { border-color: transparent; transition: border-color 0.6s ease 1.2s, top 0.18s, box-shadow 0.18s; } }
-.home .demo.nsheads-card:is(:focus-within, .on) { border-color: transparent; transition: border-color 0.6s ease 1.2s, top 0.18s, box-shadow 0.18s; }
+@media (hover: hover) { .home .demo.nsheads-card:hover .nsheads-rim .scallop { opacity: 1; transition: opacity 0.6s ease max(0s, 1.2s - var(--nsin, 0s)); } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .nsheads-rim .scallop { opacity: 1; transition: opacity 0.6s ease max(0s, 1.2s - var(--nsin, 0s)); }
+@media (hover: hover) { .home .demo.nsheads-card:hover { border-color: transparent; transition: border-color 0.6s ease max(0s, 1.2s - var(--nsin, 0s)), top 0.18s, box-shadow 0.18s; } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) { border-color: transparent; transition: border-color 0.6s ease max(0s, 1.2s - var(--nsin, 0s)), top 0.18s, box-shadow 0.18s; }
 /* beat 4 (1.8 to 2.76 s), once the rims are in: the row splits left to right, the ink ticks giving way (three stay) and
-   the players' ticks coming out of them, and the sky cloud splits with it */
-@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .shocks .sh:not(.kept) .ink rect { animation: nsheads-held 0.7s ease calc(1.8s + var(--d, 0s)) both; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .shot.nsheads .shocks .sh:not(.kept) .ink rect { animation: nsheads-held 0.7s ease calc(1.8s + var(--d, 0s)) both; }
-@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .shocks .sh.kept .ink rect { opacity: 1; transition: opacity 0.5s ease 1.8s; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .shot.nsheads .shocks .sh.kept .ink rect { opacity: 1; transition: opacity 0.5s ease 1.8s; }
-@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .shocks :is(.pb, .pw) rect { opacity: 1; animation: nsheads-split 0.7s cubic-bezier(0.4, 0, 0.3, 1) calc(1.8s + var(--d, 0s)) both; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .shot.nsheads .shocks :is(.pb, .pw) rect { opacity: 1; animation: nsheads-split 0.7s cubic-bezier(0.4, 0, 0.3, 1) calc(1.8s + var(--d, 0s)) both; }
-@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .wx { animation: nsheads-wxink 0.8s ease 1.9s both; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .shot.nsheads .wx { animation: nsheads-wxink 0.8s ease 1.9s both; }
-@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .wxsplit path { opacity: var(--nswx); animation: nsheads-wx 0.8s cubic-bezier(0.4, 0, 0.3, 1) 1.9s both; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .shot.nsheads .wxsplit path { opacity: var(--nswx); animation: nsheads-wx 0.8s cubic-bezier(0.4, 0, 0.3, 1) 1.9s both; }
-@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .boost { opacity: 1; transition: opacity 0.5s ease 1.8s; } }
-.home .demo.nsheads-card:is(:focus-within, .on) .shot.nsheads .boost { opacity: 1; transition: opacity 0.5s ease 1.8s; }
+   the players' ticks coming out of them (in, side by side at the true height, apart, then each to its own estimate),
+   and the sky cloud splits with it. Transitions, not animations, so a hover that ends midway turns back from where it
+   is; --nsin and --nsout (cards.js) skip the part of each way that the picture has not reached */
+@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .shocks .sh:not(.kept) .ink rect { opacity: 0; transition: opacity 0.245s ease max(0s, calc(1.975s + var(--d, 0s)) - var(--nsin, 0s)); } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads .shocks .sh:not(.kept) .ink rect { opacity: 0; transition: opacity 0.245s ease max(0s, calc(1.975s + var(--d, 0s)) - var(--nsin, 0s)); }
+@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .shocks .sh.kept .ink rect { opacity: 1; transition: opacity 0.5s ease max(0s, 1.8s - var(--nsin, 0s)); } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads .shocks .sh.kept .ink rect { opacity: 1; transition: opacity 0.5s ease max(0s, 1.8s - var(--nsin, 0s)); }
+@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .shocks :is(.pb, .pw) rect { opacity: 1; translate: var(--sx) 0; scale: 1 1; transition: opacity 0.14s cubic-bezier(0.4, 0, 0.3, 1) max(0s, calc(1.8s + var(--d, 0s)) - var(--nsin, 0s)), translate 0.21s cubic-bezier(0.4, 0, 0.3, 1) max(0s, calc(1.94s + var(--d, 0s)) - var(--nsin, 0s)), scale 0.35s cubic-bezier(0.4, 0, 0.3, 1) max(0s, calc(2.15s + var(--d, 0s)) - var(--nsin, 0s)); } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads .shocks :is(.pb, .pw) rect { opacity: 1; translate: var(--sx) 0; scale: 1 1; transition: opacity 0.14s cubic-bezier(0.4, 0, 0.3, 1) max(0s, calc(1.8s + var(--d, 0s)) - var(--nsin, 0s)), translate 0.21s cubic-bezier(0.4, 0, 0.3, 1) max(0s, calc(1.94s + var(--d, 0s)) - var(--nsin, 0s)), scale 0.35s cubic-bezier(0.4, 0, 0.3, 1) max(0s, calc(2.15s + var(--d, 0s)) - var(--nsin, 0s)); }
+@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .wx { opacity: 0; transition: opacity 0.48s ease max(0s, 2.14s - var(--nsin, 0s)); } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads .wx { opacity: 0; transition: opacity 0.48s ease max(0s, 2.14s - var(--nsin, 0s)); }
+@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .wxsplit path { opacity: var(--nswx); translate: var(--sx) 0; scale: 0.8; transition: opacity 0.24s cubic-bezier(0.4, 0, 0.3, 1) max(0s, 1.9s - var(--nsin, 0s)), translate 0.56s cubic-bezier(0.4, 0, 0.3, 1) max(0s, 2.14s - var(--nsin, 0s)), scale 0.56s cubic-bezier(0.4, 0, 0.3, 1) max(0s, 2.14s - var(--nsin, 0s)); } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads .wxsplit path { opacity: var(--nswx); translate: var(--sx) 0; scale: 0.8; transition: opacity 0.24s cubic-bezier(0.4, 0, 0.3, 1) max(0s, 1.9s - var(--nsin, 0s)), translate 0.56s cubic-bezier(0.4, 0, 0.3, 1) max(0s, 2.14s - var(--nsin, 0s)), scale 0.56s cubic-bezier(0.4, 0, 0.3, 1) max(0s, 2.14s - var(--nsin, 0s)); }
+@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .boost { opacity: 1; transition: opacity 0.5s ease max(0s, 1.8s - var(--nsin, 0s)); } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads .boost { opacity: 1; transition: opacity 0.5s ease max(0s, 1.8s - var(--nsin, 0s)); }
 /* reduced motion (on top of the page-wide rule that stops transitions and animations): the end state appears at once,
    the clouds and the fading ink ticks gone, the trails and the card's rims drawn, and this card neither lifts nor zooms */
 @media (prefers-reduced-motion: reduce) {
   .home .shot.nsheads .ov :is(.nest, .cloud, .wx) { animation: none !important; opacity: 0 !important; }
-  .home .demo.nsheads-card:is(:hover, :focus-within, .on) .shot.nsheads .shocks .sh:not(.kept) .ink rect { animation: none !important; opacity: 0 !important; }
+  .home .demo.nsheads-card:is(:hover, :has(:focus-visible), .on) .shot.nsheads .shocks .sh:not(.kept) .ink rect { animation: none !important; opacity: 0 !important; }
   .home .demo.nsheads-card:hover, .home .demo.nsheads-card:hover .shot img, .home .demo.nsheads-card:hover .shot .ov { transform: none !important; }
+  .home .demo.nsheads-card:hover .shot.nsheads :is(img, .ov) { clip-path: var(--nsclip, none) !important; }
 }
 
 /* The cards on the textured paper. The lift on hover moves the card with `top`, not a transform: a transform makes the
@@ -446,5 +467,62 @@ html:not(.dark) .home .shot.nsheads .ov { mix-blend-mode: multiply; }   /* onto 
    the paper is about as dark as the old ground. */
 .dark .home .demo .shot :is(img, canvas) { mix-blend-mode: screen; }
 .dark .home .demo .shot :is(img, canvas) { filter: brightness(0.852) contrast(1.418); }
-.dark .home .demo .shot { background: transparent; }   /* its faint light wash would lift the pictures' ground above the old one */
+.home .demo .shot { background: transparent; }   /* the paper runs through: a wash here would tint the picture area apart from the card around it */
 @media (prefers-reduced-motion: reduce) { .home .demo.nsheads-card:hover { top: 0 !important; } }
+
+/* the Noise-State card's install line: a click copies it (static/js/whimsy.js) */
+.home .demo .pipline { margin: 0.7rem 0 1rem; }
+.home .demo .pipline .copy { font: inherit; background: none; border: 1px solid var(--rule, rgba(0,0,0,0.15)); border-radius: 6px; padding: 2px 9px;
+  cursor: copy; color: var(--ink-2, inherit); }
+.home .demo .pipline .copy:hover { border-color: var(--accent); color: var(--accent); }
+.home .demo .pipline code { font: 0.84rem ui-monospace, Menlo, monospace; }
+.home .demo .pipline .copy { position: relative; }
+.home .demo .pipline .copy.done::after { content: "copied"; position: absolute; left: calc(100% + 0.6rem); top: 50%; transform: translateY(-50%);   /* beside the box, not in it */
+  font: 0.8rem ui-sans-serif, system-ui, sans-serif; color: var(--accent); white-space: nowrap; pointer-events: none; }
+
+/* The cards' borders, drawn by hand now that their pictures lie on the paper itself; each project draws its own
+   (cards.js): the Noise-State card's is one random walk around the card, the Decision Mesh card's a thin band of the
+   mesh's own cells, refined near the corners and at a few places along the edges. The box keeps its 1px border
+   (transparent) so nothing moves. The frame keeps to the outer 10px of the card; the Decision Mesh picture is set in
+   by --mat, clear of it, so the mesh's own lines end short of the frame instead of running through it (the
+   Noise-State picture is clipped to its frame instead, below). On the Noise-State card the frame fades with the hover, on the same beats as the border it replaces. */
+.home .demo { --mat: 14px; border-color: transparent; border-radius: 0; }
+.home .demo:hover { border-color: transparent; }
+.home .demo .shot { margin: var(--mat) var(--mat) 0; border-bottom-color: transparent; }
+.home .shot.nsheads .pics { border-radius: 0; }
+@media (max-width: 520px) { .home .demo { --mat: 12px; } }
+/* the Noise-State picture runs edge to edge, out to the frame's own line: cards.js clips its images and overlay to the
+   random walk (--nsclip), and while they zoom on hover to the walk shrunk by the zoom (--nsclipz), so on screen the
+   picture's edge stays on the line; the line is drawn over that edge */
+.home .demo.nsheads-card { --mat: 0px; }
+.home .shot.nsheads :is(img, .ov) { clip-path: var(--nsclip, none); }
+.home .demo.nsheads-card:hover .shot.nsheads :is(img, .ov) { clip-path: var(--nsclipz, var(--nsclip, none)); }
+.home .demo .cframe { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 2;
+  color: var(--ink); transition: color 0.18s; }
+.home .demo .cframe path { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+.home .demo .cframe .path { stroke-width: 1.25; opacity: 0.6; }
+.home .demo .cframe .mesh.edge { stroke-width: 1.1; opacity: 0.48; }
+.home .demo .cframe .mesh.cell { stroke-width: 0.6; opacity: 0.26; }
+.home .demo .cframe .mesh.inner { stroke-width: 0.6; opacity: 0.18; }
+.dark .home .demo .cframe .path { opacity: 0.5; }
+.dark .home .demo .cframe .mesh.edge { opacity: 0.42; }
+.dark .home .demo .cframe .mesh.cell { opacity: 0.24; }
+.dark .home .demo .cframe .mesh.inner { opacity: 0.16; }
+.home .demo:hover .cframe { color: var(--accent); }
+/* the Noise-State card: its frame goes as the trails reach it (the last bubble, at 0.9 s, sits across it) and before
+   the rims come, and comes back once that bubble has gone on the way out (it fades 1.03 to 1.47 s) */
+.home .demo.nsheads-card .cframe { opacity: 1; transition: opacity 0.6s ease max(0s, 1.35s - var(--nsout, 0s)); }
+.home .demo.nsheads-card:hover .cframe { color: var(--ink); }
+@media (hover: hover) { .home .demo.nsheads-card:hover .cframe { opacity: 0; transition: opacity 0.4s ease max(0s, 0.7s - var(--nsin, 0s)); } }
+.home .demo.nsheads-card:is(:has(:focus-visible), .on) .cframe { opacity: 0; transition: opacity 0.4s ease max(0s, 0.7s - var(--nsin, 0s)); }
+
+/* a card's one-line framing reads as its subtitle: the title's serif, italic, a shade lighter, close under the title */
+.home .demo p.sub { font: italic 400 1.05rem/1.35 Newsreader, "Iowan Old Style", Georgia, serif; color: var(--ink-3, var(--ink-2)); margin: -0.35rem 0 0.9rem; }
+html:not(.dark) .home .demo p.sub { color: var(--ink-2); }   /* the lightest ink was faint on the paper in light mode */
+
+/* the Noise-State card's frame becomes the two rims on hover (cards.js, .nsmorph): the morphing lines replace both the
+   frame's fade and the scallops' fade; the frame line itself is hidden only while the two lines are out */
+.home .nsheads-card .nsheads-rim .morph { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.home .demo.nsheads-card.nsmorph .nsheads-rim .scallop { visibility: hidden; }
+.home .demo.nsheads-card.nsmorph .cframe { opacity: 1 !important; }
+.home .demo.nsheads-card.nsmorph.morphing .cframe .path { visibility: hidden; }

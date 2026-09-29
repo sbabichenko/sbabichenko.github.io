@@ -55,6 +55,8 @@ FIGURES = {
     "figA_transmission": {"dash": ["exogenous signal"]},
     "fig_ch5_schematic": {"halo": True, "nudge": {"order $o^{v-1}_t$": (0.0, -0.12)}, "max_scale": 1.17},
     "fig8_barD1_vs_p": {"repel": True, "halo": True},
+    "fig12_costs_private_vs_pooled": {"legend": {0: ("lower left", (0.0, 0.0), 0.8), 3: ("upper center", (0.5, -0.36), 0.9)}},
+    "fig13_precision_decomposition": {"legend": {0: ("center right", (1.0, 0.69), 0.72), 2: ("center right", (1.0, 0.645), 0.7)}},
 }
 
 

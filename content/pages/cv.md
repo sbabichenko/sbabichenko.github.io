@@ -12,6 +12,7 @@ og_image = "images/og-cv.png"
 </div>
 
 <a class="cv-download" href="/CV_Samuel_Babichenko.pdf" download>Download as PDF</a>
+<a class="cv-download" href="/Resume_Samuel_Babichenko.pdf" download>One-page resume (PDF)</a>
 
 ---
 
@@ -22,7 +23,7 @@ Advisor: Tomoyuki Ichiba. MA in Statistics, 2026.\
 Teaching assistant for 12 courses over four years: PSTAT 5A, 5LS, 8, 10, 120A/B, 123, 160A/B, 170, 174/274 and 176/276. Mentored 10+ undergraduate researchers.
 
 **BS in Mathematics, UC San Diego** &middot; Sep 2019 &ndash; Jun 2021\
-Dean's Undergraduate Excellence Award (top 0.5%, Physical Sciences).
+Dean’s Undergraduate Excellence Award (top 0.5%, Physical Sciences).
 
 ---
 
@@ -30,7 +31,7 @@ Dean's Undergraduate Excellence Award (top 0.5%, Physical Sciences).
 
 **Noise-State Calculus for Dynamic Games with Strategic Information**\
 PhD dissertation, 2026 &middot; [sbabichenko.com/dissertation](/dissertation/)\
-Dynamic games in which players learn from each other's actions and can shape what others believe: continuous-time linear-quadratic-Gaussian games with any finite number of players. The information wedge, the shadow price of changing an opponent's beliefs, explains where these games depart from their full-information versions. Applications to Kyle&ndash;Back markets with several informed traders, networks of local markets, delayed public signals, and deviations that only some players can detect.
+Dynamic games in which players learn from each other’s actions and can shape what others believe: continuous-time linear-quadratic-Gaussian games with any finite number of players. The information wedge, the shadow price of changing an opponent’s beliefs, explains where these games depart from their full-information versions. Applications to Kyle&ndash;Back markets with several informed traders, networks of local markets, delayed public signals, and deviations that only some players can detect.
 
 **Forecasting and Manipulating the Forecasts of Others** &middot; [arXiv: 2603.12140](https://arxiv.org/abs/2603.12140)\
 Solo-authored, submitted March 2026. The core of the dissertation. In a two-player benchmark, splits the cost of dispersed information into an estimation part and a strategic part, and finds cases where more precise private information raises total cost.
@@ -74,6 +75,7 @@ Reimplemented BehaviorGPT, a decoder-only transformer with agent&ndash;agent att
 
 <div style="text-align:center; margin:24px 0 8px;">
 <a class="cv-download" href="/CV_Samuel_Babichenko.pdf" download>Download as PDF</a>
+<a class="cv-download" href="/Resume_Samuel_Babichenko.pdf" download>One-page resume (PDF)</a>
 </div>
 
 Last updated: **September 2026**
