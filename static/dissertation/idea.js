@@ -172,7 +172,6 @@
       el("rect", { x: cx - 5, y: -6, width: 10, height: 12, class: "pencil soft", "stroke-width": 1, fill: "none" }, cal);
       months.push(el("path", { d: `M${cx - 6},-7 L${cx + 6},7`, class: "pencil accent", "stroke-width": 1.8 }, cal));
     }
-    text(cal, 0, -12, "six months", "mono");
     // at the sixth month the person is gone: a small headstone where they stood, while everyone else carries on
     const stone = el("g", { transform: `translate(${me.x} ${me.y + 12})` }, g);
     el("path", { d: "M-9,0 L-9,-16 Q-9,-26 0,-26 Q9,-26 9,-16 L9,0 Z", class: "headfill" }, stone);
@@ -282,15 +281,13 @@
     const g = group("hands");
     const l1 = el("g", {}, g), l2 = el("g", {}, g), l3 = el("g", {}, g);
     formula("hands1", 300, 170, 470, l1, "middle");
-    text(l2, 300, 260, "each applies the single-controller rule", "mono");
     formula("hands2", 300, 300, 190, l2, "middle");
     formula("hands3", 300, 410, 490, l3, "middle");
     const ul = [];
     for (const [x, w2] of [[300 - 490 / 2 + 205, 70], [300 - 490 / 2 + 300, 70]]) ul.push(stroke(g, pencil([[x - w2 / 2, 440], [x + w2 / 2, 441]], x, 1), "warm", 2.2));
-    const cap = text(g, 300, 500, "the state now moves with everyone's estimates", "label warmt");
     return { g, update(t) {
       fade(l1, seg(t, 0, 0.15)); fade(l2, seg(t, 0.2, 0.35)); fade(l3, seg(t, 0.4, 0.55));
-      ul.forEach((u) => u.set(seg(t, 0.6, 0.75))); fade(cap, seg(t, 0.7, 0.85));
+      ul.forEach((u) => u.set(seg(t, 0.6, 0.75)));
     } };
   })();
 
@@ -313,14 +310,12 @@
     });
     // how many beliefs of each order n players hold: n first-order, then each belief about another player (n - 1 choices)
     const counts = ["n", "n(n−1)", "n(n−1)²", "n(n−1)³"].map((c, i) => text(g, 28, 436 - i * 92, c, "label acc", "start"));
-    const countHead = text(g, 28, 100, "with n players", "mono", "start");
     const dots = text(g, 300, 58, "…", "label"); dots.style.fontSize = "34px";
-    const cap = text(g, 300, 585, "forecasting the forecasts of others, without end", "mono");
     return { g, update(t, now) {
       fade(p1, seg(t, 0, 0.1)); fade(p2, seg(t, 0, 0.1));
       levels.forEach((l, i) => { fade(l, seg(t, 0.08 + i * 0.14, 0.2 + i * 0.14)); l.setAttribute("transform", `translate(0 ${Math.sin(now / 900 + i) * 3})`); });
-      counts.forEach((c, i) => fade(c, seg(t, 0.14 + i * 0.14, 0.24 + i * 0.14))); fade(countHead, seg(t, 0.14, 0.24));
-      fade(dots, seg(t, 0.66, 0.8) * (0.6 + 0.4 * Math.sin(now / 300))); fade(cap, seg(t, 0.75, 0.9));
+      counts.forEach((c, i) => fade(c, seg(t, 0.14 + i * 0.14, 0.24 + i * 0.14)));
+      fade(dots, seg(t, 0.66, 0.8) * (0.6 + 0.4 * Math.sin(now / 300)));
     } };
   })();
 
@@ -338,7 +333,6 @@
     // the interface between them: all either can see of the other
     const iface = el("g", {}, g);
     el("line", { x1: 300, y1: 130, x2: 300, y2: 300, class: "pencil soft", "stroke-width": 1.2, "stroke-dasharray": "4 5" }, iface);
-    text(iface, 300, 120, "interface", "mono");
     // the nested models, each struck out
     const models = [["Alice's model of Bob", 150, 110], ["Bob's model of Alice", 450, 110], ["Alice's model of Bob's model of Alice", 150, 60], ["Bob's model of Alice's model of Bob", 450, 60]].map(([s2, x, y], i) => {
       const m = el("g", {}, g); const tt = text(m, x, y, s2, "label"); tt.style.fontSize = "14px";
@@ -349,19 +343,17 @@
     const oval = el("g", {}, g);
     el("ellipse", { cx: 300, cy: 440, rx: 170, ry: 48, class: "pencil warm", "stroke-width": 2 }, oval);
     el("ellipse", { cx: 300, cy: 440, rx: 170, ry: 48, class: "fillwarm", opacity: 0.1 }, oval);
-    text(oval, 300, 446, "sources of randomness", "label warmt");
     // a few shocks jiggling inside it
     const r = mulberry32(3), kicks = [];
     for (let k = 0; k < 18; ++k) kicks.push({ x: 160 + k * 16.5, h: gauss(r) * 16, el: el("line", { x1: 160 + k * 16.5, x2: 160 + k * 16.5, y1: 470, y2: 470, class: "pencil warm", "stroke-width": 2 }, oval) });
     const arrows = heads.map((h, i) => stroke(g, pencil([[300 + (i ? 60 : -60), 392], [h.x + (i ? -8 : 8), 330 - 40 - 10 + 60], [h.x + (i ? -2 : 2), h.y + 12]], 80 + i, 2), "warm", 1.8));
-    const cap = text(g, 300, 560, "both estimate the same thing: the shocks", "mono");
     return { g, update(t, now) {
       heads.forEach((h) => fade(h.h, seg(t, 0, 0.1))); fade(iface, seg(t, 0.02, 0.12) * (1 - 0.6 * seg(t, 0.45, 0.6)));
       heads.forEach((h, i) => { fade(h.mini, seg(t, 0.04, 0.14) * (1 - 0.6 * seg(t, 0.4, 0.55))); h.cross.forEach((c) => c.set(seg(t, 0.3 + i * 0.05, 0.4 + i * 0.05))); });
       models.forEach((m, i) => { fade(m.m, seg(t, 0.02 + i * 0.04, 0.12 + i * 0.04) * (1 - 0.55 * seg(t, 0.45, 0.6))); m.strike.set(seg(t, 0.25 + i * 0.05, 0.35 + i * 0.05)); });
       fade(oval, seg(t, 0.45, 0.6));
       kicks.forEach((k, i) => { const hh = k.h * (0.6 + 0.4 * Math.sin(now / 300 + i)); k.el.setAttribute("y2", 470 - Math.abs(hh)); k.el.setAttribute("y1", 470); });
-      arrows.forEach((a) => a.set(seg(t, 0.6, 0.8))); fade(cap, seg(t, 0.8, 0.92));
+      arrows.forEach((a) => a.set(seg(t, 0.6, 0.8)));
     } };
   })();
 
@@ -393,8 +385,7 @@
     el("line", { x1: TX(tk), y1: 360, x2: TX(tk), y2: 360 - 180 * K(tk, s), class: "pencil accent", "stroke-width": 1.2, "stroke-dasharray": "3 4" }, probe);
     text(probe, TX(tk), 385, "t", "label acc");
     text(probe, TX(tk) + 10, 360 - 180 * K(tk, s) - 12, "L(t, s)", "label acc", "start");
-    const cap = text(g, 300, 570, "the impulse response: what is left of the shock at s by time t", "mono");
-    return { g, update(t) { fade(kick, seg(t, 0, 0.1)); fade(sl, seg(t, 0, 0.1)); curve.set(seg(t, 0.1, 0.55)); fade(probe, seg(t, 0.5, 0.65)); fade(cap, seg(t, 0.6, 0.75)); } };
+    return { g, update(t) { fade(kick, seg(t, 0, 0.1)); fade(sl, seg(t, 0, 0.1)); curve.set(seg(t, 0.1, 0.55)); fade(probe, seg(t, 0.5, 0.65)); } };
   })();
 
   // ------------------------------------------------------------------ 4. responses add up to the path
@@ -407,18 +398,15 @@
     const rows = { w: 128, L: 262, p: 342, out: 505 }, WS = 13, LS = 60, OS = 12;
     for (const y of [rows.w, rows.L, rows.p, rows.out]) el("line", { x1: 50, y1: y, x2: 560, y2: y, class: "pencil soft", "stroke-width": 1 }, g);
     text(g, 50, 96, "the shocks dW", "mono", "start");
-    text(g, 50, 182, "L(t, s): the weight at t on the shock at s", "mono acc", "start");
     text(g, 50, 290, "shock × weight", "mono", "start");
     text(g, 50, 396, "Lₜ: the mean plus the sum of the products", "mono", "start");
     const shock = bars(g, w, rows.w, WS, "fillwarm", 5);
     const wt = w.map((_, j) => el("rect", { x: TX(j) - 2.5, width: 5, class: "fillacc" }, g));
     const pr = w.map((_, j) => { const r = el("rect", { x: TX(j) - 2.5, width: 5 }, g); r.style.fill = "currentColor"; return r; });
     const meanL = el("path", { d: pencil(X.map((_, k) => [TX(k), rows.out - OS * MEAN(k)]), 21, 0.1), class: "pencil", "stroke-width": 1.3, "stroke-dasharray": "5 5" }, g);
-    const meanT = text(g, TX(3), rows.out - OS * MEAN(N - 1) - 12, "the mean L̄(t)", "mono", "start");
     const path = el("path", { class: "pencil accent", "stroke-width": 2.4 }, g);
     const sumSeg = el("line", { class: "pencil accent", "stroke-width": 3.2 }, g);
     const dot = el("circle", { r: 4.5, class: "fillacc" }, g);
-    const sumT = text(g, 0, 0, "the sum", "label acc", "start");
     const now = el("line", { y1: 108, y2: 580, class: "pencil warm", "stroke-width": 1.4, "stroke-dasharray": "3 4" }, g);
     const nowT = text(g, 0, 100, "now, t", "label warmt");
     return { g, update(t) {
@@ -433,11 +421,9 @@
       path.setAttribute("d", pencil(X.slice(0, k + 1).map((_, i) => [TX(i), val(i)]), 11, 0.1));
       sumSeg.setAttribute("x1", x); sumSeg.setAttribute("x2", x); sumSeg.setAttribute("y1", rows.out - OS * MEAN(k)); sumSeg.setAttribute("y2", val(k));
       dot.setAttribute("cx", x); dot.setAttribute("cy", val(k));
-      const left = k > 0.72 * N;
-      sumT.setAttribute("x", left ? x - 8 : x + 8); sumT.setAttribute("text-anchor", left ? "end" : "start"); sumT.setAttribute("y", (rows.out - OS * MEAN(k) + val(k)) / 2 + 5);
       now.setAttribute("x1", x); now.setAttribute("x2", x); nowT.setAttribute("x", x);
-      [path, sumSeg, dot, sumT, now, nowT].forEach((n) => fade(n, on));
-      fade(meanL, seg(t, 0.02, 0.1) * 0.7); fade(meanT, seg(t, 0.06, 0.14));
+      [path, sumSeg, dot, now, nowT].forEach((n) => fade(n, on));
+      fade(meanL, seg(t, 0.02, 0.1) * 0.7);
     } };
   })();
 
@@ -455,7 +441,6 @@
     const nowl = text(g, 0, 82, "now, t", "label warmt");
     text(g, 50, 110, "player 1's signal", "mono", "start");
     const lab = text(g, 50, 560, "Ŵ¹ₜ(u): player 1's estimate, at t, of the shock at u", "label acc", "start");
-    text(g, 50, 585, "gray: the true shocks, which nobody sees", "mono", "start");
     return { g, update(t) {
       const k = 4 + Math.round(seg(t, 0.05, 0.9) * (N - 5));
       sig.forEach((c, j) => fade(c, j <= k ? 0.75 : 0));
@@ -477,10 +462,9 @@
     const xh = stroke(g, pencil(Xhat[0].map((v, k) => [TX(k), 300 - v * 16]), 22, 0.1), "accent", 2.6);
     const l1 = text(g, 50, 110, "X, the state", "label", "start");
     const l2 = text(g, 50, 135, "X̂¹, the kernel of X run against Ŵ¹", "label acc", "start");
-    const l3 = text(g, 50, 160, "dots: player 1's signal", "mono", "start");
     const chk = text(g, 300, 560, "", "mono");
     return { g, update(t) {
-      xs.set(seg(t, 0, 0.35)); xh.set(seg(t, 0.25, 0.75)); fade(l1, seg(t, 0, 0.15)); fade(l2, seg(t, 0.25, 0.4)); fade(l3, seg(t, 0, 0.15));
+      xs.set(seg(t, 0, 0.35)); xh.set(seg(t, 0.25, 0.75)); fade(l1, seg(t, 0, 0.15)); fade(l2, seg(t, 0.25, 0.4));
       chk.textContent = `same as a Kalman filter computed directly: largest gap ${checkFilter.toExponential(0)}`; fade(chk, seg(t, 0.7, 0.85));
     } };
   })();
@@ -498,7 +482,6 @@
       c.style.opacity = Math.min(1, Math.abs(v) * 1.3);
     }
     el("rect", { x: 90, y: H0, width: 180, height: 180, class: "pencil soft", "stroke-width": 1 }, hm);
-    text(hm, 180, H0 + 205, "player 2's forecast, as a kernel", "mono");
     text(hm, 180, H0 + 222, "row: date t · column: shock u", "mono");
     const arrow = el("g", {}, g);
     // the kernel times the noise-state gives the forecast path below: × between them, the arrow down to the path
@@ -506,7 +489,6 @@
     el("path", { d: "M460,258 L460,306 M452,297 L460,307 L468,297", class: "pencil", "stroke-width": 1.6 }, arrow);
     const w1 = el("g", {}, g);
     for (let u = 0; u < N; ++u) { const v = What[0][N - 1][u]; el("rect", { x: 370 + u * (180 / N), y: v >= 0 ? 150 - v * 20 : 150, width: 180 / N - 0.6, height: Math.abs(v) * 20, class: "fillacc" }, w1); }
-    text(w1, 460, 245, "run against player 1's noise-state", "mono");
     el("line", { x1: 50, y1: 450, x2: 560, y2: 450, class: "pencil soft", "stroke-width": 1 }, g);
     const x2 = stroke(g, pencil(Xhat[1].map((v, k) => [TX(k), 450 - v * 16]), 31, 0.1), "warm", 2);
     const x12 = stroke(g, pencil(X12.map((v, k) => [TX(k), 450 - v * 16]), 32, 0.1), "accent", 2.6);
@@ -542,16 +524,11 @@
     const draw = (h, n, cls, seed) => el("path", { d: pencil(h.map((v, k) => [T(k), 470 - v * 320]), seed + n, 0.1), class: "pencil " + cls, "stroke-width": 1.4 }, g);
     const pl = low.map((h, n) => draw(h, n, "warm", 60)), ph = high.map((h, n) => draw(h, n, "", 80));
     const fin = el("path", { d: pencil(low[5].map((v, k) => [T(k), 470 - v * 320]), 99, 0.1), class: "pencil accent", "stroke-width": 3 }, g);
-    const lab = text(g, 300, 520, "the forecast's response to a shock, by age", "mono");
     const it = text(g, 540, 110, "", "label acc", "end");
-    const l1 = text(g, 540, 135, "start: trusts the signal too much", "mono", "end");
-    const l2 = text(g, 540, 155, "start: trusts it too little", "mono warmt", "end"); l2.style.fill = "var(--warm)";
-    const cap = text(g, 300, 560, "both land on the same kernel (a filter's here, standing in for a game's)", "mono");
     return { g, update(t) {
       const n = Math.min(5, Math.floor(seg(t, 0.05, 0.75) * 6));
       [pl, ph].forEach((arr) => arr.forEach((p, i) => { p.style.opacity = i > n ? 0 : i === n ? 0.9 : 0.12 + 0.35 * (i / Math.max(1, n)); }));
       fade(fin, seg(t, 0.75, 0.85)); it.textContent = `iteration ${n + 1}`;
-      fade(lab, seg(t, 0, 0.1)); fade(l1, seg(t, 0, 0.1)); fade(l2, seg(t, 0, 0.1)); fade(cap, seg(t, 0.8, 0.95));
     } };
   })();
 

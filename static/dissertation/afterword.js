@@ -48,28 +48,28 @@
     }
     const guides = [line(g, 170, 170, 170, 430, 11, "accent", 1.2), line(g, 430, 170, 430, 430, 12, "accent", 1.2)];
     guides.forEach((q) => { q.a.setAttribute("stroke-dasharray", "4 6"); });
-    const lab = text(g, 300, 470, "the same length", "label acc");
-    const cap = text(g, 300, 520, "the brain tells us just enough to act on", "mono");
     return { g, update(t) {
       shafts.forEach((s, i) => s.set(seg(t, 0.02 + i * 0.06, 0.25 + i * 0.06)));
       fins.forEach((f, i) => f.set(seg(t, 0.18 + i * 0.06, 0.4 + i * 0.06)));
       guides.forEach((q) => { q.a.style.strokeDasharray = "4 6"; q.a.style.strokeDashoffset = 0; q.b.style.display = "none"; fade(q.a, seg(t, 0.6, 0.75)); });
-      fade(lab, seg(t, 0.68, 0.8)); fade(cap, seg(t, 0.8, 0.95));
     } };
   })();
 
   // -- lineages: branching from a root, most ending, a few carrying on, and the ground moving under them
   scenes.selection = (() => {
-    const g = group("selection"), r = mulberry32(31), segs = [];
+    const g = group("selection"), r = mulberry32(377), segs = [];
     const words = ["laws", "economies", "languages", "traditions", "fairness"];
     const tips = [];
+    // a living lineage grows until it reaches the top; a dead one stops after a few generations. Each branch leans a
+    // little back toward upright, so the living ones climb rather than sprawl. The seed is one whose tree stays on the
+    // page and whose living tips spread wide enough for the five words.
     function grow(x, y, a, depth, alive, seed) {
       const L = 46 + r() * 20, nx = x + Math.cos(a) * L, ny = y - Math.sin(a) * L;
       segs.push({ s: stroke(g, pencil([[x, y], [nx, ny]], seed, 1.2), alive ? "" : "soft", alive ? 1.7 : 1.1), depth });
-      if (depth >= 6 || ny < 150) { if (alive) tips.push([nx, ny]); return; }
+      if (alive ? ny < 190 || depth >= 11 : depth >= 6 || ny < 200) { if (alive) tips.push([nx, ny]); return; }
       const kids = r() < 0.75 ? 2 : 1;
       for (let k = 0; k < kids; ++k) {
-        const na = a + (kids === 2 ? (k ? 0.42 : -0.42) : 0) + (r() - 0.5) * 0.3;
+        const na = a + 0.1 * (Math.PI / 2 - a) + (kids === 2 ? (k ? 0.36 : -0.36) : 0) + (r() - 0.5) * 0.3;
         // most branches die out; the ones that live are the ones still reaching the top
         grow(nx, ny, na, depth + 1, alive && (r() < 0.62 || depth < 2), seed * 7 + k + 1);
       }
@@ -77,16 +77,20 @@
     grow(300, 560, Math.PI / 2, 0, true, 3);
     tips.sort((a, b) => a[0] - b[0]);
     const pick = tips.length <= 5 ? tips : [0, 0.25, 0.5, 0.75, 1].map((q) => tips[Math.round(q * (tips.length - 1))]);
+    // each word above its tip, nudged sideways just enough that neighbors do not touch
     const labels = pick.map((p, i) => text(g, p[0], p[1] - 14, words[i] || "", "label acc"));
+    const wd = labels.map((l, i) => { try { return l.getComputedTextLength() || 8 * words[i].length; } catch (e) { return 8 * words[i].length; } });
+    const lx = pick.map((p) => p[0]);
+    for (let i = 1; i < lx.length; ++i) lx[i] = Math.max(lx[i], lx[i - 1] + (wd[i - 1] + wd[i]) / 2 + 12);
+    const shift = lx.reduce((a, v, i) => a + v - pick[i][0], 0) / lx.length;
+    labels.forEach((l, i) => l.setAttribute("x", (lx[i] - shift).toFixed(1)));
     const band = el("path", { class: "pencil accent soft", "stroke-width": 1.4, "stroke-dasharray": "3 5" }, g);
-    const cap = text(g, 300, 590, "far from stationary", "mono");
     return { g, update(t, now) {
-      segs.forEach((q) => q.s.set(seg(t, 0.02 + q.depth * 0.08, 0.14 + q.depth * 0.08)));
-      labels.forEach((l, i) => fade(l, seg(t, 0.6 + i * 0.03, 0.7 + i * 0.03)));
+      segs.forEach((q) => q.s.set(seg(t, 0.02 + q.depth * 0.055, 0.12 + q.depth * 0.055)));
+      labels.forEach((l, i) => fade(l, seg(t, 0.66 + i * 0.03, 0.76 + i * 0.03)));
       // the environment the tips answer to keeps moving
-      const pts = []; for (let i = 0; i <= 30; ++i) { const x = 40 + 520 * i / 30; pts.push([x, 118 + 14 * Math.sin(i / 3 + now / 1400)]); }
+      const pts = []; for (let i = 0; i <= 30; ++i) { const x = 40 + 520 * i / 30; pts.push([x, 84 + 14 * Math.sin(i / 3 + now / 1400)]); }
       band.setAttribute("d", pencil(pts, 99, 0.2)); fade(band, seg(t, 0.72, 0.85));
-      fade(cap, seg(t, 0.8, 0.95));
     } };
   })();
 
@@ -103,12 +107,11 @@
       pts.push(el("circle", { cx: X(d), cy: Y(clamp(b, 2, 108)), r: 4, class: "fillacc" }, g));
     }
     const fit = line(g, X(0), Y(18), X(99), Y(18 + 0.62 * 99), 5, "warm", 2.4);
-    const lab = text(g, 420, 170, "higher number, higher bid", "label warmt");
     const note = text(g, 310, 575, "illustrative: the shape of the result, not the study's data", "mono");
     return { g, update(t) {
       ax.forEach((a) => a.set(seg(t, 0, 0.15))); fade(xl, seg(t, 0.05, 0.2)); fade(yl, seg(t, 0.05, 0.2));
       pts.forEach((p, i) => fade(p, seg(t, 0.12 + i * 0.01, 0.2 + i * 0.01) * 0.85));
-      fit.set(seg(t, 0.62, 0.82)); fade(lab, seg(t, 0.78, 0.9)); fade(note, seg(t, 0.85, 1));
+      fit.set(seg(t, 0.62, 0.82)); fade(note, seg(t, 0.85, 1));
     } };
   })();
 
@@ -124,14 +127,13 @@
       pages.push({ intro, body });
     }
     const wall = line(g, 40, 236, 560, 236, 77, "warm", 3);
-    const wl = text(g, 300, 226, "a barrier", "label warmt halo");
     return { g, update(t) {
       pages.forEach((p, k) => {
         p.intro.forEach((l, i) => l.set(seg(t, 0.02 + k * 0.06 + i * 0.02, 0.12 + k * 0.06 + i * 0.02)));
         // below the wall the lines only get so far before they stop
         p.body.forEach((l, i) => l.set(seg(t, 0.35 + k * 0.04, 0.6 + k * 0.04) * (0.25 + 0.2 * ((i * 7 + k * 3) % 5) / 4)));
       });
-      wall.set(seg(t, 0.3, 0.45)); fade(wl, seg(t, 0.4, 0.5));
+      wall.set(seg(t, 0.3, 0.45));
     } };
   })();
 
@@ -171,10 +173,9 @@
     }
     const pts = []; for (let x = 60; x <= 540; x += 6) pts.push([x, 300 - f(x)]);
     const curve = stroke(g, pencil(pts, 3, 0.3), "warm", 2.6);
-    const q = text(g, 300, 520, "can we tell it apart from randomness?", "label");
     return { g, update(t) {
       dots.forEach((d, i) => fade(d, seg(t, 0.02 + (i % 40) * 0.005, 0.1 + (i % 40) * 0.005) * (0.8 - 0.35 * seg(t, 0.6, 0.8))));
-      fade(q, seg(t, 0.2, 0.35)); curve.set(seg(t, 0.55, 0.85));
+      curve.set(seg(t, 0.55, 0.85));
     } };
   })();
 

@@ -51,19 +51,19 @@
               out to study.</p>
             <p><b>The noise-state.</b> (<a href="{{ get_url(path='dissertation/idea/') }}">illustrated</a>) Each player keeps estimates of the primitive shocks instead of belief hierarchies about
               the endogenous state. Every linear quantity is a deterministic mean plus an impulse-response kernel against
-              those shocks, and taking a player's expectation changes the integrator and nothing else, so the tower of
+              those shocks, and taking a player’s expectation changes the integrator and nothing else, so the tower of
               expectations closes. Under perfect information the estimates are the shocks themselves and the kernels are the
-              model's ordinary impulse responses.</p>
-            <p><b>The information wedge.</b> (<a href="{{ get_url(path='dissertation/wedge/') }}">illustrated</a>) The shadow price of changing another player's beliefs. It breaks separation and
-              vanishes when the loop is cut. In the plots it is the part of a player's first-order condition that exists only
+              model’s ordinary impulse responses.</p>
+            <p><b>The information wedge.</b> (<a href="{{ get_url(path='dissertation/wedge/') }}">illustrated</a>) The shadow price of changing another player’s beliefs. It breaks separation and
+              vanishes when the loop is cut. In the plots it is the part of a player’s first-order condition that exists only
               because the others read its actions in their signals.</p>
             <p><b>The solver.</b> Equilibrium is a deterministic fixed point in the kernels. It iterates best responses, with
               Anderson acceleration, on piecewise Chebyshev nodes in shock age, or on a triangle of dates and shock times for
               a finite horizon, until the kernels stop moving.</p>
             <p><b>The games.</b> The tabs follow the chapters: the finite-horizon baseline (1), the stationary game (3),
-              Kyle&ndash;Back trading with several informed traders (4) and a cycle of local markets (5). Chapter 2, on
-              delayed signals, and Chapter 6, on monitored deviations, have no tab yet; the model editor takes any game the
-              solver supports.</p>
+              Kyle&ndash;Back trading with several informed traders (4), a cycle of local markets (5), and a market maker
+              whose deviations the trader can or cannot see (6). Chapter 2, on delayed signals, has no tab yet; the model
+              editor takes any game the solver supports.</p>
           </div>
         </div>
       </details>
@@ -118,7 +118,7 @@
         <div class="row">
           <label for="sweepkey" class="small muted">Vary</label><select id="sweepkey"></select>
           <button class="secondary" id="sweepbtn">Sweep</button>
-          <span class="small muted" id="sweepnote">Eleven solves across the slider's range, the others held where they are.</span>
+          <span class="small muted" id="sweepnote">Eleven solves across the slider’s range, the others held where they are.</span>
         </div>
         <div class="plot tall" id="psweep"></div>
         <p class="caption" id="sweepcap"></p>
@@ -127,7 +127,7 @@
       <div class="notes">
         <p>The solver is a C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a> 2.0 (MIT license)
           with the same equations and algorithms: the stationary and spectral engines, transitions with their past,
-          band, buffer and march in T, and the refinement and stability checks. On its test grid its costs,
+          band, buffer and march in T, monitored deviations and instant observations, and the refinement and stability checks. On its test grid its costs,
           kernels, loss paths and first-order-condition terms agree with the Python package to 1e-10 or better.</p>
         <p>To solve games yourself, the Python package is on <a href="https://pypi.org/project/noisestate/">PyPI</a>:
           <code>pip install noisestate</code> (source on <a href="https://github.com/sbabichenko/noisestate">GitHub</a>).

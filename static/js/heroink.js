@@ -268,10 +268,10 @@
     const c = cv.getBoundingClientRect(), h = hero.getBoundingClientRect(), k = cv.width / Math.max(1, c.width);
     return { c0: (h.left - c.left) * k, c1: (h.right - c.left) * k, wide: c.width > h.width + 40, h0: h.height * k };
   }
-  function geometry() {
+  function geometry(col = column()) {
     // the canvas runs on below the hero (home.css) so the mesh can fade out slowly; its size and placement
     // still follow the hero's own height H0, so the extra run adds mesh below without rescaling it
-    const W = cv.width, H = cv.height, col = column(), H0 = Math.min(H, col.h0 || H);
+    const W = cv.width, H = cv.height, H0 = Math.min(H, col.h0 || H);
     const side = col.wide ? Math.max(H0 * 2.1, W * 1.08) : H0 * 2.1;
     const ox = col.wide ? W - side * 0.96 : W - side * 0.92, oy = (H0 - side) / 2;
     return { W, H, H0, side, ox, oy, col,
@@ -279,27 +279,43 @@
       ux: (X) => LO + ((X - ox) / side) * (HI - LO), uy: (Y) => HI - ((Y - oy) / side) * (HI - LO) };
   }
 
-  let pointer = null, lensAt = 0;                   // canvas pixels, and when the pointer last moved
-  function draw(now) {
-    const dpr = fit(), G = geometry(), { W, H, px, py } = G;
-    ctx.clearRect(0, 0, W, H);
-    const dark = document.documentElement.classList.contains("dark");
-    const base = dark ? "255,255,255" : "20,22,40";
-    const glow = dark ? "150,180,255" : "31,63,208";
-    ctx.lineWidth = Math.max(0.6, 0.8 * dpr);
-    ctx.lineCap = "round";
-    // the vignette is per edge, not a CSS mask: a clipped mask cuts lines off square, this fades them
-    const { col } = G, cw = col.c1 - col.c0;
+  // The layout (the canvas's size, the column, the formula's box) is read from the page only when it may have
+  // changed, not on every frame: observers mark it stale and the next drawing reads it again.
+  let layout = null, layoutGen = 0;
+  const stale = () => { layout = null; };
+  function readLayout() {
+    const dpr = fit(), col = column(), mo = document.querySelector(".hero .motif");
+    let mr = null;
+    if (mo) {
+      const cr = cv.getBoundingClientRect(), b = mo.getBoundingClientRect();
+      mr = { l: (b.left - cr.left - 24) * dpr, r: (b.right - cr.left + 24) * dpr, t: (b.top - cr.top - 16) * dpr, b: (b.bottom - cr.top + 16) * dpr };
+    }
+    layout = { dpr, col, mr, gen: ++layoutGen };
+  }
+  if (typeof ResizeObserver !== "undefined") {
+    const ro = new ResizeObserver(stale);
+    for (const el of [cv, hero, document.documentElement, ...hero.children, ...hero.querySelectorAll(".motif")]) ro.observe(el);
+  }
+  window.addEventListener("resize", stale);
+  if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", stale);
+  (function watchDpr() {                               // a zoom or a move to another screen changes the pixel ratio
+    if (!window.matchMedia) return;
+    const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
+    const on = () => { stale(); mq.removeEventListener("change", on); watchDpr(); };
+    if (mq.addEventListener) mq.addEventListener("change", on);
+  })();
+
+  // Everything about how an edge looks that does not change from frame to frame (where it lands, how strongly
+  // the vignette, the band and the quiet patch let it show) is worked out once per layout and theme.
+  let look = null, stat = new Map();
+  function makeLook(dark) {
+    const { dpr, col, mr } = layout, G = geometry(col), { W, H } = G;
+    const cw = col.c1 - col.c0;
     const fx = col.wide ? col.c0 + cw * 0.84 : W * 0.84, fy = G.H0 * 0.5, R = 0.95 * Math.max(W * 0.55, G.H0);
     // wide: faint behind the text block (the column's left 55%), full strength everywhere else, out to both edges
     // of the window; the edges of the quiet block are soft, so lines fade in rather than stop
     const ramp = (v) => Math.min(1, Math.max(0, v));
     const quietAt = (x) => x < col.c0 ? ramp(1 - (col.c0 - x) / (0.07 * cw)) : ramp(1 - (x - (col.c0 + 0.55 * cw)) / (0.14 * cw));
-    pxPerUnit = G.side / (HI - LO) / dpr;
-    // the formula in the hero keeps a quiet patch behind it, like the text block
-    const mo = document.querySelector(".hero .motif"), cr = cv.getBoundingClientRect();
-    const mr = mo ? (() => { const b = mo.getBoundingClientRect(); return { l: (b.left - cr.left - 24) * dpr, r: (b.right - cr.left + 24) * dpr, t: (b.top - cr.top - 16) * dpr, b: (b.bottom - cr.top + 16) * dpr }; })() : null;
-    const lensR = 150 * dpr, lensOn = pointer && now - lensAt < 2500 ? 1 - Math.max(0, (now - lensAt - 1500) / 1000) : 0;
     // how strongly anything drawn at canvas height y shows: the top fades within the hero; below, the fade starts
     // partway down the hero and runs slowly to the end of the canvas, eased, so the mesh never visibly stops
     const bandAt = (y) => {
@@ -307,42 +323,174 @@
       return Math.min(top, s * s * (3 - 2 * s));
     };
     const dAt = (x, y) => col.wide ? quietAt(x) * 0.78 : Math.hypot(x - fx, (y - fy) * 0.85) / R;
-    // how strongly the settled mesh shows at a point; the drag's highlight never shows less than this
-    const meshAt = (x, y) => { const b = bandAt(y); return (dark ? 0.38 : 0.44) * fade * Math.max(0, (1 - Math.min(1, dAt(x, y))) ** 2) * b * b; };
-    const edge = (ax, ay, bx, by, t) => {
-      const x0 = px(ax), y0 = py(ay), x1 = px(bx), y1 = py(by);
-      const mx = (x0 + x1) / 2, my = (y0 + y1) / 2;
-      const d = dAt(mx, my);
+    return { key: layout.gen + (dark ? "d" : "l"), dark, dpr, G, W, H, mr, bandAt, dAt,
+      base: dark ? "255,255,255" : "20,22,40", glow: dark ? "150,180,255" : "31,63,208",
+      K: dark ? 0.38 : 0.44, KL: dark ? 0.5 : 0.42, KG: dark ? 0.32 : 0.28, lw: Math.max(0.6, 0.8 * dpr) };
+  }
+  function statOf(e) {
+    let s = stat.get(e);
+    if (s) return s;
+    const L = look, { px, py } = L.G, x0 = px(e.v0.x), y0 = py(e.v0.y), x1 = px(e.v1.x), y1 = py(e.v1.y);
+    const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, d = L.dAt(mx, my), band = L.bandAt(my), mr = L.mr;
+    let v = Math.max(0, (1 - Math.min(1, d)) ** 2) * band * band;
+    if (mr && mx > mr.l && mx < mr.r && my > mr.t && my < mr.b) v *= 0.3;
+    // shorter edges are drawn lighter, so a finely cut patch keeps the tone of the rest (as pencil gets lighter
+    // where it is dense) instead of going dark
+    const len = Math.hypot(x1 - x0, y1 - y0) / L.dpr;
+    v *= Math.min(1, 0.4 + len / 50);                     // full strength from about 30 px up: only fine cuts lighten
+    // the box the stroke can touch; a line wholly off the canvas leaves no ink and is not drawn
+    const m = L.lw + 2, bx0 = Math.floor(Math.min(x0, x1) - m), bx1 = Math.ceil(Math.max(x0, x1) + m);
+    const by0 = Math.floor(Math.min(y0, y1) - m), by1 = Math.ceil(Math.max(y0, y1) + m);
+    const off = bx1 < 0 || by1 < 0 || bx0 > L.W || by0 > L.H;
+    // settled and away from the lens, its ink is K v in the base color (what edge() below draws at fade 1)
+    const ca = L.K * 1 * v + L.KL * 0 * band * band;
+    s = { x0, y0, x1, y1, mx, my, d, band, v, off, bx0, bx1, by0, by1, m, ca, cs: `rgba(${L.base},${ca})`, inC: !off && d < 1 && ca >= INK };
+    stat.set(e, s);
+    return s;
+  }
+
+  // The settled mesh (every cut whose glow is over) lives on a hidden canvas, drawn at full strength in the
+  // mesh's own order, and is copied onto the page each frame; only the cuts still glowing are drawn line by line.
+  // It holds the longest run of settled edges from the start of the mesh's order (new edges join at its end), so
+  // copying it and drawing the rest on top lays down every line in the same order as drawing them all. When an
+  // edge leaves the mesh (it was split) the hidden canvas is drawn again from scratch.
+  const cache = document.createElement("canvas"), cctx = cache.getContext("2d");
+  let cached = [], cacheKey = "", cacheMesh = null;
+  // strokes fainter than half a step of an 8-bit channel leave no ink, and are not drawn
+  const INK = 0.5 / 255;
+  let prev = null;                                         // the last frame, when only boxes of it need redrawing
+  // the boxes (pixel bounds bx0 by0 bx1 by1), as runs of 48-pixel tiles along each row of tiles
+  function spans(boxes, W, H) {
+    const T = 48, nx = Math.ceil(W / T), ny = Math.ceil(H / T), on = new Uint8Array(nx * ny), out = [];
+    for (const b of boxes) {
+      const y0 = Math.max(0, Math.floor(b.by0 / T)), y1 = Math.min(ny - 1, Math.floor(b.by1 / T));
+      for (let y = y0; y <= y1; ++y) {
+        let lo = b.bx0, hi = b.bx1;
+        if (b.x0 !== undefined && b.y0 !== b.y1) {
+          // a line: only the tiles it passes through (every pixel within m of it), row by row of tiles
+          const m = b.m, ya = Math.max(Math.min(b.y0, b.y1), y * T - m), yb = Math.min(Math.max(b.y0, b.y1), (y + 1) * T + m);
+          if (ya > yb) continue;
+          const xa = b.x0 + (b.x1 - b.x0) * (ya - b.y0) / (b.y1 - b.y0), xb = b.x0 + (b.x1 - b.x0) * (yb - b.y0) / (b.y1 - b.y0);
+          lo = Math.min(xa, xb) - m; hi = Math.max(xa, xb) + m;
+        }
+        const x0 = Math.max(0, Math.floor(lo / T)), x1 = Math.min(nx - 1, Math.floor(hi / T));
+        for (let x = x0; x <= x1; ++x) on[y * nx + x] = 1;
+      }
+    }
+    for (let y = 0; y < ny; ++y) for (let x = 0; x < nx; ++x) {
+      if (!on[y * nx + x]) continue;
+      let x1 = x; while (x1 + 1 < nx && on[y * nx + x1 + 1]) ++x1;
+      out.push({ x: x * T, y: y * T, w: Math.min(W, (x1 + 1) * T) - x * T, h: Math.min(H, (y + 1) * T) - y * T });
+      x = x1;
+    }
+    return out;
+  }
+  const cstroke = (s) => { cctx.strokeStyle = s.cs; cctx.beginPath(); cctx.moveTo(s.x0, s.y0); cctx.lineTo(s.x1, s.y1); cctx.stroke(); };
+  const isSettled = (t, now) => { if (t > now) return false; const age = (now - t) / 2000; return !((age < 1 ? 1 - age : 0) > 0.02); };
+  // brings the hidden canvas up to date; returns the edges (and their times) still to be drawn one by one, and
+  // the edges whose lines on the hidden canvas came or went (null: all of it changed)
+  function syncCache(now) {
+    let rest = [], removed = [], add = [];
+    let whole = cacheKey !== look.key || cacheMesh !== mesh || cache.width !== look.W || cache.height !== look.H;
+    if (!whole) {
+      const P = cached, active = mesh.activeEdges.has ? (e) => mesh.activeEdges.has(e) : () => true;
+      let j = 0, open = true;
+      for (const e of mesh.activeEdges) {
+        if (j < P.length) {
+          if (P[j] === e) { ++j; continue; }
+          while (j < P.length && P[j] !== e && !active(P[j])) removed.push(P[j++]);
+          if (j < P.length) { if (P[j] === e) { ++j; continue; } whole = true; break; }   // out of order
+        }
+        let t = drawn.get(e);
+        if (t === undefined) { t = now; drawn.set(e, t); }
+        if (open && isSettled(t, now)) add.push(e); else { open = false; rest.push(e, t); }
+      }
+      if (!whole) for (; j < P.length; ++j) removed.push(P[j]);
+    }
+    if (whole) {
+      cache.width = look.W; cache.height = look.H;       // (this also clears it)
+      cacheKey = look.key; cacheMesh = mesh; cached = [];
+      rest = []; removed = []; add = [];
+      let open = true;
+      for (const e of mesh.activeEdges) {
+        let t = drawn.get(e);
+        if (t === undefined) { t = now; drawn.set(e, t); }
+        if (open && isSettled(t, now)) add.push(e); else { open = false; rest.push(e, t); }
+      }
+    }
+    cctx.lineWidth = look.lw; cctx.lineCap = "round";
+    const changed = [];
+    if (removed.length) {                                  // a line left: draw the rest again, in order
+      const gone = new Set(removed);
+      for (const e of removed) { const s = stat.get(e); if (s && s.inC) changed.push(s); }
+      cached = cached.filter((e) => !gone.has(e));
+      cctx.clearRect(0, 0, cache.width, cache.height);
+      for (const e of cached) { const s = stat.get(e); if (s.inC) cstroke(s); }
+    }
+    for (const e of add) { const s = statOf(e); if (s.inC) { cstroke(s); changed.push(s); } cached.push(e); }
+    return { rest, changed: whole ? null : changed };
+  }
+  let pointer = null, lensAt = 0;                   // canvas pixels, and when the pointer last moved
+  function draw(now) {
+    if (!layout) readLayout();
+    const dark = document.documentElement.classList.contains("dark");
+    if (!look || look.key !== layout.gen + (dark ? "d" : "l")) { look = makeLook(dark); stat = new Map(); }
+    if (look.W !== cv.width || look.H !== cv.height) { stale(); readLayout(); look = makeLook(dark); stat = new Map(); }
+    const L = look, { dpr, G, W, H, bandAt, glow } = L, { px, py } = G;
+    const meshAt = (x, y) => { const b = bandAt(y); return L.K * fade * Math.max(0, (1 - Math.min(1, L.dAt(x, y))) ** 2) * b * b; };
+    ctx.lineWidth = L.lw;
+    ctx.lineCap = "round";
+    pxPerUnit = G.side / (HI - LO) / dpr;
+    const lensR = 150 * dpr, lensOn = pointer && now - lensAt < 2500 ? 1 - Math.max(0, (now - lensAt - 1500) / 1000) : 0;
+    // the vignette is per edge, not a CSS mask: a clipped mask cuts lines off square, this fades them
+    const edge = (e, t) => {
+      const s = statOf(e);
       // the lens reaches past the vignette, so the quiet corner under the name wakes up too
       let lens = 0;
-      if (lensOn) { const q = Math.hypot(mx - pointer.x, my - pointer.y) / lensR; if (q < 1) lens = lensOn * (1 - q) * (1 - q); }
-      if (d >= 1 && lens === 0) return;
+      if (lensOn) { const q = Math.hypot(s.mx - pointer.x, s.my - pointer.y) / lensR; if (q < 1) lens = lensOn * (1 - q) * (1 - q); }
+      if (s.d >= 1 && lens === 0) return;
       // and a fade into the top and bottom of the band, so no line stops on the canvas edge
-      // the top fades within the hero; below, the fade starts partway down the hero and runs slowly to the end of
-      // the canvas, eased, so there is no place where the mesh visibly stops, lens or not
-      const band = bandAt(my);
-      let v = Math.max(0, (1 - Math.min(1, d)) ** 2) * band * band;
-      if (mr && mx > mr.l && mx < mr.r && my > mr.t && my < mr.b) v *= 0.3;
-      // shorter edges are drawn lighter, so a finely cut patch keeps the tone of the rest (as pencil gets lighter
-      // where it is dense) instead of going dark
-      const len = Math.hypot(x1 - x0, y1 - y0) / dpr;
-      v *= Math.min(1, 0.4 + len / 50);                   // full strength from about 30 px up: only fine cuts lighten
+      const band = s.band, v = s.v;
       const age = (now - t) / 2000;                       // a new cut glows, then settles
       const fresh = age < 1 ? 1 - age : 0;
-      const a = (dark ? 0.38 : 0.44) * fade * v + (dark ? 0.5 : 0.42) * lens * band * band;
-      ctx.strokeStyle = fresh > 0.02 || lens > 0.05
-        ? `rgba(${glow},${a + 0.55 * Math.max(fresh * v, lens * 0.6) * (dark ? 0.32 : 0.28)})`
-        : `rgba(${base},${a})`;
+      const a = L.K * fade * v + L.KL * lens * band * band;
+      const glowing = fresh > 0.02 || lens > 0.05, al = glowing ? a + 0.55 * Math.max(fresh * v, lens * 0.6) * L.KG : a;
+      if (s.off || al < INK) return;                      // no ink on the canvas either way
+      ctx.strokeStyle = glowing ? `rgba(${glow},${al})` : `rgba(${L.base},${al})`;
       ctx.beginPath();
-      ctx.moveTo(x0, y0);
-      ctx.lineTo(x1, y1);
+      ctx.moveTo(s.x0, s.y0);
+      ctx.lineTo(s.x1, s.y1);
       ctx.stroke();
     };
-    for (const e of mesh.activeEdges) {
-      let t = drawn.get(e);
-      if (t === undefined) { t = now; drawn.set(e, t); }
-      if (t > now) continue;                              // a planned cut not yet due
-      edge(e.v0.x, e.v0.y, e.v1.x, e.v1.y, t);
+    const rej = nothing ? pickRejections(now, G) : null;
+    if (lensOn || fade !== 1) {                           // the lens or the fade out: every line, one by one
+      ctx.clearRect(0, 0, W, H);
+      for (const e of mesh.activeEdges) {
+        let t = drawn.get(e);
+        if (t === undefined) { t = now; drawn.set(e, t); }
+        if (t > now) continue;                            // a planned cut not yet due
+        edge(e, t);
+      }
+      prev = null;
+    } else {
+      // the hidden canvas, then the glowing cuts on top. When the last frame was the same kind (nothing drawn over
+      // it but glowing cuts and the 404's marks), only the boxes that changed are cleared and copied again: the
+      // lines drawn last frame, the ones drawn now and the ones that joined or left the hidden canvas
+      const { rest, changed } = syncCache(now), boxes = [];
+      for (let i = 0; i < rest.length; i += 2) if (rest[i + 1] <= now) boxes.push(statOf(rest[i]));
+      if (rej) boxes.push(...rej);
+      const quiet = !stroke && !(trace && trace.length) && !marks.length && !(ripple && now - ripple.t < 1100);
+      if (prev && changed && prev.key === L.key) {
+        for (const r of spans(prev.boxes.concat(changed, boxes), W, H)) {
+          ctx.clearRect(r.x, r.y, r.w, r.h);
+          ctx.drawImage(cache, r.x, r.y, r.w, r.h, r.x, r.y, r.w, r.h);
+        }
+      } else {
+        ctx.clearRect(0, 0, W, H);
+        ctx.drawImage(cache, 0, 0);
+      }
+      for (let i = 0; i < rest.length; i += 2) if (rest[i + 1] <= now) edge(rest[i], rest[i + 1]);
+      prev = quiet ? { key: L.key, boxes } : null;
     }
     // the ridge being drawn; after the release it dims to a faint trace that stays while the picture does
     // drawn piece by piece: it comes in from nothing over its first stretch, like a pencil touching down, and it
@@ -388,7 +536,7 @@
       ctx.beginPath(); ctx.arc(px(m.x), py(m.y), (5 + 6 * k) * dpr, 0, 2 * Math.PI); ctx.stroke();
     }
     marks = marks.filter((m) => m.f < 1);
-    if (nothing) drawRejections(now, G, dark);
+    if (nothing) drawRejections(now, G, L.dark);
     if (stroke && stroke.holding && holdRing) {        // a hold: a small ring breathing under the pointer
       const k = 0.5 + 0.5 * Math.sin((now - holdRing.t) / 90);
       ctx.strokeStyle = `rgba(${glow},${(0.35 + 0.2 * k) * bandAt(holdRing.y)})`; ctx.lineWidth = 1.3 * dpr;
@@ -405,13 +553,18 @@
 
   // 404: candidate midpoints light up and are turned down, one after another
   const rejections = [];
-  function drawRejections(now, G, dark) {
-    const edges = [...mesh.activeEdges];
+  // the marks shown now, and the boxes they cover
+  function pickRejections(now, G) {
+    const edges = mesh.activeEdges;
     if (!rejections.length || now - rejections[rejections.length - 1].t > 300) {
       const e = edges[Math.floor(Math.random() * edges.length)];
       if (e) rejections.push({ x: (e.v0.x + e.v1.x) / 2, y: (e.v0.y + e.v1.y) / 2, t: now });
     }
     while (rejections.length && now - rejections[0].t > 1800) rejections.shift();
+    const dpr = Math.min(2, window.devicePixelRatio || 1), m = 6 * dpr * 1.6 + 1.4 * dpr + 2;
+    return rejections.map((r) => { const X = G.px(r.x), Y = G.py(r.y); return { bx0: Math.floor(X - m), bx1: Math.ceil(X + m), by0: Math.floor(Y - m), by1: Math.ceil(Y + m) }; });
+  }
+  function drawRejections(now, G, dark) {
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     for (const r of rejections) {
       const age = (now - r.t) / 1800, X = G.px(r.x), Y = G.py(r.y);
@@ -536,13 +689,52 @@
   });
 
   let acc = 0, settled = 0, dirty = false;
+  // The loop runs only while there is something to do. It stops while the figure is off screen (an observer says
+  // when, rather than a measurement every frame) and in the part of the hold where nothing on screen changes; a
+  // timer then wakes it when the hold is due to end, and any pointer, theme or visibility change wakes it at once.
+  let visible = true, running = false, asleep = false, timer = 0, wakeAt = 0, lastDt = 32;
+  function run() { if (!running && visible && !document.hidden) { running = true; requestAnimationFrame(frame); } }
+  function wake() {
+    if (timer) { clearTimeout(timer); timer = 0; }
+    wakeAt = 0; run();
+  }
+  // the hold's clock counts only time on screen: asleep, it has run on since the last frame, and stops when hidden
+  function hide() {
+    if (asleep) { acc += performance.now() - settled; settled = performance.now(); asleep = false; }
+  }
+  if (typeof IntersectionObserver !== "undefined") {
+    // on screen means the canvas has not scrolled off the top (the margin counts all of the page below)
+    new IntersectionObserver((en) => {
+      visible = en[en.length - 1].isIntersecting;
+      if (visible) wake(); else hide();
+    }, { rootMargin: "0px 0px 1000000px 0px" }).observe(cv);
+  }
+  document.addEventListener("visibilitychange", () => { if (document.hidden) hide(); else wake(); });
   // a theme switch changes the ink colors: redraw at once, even when the mesh is resting and nothing else would draw
-  new MutationObserver(() => { dirty = true; }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  new MutationObserver(() => { dirty = true; wake(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  for (const type of ["pointermove", "pointerdown", "pointerup", "click", "dblclick"]) document.addEventListener(type, wake, { passive: true });
+  window.addEventListener("sitefold", wake);
+  window.addEventListener("resize", wake);
+  // Other motion on the page takes turns with the mesh: its phase is announced (a "heroink:phase" event on the
+  // document, and window.heroinkPhase for late listeners). It is still in the hold once the last glow has faded,
+  // until ends (a performance.now() time), when the fade out begins.
+  let told = null;
+  function announce(now) {
+    if (nothing) return;
+    const still = phase === "hold" && acc >= 2200;
+    const ends = phase !== "hold" ? 0 : asleep ? wakeAt : pokes ? lastPoke + 60000 : now + 6500 - acc;
+    if (told && told.phase === phase && told.still === still && (!still || Math.abs(told.ends - ends) < 100)) return;
+    told = window.heroinkPhase = { phase, still, ends };
+    document.dispatchEvent(new CustomEvent("heroink:phase", { detail: told }));
+  }
   function frame(now) {
+    running = false;
+    if (document.hidden || !visible) return;              // wakes again when it is back on screen
     // about thirty frames a second, only while the figure is on screen and something is moving
-    if (!document.hidden && now - settled > 30 && cv.getBoundingClientRect().bottom > 0) {
-      const dt = Math.min(120, settled ? now - settled : 32);
-      settled = now;
+    // (woken by the hold's timer, it waits for the frame on which the running loop would have ended the hold)
+    if (now - settled > 30 && !(asleep && wakeAt && now < wakeAt - 2)) {
+      const dt = asleep ? now - settled : Math.min(120, settled ? now - settled : 32);
+      settled = now; asleep = false; lastDt = dt;
       const repaint = dirty; dirty = false;
       const lensy = pointer && now - lensAt < 2600;
       if (nothing) {
@@ -564,15 +756,27 @@
         if (pokes ? now - lastPoke > 60000 : acc > 6500) { phase = "out"; acc = 0; }
         // once the last cut's glow has faded there is nothing new to draw, unless the lens is moving
         if (acc < 2200 || lensy || stroke || (trace && trace.length) || marks.length || repaint) draw(now);
+        else if (phase === "hold") {
+          // nothing will change until the hold ends: sleep until then (a timer), unless something wakes the loop
+          // the running loop would have ended it on the first of its frames, one every lastDt, past the limit
+          asleep = true;
+          const left = pokes ? 60000 - (now - lastPoke) : 6500 - acc, step = Math.max(1, lastDt);
+          wakeAt = now + Math.max(1, Math.floor(left / step) + 1) * step;
+          timer = setTimeout(() => { timer = 0; run(); }, Math.max(0, wakeAt - performance.now() - 20));
+          announce(now);
+          return;
+        }
       } else {
         acc += dt;
         fade = Math.max(0, 1 - acc / 1600);
         if (fade <= 0) start();
         draw(now);
       }
+      announce(now);
     }
+    running = true;
     requestAnimationFrame(frame);
   }
   start();
-  requestAnimationFrame(frame);
+  wake();
 })();

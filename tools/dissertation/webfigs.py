@@ -2,9 +2,9 @@
 
 A figure whose script has been re-rendered for the site (static/dissertation/media/web/<name>.svg and
 <name>-dark.svg, with -narrow and -narrow-dark phone layouts where those came out clean, made by running the
-chapter's figure scripts through the webstyle harness) is shown as a light and a dark <picture>, in place of the .webp
-converted from the print PDF. Figures without web versions (the TikZ diagrams, the hand-made ones) are left
-as they are. Every figure image also gets its alt text from data/dissertation/figure_alts.json (figalt.py writes it
+chapter's figure scripts through the webstyle harness, or for the TikZ diagrams by webstyle/tikz_web.py) is shown as
+a light and a dark <picture>, in place of the .webp converted from the print PDF or the print diagram's .svg.
+Figures without web versions are left as they are. Every figure image also gets its alt text from data/dissertation/figure_alts.json (figalt.py writes it
 from the captions). build.py calls this last; it can also be run on its own:
 
     python3 tools/dissertation/webfigs.py
@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WEB = ROOT / "static" / "dissertation" / "media" / "web"
 PAGES = ROOT / "data" / "dissertation"
 URL = "/dissertation/media/web/"
-IMG = re.compile(r'<img loading="lazy" src="/dissertation/media/([\w.-]+)\.webp"(?: alt="([^"]*)")?\s*/>')
+IMG = re.compile(r'<img loading="lazy" src="/dissertation/media/([\w.-]+?)\.(?:webp|svg)"(?: alt="([^"]*)")?\s*/>')
 ALTS_FILE = PAGES / "figure_alts.json"
 ALTS = json.loads(ALTS_FILE.read_text()) if ALTS_FILE.exists() else {}
 
@@ -52,7 +52,7 @@ def rewrite(html):
         return picture(name, "light", alt) + picture(name, "dark", alt)
     html = IMG.sub(swap, with_alts(html))
     html = with_alts(html)
-    # mark the figures that now hold web versions, so the stylesheet drops their white print box
+    # mark the figures that now hold web versions (the stylesheet sizes them and drops the figure's frame)
     return re.sub(r'<figure([^>]*)>((?:(?!</figure>).)*?<picture class="wf-light">)',
                   lambda m: f'<figure{m.group(1) if "webfig" in m.group(1) else _add_class(m.group(1))}>{m.group(2)}',
                   html, flags=re.S)
