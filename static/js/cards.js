@@ -684,7 +684,11 @@
       // while the card is hovered, tapped or focused, it keeps its own time.
       const ink = document.getElementById("heroink");
       let meshOn = false, turn = 0;                        // turn: the shocks landed in this hold so far
-      const engaged = () => { try { return card.matches(":hover, .on, :has(:focus-visible)"); } catch (e) { return card.matches(":hover, .on"); } };
+      // a touch screen keeps :hover on whatever was tapped last, so hover only counts where there is a real pointer
+      const engaged = () => {
+        if (canHover.matches && card.matches(":hover")) return true;
+        try { return card.matches(".on, :has(:focus-visible)"); } catch (e) { return card.matches(".on"); }
+      };
       const taking = () => meshOn && !!window.heroinkPhase && !engaged();
       if (ink && "IntersectionObserver" in window) new IntersectionObserver((es) => { meshOn = es[es.length - 1].isIntersecting; if (D) loop(); }).observe(ink);
       document.addEventListener("heroink:phase", (ev) => { if (!ev.detail.still) turn = 0; if (D) loop(); });
@@ -705,9 +709,10 @@
         const E = els(), fin = E.map((e) => [e.style.transform, e.style.opacity]), now = E.map((e) => { const cs = getComputedStyle(e); return [cs.transform, cs.opacity]; });
         think.classList.add("snap"); E.forEach((e, k) => { e.style.transform = now[k][0] === "none" ? "" : now[k][0]; e.style.opacity = now[k][1]; });
         think.getBoundingClientRect(); think.classList.remove("snap");
-        think.style.setProperty("--settle", ((2 * left) / 1000).toFixed(3) + "s"); think.classList.add("settle"); think.getBoundingClientRect();
+        const dur = Math.min(2 * left, 700);             // brief: once the hover ends the drift should stop, not coast on
+        think.style.setProperty("--settle", (dur / 1000).toFixed(3) + "s"); think.classList.add("settle"); think.getBoundingClientRect();
         E.forEach((e, k) => { e.style.transform = fin[k][0]; e.style.opacity = fin[k][1]; });
-        setTimeout(() => think.classList.remove("settle"), 2 * left + 50);
+        setTimeout(() => think.classList.remove("settle"), dur + 50);
       }
       function flowStep() {
         if (!engaged()) { settle(); return loop(); }
