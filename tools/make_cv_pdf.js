@@ -32,7 +32,6 @@ const OUT = path.join(__dirname, "..", "static", "CV_Samuel_Babichenko.pdf");
   });
   await p.pdf({ path: OUT, format: "Letter", printBackground: false, preferCSSPageSize: true });
   await b.close();
-  // the CV's old file name, kept so links already sent out (applications, profiles) still open the current CV
-  require("fs").copyFileSync(OUT, path.join(path.dirname(OUT), "Resume_Samuel_Babichenko.pdf"));
-  console.log("wrote", OUT, "and its old name, Resume_Samuel_Babichenko.pdf");
+  // Resume_Samuel_Babichenko.pdf is no longer a copy of the CV: it is the one-page resume, printed elsewhere
+  console.log("wrote", OUT);
 })();
