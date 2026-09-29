@@ -47,7 +47,14 @@ PY
   ( ulimit -v 6000000; timeout 600 $SYSPY "$HERE/run.py" "$WORK/solver/fig1213.py" | grep -v '^wrote\|^web figure' || true )
 fi
 cat "$WORK/out/report.txt"
-rm -f "$SITE/static/dissertation/media/web/"*.svg; mkdir -p "$SITE/static/dissertation/media/web"
-cp "$WORK/out/"*.svg "$SITE/static/dissertation/media/web/"
+# replace only the figures this run made: each one's four layouts go first, so a phone layout skipped this time
+# does not survive from an earlier run. Figures made elsewhere (tools/figures/render.sh: Fig 1.2) and the TikZ
+# diagrams (tikz_web.py, below) are left alone.
+WEB="$SITE/static/dissertation/media/web"; mkdir -p "$WEB"
+for f in "$WORK/out/"*.svg; do
+  n="$(basename "$f" .svg)"; case "$n" in *-dark|*-narrow) continue ;; esac
+  rm -f "$WEB/$n.svg" "$WEB/$n-dark.svg" "$WEB/$n-narrow.svg" "$WEB/$n-narrow-dark.svg"
+done
+cp "$WORK/out/"*.svg "$WEB/"
 python3 "$HERE/tikz_web.py"
 python3 "$SITE/tools/dissertation/webfigs.py"
