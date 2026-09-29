@@ -1,4 +1,4 @@
-// /decision-mesh, "How the Gate Decides": the decision-mesh gate told in steps. The section narrates the live fit
+// /decisionmesh, "How the Gate Decides": the decision-mesh gate told in steps. The section narrates the live fit
 // above it (gate.js): the same coins, settings and engine, from the same worker, which returns the candidate trace
 // with each fit on the coins. Every scene is built from that run: each round's scored candidates with the segment each would split, the gate's empirical null, the lfdr
 // cutoff, the admissions, the pool variance by round, the admitted surpluses by depth, and the final surface. Only

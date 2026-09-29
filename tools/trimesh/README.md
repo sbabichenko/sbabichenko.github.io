@@ -10,7 +10,7 @@ patches, which only write diagnostics; what is added:
 
 - `trace.patch` (triangular): with `DMESH_TRACE` set, each gate round's scored candidates (position, depth,
   z, its scale, displacement, lfdr, selected) go to a CSV. `trace_rect.patch` (rectangular): an `lfdr`
-  column on the `run_candidates.csv` the engine already writes. The illustrated gate on `/decision-mesh/` draws from these; the fit
+  column on the `run_candidates.csv` the engine already writes. The illustrated gate on `/decisionmesh/` draws from these; the fit
   itself never reads them, and the meshes are byte-identical with and without the patches.
 
 - `numeric_portable.cpp`: the functions of `estimator/numeric.cpp` on Eigen instead of LAPACKE/OpenBLAS

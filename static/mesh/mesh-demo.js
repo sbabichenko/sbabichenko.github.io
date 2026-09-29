@@ -1,4 +1,4 @@
-// The geometry race on /decision-mesh ("Why Right Triangles"): noisy data from a surface, fitted four ways with the
+// The geometry race on /decisionmesh ("Why Right Triangles"): noisy data from a surface, fitted four ways with the
 // same number of free parameters: freeform triangles (decision-mesh.js), right triangles (right-mesh.js), rectangles
 // (rect-mesh.js) and a best-first regression tree, drawn side by side with the truth. Its elements' ids carry the
 // prefix race-, since the live fit on the same page has a truth canvas, a status bar and mesh-line switch of its own.
@@ -312,7 +312,7 @@
     $("scale").innerHTML = `${(-vmax).toFixed(1)} <i style="background:linear-gradient(90deg,${stops.join(",")})"></i> ${vmax.toFixed(1)}`;
   }
   function drawCurve() {
-    const c = $("cvcurve"); if (!c) return;   // the race on /decision-mesh has no error chart
+    const c = $("cvcurve"); if (!c) return;   // the race on /decisionmesh has no error chart
     fitCanvas(c);
     const ctx = c.getContext("2d"), W = c.width, H = c.height, dpr = W / c.getBoundingClientRect().width || 1;
     ctx.clearRect(0, 0, W, H);
