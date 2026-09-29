@@ -5,32 +5,13 @@
 // regime-change preset. The drawings marked "diagram" are drawn by hand.
 (function () {
   "use strict";
-  const NS = "http://www.w3.org/2000/svg";
+  const { el, seg, fade, stroke, text, poly } = Sketch;   // static/js/sketch.js
   const svg = document.getElementById("stage");
   const steps = [...document.querySelectorAll(".step")];
   const page = document.getElementById("solverpage");
   if (!svg || !steps.length || !page) return;
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs || {})) n.setAttribute(k, v); if (parent) parent.appendChild(n); return n; };
-  function mulberry32(a) { return function () { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
-  const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
-  const seg = (t, a, b) => ease(clamp((t - a) / (b - a)));
-  const fade = (n, t) => { n.style.opacity = clamp(t); };
-  function pencil(pts, seed, wob = 0.6) {
-    const r = mulberry32(seed);
-    let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
-    for (let i = 1; i < pts.length; ++i) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; d += ` Q${((x0 + x1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)},${((y0 + y1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`; }
-    return d;
-  }
-  const poly = (pts) => "M" + pts.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" L");
-  function stroke(g, d, cls, width = 1.6) {
-    const a = el("path", { d, class: "pencil " + (cls || ""), "stroke-width": width }, g);
-    const len = a.getTotalLength() || 1;
-    a.style.strokeDasharray = `${len} ${len}`; a.style.strokeDashoffset = len;
-    return { a, set(t) { a.style.strokeDashoffset = len * (1 - clamp(t)); } };
-  }
-  function text(g, x, y, s, cls, anchor = "middle") { const t = el("text", { x, y, class: cls || "", "text-anchor": anchor }, g); t.textContent = s; return t; }
+  const pencil = (pts, seed, wob = 0.6) => Sketch.pencil(pts, seed, wob);
   function box(g, x, y, label, w, cls) { const b = el("g", {}, g); const W = w || label.length * 9 + 28; el("rect", { x: x - W / 2, y: y - 19, width: W, height: 38, rx: 6, class: "box pencil " + (cls || ""), "stroke-width": 1.6 }, b); text(b, x, y + 6, label); return b; }
   function arrowHead(g, x, y, ang, cls) { return el("path", { d: `M${x - 10 * Math.cos(ang - 0.45)},${y - 10 * Math.sin(ang - 0.45)} L${x},${y} L${x - 10 * Math.cos(ang + 0.45)},${y - 10 * Math.sin(ang + 0.45)}`, class: "pencil " + (cls || ""), "stroke-width": 1.8 }, g); }
   const SUP = { "-": "⁻", 0: "⁰", 1: "¹", 2: "²", 3: "³", 4: "⁴", 5: "⁵", 6: "⁶", 7: "⁷", 8: "⁸", 9: "⁹" };
@@ -458,13 +439,11 @@
   const PACE = 0.9;
   let active = null, prog2 = 0, shown = 0, current = null, raf = 0, last = 0, from = null;
   function measure() {
-    const vh = window.innerHeight, line = window.readLine ? window.readLine() : vh * 0.55;
-    let best = null, bestD = Infinity;
-    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - line); if (d < bestD) { bestD = d; best = s; } }
-    if (bar) { const h = document.documentElement.scrollHeight - vh; bar.style.width = (h > 0 ? (100 * window.scrollY) / h : 0) + "%"; }
-    if (!best) return;
-    const r = best.getBoundingClientRect();
-    prog2 = clamp((line - r.top) / (r.height * 0.7));
+    const at = Sketch.reading(steps);
+    Sketch.progressBar(bar);
+    if (!at) return;
+    const best = at.step;
+    prog2 = at.prog;
     if (best !== active) {
       active = best;
       for (const s of steps) s.classList.toggle("on", s === best);
@@ -487,30 +466,12 @@
     }
     const sc = scenes[want];
     if (!sc) { last = 0; return; }
-    shown = reduced ? 1 : Math.abs(prog2 - shown) <= PACE * dt ? prog2 : shown + Math.sign(prog2 - shown) * PACE * dt;
+    shown = reduced ? 1 : Sketch.follow(shown, prog2, dt, PACE);
     const busy = sc.update(shown, now);
     if (busy || (!reduced && shown !== prog2) || done < jobs.length || (sc.live !== undefined ? sc.live : sc.update.length > 1)) raf = requestAnimationFrame(frame);
     else last = 0;
   }
   measure();
-  // On a phone the drawing's labels are set larger (the page's stylesheet). A label that would then run past the
-  // drawing's edge, 600 units wide, is shrunk back until it fits, measured from where it is anchored.
-  const phone = window.matchMedia("(max-width: 820px)");
-  let fitQueued = false;
-  function fitLabels() {
-    fitQueued = false;
-    const mode = phone.matches ? "phone" : "wide";
-    for (const t of svg.querySelectorAll("text")) {
-      const key = mode + t.textContent;
-      if (t.fitKey === key) continue;           // measured already, for this text at this width
-      t.fitKey = key; t.style.fontSize = "";
-      if (mode !== "phone" || !t.textContent) continue;
-      const b = t.getBBox(), x = +t.getAttribute("x") || 0, a = t.getAttribute("text-anchor") || "start";
-      const room = a === "middle" ? 2 * Math.min(x, 600 - x) : a === "end" ? x : 600 - x;
-      if (b.width > room && room > 0) t.style.fontSize = (parseFloat(getComputedStyle(t).fontSize) * room / b.width).toFixed(2) + "px";
-    }
-  }
-  const queueFit = () => { if (!fitQueued) { fitQueued = true; requestAnimationFrame(fitLabels); } };
-  new MutationObserver(queueFit).observe(svg, { childList: true, subtree: true, characterData: true });
-  phone.addEventListener("change", queueFit);
+  // on a phone, labels that would run past the drawing's edge are shrunk to fit (static/js/sketch.js)
+  Sketch.fitLabels(svg);
 })();
