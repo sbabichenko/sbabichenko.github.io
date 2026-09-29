@@ -61,6 +61,7 @@ sys.exit(1 if bad else 0)
         const def = PRESETS[g], m = presetModel(g);
         values[g] = { nodes: m.numerics.nodes };
         if (def.grid) values[g][def.grid.key] = def.grid.options[c % def.grid.options.length][0];
+        if (def.window) values[g][def.window.key] = def.window.def;
         for (const s of def.sliders) {
           const v0 = sliderParams(m, s)[0][s.param || s.key];
           if (c === 0) { values[g][s.key] = v0; continue; }

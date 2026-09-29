@@ -202,7 +202,6 @@
       + `<button type="button" aria-label="Close">&times;</button></div><div class="fz-scroll"></div>`;
     const big = document.createElement("img");
     big.src = img.currentSrc || img.src; big.alt = "";
-    if (!fig.classList.contains("webfig")) big.className = "print";     // print conversions need their white ground
     zoom.querySelector(".fz-scroll").appendChild(big);
     zoom.querySelector("button").addEventListener("click", () => closeZoom(false));
     (paper.closest(".thesis") || document.body).appendChild(zoom);   // inside .thesis, where the colors are defined

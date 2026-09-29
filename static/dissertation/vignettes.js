@@ -31,7 +31,6 @@
       P.forEach(([x, y, s]) => label(x, y + 5, s, ""));
       arrow(130, 58, 262, 28); arrow(338, 28, 452, 58); arrow(452, 94, 342, 124); arrow(258, 124, 132, 94);
       line([[150, 75], [440, 75]], "acc dash", 1.4);
-      label(300, 68, "direct channel", "small acc");
     },
     // two players pull one state toward opposite targets, each through fog
     "1"() {
@@ -40,7 +39,6 @@
       const pts = []; let y = 75; for (let x = 40; x <= 560; x += 10) { pts.push([x, y]); y += gauss(r) * 4 + 0.15 * (75 - y); y = Math.max(45, Math.min(105, y)); }
       line(pts, "", 2);
       arrow(200, 70, 200, 40, "acc", 1.8); arrow(380, 80, 380, 110, "warm", 1.8);
-      label(300, 146, "two players push one state, each seeing it through their own noise", "small");
     },
     // a trade moves beliefs until the news arrives and explains it away
     "2"() {
@@ -50,18 +48,15 @@
       line(b, "acc", 2.2);
       arrow(170, 140, 170, 114, "warm", 1.6); label(170, 148, "trade", "small warm");
       arrow(400, 140, 400, 114, "", 1.6); label(400, 148, "news arrives", "small");
-      label(285, 16, "disclosure window", "small acc");
     },
     // the causal triangle of dates becomes a quadrant of ages
     "3"() {
       line([[60, 130], [200, 130], [200, 20], [60, 130]], "", 1.8);
       // lines of constant age t - s, parallel to the diagonal
       for (let k = 1; k < 8; ++k) { const x0 = 60 + k * 17.5; line([[x0, 130], [200, 130 - ((200 - x0) * 110) / 140]], "soft", 0.8); }
-      label(130, 146, "dates (t, s), s ≤ t", "small");
       arrow(240, 75, 330, 75, "", 1.6);
       line([[380, 20], [380, 130], [560, 130]], "", 1.8);
       for (let k = 1; k < 7; ++k) line([[380, 130 - k * 16], [560, 130 - k * 16]], "soft", 0.6);
-      label(470, 146, "ages: the calendar drops out", "small");
     },
     // an informed trader's orders hide in the flow, and the price creeps toward value
     "4"() {
@@ -69,7 +64,6 @@
       for (let k = 0; k < 40; ++k) { const x = 50 + k * 13, h = gauss(r) * 6 + (k % 3 === 0 ? 5 : 0); el("rect", { x: x - 3, y: h > 0 ? 118 - h : 118, width: 6, height: Math.abs(h), class: "v-bar " + (k % 3 === 0 ? "acc" : "") }, svg).dataset.k = order++; }
       const p = []; for (let k = 0; k <= 52; ++k) { const x = 40 + k * 10; p.push([x, 90 - 55 * (1 - Math.exp(-k / 20)) + gauss(r) * 2]); }
       line(p, "", 2.2);
-      label(300, 148, "blue: the informed orders, hidden in the flow", "small acc");
     },
     // a ring of local markets, each firm reading demand off its customer
     "5"() {
@@ -77,11 +71,10 @@
       const P = Array.from({ length: n }, (_, k) => [cx + R * 2.2 * Math.cos((2 * Math.PI * k) / n - Math.PI / 2), cy + R * Math.sin((2 * Math.PI * k) / n - Math.PI / 2)]);
       P.forEach(([x, y], k) => { const [x2, y2] = P[(k + 1) % n]; const f = 0.22; arrow(x + (x2 - x) * f, y + (y2 - y) * f, x + (x2 - x) * (1 - f), y + (y2 - y) * (1 - f), "soft", 1.2); });
       P.forEach(([x, y], k) => dot(x, y, 8, k === 0 ? "acc" : ""));
-      label(300, 148, "each firm sells to the next; symmetry makes one of them enough", "small");
     },
     // one deviation, two observers: one sees a shock, the other sees who did it
     "6"() {
-      arrow(250, 75, 350, 75, "warm", 2.2); label(300, 62, "a deviation", "small warm");
+      arrow(250, 75, 350, 75, "warm", 2.2);
       const eye = (x, lab, cls) => { line([[x - 30, 75], [x, 55], [x + 30, 75], [x, 95], [x - 30, 75]], cls, 1.6); dot(x, 75, 6, cls); label(x, 124, lab, "small " + cls); };
       eye(110, "naive: a shock", ""); eye(490, "privy: player 1 did it", "acc");
       line([[150, 75], [240, 75]], "soft dash", 1); line([[360, 75], [450, 75]], "soft dash", 1);
@@ -91,7 +84,7 @@
       const bell = (m) => { const p = []; for (let x = 120; x <= 480; x += 8) p.push([x, 125 - 95 * Math.exp(-((x - m) ** 2) / (2 * 45 ** 2))]); return p; };
       line([[100, 125], [500, 125]], "soft", 1);
       line(bell(270), "soft dash", 1.4); line(bell(330), "acc", 2.2);
-      arrow(275, 20, 325, 20, "acc", 1.8); label(333, 24, "a belief moves", "small acc", "start");
+      arrow(275, 20, 325, 20, "acc", 1.8);
       // the wedge is the move's price, not the move: its own mark, a tag
       line([[128, 136], [134, 130], [140, 136], [140, 149], [128, 149], [128, 136]], "warm", 1.3);
       label(148, 146, "the wedge: what moving someone's belief is worth", "small warm", "start");

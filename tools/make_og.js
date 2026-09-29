@@ -13,7 +13,8 @@ const CARDS = [
     eyebrow: "Quantitative research &middot; PhD, UC Santa Barbara",
     title: "Sam Babichenko",
     sub: "Game theory, empirical Bayes, machine learning, and quantitative finance." },
-  { out: "og-noisestate.png", art: "image", src: "/images/card-noisestate-light.webp", titleWidth: 440,   // clear of the curves
+  { out: "og-noisestate.png", art: "image", fit: "contain", wide: true, file: process.env.OG_NSHEADS, src: "/__og_art.png",   // the home card's picture as it renders
+                                                                                     // (bars included), captured at 3x: OG_NSHEADS=<png>
     eyebrow: "sbabichenko.com/noisestate",
     title: "Noise-State Game Explorer",
     sub: "Solve a linear-quadratic-Gaussian game in your browser: shock responses, sample paths, sweeps." },
@@ -59,11 +60,12 @@ const page = (c) => `<!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="${BASE}/fonts/newsreader.css">
 <style>
  html,body{margin:0;width:1200px;height:630px;overflow:hidden}
- body{background:#FFFFF0;position:relative;font-family:Newsreader,Georgia,serif;color:#17171b}
+ body{background:#ecdebe url(${BASE}/images/paper/brown-light-2x.webp) 0 0/768px 768px;background-blend-mode:multiply;position:relative;font-family:Newsreader,Georgia,serif;color:#17171b}   /* the site's paper */
  canvas,img.art{position:absolute;inset:0;width:1200px;height:630px;object-fit:cover}
  canvas.fade{-webkit-mask-image:linear-gradient(100deg,transparent 42%,#000 75%)}
- img.art{opacity:.9;object-position:right center;-webkit-mask-image:linear-gradient(100deg,transparent 40%,#000 66%)}
+ img.art{mix-blend-mode:multiply;opacity:.9;object-position:right center;-webkit-mask-image:linear-gradient(100deg,transparent 47%,#000 72%)}   /* clear of the subtitle */
  img.art.contain{object-fit:contain;left:auto;right:28px;width:500px;opacity:1;-webkit-mask-image:none}
+ img.art.contain.wide{width:560px;right:36px;border-radius:14px;mix-blend-mode:normal}   /* a capture already on the paper */
  body.narrow h1{font-size:62px;max-width:600px}
  body.narrow p{font-size:26px;max-width:580px}
  .e{position:absolute;left:78px;top:128px;font-size:19px;letter-spacing:.14em;text-transform:uppercase;color:#85858f;z-index:2;font-family:ui-sans-serif,system-ui,sans-serif}
@@ -72,7 +74,7 @@ const page = (c) => `<!doctype html><html><head><meta charset="utf-8">
  p{font-size:29px;color:#4a4a55;margin:0;max-width:660px;line-height:1.35}
  .u{position:absolute;left:78px;bottom:70px;font-size:24px;color:#1f3fd0;z-index:2;font-family:ui-sans-serif,system-ui,sans-serif}
 </style></head><body class="${c.fit === "contain" ? "narrow" : ""}">
-${c.art === "mesh" || c.art === "shocks" ? `<canvas id="c"${c.fade ? ' class="fade"' : ""} width="2400" height="1260"></canvas>` : `<img class="art${c.fit === "contain" ? " contain" : ""}" src="${BASE}${c.src}">`}
+${c.art === "mesh" || c.art === "shocks" ? `<canvas id="c"${c.fade ? ' class="fade"' : ""} width="2400" height="1260"></canvas>` : `<img class="art${c.fit === "contain" ? " contain" : ""}${c.wide ? " wide" : ""}" src="${BASE}${c.src}">`}
 <div class="e">${c.eyebrow}</div>
 <div class="t"><h1${c.titleWidth ? ` style="max-width:${c.titleWidth}px"` : ""}>${c.title}</h1><p>${c.sub}</p></div>
 <div class="u">sbabichenko.com</div>
@@ -129,6 +131,7 @@ document.title='ready';
     const url = BASE.replace(/\/$/, "") + "/__og_card.html";
     const p = await b.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 2 });
     await p.route(url, (r) => r.fulfill({ contentType: "text/html; charset=utf-8", body: page(c) }));
+    if (c.file) await p.route(BASE.replace(/\/$/, "") + c.src, (r) => r.fulfill({ path: c.file }));
     await p.goto(url);
     await p.waitForFunction(() => document.title === "ready", null, { timeout: 60000 });
     await p.evaluate(() => document.fonts.ready);

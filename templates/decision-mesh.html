@@ -24,7 +24,7 @@
       <div class="crumbs"><a href="{{ get_url(path='') }}#projects">Projects</a> &nbsp;/&nbsp; Decision Mesh</div>
       <h1>Decision Mesh</h1>
       <p class="sub">The odds of a coin vary over this square. A few thousand sites each flip a coin a handful of
-        times, and each site's share of heads mixes the odds with the coin's own effect and the noise of the flips.
+        times, and each site’s share of heads mixes the odds with the coin’s own effect and the noise of the flips.
         The estimator refines a mesh of right triangles or rectangles only where a false-discovery gate finds
         support in the flips, and stops when no candidate passes.</p>
       <p class="sub">My post on <a href="{{ get_url(path='writing/partial-pooling/') }}">partial pooling</a> takes up the
@@ -63,7 +63,7 @@
           <figure><div class="cv"><canvas id="cvtruth" width="320" height="320"></canvas></div>
             <figcaption><b>The odds</b> <span class="muted">what the coins really do</span></figcaption></figure>
           <figure><div class="cv"><canvas id="cvdata" width="320" height="320"></canvas></div>
-            <figcaption><b>The flips</b> <span class="muted">each site's share of heads</span></figcaption></figure>
+            <figcaption><b>The flips</b> <span class="muted">each site’s share of heads</span></figcaption></figure>
           <figure><div class="cv"><canvas id="cvfit" width="320" height="320"></canvas></div>
             <figcaption><b>The fit</b> <span class="muted">dots: admitted, by round</span></figcaption></figure>
         </div>
@@ -141,7 +141,8 @@
           </div>
           <div class="step" data-scene="surplus">
             <p>A vertex that isn&rsquo;t free sits at the average of its two parents, the endpoints of the segment it
-              splits. A free vertex can differ from that average by its <em>surplus</em>.</p>
+              splits. A free vertex can differ from that average by its <em>surplus</em>. When the surplus moves, the surface
+              moves with it in a <em>tent</em> that peaks at the vertex and falls to zero at the neighboring vertices.</p>
             <p class="small">Admitting a candidate means allowing its surplus to be nonzero. A prior shrinks each surplus
               toward zero, more strongly for deeper vertices, so fine corrections need more evidence than coarse ones.</p>
           </div>
@@ -165,7 +166,8 @@
               single bell curve, the null.</p>
             <p class="small">Lindsey&rsquo;s method fits the density of the scores and estimates the null from its
               center, so a round whose scores are shifted or spread out is compared with its own null rather than
-              N(0, 1). Here the null has center <span data-v="nullMean">&hellip;</span> and spread
+              N(0,&nbsp;1). The null can come out wider than the sharp peak of the bars, which is right, since many null
+              scores really are that spread out. Here the null has center <span data-v="nullMean">&hellip;</span> and spread
               <span data-v="nullSd">&hellip;</span>, and <span data-v="pi0">&hellip;</span> of candidates are estimated to
               be noise.<span data-v="capnote"></span></p>
           </div>
@@ -284,15 +286,15 @@
         <section class="panel">
           <h2>Round-by-Round Results</h2>
           <div class="tablewrap" id="rounds"></div>
-          <p class="caption">Each round scores every candidate vertex (the midpoints of the mesh's edges) by how much
+          <p class="caption">Each round scores every candidate vertex (the midpoints of the mesh’s edges) by how much
             it would improve the fit. If no candidate mattered, the scores would look like draws from one bell curve, the
-            null. The gate fits the density of all the scores, reads the null's center and spread off the middle of it,
+            null. The gate fits the density of all the scores, reads the null’s center and spread off the middle of it,
             estimates the share &pi;<sub>0</sub> that are noise, and admits the candidates that stand out from that null
             at a controlled false-discovery rate. When the scores have no central peak to read a null from, it falls
             back to the textbook one. <span id="coinnote">Each coin also has an effect of its own on the log-odds, and the coin variance is
-            the estimator's estimate of their spread, fitted alongside the surface. As the mesh learns the odds, what it
-            can't explain shrinks toward the spread the slider set.</span><span id="sitenote" hidden>Each site also has an
-            effect of its own on the log-odds, and the site variance is the estimator's estimate of their spread, fitted
+            the estimator’s estimate of their spread, fitted alongside the surface. As the mesh learns the odds, what it
+            can’t explain shrinks toward the spread the slider set.</span><span id="sitenote" hidden>Each site also has an
+            effect of its own on the log-odds, and the site variance is the estimator’s estimate of their spread, fitted
             alongside the surface.</span></p>
         </section>
       </div>

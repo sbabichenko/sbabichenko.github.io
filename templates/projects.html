@@ -55,23 +55,25 @@
             <div class="shot nsheads" role="img" data-think="{{ get_url(path='js/card-nsheads-think.json', cachebust=true) }}"
                  aria-label="Two people facing each other, each with their own estimate of a shared row of shocks, each picturing the other; on hover, the pictures of each other leave and the whole card becomes one thought about the shared world">
               <div class="pics">
-                <img class="img-light" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-rest-light.webp') }}" alt="" width="480" height="240" />
-                <img class="img-dark" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-rest-dark.webp') }}" alt="" width="480" height="240" />
-                <img class="img-light base" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-base-light.webp') }}" alt="" width="480" height="240" />
-                <img class="img-dark base" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-base-dark.webp') }}" alt="" width="480" height="240" />
+                <img class="img-light" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-rest-light.webp', cachebust=true) }}" alt="" width="480" height="240" />
+                <img class="img-dark" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-rest-dark.webp', cachebust=true) }}" alt="" width="480" height="240" />
+                <img class="img-light base" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-base-light.webp', cachebust=true) }}" alt="" width="480" height="240" />
+                <img class="img-dark base" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-base-dark.webp', cachebust=true) }}" alt="" width="480" height="240" />
               </div>
               {% include "partials/card-nsheads.html" %}
             </div>
             <div class="body">
               <h3><a href="{{ get_url(path='noisestate/') }}">Noise-State Calculus</a></h3>
-              <p>My PhD research. Actions move the state, the state sets what others observe, and what they observe sets
-                their next actions. I keep that loop intact by tracking beliefs about the primitive shocks.</p>
+              <p class="sub">A calculus for solving a century-old problem in economics</p>
+              <p>Instead of tracking beliefs about beliefs about beliefs indefinitely, players track beliefs
+                about the shocks to the system, and the game becomes solvable.</p>
+              <p class="pipline"><button type="button" class="copy" data-copy="pip install noisestate" title="Copy the command"><code>pip install noisestate</code></button></p>
               <a class="go" href="{{ get_url(path='noisestate/') }}">Solve a game <span class="arrow">&rarr;</span></a>
               <div class="more">
                 <a href="{{ get_url(path='dissertation/idea/') }}">The noise-state, explained</a>
                 <a href="{{ get_url(path='dissertation/wedge/') }}">The price of changing someone&rsquo;s mind</a>
                 <a href="{{ get_url(path='dissertation/') }}">Read the dissertation</a>
-                <a href="https://pypi.org/project/noisestate/" target="_blank" rel="noopener">PyPI</a>
+                <a href="https://arxiv.org/abs/2603.12140" target="_blank" rel="noopener">The paper on arXiv</a>
                 <a href="https://github.com/sbabichenko/noisestate" target="_blank" rel="noopener">GitHub</a>
               </div>
             </div>
@@ -88,14 +90,14 @@
             {#- scribble on the picture to draw odds; the estimator fits them on the right (static/js/cards.js) -#}
             <div class="shot draw" id="card-mesh" data-worker="{{ get_url(path='mesh/fit-worker.js', cachebust=true) }}"
                  aria-label="Draw odds on the picture; the estimator fits them">
-              <img class="img-light" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-gate-light.webp') }}" alt="" width="480" height="240" />
-              <img class="img-dark" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-gate-dark.webp') }}" alt="" width="480" height="240" />
+              <img class="img-light" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-gate-light.webp', cachebust=true) }}" alt="" width="480" height="240" />
+              <img class="img-dark" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-gate-dark.webp', cachebust=true) }}" alt="" width="480" height="240" />
               <canvas aria-hidden="true"></canvas>
-              {#- the drawing affordance (home.css, cards.js): on hover a dashed sketch frame around each half, the whole of
-                  what can be drawn on (both halves draw onto the same square), and a pencilled "draw here" on the face -#}
+              {#- the drawing affordance (home.css, cards.js): on hover a dashed rectangle around each half, exactly where a
+                  pointer draws (both halves draw onto the same square), and a pencilled "draw here" on the face -#}
               <div class="drawhint" aria-hidden="true">
-                <svg class="dh-box l" focusable="false"><rect width="100%" height="100%" rx="12" /></svg>
-                <svg class="dh-box r" focusable="false"><rect width="100%" height="100%" rx="12" /></svg>
+                <svg class="dh-box l" focusable="false"><rect width="100%" height="100%" /></svg>
+                <svg class="dh-box r" focusable="false"><rect width="100%" height="100%" /></svg>
                 <svg class="dh-pic" viewBox="0 0 960 480" preserveAspectRatio="xMidYMid slice" focusable="false"><text class="dh-text" x="240" y="220" text-anchor="middle">draw here</text></svg>
               </div>
               <span class="status" aria-live="polite"></span>
@@ -104,10 +106,12 @@
             <div class="body">
               <span class="hint" aria-hidden="true"><span class="for-mouse">scribble on the faces</span><span class="for-touch">hold, then draw</span></span>
               <h3><a href="{{ get_url(path='decision-mesh/') }}">Decision Mesh</a></h3>
-              <p>Thousands of coins, each flipped a few times, and odds that change somewhere on the square.
-                The estimator adds detail only where a false-discovery gate says the flips justify it, then
-                stops on its own. It separates the odds from each coin's own effect and from the noise of the flips.</p>
-              <a class="go" href="{{ get_url(path='decision-mesh/') }}">Draw your own odds <span class="arrow">&rarr;</span></a>
+              <p class="sub">A decision theorist&rsquo;s perspective on estimating binomial surfaces</p>
+              <p>The mesh works by carefully untangling its errors
+                and uncertainty, deciding how much to refine its estimate and trust its data.</p>
+              <p>Each decision is made not alone, but by
+                borrowing the wisdom of its neighbors.</p>
+              <a class="go" href="{{ get_url(path='decision-mesh/') }}">See how it decides <span class="arrow">&rarr;</span></a>
               <div class="more">
                 <a href="{{ get_url(path='decision-mesh/detail/') }}">The algorithm in detail</a>
                 <a href="https://github.com/sbabichenko/triangular-decision-mesh" target="_blank" rel="noopener">Right triangles on GitHub</a>
