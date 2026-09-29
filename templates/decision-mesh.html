@@ -1,4 +1,4 @@
-{#- /decision-mesh: the Decision Mesh in one page. From the top:
+{#- /decisionmesh: the Decision Mesh in one page. From the top:
       the live fit: the triangular and rectangular estimators (triangular-decision-mesh/core and
         rectangular-decision-mesh/core, compiled to WebAssembly) fitting coin flips drawn on the page. gate.js makes the
         data and draws; the engines run in fit-worker.js. It also owns the round-by-round table, the CSV upload and the
@@ -8,7 +8,7 @@
       why right triangles: four geometries grown greedily on the same data (decision-mesh.js, right-mesh.js,
         rect-mesh.js, mesh-demo.js). Its elements are namespaced race-*.
     The story and the race load their scripts only when their section nears the window, so the page runs one fit at
-    load. The detail page is /decision-mesh/detail (gate-deep.html). -#}
+    load. The detail page is /decisionmesh/detail (gate-deep.html). -#}
 <!doctype html>
 <html class="not-ready lg:text-base" lang="{{ lang }}">
   {% include "partials/head.html" %}
@@ -85,7 +85,7 @@
     </div>
 
     <section class="gatehow" id="gatehow" data-engine="tri"
-      data-src="{{ get_url(path='mesh/gate-how.js', cachebust=true) }}">
+      data-src="{{ get_url(path='js/sketch.js', cachebust=true) }} {{ get_url(path='mesh/gate-how.js', cachebust=true) }}">
       <div class="howhead" id="how">
         <h2 class="sect">How the Gate Decides</h2>
         <p class="lede">The drawings below come from the same run as the fit above, in your browser, on the same coin
@@ -351,7 +351,7 @@
       </details>
 
       <nav class="dm-end">
-        <a class="primary" href="{{ get_url(path='decision-mesh/detail/') }}">The Decision Mesh, in Detail</a>
+        <a class="primary" href="{{ get_url(path='decisionmesh/detail/') }}">The Decision Mesh, in Detail</a>
         <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a>
         <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a>
       </nav>

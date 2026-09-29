@@ -1,10 +1,11 @@
-// /decision-mesh, "How the Gate Decides": the decision-mesh gate told in steps. The section narrates the live fit
+// /decisionmesh, "How the Gate Decides": the decision-mesh gate told in steps. The section narrates the live fit
 // above it (gate.js): the same coins, settings and engine, from the same worker, which returns the candidate trace
 // with each fit on the coins. Every scene is built from that run: each round's scored candidates with the segment each would split, the gate's empirical null, the lfdr
 // cutoff, the admissions, the pool variance by round, the admitted surpluses by depth, and the final surface. Only
 // the "corrections" scene is a sketch (a one-dimensional toy computed here), and its caption says so.
 (function () {
   "use strict";
+  const { mulberry32, gauss, clamp, ease, seg, fade, stroke, text, line } = Sketch;   // static/js/sketch.js
   const root = document.getElementById("gatehow");
   const svg = document.getElementById("stage");
   const steps = root ? [...root.querySelectorAll(".step")] : [];
@@ -18,26 +19,7 @@
   const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag);
     for (const [k, v] of Object.entries(attrs || {})) if (v instanceof HTMLCanvasElement) v.toBlob((b) => b && n.setAttribute(k, URL.createObjectURL(b))); else n.setAttribute(k, v);
     if (parent) parent.appendChild(n); return n; };
-  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
-  const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
-  const seg = (t, a, b) => ease(clamp((t - a) / (b - a)));
-  const fade = (n, t) => { n.style.opacity = clamp(t); };
-  const text = (g, x, y, s, cls, anchor = "middle") => { const t = el("text", { x, y, class: cls || "", "text-anchor": anchor }, g); t.textContent = s; return t; };
-  function mulberry32(a) { return function () { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-  function gauss(r) { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
-  function pencil(pts, seed, wob = 0.6) {
-    const r = mulberry32(seed);
-    let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
-    for (let i = 1; i < pts.length; ++i) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i]; d += ` Q${((x0 + x1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)},${((y0 + y1) / 2 + (r() - 0.5) * wob * 2).toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`; }
-    return d;
-  }
-  function stroke(g, d, cls, width = 1.6) {
-    const a = el("path", { d, class: "pencil " + (cls || ""), "stroke-width": width }, g);
-    const len = a.getTotalLength() || 1;
-    a.style.strokeDasharray = `${len} ${len}`; a.style.strokeDashoffset = len;
-    return { a, set(t) { a.style.strokeDashoffset = len * (1 - clamp(t)); } };
-  }
-  const line = (g, x1, y1, x2, y2, cls, w = 1) => el("line", { x1, y1, x2, y2, class: "pencil " + (cls || ""), "stroke-width": w }, g);
+  const pencil = (pts, seed, wob = 0.6) => Sketch.pencil(pts, seed, wob);
   const fmt = (v, d = 2) => (Math.abs(v) < 0.005 && d <= 2 ? "0" : v.toFixed(d)).replace("-", "−");
   const pct = (v) => Math.round(100 * v) + "%";
   const phi = (z) => Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI);
@@ -836,12 +818,10 @@
   // A step's progress runs from 0 as it becomes the active step (its top at the reading line) to 1 once 70% of it has
   // passed the line, so its drawing builds while the paragraph is read, on the way down as well as up.
   function measure() {
-    const vh = window.innerHeight, line = window.readLine ? window.readLine() : vh * 0.55;
-    let best = null, bestD = Infinity;
-    for (const s of steps) { const r = s.getBoundingClientRect(), d = Math.abs(r.top + r.height / 2 - line); if (d < bestD) { bestD = d; best = s; } }
-    if (!best) return;
-    const r = best.getBoundingClientRect();
-    prog = clamp((line - r.top) / (r.height * 0.7));
+    const at = Sketch.reading(steps);
+    if (!at) return;
+    const best = at.step;
+    prog = at.prog;
     if (best !== active) {
       const was = active && scenes[active.dataset.scene];
       if (was && was.leave) was.leave();
@@ -869,7 +849,7 @@
     const sc = active && scenes[active.dataset.scene];
     if (!sc) return;
     const dt = lastDraw === null ? 0 : Math.min(0.05, (now - lastDraw) / 1000);
-    shown = reduced ? 1 : Math.abs(prog - shown) <= PACE * dt ? prog : shown + Math.sign(prog - shown) * PACE * dt;
+    shown = reduced ? 1 : Sketch.follow(shown, prog, dt, PACE);
     const chasing = !reduced && shown !== prog;
     lastDraw = chasing ? now : null;
     if (sc.live && !reduced) {
@@ -892,24 +872,6 @@
     else { status("Fitting…", true); text(svg, 300, 300, "fitting…", "stagebusy"); }
   }
   measure();
-  // On a phone the drawing's labels are set larger (the page's stylesheet). A label that would then run past the
-  // drawing's edge, 600 units wide, is shrunk back until it fits, measured from where it is anchored.
-  const phone = window.matchMedia("(max-width: 820px)");
-  let fitQueued = false;
-  function fitLabels() {
-    fitQueued = false;
-    const mode = phone.matches ? "phone" : "wide";
-    for (const t of svg.querySelectorAll("text")) {
-      const key = mode + t.textContent;
-      if (t.fitKey === key) continue;           // measured already, for this text at this width
-      t.fitKey = key; t.style.fontSize = "";
-      if (mode !== "phone" || !t.textContent) continue;
-      const b = t.getBBox(), x = +t.getAttribute("x") || 0, a = t.getAttribute("text-anchor") || "start";
-      const room = a === "middle" ? 2 * Math.min(x, 600 - x) : a === "end" ? x : 600 - x;
-      if (b.width > room && room > 0) t.style.fontSize = (parseFloat(getComputedStyle(t).fontSize) * room / b.width).toFixed(2) + "px";
-    }
-  }
-  const queueFit = () => { if (!fitQueued) { fitQueued = true; requestAnimationFrame(fitLabels); } };
-  new MutationObserver(queueFit).observe(svg, { childList: true, subtree: true, characterData: true });
-  phone.addEventListener("change", queueFit);
+  // on a phone, labels that would run past the drawing's edge are shrunk to fit (static/js/sketch.js)
+  Sketch.fitLabels(svg);
 })();

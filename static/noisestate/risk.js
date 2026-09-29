@@ -5,7 +5,7 @@
 // breakdown at theta* = 5; two paths driven by the same shocks.
 (function () {
   "use strict";
-  const NS = "http://www.w3.org/2000/svg";
+  const { el, mulberry32, gauss } = Sketch;   // static/js/sketch.js
   const me = document.currentScript;
   if (!me) return;
   // data fetches say so when they fail, instead of leaving blank figures and dead controls
@@ -20,9 +20,6 @@
     }
   };
 
-  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
-  function mulberry32(a) { return function () { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-  function gauss(r) { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
   const legend = (id, items) => {
     const box = document.getElementById(id); box.innerHTML = "";
     return items.map(([color, label, dash]) => { const s = document.createElement("span"); s.innerHTML = (dash ? `<i class="${dash === "dot" ? "dot" : "dash"}" style="border-top-color:${color}"></i>` : `<i style="background:${color}"></i>`) + `${label} <b></b>`; box.appendChild(s); return s.querySelector("b"); });

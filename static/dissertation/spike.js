@@ -10,7 +10,7 @@
 // once; older lives fade. A tap on a chart sends one.
 (function () {
   "use strict";
-  const NS = "http://www.w3.org/2000/svg";
+  const { el, mulberry32 } = Sketch;   // static/js/sketch.js
   const host = document.getElementById("strips");
   const me = document.currentScript;
   // data fetches say so when they fail, instead of leaving blank figures and dead controls
@@ -33,9 +33,7 @@
   const GAP = 2.6;                    // mean seconds between spikes (many spikes)
   const LEVEL = 13;                   // line height of the milestone labels
 
-  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
   const fmt = (v) => (Math.abs(v) < 0.005 ? "0.00" : (v < 0 ? "−" : "") + Math.abs(v).toFixed(2));
-  function mulberry32(a) { return function () { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   const rng = mulberry32((Date.now() & 0xffff) ^ 0x5eed);
   let SHOW = 3;
 
@@ -56,7 +54,7 @@
     art.innerHTML = `<div class="words"><h2><small>${CHAPTER[row.key] || ""}</small>${row.title}</h2><p>${row.story}</p>${row.model ? `<p class="model"><b>The model.</b> ${row.model}</p>` : ""}</div>
       <div class="plot">${row.variants ? `<div class="variants" role="group" aria-label="Which spike"><span>Trader 1&rsquo;s order</span>${row.variants.map((v, i) => `<button type="button" data-i="${i}" aria-pressed="${!i}">${v.name}</button>`).join("")}</div>` : ""}<svg role="img" aria-label="${row.title}: ${row.labels.join(", ")} after a spike"></svg><div class="legend"></div></div>`;
     host.appendChild(art);
-    const svg = art.querySelector("svg"), legend = art.querySelector(".legend"), plot = art.querySelector(".plot");
+    const svg = art.querySelector("svg"), legend = art.querySelector(".legend");
     art.querySelectorAll(".variants button").forEach((b) => b.addEventListener("click", () => {
       row.vi = +b.dataset.i;
       art.querySelectorAll(".variants button").forEach((o) => o.setAttribute("aria-pressed", o === b));

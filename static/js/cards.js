@@ -1,7 +1,7 @@
 // The two project cards on the home page, made touchable. Nothing heavy runs until someone touches a card.
 //
 // Decision Mesh: the picture at rest is the card image (two faces: the odds drawn on the left, the fitted mesh on
-// the right). Scribbling on it raises the odds under the pointer, as "your drawing" does on /decision-mesh, and
+// the right). Scribbling on it raises the odds under the pointer, as "your drawing" does on /decisionmesh, and
 // the left half is repainted from the drawing. When the stroke ends, a few thousand coins are flipped at the drawn
 // odds and shown on the right half; the triangular estimator (static/mesh/fit-worker.js and trimesh.wasm, loaded on
 // the first touch or when a mouse comes over the picture) fits them, and its surface and mesh replace the coins.
@@ -143,7 +143,7 @@
       const [x0, x1, y0, y1] = fit.bounds;
       const X = (u) => RX + (x0 + u * (x1 - x0)) * SQ, Y = (u) => TOP + (1 - (y0 + u * (y1 - y0))) * SQ;
       ctx.save(); ctx.beginPath(); ctx.rect(MID, 0, CW - MID, CH); ctx.clip();
-      // the mesh lines and the admitted points, as on /decision-mesh (and in the image) at this size
+      // the mesh lines and the admitted points, as on /decisionmesh (and in the image) at this size
       ctx.strokeStyle = isDark() ? "rgba(255,255,255,0.28)" : "rgba(20,20,30,0.34)";
       ctx.lineWidth = SQ / 420;
       ctx.beginPath();

@@ -1,4 +1,4 @@
-// /decision-mesh, the live fit: coin flips on a square, fitted by the triangular decision-mesh estimator itself (fit-worker.js runs
+// /decisionmesh, the live fit: coin flips on a square, fitted by the triangular decision-mesh estimator itself (fit-worker.js runs
 // triangular-decision-mesh/core compiled to WebAssembly). This file makes the data, sends it to the worker,
 // and draws what comes back: the truth, the data, the fitted mesh, and the gate's account of every round.
 // A visitor can also fit a CSV of their own (see "your own data" below); it is read here and never leaves the page.
@@ -73,7 +73,7 @@
   // ------------------------------------------------------------------ color and rasters
   const D = 200, VMAX = 2.2;
   let CENTRE = BASE;         // the log-odds at the middle of the color scale: the coins' background, or a file's overall rate
-  // low odds orange, high odds blue: the same meaning as the illustrated pages (the story on this page, /decision-mesh/detail)
+  // low odds orange, high odds blue: the same meaning as the illustrated pages (the story on this page, /decisionmesh/detail)
   function ramp() {
     const hex = (h) => [1, 3, 5].map((q) => parseInt(h.slice(q, q + 2), 16));
     const s = isDark()

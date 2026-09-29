@@ -5,61 +5,18 @@
 // and each drawing builds as its paragraph scrolls past.
 (function () {
   "use strict";
-  const NS = "http://www.w3.org/2000/svg";
+  const { el, mulberry32, gauss, clamp, ease, seg, fade, text } = Sketch;   // static/js/sketch.js
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const el = (tag, attrs, parent) => {
-    const e = document.createElementNS(NS, tag);
-    for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v);
-    if (parent) parent.appendChild(e);
-    return e;
-  };
-  function mulberry32(a) {
-    return function () {
-      a |= 0; a = (a + 0x6d2b79f5) | 0;
-      let t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  }
-  function gauss(r) { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
-  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
-  const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
-  const seg = (t, a, b) => ease(clamp((t - a) / (b - a)));   // 0 before a, 1 after b
   // A one-shot motion (a part sliding home, a line being drawn): once the step's progress passes `at` it plays over
   // `dur` seconds whatever the scroll speed, and runs back if the reader scrolls above `at` again. With reduced
   // motion it jumps to where it is headed. step(t, dt) returns 0..1, not eased.
-  function oneShot(at, dur) {
-    let v = 0, to = 0;
-    return {
-      step(t, dt) { to = t >= at ? 1 : 0; v = reduced ? to : v + clamp(to - v, -dt / dur, dt / dur); return v; },
-      get moving() { return v !== to; },
-      get playing() { return to === 1 && v < 1; },     // on its way forward: worth finishing before the drawing is put away
-      jump(t) { to = v = t >= at ? 1 : 0; },           // reached from below: already where the progress puts it
-    };
-  }
+  const oneShot = (at, dur) => Sketch.oneShot(at, dur, reduced);
 
   // a pencil line through points: each segment bowed a little, deterministically, so it reads as drawn
-  function pencil(pts, seed, wob = 1.2) {
-    const r = mulberry32(seed);
-    let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
-    for (let i = 1; i < pts.length; ++i) {
-      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
-      const mx = (x0 + x1) / 2 + (r() - 0.5) * wob * 2, my = (y0 + y1) / 2 + (r() - 0.5) * wob * 2;
-      d += ` Q${mx.toFixed(1)},${my.toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`;
-    }
-    return d;
-  }
+  const pencil = (pts, seed, wob = 1.2) => Sketch.pencil(pts, seed, wob);
   // a line drawn twice, the second faint and a hair off, as a pencil goes over its own stroke
-  function stroke(g, d, cls, w = 1.6) {
-    const a = el("path", { d, class: "pencil " + (cls || ""), "stroke-width": w }, g);
-    const b = el("path", { d, class: "pencil soft " + (cls || ""), "stroke-width": w * 0.6, transform: "translate(0.8,0.6)" }, g);
-    const len = a.getTotalLength ? a.getTotalLength() : 1000;
-    for (const p of [a, b]) { p.style.strokeDasharray = `${len} ${len}`; p.style.strokeDashoffset = len; }
-    return { set(t) { const o = len * (1 - clamp(t)); a.style.strokeDashoffset = o; b.style.strokeDashoffset = o; }, a, b, len };
-  }
+  const stroke = (g, d, cls, w = 1.6) => Sketch.stroke2(g, d, cls, w, "pencil", 0.8, 0.6);
   const circlePts = (cx, cy, r, a0, a1, n = 24) => { const p = []; for (let i = 0; i <= n; ++i) { const a = a0 + (a1 - a0) * i / n; p.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); } return p; };
-  function text(g, x, y, s, cls, anchor = "middle") { const t = el("text", { x, y, class: cls || "", "text-anchor": anchor }, g); t.textContent = s; return t; }
-  const fade = (node, t) => { node.style.opacity = clamp(t); };
 
   // ------------------------------------------------------------------ the cover: primitive shocks, drawn slowly
   const cover = document.querySelector(".cover");
@@ -575,16 +532,10 @@
   let active = null, prog = 0, shown = 0, current = null, held = 0, raf = 0, last = 0, still = null;
   let leaving = null, leftT = 0, leftFor = 0, from = null;
   function measure() {
-    const vh = window.innerHeight, line = window.readLine ? window.readLine() : vh * 0.55;
-    let best = null, bestD = Infinity;
-    for (const s of steps) {
-      const r = s.getBoundingClientRect();
-      const mid = r.top + r.height / 2, d = Math.abs(mid - line);
-      if (d < bestD) { bestD = d; best = s; }
-    }
-    if (!best) return;
-    const r = best.getBoundingClientRect();
-    prog = clamp((line - r.top) / (r.height * 0.7));
+    const at = Sketch.reading(steps);
+    if (!at) return;
+    const best = at.step;
+    prog = at.prog;
     if (best !== active) {
       active = best;
       for (const s of steps) s.classList.toggle("on", s === best);
@@ -617,7 +568,7 @@
     if (!sc) { last = 0; return; }
     // reduced motion: each scene is drawn once, finished and still, when it becomes active
     if (reduced) { if (still !== active) { still = active; sc.update(1, 0, 0); } last = 0; return; }
-    shown = Math.abs(prog - shown) <= PACE * dt ? prog : shown + Math.sign(prog - shown) * PACE * dt;
+    shown = Sketch.follow(shown, prog, dt, PACE);
     const busy = sc.update(shown, now, dt);
     if (leaving) { leftFor += dt; leaving.update(leftT, now, dt); if (leftFor >= FADE || !leaving.shots.some((s) => s.moving)) leaving = null; }
     // a scene that moves by itself (its update reads the clock) keeps asking for frames while the story is on screen

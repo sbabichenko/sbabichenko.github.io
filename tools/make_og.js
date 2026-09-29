@@ -19,7 +19,7 @@ const CARDS = [
     title: "Noise-State Game Explorer",
     sub: "Solve a linear-quadratic-Gaussian game in your browser: shock responses, sample paths, sweeps." },
   { out: "og-gate.png", art: "image", src: "/images/card-gate-light.webp",
-    eyebrow: "sbabichenko.com/decision-mesh",
+    eyebrow: "sbabichenko.com/decisionmesh",
     title: "Decision Mesh",
     sub: "Coin flips fitted in your browser by an estimator that cuts only where a false-discovery gate allows." },
   { out: "og-idea.png", art: "image", fit: "contain", src: "/images/card-idea.webp",
