@@ -123,7 +123,9 @@
       caption.textContent = CAPTIONS[mode];
       count.textContent = step;
     }
+    function stopBuild() { clearInterval(playing); playing = 0; }
     function setMode(m) {
+      stopBuild();
       mode = m; step = 0;
       bBlip.setAttribute("aria-pressed", m === "blip"); bFrozen.setAttribute("aria-pressed", m === "frozen");
       slider.max = m === "blip" ? NSP : ROUNDS; slider.value = 0;
@@ -132,12 +134,20 @@
     }
     bBlip.addEventListener("click", () => setMode("blip"));
     bFrozen.addEventListener("click", () => setMode("frozen"));
-    slider.addEventListener("input", () => { clearInterval(playing); playing = 0; step = +slider.value; drawBuild(); });
+    slider.addEventListener("input", () => { stopBuild(); step = +slider.value; drawBuild(); });
     play.addEventListener("click", () => {
-      clearInterval(playing); step = 0; slider.value = 0; drawBuild();
+      stopBuild(); step = 0; slider.value = 0; drawBuild();
       const max = +slider.max, dt = mode === "blip" ? 160 : 700;
-      playing = setInterval(() => { if (step >= max) { clearInterval(playing); playing = 0; return; } step += 1; slider.value = step; drawBuild(); }, dt);
+      playing = setInterval(() => {
+        if (document.hidden || step >= max) { stopBuild(); return; }
+        step += 1; slider.value = step; drawBuild();
+        if (step >= max) stopBuild();
+      }, dt);
     });
+    document.addEventListener("visibilitychange", () => { if (document.hidden) stopBuild(); });
+    if ("IntersectionObserver" in window) new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) stopBuild();
+    }).observe(svgC);
 
     let bowlItems = null;
     function drawBowls() {
