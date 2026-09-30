@@ -1217,7 +1217,11 @@ function rallyPlay() {
 // ---------------------------------------------------------------------------------------------
 // Worker
 // the model tab waits for Solve rather than solving on load, so the button has to be pressable
-function customReady() { setStatus("idle", "Ready", "Edit the model and press Solve."); if (!inFlight) $("solvebtn").disabled = false; }
+function customReady() {
+  if (inFlight) stopSolve();
+  pending = false; clearTimeout(debounce);
+  setStatus("idle", "Ready", "Edit the model and press Solve."); $("solvebtn").disabled = false;
+}
 function failWorker(message) {
   if (worker) worker.terminate();
   worker = null; workerReady = false; inFlight = null; pending = false;
@@ -1332,7 +1336,9 @@ function onSolved(m) {
   let key = null;
   try { key = JSON.stringify([currentModel(), currentRequest()]); } catch (e) { /* the editor holds an unfinished edit */ }
   const stale = pending || !req || req.game !== game || (key !== null && key !== req.key);
-  const res = JSON.parse(m.result);
+  let res;
+  try { res = JSON.parse(m.result); }
+  catch (e) { failWorker("The solver returned unreadable data"); return; }
   rallyEnd(res.ok && res.engine !== "ch6-markov" ? res.evaluations || 0 : 0);
   if (res.ok && res.engine !== "ch6-markov") settleDone(res);
   if (res.ok && window.siteTally)
@@ -1343,7 +1349,7 @@ function onSolved(m) {
       if (game === "custom") $("yamlerror").textContent = res.error;
       $("results").classList.remove("stale");
     }
-    if (stale && req && req.game === game) sendSolve();
+    if (stale && req && (req.game === game || pending)) sendSolve();
     return;
   }
   if (res.start && req) { if (res.converged) lastStart[req.game] = res.start; delete res.start; }

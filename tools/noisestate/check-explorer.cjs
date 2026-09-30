@@ -109,7 +109,30 @@ async function checkExplorerCancellation(browser, base) {
     await page.locator('#solvebtn').click();
     await page.waitForFunction(() => lastResult && lastResult.engine !== 'ch6-markov' && !inFlight);
     assert((await page.locator('.cards').first().innerText()).includes('1.4043'));
-    return {workerStartupRetry: true, stopStaysIdle: true, staleResultIgnored: true, lazyImportRetry: true};
+    // Failure of the old tab must still service the new tab's queued request.
+    await page.evaluate(() => { worker.postMessage = m => { window.heldRequest = m; }; requestSolve(0); });
+    await page.waitForFunction(() => !!inFlight);
+    const failedID = await page.evaluate(() => { const id=inFlight.id; game='ch3'; renderAll(); requestSolve(0); return id; });
+    await page.waitForFunction(() => pending);
+    await page.evaluate(id => onSolved({id, result: JSON.stringify({ok: false, error: 'old tab failure'})}), failedID);
+    assert.equal(await page.evaluate(id => inFlight && inFlight.id > id && inFlight.game === 'ch3', failedID), true);
+    await page.evaluate(() => onSolved({id: inFlight.id, result: 'unreadable result'}));
+    assert.equal(await page.locator('#chip').innerText(), 'Failed');
+    assert.equal(await page.evaluate(() => worker === null && !inFlight), true);
+    const custom = await page.evaluate(async () => {
+      const NativeWorker = window.Worker;
+      let created;
+      window.Worker = class { constructor() { created=this; this.sent=[]; } postMessage(m) { this.sent.push(m); } terminate() {} };
+      try {
+        game='custom'; renderAll(); startWorker(); pending=true; customReady();
+        created.onmessage({data: {type: 'ready'}});
+        await new Promise(r => setTimeout(r, 25));
+        return {sent: created.sent.length, pending, active: !!inFlight};
+      } finally { window.Worker=NativeWorker; }
+    });
+    assert.deepEqual(custom, {sent: 0, pending: false, active: false});
+    return {workerStartupRetry: true, stopStaysIdle: true, staleResultIgnored: true, lazyImportRetry: true,
+      queuedTabSurvivesFailure: true, malformedResultRetryable: true, customWaitsForSolve: true};
   } finally { await page.close(); }
 }
 async function checkSweepRecovery(browser, base) {
