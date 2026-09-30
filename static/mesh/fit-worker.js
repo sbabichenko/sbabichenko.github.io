@@ -16,8 +16,8 @@ function load(name) {
     .then((m) => { m.FS.mkdir("/w"); return m; });
   return engines[name];
 }
-load("tri").then(() => postMessage({ type: "ready" }))
-  .catch((e) => postMessage({ type: "error", message: "engine failed to load: " + e }));
+Promise.resolve().then(() => load("tri")).then(() => postMessage({ type: "ready" }))
+  .catch((e) => postMessage({ type: "error", fatal: true, message: "engine failed to load: " + e }));
 
 function csv(text) {
   const lines = text.trim().split("\n"), head = lines[0].split(",");
@@ -34,8 +34,9 @@ const num = (a) => Float64Array.from(a, Number);
 
 onmessage = async (ev) => {
   const { id, design, seed } = ev.data, q = +ev.data.q, kind = ev.data.engine === "rect" ? "rect" : "tri";
+  try {
   let engine;
-  try { engine = await load(kind); } catch (e) { postMessage({ id, type: "error", message: "engine failed to load: " + e }); return; }
+  try { engine = await load(kind); } catch (e) { postMessage({ id, type: "error", fatal: true, message: "engine failed to load: " + e }); return; }
   log = [];
   const FS = engine.FS;
   for (const f of FS.readdir("/w")) if (f.startsWith("run")) FS.unlink("/w/" + f);
@@ -46,7 +47,7 @@ onmessage = async (ev) => {
     rc = engine.ccall("dm_run", "number", ["number", "string"],
       [seed, "DMESH_DATA=/w/design.csv\nDMESH_DUMP=/w/run\nDMESH_SPLIT=" + (ev.data.split === false ? "0" : "1") + "\nDMESH_Q=" + (q > 0 && q < 1 ? q : "") + (ev.data.detail ? "\nDMESH_TRACE=/w/run_trace.csv" : "")]);
   } catch (e) {
-    postMessage({ id, type: "error", message: String(e), log });
+    postMessage({ id, type: "error", fatal: true, message: String(e), log });
     return;
   }
   const ms = performance.now() - t0;
@@ -103,6 +104,11 @@ onmessage = async (ev) => {
     heldout: held ? { deviance: +held[1], x2: +held[2], pools: +held[3], rows: heldRows } : null,
     log: log.slice(0, 400),
   }, [tri.buffer]);
+  } catch (e) {
+    postMessage({ id, type: "error", fatal: true, message: String(e), log: log.slice(0, 400) });
+  } finally {
+    log = [];
+  }
 };
 
 // For the illustrated gate (the story on /decisionmesh): every scored candidate of every round with the segment it would
