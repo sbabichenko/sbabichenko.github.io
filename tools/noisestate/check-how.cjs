@@ -1,6 +1,8 @@
 /* The explanatory page should sleep while waiting for data and release its solver. */
 const assert = require('node:assert/strict');
-async function checkHowLifecycle(browser, base) {
+async function checkHowLifecycle(browser, base, story = 'how') {
+  const route = story === 'wedge' ? '/dissertation/wedge/' : '/noisestate/how/';
+  const count = story === 'wedge' ? 9 : 11;
   const waiting = await browser.newPage({serviceWorkers: 'block', reducedMotion: 'reduce'});
   await waiting.addInitScript(() => {
     window.coi = {shouldRegister: () => false};
@@ -15,7 +17,7 @@ async function checkHowLifecycle(browser, base) {
   });
   await waiting.route('https://**', route => route.abort());
   try {
-    await waiting.goto(base + '/noisestate/how/');
+    await waiting.goto(base + route);
     await waiting.locator('.step').first().scrollIntoViewIfNeeded();
     await waiting.waitForFunction(() => howWorker.lastRequest);
     await waiting.waitForTimeout(400);
@@ -41,15 +43,16 @@ async function checkHowLifecycle(browser, base) {
   });
   await page.route('https://**', route => route.abort());
   try {
-    await page.goto(base + '/noisestate/how/');
+    await page.goto(base + route);
     await page.waitForFunction(() => howTerminations === 1, null, {timeout: 120000});
     const status = await page.locator('#solvestate').innerText();
-    assert(status.startsWith('Ran 11 solves'), status);
+    assert(status.startsWith(`Ran ${count} solves`), status);
     assert(!status.includes('failed'), status);
-    await page.locator('.step').first().scrollIntoViewIfNeeded();
+    await page.locator(story === 'wedge' ? '.step[data-scene=split]' : '.step').first().scrollIntoViewIfNeeded();
     await page.waitForTimeout(150);
     assert.equal(page.workers().length, 0, 'the completed solver worker remained alive');
-    assert(await page.locator('#stage circle').count() > 0, 'solved drawing did not appear');
+    const drawn = story === 'wedge' ? '#stage [data-scene=split] path[d]' : '#stage circle';
+    assert(await page.locator(drawn).count() > 0, 'solved drawing did not appear');
     assert.deepEqual(errors, []);
     return {idleWaiting: true, failureReleasesWorker: true, completedWorkerReleased: true, status};
   } finally { await page.close(); }
