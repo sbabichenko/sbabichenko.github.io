@@ -1,4 +1,5 @@
 "use strict";
+const WORKER_URL = document.currentScript.dataset.worker || "worker.js";
 // ---------------------------------------------------------------------------------------------
 // Presets: a model file each, with sliders on some of its parameters.
 const PRESETS = {
@@ -1204,7 +1205,7 @@ function rallyPlay() {
 function customReady() { setStatus("idle", "Ready", "Edit the model and press Solve."); if (!inFlight) $("solvebtn").disabled = false; }
 function startWorker() {
   workerReady = false;
-  try { worker = new Worker("worker.js"); }
+  try { worker = new Worker(WORKER_URL); }
   catch (e) { setStatus("bad", "Failed", "This browser could not start a Web Worker: " + e.message); return; }
   worker.onmessage = (ev) => {
     const m = ev.data;
@@ -1320,7 +1321,7 @@ function onSolved(m) {
     if (stale && req && req.game === game) sendSolve();
     return;
   }
-  if (res.start && req) { lastStart[req.game] = res.start; delete res.start; }
+  if (res.start && req) { if (res.converged) lastStart[req.game] = res.start; delete res.start; }
   if (res.compare && res.compare.start && req) { if (res.compare.converged) lastStartCompare[req.game] = res.compare.start; delete res.compare.start; }
   if (req && req.game === game) {
     prevResult = lastResult && lastResult.name === res.name && lastResult.kind === res.kind ? lastResult : null;
@@ -2067,7 +2068,7 @@ var sweepWorker = null, sweepReady = null, sweep = null, sweepSeq = 0;   // var:
 var SWEEP_POINTS = 11;
 function ensureSweepWorker() {
   if (sweepWorker) return sweepReady;
-  sweepWorker = new Worker("worker.js");
+  sweepWorker = new Worker(WORKER_URL);
   sweepReady = new Promise((resolve, reject) => {
     sweepWorker.onmessage = (ev) => {
       const m = ev.data;
