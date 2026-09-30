@@ -112,7 +112,61 @@ async function checkExplorerCancellation(browser, base) {
     return {workerStartupRetry: true, stopStaysIdle: true, staleResultIgnored: true, lazyImportRetry: true};
   } finally { await page.close(); }
 }
-module.exports = {checkExplorerRetention, checkExplorerCancellation};
+async function checkSweepRecovery(browser, base) {
+  const page = await browser.newPage({serviceWorkers: 'block', reducedMotion: 'reduce'});
+  await page.addInitScript(() => { window.coi = {shouldRegister: () => false}; });
+  await page.route('https://**', route => route.abort());
+  try {
+    await page.goto(base + '/noisestate/#game=ch6');
+    await page.waitForFunction(() => lastResult && !inFlight);
+    await page.evaluate(() => { SWEEP_POINTS = 3; });
+    const workerURL = '**/noisestate/worker.js*';
+    await page.route(workerURL, route => route.abort());
+    await page.locator('#sweepbtn').click();
+    await page.waitForFunction(() => sweep && !sweep.running && sweep.error);
+    assert.equal(await page.evaluate(() => sweepWorker === null && sweepReady === null), true);
+    await page.unroute(workerURL);
+    await page.locator('#sweepbtn').click();
+    await page.waitForFunction(() => sweep && !sweep.running && sweep.i === 3);
+    assert.equal(await page.evaluate(() => sweep.failed), 0);
+    // A worker can fail after ready has already resolved. That must stop the UI too.
+    await page.evaluate(() => { sweepWorker.postMessage = () => {}; });
+    await page.locator('#sweepbtn').click();
+    await page.waitForFunction(() => sweep.running);
+    await page.evaluate(() => sweepWorker.onerror({message: 'simulated runtime failure'}));
+    assert.equal(await page.evaluate(() => !sweep.running && sweepWorker === null), true);
+    assert((await page.locator('#sweepnote').innerText()).includes('simulated runtime failure'));
+    // Cancel during startup, then start again before the old await continuation runs.
+    const result = await page.evaluate(async () => {
+      const NativeWorker = window.Worker, created = [];
+      window.Worker = class {
+        constructor() { created.push(this); this.sent = []; }
+        terminate() { this.terminated = true; }
+        postMessage(m) { this.sent.push(m); }
+      };
+      try {
+        const old = runSweep(); stopSweep();
+        const current = runSweep();
+        created[0].onmessage({data: {type: 'ready'}});
+        created[1].onmessage({data: {type: 'ready'}});
+        await Promise.all([old, current]);
+        const heldEps = values.ch6.eps;
+        values.ch6.eps = .9; game = 'ch3';
+        sweep.i = 1; nextSweep();
+        const message = created[1].sent.at(-1);
+        const frozen = message.model.name === 'ch6_transparent_market' && message.model.params.eps === heldEps
+          && message.request.method === 'ch6-markov' && !sweep.jobs[1].request.start;
+        game = 'ch6'; values.ch6.eps = heldEps;
+        const answer = {oldTerminated: created[0].terminated, oldSent: created[0].sent.length,
+          currentSent: created[1].sent.length, currentRunning: sweep.running, frozen};
+        stopSweep(); return answer;
+      } finally { window.Worker = NativeWorker; }
+    });
+    assert.deepEqual(result, {oldTerminated: true, oldSent: 0, currentSent: 2, currentRunning: true, frozen: true});
+    return {startupRetry: true, runtimeFailureStops: true, startupCancellation: true, frozenParameters: true};
+  } finally { await page.close(); }
+}
+module.exports = {checkExplorerRetention, checkExplorerCancellation, checkSweepRecovery};
 if (require.main === module) {
   const {chromium} = require('playwright');
   (async () => {
@@ -121,6 +175,7 @@ if (require.main === module) {
       const base = process.argv[2] || 'http://127.0.0.1:8788';
       console.log(JSON.stringify(await checkExplorerRetention(browser, base), null, 2));
       console.log(JSON.stringify(await checkExplorerCancellation(browser, base)));
+      console.log(JSON.stringify(await checkSweepRecovery(browser, base)));
     }
     finally { await browser.close(); }
   })().catch(e => {console.error(e); process.exitCode = 1;});
