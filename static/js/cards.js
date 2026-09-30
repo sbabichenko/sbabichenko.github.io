@@ -715,11 +715,18 @@
         setTimeout(() => think.classList.remove("settle"), dur + 50);
       }
       function flowStep() {
+        if (!seen || document.hidden) return loop();
         if (!engaged()) { settle(); return loop(); }
         if (seen && !document.hidden) { step(); stepEnd = performance.now() + FLOW * 1000; }
         timer = setTimeout(flowStep, FLOW * 1000);
       }
       function loop() {
+        if (!D || !seen || document.hidden) {
+          clearTimeout(timer); timer = 0;
+          flowing = false; wasOn = false;
+          think.classList.remove("flow");
+          return;
+        }
         const on = engaged();
         if (on && !wasOn) onSince = performance.now();
         wasOn = on;
@@ -744,11 +751,14 @@
       }
       function load() {
         if (D || loading) return; loading = true;
-        fetch(shot.dataset.think).then((r) => r.json()).then((d) => { D = d; loop(); }).catch(() => {});
+        fetch(shot.dataset.think).then((r) => {
+          if (!r.ok) throw new Error("card animation data unavailable");
+          return r.json();
+        }).then((d) => { D = d; loop(); }).catch(() => {}).finally(() => { loading = false; });
       }
-      if ("IntersectionObserver" in window) new IntersectionObserver((es) => { seen = es.some((e) => e.isIntersecting); if (seen) load(); }).observe(card);
+      if ("IntersectionObserver" in window) new IntersectionObserver((es) => { seen = es[es.length - 1].isIntersecting; if (seen) load(); if (D) loop(); }).observe(card);
       else { seen = true; load(); }
-      document.addEventListener("visibilitychange", () => { if (!document.hidden && D) loop(); });
+      document.addEventListener("visibilitychange", () => { if (D) loop(); });
     }
   })();
 })();
