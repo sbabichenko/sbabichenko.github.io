@@ -1229,6 +1229,12 @@ function failWorker(message) {
   $("stopbtn").disabled = true; $("solvebtn").disabled = false;
   setStatus("bad", "Failed", message + ". Press Solve again to retry.");
 }
+function releaseHiddenWorker() {
+  if (document.hidden && workerReady && !inFlight && !pending) {
+    worker.terminate(); worker = null; workerReady = false;
+  }
+}
+document.addEventListener("visibilitychange", releaseHiddenWorker);
 function startWorker(autoSolve = true) {
   workerReady = false;
   try { const url = new URL(WORKER_URL, location.href); if (game === "ch6" && opts.reference) url.searchParams.set("lazy", "1"); worker = new Worker(url); }
@@ -1243,10 +1249,12 @@ function startWorker(autoSolve = true) {
       if (tf) tf.textContent = solverThreads > 1 ? `${solverThreads} threads in this browser` : "single-threaded in this browser";
       if (pending || (autoSolve && game !== "custom")) requestSolve(0);
       else if (game === "custom" && !inFlight && !lastResult) customReady();
+      releaseHiddenWorker();
     } else if (m.type === "progress") {
       if (inFlight && m.id === inFlight.id) { progress = m; rallyProgress(); settleAdd(m.residual, m.evaluation); }
     } else if (m.type === "result") {
       onSolved(m);
+      releaseHiddenWorker();
     } else if (m.type === "fatal") {
       failWorker("The solver could not load: " + m.message);
     }
@@ -2207,7 +2215,12 @@ async function runSweep() {
 function nextSweep() {
   const S = sweep;
   if (!S || !S.running) return;
-  if (S.i >= S.xs.length) { S.running = false; S.wall = (performance.now() - S.t0) / 1000; updateSweepPanel(); return; }
+  if (S.i >= S.xs.length) {
+    S.running = false; S.wall = (performance.now() - S.t0) / 1000;
+    disposeSweepWorker("The sweep finished");
+    S.start = null; S.startCompare = null; S.jobs = null;
+    updateSweepPanel(); return;
+  }
   const { model, request: savedRequest } = S.jobs[S.i], request = { ...savedRequest };
   if (request.compare && S.startCompare) request.compare = { ...request.compare, start: S.startCompare };
   if (S.start) request.start = S.start; else request.start_policy = "coarse";
@@ -2217,7 +2230,13 @@ function nextSweep() {
 function onSweepResult(m) {
   const S = sweep;
   if (!S || !S.running || m.id !== S.id + S.i) return;
-  const res = JSON.parse(m.result), x = S.xs[S.i], def = PRESETS[S.game];
+  let res;
+  try { res = JSON.parse(m.result); }
+  catch (e) {
+    S.running = false; S.error = "the solver returned unreadable data";
+    disposeSweepWorker(S.error); updateSweepPanel(); return;
+  }
+  const x = S.xs[S.i], def = PRESETS[S.game];
   if (res.ok && window.siteTally) window.siteTally("solve");
   const extra = def.constCost ? def.constCost({ ...S.values, [S.key]: x }) : {};
   if (res.ok && res.converged) {
