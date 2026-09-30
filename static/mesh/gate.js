@@ -433,7 +433,7 @@
     if (S.user) { S.user = null; setOwnView(false); ownSay(""); } readHash(); syncTools(); sdLabel(); qLabel(); run(); });
   // hold to shake: the coins keep being flipped while the button is held, the flips redrawn each time, and the
   // mesh is fitted once to wherever they land when it is let go
-  let holdT = 0, shaking = false, swallow = false;
+  let holdT = 0, shakeT = 0, shaking = false, swallow = false;
   const shake = () => {
     if (!shaking) return;
     $("seed").value = +$("seed").value + 1;
@@ -442,16 +442,23 @@
     drawData();
     const c = $("newdata").querySelector(".mini-coin");
     if (c) { c.classList.remove("spin"); void c.offsetWidth; c.classList.add("spin"); }
-    setTimeout(shake, 170);
+    shakeT = setTimeout(shake, 170);
   };
-  const letGo = () => {
+  const letGo = (ev) => {
     clearTimeout(holdT);
+    clearTimeout(shakeT);
     if (!shaking) return;
-    shaking = false; swallow = true;
+    shaking = false; swallow = ev?.type === "pointerup";
     run();
   };
-  $("newdata").addEventListener("pointerdown", () => { holdT = setTimeout(() => { shaking = true; shake(); }, 350); });
+  $("newdata").addEventListener("pointerdown", (ev) => {
+    if (ev.button !== 0) return;
+    clearTimeout(holdT); swallow = false;
+    holdT = setTimeout(() => { shaking = true; shake(); }, 350);
+  });
   ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => $("newdata").addEventListener(ev, letGo));
+  window.addEventListener("blur", letGo);
+  document.addEventListener("visibilitychange", (ev) => { if (document.hidden) letGo(ev); });
   $("newdata").addEventListener("click", () => {
     if (swallow) { swallow = false; return; }            // the click that ends a hold: already refitted
     $("seed").value = +$("seed").value + 1; run();
