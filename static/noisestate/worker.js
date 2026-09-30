@@ -18,7 +18,7 @@ function loadSolver() {
       const p = ns_solve(model, request);
       try { return mod.UTF8ToString(p); } finally { ns_free(p); }
     } };
-  });
+  }).catch(err => { runtime = null; throw err; });
   return runtime;
 }
 const lazy = new URL(self.location.href).searchParams.get("lazy") === "1";

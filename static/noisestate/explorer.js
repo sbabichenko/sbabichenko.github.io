@@ -1218,34 +1218,43 @@ function rallyPlay() {
 // Worker
 // the model tab waits for Solve rather than solving on load, so the button has to be pressable
 function customReady() { setStatus("idle", "Ready", "Edit the model and press Solve."); if (!inFlight) $("solvebtn").disabled = false; }
-function startWorker() {
+function failWorker(message) {
+  if (worker) worker.terminate();
+  worker = null; workerReady = false; inFlight = null; pending = false;
+  clearTimeout(debounce); stopTimer();
+  $("stopbtn").disabled = true; $("solvebtn").disabled = false;
+  setStatus("bad", "Failed", message + ". Press Solve again to retry.");
+}
+function startWorker(autoSolve = true) {
   workerReady = false;
   try { const url = new URL(WORKER_URL, location.href); if (game === "ch6" && opts.reference) url.searchParams.set("lazy", "1"); worker = new Worker(url); }
-  catch (e) { setStatus("bad", "Failed", "This browser could not start a Web Worker: " + e.message); return; }
+  catch (e) { failWorker("This browser could not start a Web Worker: " + e.message); return; }
+  const activeWorker = worker;
   worker.onmessage = (ev) => {
+    if (activeWorker !== worker) return;
     const m = ev.data;
     if (m.type === "ready") {
       workerReady = true; solverThreads = m.threads || 1;
       const tf = document.getElementById("threadfact");
       if (tf) tf.textContent = solverThreads > 1 ? `${solverThreads} threads in this browser` : "single-threaded in this browser";
-      if (game === "custom" && !inFlight && !lastResult) customReady();
-      else requestSolve(0);
+      if (pending || (autoSolve && game !== "custom")) requestSolve(0);
+      else if (game === "custom" && !inFlight && !lastResult) customReady();
     } else if (m.type === "progress") {
       if (inFlight && m.id === inFlight.id) { progress = m; rallyProgress(); settleAdd(m.residual, m.evaluation); }
     } else if (m.type === "result") {
       onSolved(m);
     } else if (m.type === "fatal") {
-      setStatus("bad", "Failed", "The solver could not load: " + m.message);
+      failWorker("The solver could not load: " + m.message);
     }
   };
-  worker.onerror = (e) => { setStatus("bad", "Failed", "The solver stopped: " + (e.message || "unknown error") + ". Reload the page."); };
+  worker.onerror = (e) => { if (activeWorker === worker) failWorker("The solver stopped: " + (e.message || "unknown error")); };
 }
 function stopSolve() {
   if (!inFlight) return;
-  worker.terminate(); inFlight = null; pending = false; stopTimer();
+  worker.terminate(); worker = null; workerReady = false; inFlight = null; pending = false;
+  clearTimeout(debounce); stopTimer();
   $("stopbtn").disabled = true; $("solvebtn").disabled = false;
   setStatus("warn", "Stopped", "The solve was stopped. Change a parameter or press Solve again.");
-  startWorker();
 }
 
 // The equations in each game's description: typeset with KaTeX (served from the site) when it has loaded, otherwise
@@ -1278,7 +1287,7 @@ function requestSolve(delay) {
   clearTimeout(debounce);
   if (lastResult) $("results").classList.add("stale");
   debounce = setTimeout(() => {
-    if (!workerReady) return;
+    if (!workerReady) { pending = true; if (!worker) startWorker(false); return; }
     if (inFlight) { pending = true; startTimer(false); return; }
     sendSolve();
   }, delay);
@@ -1317,6 +1326,7 @@ function addCompare(request, model, g, start) {
   if ((g !== "custom" && def.deviation) || (g === "custom" && ch6 && stat)) request.deviation = { continuation: "blip" };
 }
 function onSolved(m) {
+  if (!inFlight || m.id !== inFlight.id) return;
   const req = inFlight; inFlight = null; stopTimer();
   $("solvebtn").disabled = false; $("stopbtn").disabled = true;
   let key = null;
