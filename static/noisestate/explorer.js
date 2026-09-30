@@ -1256,7 +1256,7 @@ function startWorker(autoSolve = true) {
       onSolved(m);
       releaseHiddenWorker();
     } else if (m.type === "fatal") {
-      failWorker("The solver could not load: " + m.message);
+      failWorker((m.phase === "solve" ? "The solver stopped: " : "The solver could not load: ") + m.message);
     }
   };
   worker.onerror = (e) => { if (activeWorker === worker) failWorker("The solver stopped: " + (e.message || "unknown error")); };
