@@ -2124,20 +2124,34 @@ window.addEventListener("hashchange", () => {
 // ---------------------------------------------------------------------------------------------
 // Sweep: the equilibrium costs as one slider runs across its range, the others held.  A second worker solves the
 // points one after another, each from the last one's equilibrium, so the page's own solves are never queued behind it.
-var sweepWorker = null, sweepReady = null, sweep = null, sweepSeq = 0;   // var: renderAll reads them before this line runs
+var sweepWorker = null, sweepReady = null, sweepReject = null, sweep = null, sweepSeq = 0;   // var: renderAll reads them before this line runs
 var SWEEP_POINTS = 11;
+function disposeSweepWorker(message) {
+  if (sweepWorker) sweepWorker.terminate();
+  sweepWorker = null; sweepReady = null;
+  if (sweepReject) sweepReject(new Error(message));
+  sweepReject = null;
+}
 function ensureSweepWorker() {
   if (sweepWorker) return sweepReady;
   const sweepUrl = new URL(WORKER_URL, location.href); if (game === "ch6" && opts.reference) sweepUrl.searchParams.set("lazy", "1");
   sweepWorker = new Worker(sweepUrl);
+  const activeWorker = sweepWorker;
   sweepReady = new Promise((resolve, reject) => {
+    sweepReject = reject;
+    const fail = message => {
+      if (sweepWorker !== activeWorker) return;
+      disposeSweepWorker(message);
+      if (sweep && sweep.running) { sweep.running = false; sweep.error = message; updateSweepPanel(); }
+    };
     sweepWorker.onmessage = (ev) => {
+      if (sweepWorker !== activeWorker) return;
       const m = ev.data;
-      if (m.type === "ready") resolve();
-      else if (m.type === "fatal") reject(new Error(m.message));
+      if (m.type === "ready") { sweepReject = null; resolve(); }
+      else if (m.type === "fatal") fail(m.message);
       else if (m.type === "result") onSweepResult(m);
     };
-    sweepWorker.onerror = (e) => reject(new Error(e.message || "the sweep worker stopped"));
+    sweepWorker.onerror = (e) => fail(e.message || "the sweep worker stopped");
   });
   return sweepReady;
 }
@@ -2157,7 +2171,7 @@ function sweepPoints(s) {
   return out;
 }
 function stopSweep() {
-  if (sweepWorker && sweep && sweep.running) { sweepWorker.terminate(); sweepWorker = null; sweepReady = null; }
+  if (sweepWorker && sweep && sweep.running) disposeSweepWorker("The sweep was stopped");
   if (sweep) sweep.running = false;
 }
 async function runSweep() {
@@ -2165,22 +2179,33 @@ async function runSweep() {
   const def = PRESETS[game], s = def.sliders.find((k) => k.key === $("sweepkey").value);
   if (!s) return;
   sweep = { game, key: s.key, label: s.label, log: !!s.log, xs: sweepPoints(s), i: 0, costs: {}, naive: {}, start: lastStart[game] || null, startCompare: lastStartCompare[game] || null,
-    base: sweepBase(s.key), running: true, id: ++sweepSeq * 100, t0: performance.now(), failed: 0 };
+    values: { ...values[game] }, base: sweepBase(s.key), running: true, id: ++sweepSeq * 100, t0: performance.now(), failed: 0 };
+  const S = sweep;
+  // Freeze all eleven models before yielding: moving another slider or opening
+  // another game must not change what the remaining sweep points mean.
+  S.jobs = S.xs.map(x => {
+    const model = modelWith({ [S.key]: x });
+    const request = { ...currentRequest(), refine: false, stability: false, return_start: true };
+    addCompare(request, model, S.game, null);
+    delete request.deviation;
+    return { model: forSolver(model), request };
+  });
   updateSweepPanel();
-  try { await ensureSweepWorker(); } catch (e) { sweep.running = false; $("sweepnote").textContent = "The sweep could not start: " + e.message; return; }
+  try { await ensureSweepWorker(); } catch (e) {
+    if (sweep === S && S.running) { S.running = false; S.error = e.message; updateSweepPanel(); }
+    return;
+  }
+  if (sweep !== S || !S.running) return;
   nextSweep();
 }
 function nextSweep() {
   const S = sweep;
   if (!S || !S.running) return;
   if (S.i >= S.xs.length) { S.running = false; S.wall = (performance.now() - S.t0) / 1000; updateSweepPanel(); return; }
-  const def = PRESETS[S.game];
-  const model = modelWith({ [S.key]: S.xs[S.i] });
-  const request = { ...currentRequest(), refine: false, stability: false, return_start: true };
-  addCompare(request, model, S.game, S.startCompare);
-  delete request.deviation;                                   // the sweep reads the costs only
+  const { model, request: savedRequest } = S.jobs[S.i], request = { ...savedRequest };
+  if (request.compare && S.startCompare) request.compare = { ...request.compare, start: S.startCompare };
   if (S.start) request.start = S.start; else request.start_policy = "coarse";
-  sweepWorker.postMessage({ type: "solve", id: S.id + S.i, model: forSolver(model), request });
+  sweepWorker.postMessage({ type: "solve", id: S.id + S.i, model, request });
   updateSweepPanel();
 }
 function onSweepResult(m) {
@@ -2188,7 +2213,7 @@ function onSweepResult(m) {
   if (!S || !S.running || m.id !== S.id + S.i) return;
   const res = JSON.parse(m.result), x = S.xs[S.i], def = PRESETS[S.game];
   if (res.ok && window.siteTally) window.siteTally("solve");
-  const extra = def.constCost ? def.constCost({ ...values[S.game], [S.key]: x }) : {};
+  const extra = def.constCost ? def.constCost({ ...S.values, [S.key]: x }) : {};
   if (res.ok && res.converged) {
     for (const [a, v] of Object.entries(res.costs)) (S.costs[a] = S.costs[a] || []).push([x, v + (extra[a] || 0)]);
     const C = res.compare;
@@ -2237,7 +2262,8 @@ function updateSweepPanel() {
   plot.style.display = S ? "" : "none";
   plot.classList.toggle("stale-plot", !!(S && !S.running && S.base !== sweepBase(S.key)));
   if (!S) { note.textContent = `Eleven solves across the slider's range, the others held where they are.`; $("sweepcap").textContent = ""; return; }
-  if (S.running) note.textContent = `Solving ${Math.min(S.i + 1, S.xs.length)} of ${S.xs.length}…`;
+  if (S.error) note.textContent = `The sweep stopped: ${S.error}. Press Sweep again to retry.`;
+  else if (S.running) note.textContent = `Solving ${Math.min(S.i + 1, S.xs.length)} of ${S.xs.length}…`;
   else if (S.i < S.xs.length) note.textContent = `Stopped after ${S.i} of ${S.xs.length}.`;
   else note.textContent = `${S.xs.length} solves in ${S.wall.toFixed(1)} s${S.failed ? `, ${S.failed} did not converge and are left out` : ""}.`;
   if (!S.running && S.base !== sweepBase(S.key)) note.textContent += " The other parameters have moved since; sweep again to update.";
