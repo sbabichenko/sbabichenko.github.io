@@ -33,4 +33,19 @@ for (const key of ['eps', 'rho', 'sigma_Z']) {
 }
 assert.throws(() => M.solve('transparent', { eps: .2, gamma: -.1, rho: .5, sigma_Z: 1 }));
 assert.throws(() => M.payload({ name: 'arbitrary game', params: { eps: .2, gamma: .1, rho: .5, sigma_Z: 1 } }));
+// The old absolute Newton stopping threshold rounded tiny positive penalties
+// to zero inventory reversion. These are independent stationary-cost limits,
+// including the discontinuity from gamma exactly zero (random-walk inventory).
+const beta0 = (Math.sqrt(21) - 1) / 4;
+const deltaLimits = { transparent: 10 / 7, opaque: 4 * beta0 / (1 + 2.4 * beta0) };
+for (const market of ['transparent', 'opaque']) {
+  for (const gamma of [1e-4, 1e-8, 1e-12, 1e-16]) {
+    const e = M.solve(market, { eps: .2, gamma, rho: .5, sigma_Z: 1 });
+    assert(e.delta > 0 && e.pq < 0 && e.residual < 1e-12);
+    assert(Math.abs(e.delta / gamma / deltaLimits[market] - 1) < 6 * gamma + 1e-12);
+    assert(Math.abs(e.accounts.inventory * 2 * deltaLimits[market] - 1) < 6 * gamma + 1e-12);
+  }
+  const zero = M.solve(market, { eps: .2, gamma: 0, rho: .5, sigma_Z: 1 });
+  assert.equal(zero.delta, 0); assert.equal(zero.accounts.inventory, 0);
+}
 console.log(`${reference.cases.length} independent reference cases passed; worst relative difference ${worst.toExponential(2)}`);

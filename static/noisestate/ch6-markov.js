@@ -97,12 +97,56 @@
         drift: A.map((row, i) => row.map((x, j) => x + B[i] * gain[j])) };
     }
     const a0 = 1 / (l + e * r + Math.sqrt(e * r * (2 * l + e * r)));
-    let z = market === "transparent" ? [a0, 0, 0, 0] : [a0, 0, 0, 0, 0, 0, 0], iterations = 0;
-    // Follow the competitive branch as inventory cost rises; no random root guesses.
-    const steps = Math.max(1, Math.min(64, Math.ceil(g / .01)));
-    for (let k = 1; k <= steps; ++k) {
-      const ans = newton(x => terms(x, g * k / steps).eq, z);
-      z = ans.z; iterations += ans.iterations;
+    let z, iterations = 0;
+    function traderAt(d) {
+      const b = d / (r + d), h = r / (r + d);
+      const c = (2 * e * d * d + 2 * l * d * b) / r;
+      const a = h * h / (l * h + e * r + Math.sqrt(e * r * (2 * l * h + e * r)));
+      return { a, b, c, beta: Math.sqrt(r * a / (2 * e)), p: -2 * e * d - l * b - c };
+    }
+    function bracket(hi, value) {
+      let lo = 0;
+      if (!g) return 0;
+      for (; iterations < 64; ++iterations) {
+        const y = (lo + hi) / 2;
+        if (y === lo || y === hi) break;
+        if (value(y) < 2) lo = y; else hi = y;
+      }
+      return g * (lo + hi) / 2;
+    }
+    if (market === "transparent") {
+      // Eliminate (a,b,c,u) to a strictly increasing scalar equation for delta.
+      // Bracket delta/g, so very small positive g retains relative accuracy.
+      const d = bracket(2 / (4 * e * r + l), y => {
+        const d = g * y;
+        return 4 * e * r * y + 6 * e * g * y * y + l * y * (r + 2 * d) / (r + d);
+      });
+      const { a, b, c } = traderAt(d);
+      z = [a, b, c, 4 * e * d + l * b + c];
+    } else {
+      const d = bracket(2 / (2 * e * r + l), y => {
+        const d = g * y, { beta, p } = traderAt(d);
+        const T = (l * beta * (r + 2 * d) + d * (r + d)) / ((l - p) * (r + d) - l * beta * p);
+        return y * (r + 2 * d) / T + 2 * e * r * y + l * r * y / (r + d)
+          + 2 * e * g * y * y + 2 * l * g * y * y / (r + d);
+      });
+      const { a, b, c, beta, p } = traderAt(d);
+      const cn = (l * beta + d) / (l - p), cx = beta * p + d;
+      const kx = l * beta * p / (l - p), kn = l * l * beta / (l - p) ** 2;
+      const u11 = (g - p * d) / (r + 2 * d), u12 = -cx * (p / 2 + u11) / (r + d - kx);
+      const v0 = cx / 2 - cn * u12, A = kn * kn / cn;
+      const B = r - 2 * kx + 2 * v0 * kn / cn, C = 2 * cx * u12 + v0 * v0 / cn;
+      const u22 = -2 * C / (B + Math.sqrt(B * B - 4 * A * C));
+      z = [a, b, c, u11, u12, u22, p];
+      // Keep continuation as a fallback outside the validated parameter range.
+      if (!(maxabs(terms(z, g).eq) < 1e-9)) {
+        z = [a0, 0, 0, 0, 0, 0, 0]; iterations = 0;
+        const steps = Math.max(1, Math.min(64, Math.ceil(g / .01)));
+        for (let k = 1; k <= steps; ++k) {
+          const ans = newton(x => terms(x, g * k / steps).eq, z);
+          z = ans.z; iterations += ans.iterations;
+        }
+      }
     }
     const ans = terms(z, g), residual = maxabs(ans.eq);
     const A = ans.drift, trace = A.length === 1 ? A[0][0] : A[0][0] + A[1][1];
@@ -212,7 +256,7 @@
             meaning: eq.params.gamma ? "Positive trading intensity, mean-reverting inventory and stabilizing market-maker feedback."
               : "The competitive equilibrium. With no inventory penalty, inventory is a random walk." }],
         flags: [], warnings: [], residual: eq.residual, evaluations: eq.iterations, seconds,
-        message: `${eq.root.length} coupled equations; ${eq.iterations} Newton steps along the competitive branch`,
+        message: `${eq.root.length} coupled equilibrium equations checked against the full system`,
       };
     }
     const out = result(transparent, model);
