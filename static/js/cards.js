@@ -91,7 +91,7 @@
     const paper = () => (isDark() ? "#2a2b30" : "#f7f6ee");
 
     // ---------------------------------------------------------------- state
-    const S = { live: false, data: null, fit: null, fitG: null, id: 0, worker: null, ready: false, queued: null, shownAt: 0, timer: 0 };
+    const S = { live: false, data: null, fit: null, fitG: null, id: 0, worker: null, ready: false, busy: false, seen: true, queued: null, shownAt: 0, timer: 0 };
     const currentImg = () => imgs.find((im) => im.offsetParent !== null) || imgs[0];
     function drawLeft() { paintSquare(LX, (u, v) => sample(u, v, drawing)); }
     function drawRight() {
@@ -182,14 +182,31 @@
       return { x, y, n, k, csv: rows.join("\n") + "\n" };
     }
     function say(s) { status.textContent = s; }
+    function release() {
+      if (S.worker) S.worker.terminate();
+      S.worker = null; S.ready = false; S.busy = false; S.queued = null;
+    }
+    function fail(message) { release(); say(message + "; draw again to retry"); }
+    function sendQueued() {
+      if (!S.ready || S.busy || !S.queued) return;
+      const msg = S.queued; S.queued = null; S.busy = true;
+      try { S.worker.postMessage(msg); } catch (e) { fail("the estimator stopped"); }
+    }
+    function releaseUnseen() { if ((!S.seen || document.hidden) && !S.busy && !S.queued) release(); }
     function warm() {                   // start the estimator loading: on hover or the first touch
-      if (S.worker) return;
-      try { S.worker = new Worker(shot.dataset.worker); } catch (e) { say("this browser cannot run the estimator"); return; }
-      S.worker.onmessage = (ev) => {
+      if (S.worker) return true;
+      let worker;
+      try { worker = new Worker(shot.dataset.worker); } catch (e) { fail("this browser could not start the estimator"); return false; }
+      S.worker = worker;
+      worker.onmessage = (ev) => {
+        if (S.worker !== worker) return;
         const m = ev.data;
-        if (m.type === "ready") { S.ready = true; if (S.queued) { const q = S.queued; S.queued = null; S.worker.postMessage(q); } return; }
-        if (m.id !== S.id) return;              // a stroke or a clear came since
-        if (m.type === "error") { say("the estimator stopped: " + (m.message || "error")); return; }
+        if (m.type === "ready") { S.ready = true; sendQueued(); releaseUnseen(); return; }
+        if (m.type === "error" && (m.id == null || m.id === S.id)) { fail("the estimator stopped: " + (m.message || "error")); return; }
+        if (m.type !== "fit" && m.type !== "error") return;
+        S.busy = false; sendQueued(); releaseUnseen();
+        if (m.id !== S.id || m.type !== "fit") return;   // a newer stroke takes the next available solve
+
         const show = () => {
           if (m.id !== S.id) return;
           S.fit = m; S.fitG = fitGrid(m);
@@ -201,15 +218,21 @@
         // the coins stay up for a moment, so the step from noisy flips to the fitted odds can be seen
         clearTimeout(S.timer); S.timer = setTimeout(show, Math.max(0, S.shownAt + 450 - performance.now()));
       };
-      S.worker.onerror = () => say("the estimator could not be loaded");
+      worker.onerror = () => { if (S.worker === worker) fail("the estimator could not be loaded"); };
+      return true;
     }
+    if ("IntersectionObserver" in window) new IntersectionObserver(es => {
+      S.seen = es[es.length - 1].isIntersecting; releaseUnseen();
+    }).observe(shot);
+    document.addEventListener("visibilitychange", releaseUnseen);
     function fit() {
       S.data = makeData(); S.fit = null; S.fitG = null; S.id += 1;
       drawRight(); S.shownAt = performance.now();
       const msg = { id: S.id, engine: "tri", design: S.data.csv, seed: 7, q: 0.3, split: false };   // every coin fits; a looser gate
-      warm();
-      if (S.ready) S.worker.postMessage(msg); else S.queued = msg;
+      if (!warm()) return;
+      S.queued = msg;                 // keep only the newest drawing while a fit is running
       say(S.ready ? `fitting ${SITES.toLocaleString()} coins…` : "loading the estimator…");
+      sendQueued();
     }
     function goLive() {
       if (S.live) return;
@@ -218,6 +241,7 @@
     }
     // clear wipes the card, face and all, to a blank sheet of odds to draw on; the picture comes back on the next visit
     function clear() {
+      release();
       S.id += 1; S.queued = null; S.data = null; S.fit = null; S.fitG = null; clearTimeout(S.timer);
       drawing.fill(BASE); S.blank = true; shot.classList.remove("inking");
       S.live = false; goLive(); say("");
