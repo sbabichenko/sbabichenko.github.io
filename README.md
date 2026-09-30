@@ -36,3 +36,14 @@ default base URL loads `explorer.js` from the live site, so the check would sile
 engine in a headless browser and screenshots the result. Re-run it with the site served locally:
 
     node tools/make_og.js          # needs playwright and the site on http://127.0.0.1:8770
+
+## Explorer regression checks
+
+Run `node tools/noisestate/check-kyle-costs.cjs` to check the Kyle–Back pricing loss,
+unchanged strategies, and agreement across windows and grids. Pass the path to
+`noisestate-mt.js` to run the same checks on the threaded build.
+
+With a local build served as described above and Playwright available, run
+`node tools/noisestate/check-result-validity.cjs http://127.0.0.1:8770` for the actual
+animated SVG endpoints, compared-model diagnostics, failed-result recovery, and
+sweep gaps. `check-explorer.cjs` checks chart retention and worker cancellation.
