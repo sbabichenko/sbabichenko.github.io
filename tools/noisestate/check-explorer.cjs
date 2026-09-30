@@ -58,12 +58,70 @@ async function checkExplorerRetention(browser, base) {
     return rows;
   } finally { release(); await page.close(); }
 }
-module.exports = {checkExplorerRetention};
+async function checkExplorerCancellation(browser, base) {
+  const page = await browser.newPage({serviceWorkers: 'block', reducedMotion: 'reduce'});
+  await page.addInitScript(() => {
+    window.coi = {shouldRegister: () => false};
+    const NativeWorker = window.Worker;
+    window.workerStarts = 0;
+    window.Worker = class extends NativeWorker {
+      constructor(...args) { super(...args); window.workerStarts++; }
+    };
+  });
+  await page.route('https://**', route => route.abort());
+  const workerURL = '**/noisestate/worker.js*';
+  await page.route(workerURL, route => route.abort());
+  try {
+    await page.goto(base + '/noisestate/#game=ch6');
+    await page.waitForFunction(() => document.querySelector('#chip').textContent === 'Failed');
+    assert.equal(await page.locator('#solvebtn').isEnabled(), true);
+    await page.unroute(workerURL);
+    await page.locator('#solvebtn').click();
+    await page.waitForFunction(() => lastResult && !inFlight);
+    // Hold one request in the real page so Stop is deterministic even on fast hardware.
+    const before = await page.evaluate(() => {
+      worker.postMessage = m => { window.heldRequest = m; };
+      return workerStarts;
+    });
+    await page.locator('#solvebtn').click();
+    await page.waitForFunction(() => !!inFlight);
+    const stoppedID = await page.evaluate(() => inFlight.id);
+    await page.locator('#stopbtn').click();
+    await page.waitForTimeout(250);
+    assert.equal(await page.evaluate(() => workerStarts), before, 'Stop restarted the worker');
+    assert.equal(await page.evaluate(() => worker === null && !workerReady && !inFlight && !pending), true);
+    assert.equal(await page.locator('#chip').innerText(), 'Stopped');
+    await page.evaluate(id => {
+      const newer = {id: id+100}; inFlight = newer;
+      onSolved({id, result: 'stale payload must never be parsed'});
+      if (inFlight !== newer) throw Error('stale result replaced the active request');
+      inFlight = null;
+    }, stoppedID);
+    await page.locator('#solvebtn').click();
+    await page.waitForFunction(id => reqId > id && lastResult && !inFlight && workerReady, stoppedID);
+    assert.equal(await page.evaluate(() => workerStarts), before+1);
+    // A failed lazy solver import must also be retryable in the same worker.
+    const solverURL = '**/noisestate/noisestate.js*';
+    await page.route(solverURL, route => route.abort());
+    await page.locator('#ch6-view').selectOption('solver');
+    await page.waitForFunction(() => document.querySelector('#chip').textContent === 'Error');
+    await page.unroute(solverURL);
+    await page.locator('#solvebtn').click();
+    await page.waitForFunction(() => lastResult && lastResult.engine !== 'ch6-markov' && !inFlight);
+    assert((await page.locator('.cards').first().innerText()).includes('1.4043'));
+    return {workerStartupRetry: true, stopStaysIdle: true, staleResultIgnored: true, lazyImportRetry: true};
+  } finally { await page.close(); }
+}
+module.exports = {checkExplorerRetention, checkExplorerCancellation};
 if (require.main === module) {
   const {chromium} = require('playwright');
   (async () => {
     const browser = await chromium.launch({headless: true});
-    try { console.log(JSON.stringify(await checkExplorerRetention(browser, process.argv[2] || 'http://127.0.0.1:8788'), null, 2)); }
+    try {
+      const base = process.argv[2] || 'http://127.0.0.1:8788';
+      console.log(JSON.stringify(await checkExplorerRetention(browser, base), null, 2));
+      console.log(JSON.stringify(await checkExplorerCancellation(browser, base)));
+    }
     finally { await browser.close(); }
   })().catch(e => {console.error(e); process.exitCode = 1;});
 }
