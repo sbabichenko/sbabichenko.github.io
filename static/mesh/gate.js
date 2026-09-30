@@ -326,22 +326,47 @@
   // the summary cards under the fit and the round-by-round table further down the page dim while a fit is running
   const stale = (on) => ["results", "results-rounds"].forEach((id) => $(id) && $(id).classList.toggle("stale", on));
   function setChip(kind, text) { const c = $("chip"); c.className = "chip " + kind; c.textContent = text; }
+  function releaseWorker() {
+    if (worker) worker.terminate();
+    worker = null; S.ready = false;
+  }
+  function releaseIdleWorker() {
+    if (document.hidden && S.ready && !S.busy && !S.queued) releaseWorker();
+  }
+  document.addEventListener("visibilitychange", releaseIdleWorker);
+  function workerFailed(message) {
+    releaseWorker(); S.busy = false; S.queued = false; S.pending = null;
+    setChip("bad", "Error");
+    $("statustext").textContent = `${message} Change a setting or try the fit again to retry.`;
+    document.dispatchEvent(new CustomEvent("gatefit", { detail: { error: message } }));
+  }
   function startWorker() {
-    worker = new Worker($("gate").dataset.worker);
-    worker.onmessage = (ev) => {
+    setChip("busy", "Loading");
+    $("statustext").textContent = "Loading the estimator…";
+    let active;
+    try { active = worker = new Worker($("gate").dataset.worker); }
+    catch (e) { workerFailed("The estimator could not be loaded."); return; }
+    active.onmessage = (ev) => {
+      if (worker !== active) return;
       const m = ev.data;
       if (m.type === "ready") { S.ready = true; run(); return; }
+      if (m.type === "error" && !S.ready) { workerFailed(m.message); return; }
+      if (m.id !== S.id) return;
+      if (m.type === "error" && m.fatal) { workerFailed(m.message); return; }
       if (m.type === "error") {
-        S.busy = false; setChip("bad", "Error");
+        S.busy = false; S.pending = null;
+        if (S.queued) { run(); return; }
+        setChip("bad", "Error");
         document.dispatchEvent(new CustomEvent("gatefit", { detail: { error: m.message } }));
         let text = m.message;
         if (S.user && (m.log || []).some((l) => /unidentified/.test(l)))
           text = "The estimator could not separate the sites' own effects from the noise: most sites have too few trials. Give it sites with more trials each, or plain 0/1 rows, which this page groups into sites.";
         $("statustext").textContent = text;
         if (S.user) ownSay(text, true);
+        releaseIdleWorker();
         return;
       }
-      if (m.id !== S.id) { S.busy = false; if (S.queued) run(); return; }
+      if (m.type !== "fit") return;
       S.busy = false;
       S.fit = m; S.fitG = fitGrid(m);
       if (S.pending && S.pending.id === m.id) {
@@ -349,18 +374,22 @@
         if (P.user) document.dispatchEvent(new CustomEvent("gatefit", { detail: { user: true } }));
         else { S.run = { ...P, fit: m }; document.dispatchEvent(new CustomEvent("gatefit", { detail: S.run })); }
       }
+      S.pending = null;
       if (window.siteTally) window.siteTally("fit", 1, S.user ? `a decision mesh on ${S.user.rows.toLocaleString()} rows of your own data` : `a decision mesh on ${opts().sites.toLocaleString()} sites of coin flips`);
       stale(false);
       setChip("ok", "Fitted"); report(); drawFit();
       if (S.queued) run();
+      else releaseIdleWorker();
     };
     // an error event from a worker script that never loaded carries no message: most often the network
-    worker.onerror = (e) => {
-      setChip("bad", "Error");
-      $("statustext").textContent = e.message ? `The estimator stopped: ${e.message}` : "The estimator could not be loaded. Check the connection and reload the page.";
+    active.onerror = (e) => {
+      if (worker !== active) return;
+      e.preventDefault?.();
+      workerFailed(e.message ? `The estimator stopped: ${e.message}` : "The estimator could not be loaded.");
     };
   }
   function run() {
+    if (!worker) { startWorker(); return; }
     if (!S.ready) return;
     if (S.busy) { S.queued = true; return; }
     S.queued = false;
