@@ -208,7 +208,7 @@
     const bOne = $("mode-one"), bMany = $("mode-many"), oneControls = $("one-controls"), manyNote = $("many-note");
     const scrub = $("scrub"), whenIn = $("when"), play = $("play"), clock = $("clock");
 
-    let mode = "one", visible = true, raf = 0, last = 0;
+    let mode = "one", seen = false, visible = false, raf = 0, last = 0;
     let age = 0, sweeping = false;                  // one spike
     let spikes = [], tsec = 0, next = 0;            // many spikes: { spike, born (seconds) }
     const newSpike = () => ({ sign: rng() < 0.5 ? -1 : 1, size: 0.5 + 0.5 * rng(), when: rng() });
@@ -241,6 +241,7 @@
     }
     function tick(ts) {
       raf = 0;
+      if (!visible) { last = 0; return; }
       const dt = last ? Math.min(0.1, (ts - last) / 1000) : 0;
       last = ts;
       if (mode === "many") {
@@ -279,14 +280,20 @@
     // redraw the axes at a new width; animate only while the rows are on screen and the tab is showing
     let width = host.clientWidth;
     new ResizeObserver(() => { if (host.clientWidth === width) return; width = host.clientWidth; rows.forEach((r) => r.frame(mode === "many")); mode === "one" ? drawOne() : drawMany(); }).observe(host);
-    document.addEventListener("visibilitychange", () => { visible = !document.hidden; last = 0; wake(); });
+    let first = true;
+    function syncVisibility() {
+      visible = seen && !document.hidden;
+      last = 0;
+      if (visible && first) { first = false; if (!reduced && mode === "one") { setAge(0); setPlay(true); } }
+      if (!visible) { cancelAnimationFrame(raf); raf = 0; }
+      else wake();
+    }
+    document.addEventListener("visibilitychange", syncVisibility);
     // the spike ages once by itself the first time the rows come into view (shown fully aged, and still, if motion
     // is reduced)
-    let first = true;
     new IntersectionObserver((es) => {
-      visible = es.some((e) => e.isIntersecting) && !document.hidden;
-      if (visible && first) { first = false; if (!reduced && mode === "one") { setAge(0); setPlay(true); } }
-      wake();
+      seen = es.some((e) => e.isIntersecting);
+      syncVisibility();
     }).observe(host);
     setMode("one");
     setAge(reduced ? SHOW : 0);
