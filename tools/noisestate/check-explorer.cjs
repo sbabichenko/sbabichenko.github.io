@@ -152,8 +152,9 @@ async function checkSweepRecovery(browser, base) {
     await page.locator('#sweepbtn').click();
     await page.waitForFunction(() => sweep && !sweep.running && sweep.i === 3);
     assert.equal(await page.evaluate(() => sweep.failed), 0);
+    assert.equal(await page.evaluate(() => sweepWorker === null && sweep.jobs === null && sweep.start === null), true);
     // A worker can fail after ready has already resolved. That must stop the UI too.
-    await page.evaluate(() => { sweepWorker.postMessage = () => {}; });
+    await page.evaluate(async () => { await ensureSweepWorker(); sweepWorker.postMessage = () => {}; });
     await page.locator('#sweepbtn').click();
     await page.waitForFunction(() => sweep.running);
     await page.evaluate(() => sweepWorker.onerror({message: 'simulated runtime failure'}));
@@ -182,14 +183,62 @@ async function checkSweepRecovery(browser, base) {
         game = 'ch6'; values.ch6.eps = heldEps;
         const answer = {oldTerminated: created[0].terminated, oldSent: created[0].sent.length,
           currentSent: created[1].sent.length, currentRunning: sweep.running, frozen};
-        stopSweep(); return answer;
+        created[1].onmessage({data: {type: 'result', id: sweep.id + sweep.i, result: '{'}});
+        answer.malformedStopped = !sweep.running && sweepWorker === null && !!sweep.error && created[1].terminated;
+        return answer;
       } finally { window.Worker = NativeWorker; }
     });
-    assert.deepEqual(result, {oldTerminated: true, oldSent: 0, currentSent: 2, currentRunning: true, frozen: true});
-    return {startupRetry: true, runtimeFailureStops: true, startupCancellation: true, frozenParameters: true};
+    assert.deepEqual(result, {oldTerminated: true, oldSent: 0, currentSent: 2, currentRunning: true, frozen: true, malformedStopped: true});
+    await page.locator('#sweepbtn').click();
+    await page.waitForFunction(() => sweep && !sweep.running && sweep.i === 3 && sweepWorker === null);
+    assert.equal(await page.evaluate(() => sweep.failed), 0);
+    return {startupRetry: true, runtimeFailureStops: true, startupCancellation: true, frozenParameters: true,
+      completedWorkerReleased: true, malformedRetry: true};
   } finally { await page.close(); }
 }
 module.exports = {checkExplorerRetention, checkExplorerCancellation, checkSweepRecovery};
+
+async function checkHiddenSolver(browser, base) {
+  const page = await browser.newPage({serviceWorkers: 'block', reducedMotion: 'reduce'});
+  const errors = [];
+  page.on('pageerror', e => errors.push(String(e)));
+  await page.addInitScript(() => {
+    window.coi = {shouldRegister: () => false};
+    window.solverHidden = false;
+    Object.defineProperty(document, 'hidden', {get: () => solverHidden});
+  });
+  await page.route('https://**', route => route.abort());
+  try {
+    await page.goto(base + '/noisestate/#game=ch3');
+    await page.waitForFunction(() => lastResult && !inFlight && workerReady);
+    const first = await page.evaluate(() => JSON.stringify([lastResult.costs, lastStart.ch3]));
+    await page.evaluate(() => { solverHidden = true; document.dispatchEvent(new Event('visibilitychange')); });
+    await page.waitForFunction(() => worker === null && !workerReady);
+    await page.waitForTimeout(150);
+    assert.equal(page.workers().length, 0, 'hidden idle page retained its WASM worker');
+    assert.equal(await page.evaluate(() => JSON.stringify([lastResult.costs, lastStart.ch3])), first);
+    await page.evaluate(() => { solverHidden = false; document.dispatchEvent(new Event('visibilitychange')); });
+    assert.equal(await page.evaluate(() => worker === null), true, 'tab return unnecessarily restarted solver');
+    await page.locator('#solvebtn').click();
+    await page.waitForFunction(() => workerReady && lastResult && !inFlight);
+    assert.equal(await page.evaluate(() => !!lastResult.warm_start), true);
+    // A requested solve survives hiding; its worker is released after its result arrives.
+    const running = await page.evaluate(async () => {
+      const active = worker;
+      active.postMessage = () => {};
+      requestSolve(0);
+      await new Promise(r => setTimeout(r, 20));
+      solverHidden = true; document.dispatchEvent(new Event('visibilitychange'));
+      const kept = worker === active && !!inFlight;
+      active.onmessage({data: {type: 'result', id: inFlight.id, result: JSON.stringify(lastResult), wall: .01}});
+      return {kept, releasedAfterResult: worker === null && !inFlight};
+    });
+    assert.deepEqual(running, {kept: true, releasedAfterResult: true});
+    assert.deepEqual(errors, []);
+    return {idleWorkerReleased: true, resultsAndStartKept: true, restartOnDemand: true, activeSolveSurvives: true};
+  } finally { await page.close(); }
+}
+module.exports.checkHiddenSolver = checkHiddenSolver;
 if (require.main === module) {
   const {chromium} = require('playwright');
   (async () => {
