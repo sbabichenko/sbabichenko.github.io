@@ -2,7 +2,7 @@
 // models load the native solver compiled to WebAssembly, with threads when available.
 const MT = self.crossOriginIsolated === true && typeof SharedArrayBuffer !== "undefined";
 const THREADS = MT ? Math.max(1, Math.min(4, navigator.hardwareConcurrency || 2)) : 1;
-const SOLVER_REV = "832e961";
+const SOLVER_REV = "64a445b";
 const asset = (name) => new URL(name + "?v=" + SOLVER_REV, self.location.href).href;
 const entry = asset(MT ? "noisestate-mt.js" : "noisestate.js");
 let runtime = null;
