@@ -1095,20 +1095,85 @@ function stopTimer() { clearInterval(timerHandle); timerHandle = null; }
 // ball settles in the middle: the fixed point. A solve that runs past a second starts the rally while it works,
 // a hit per progress report, and tops it up to the count when it ends.
 const rally = { hits: 0, played: 0, side: 1, busy: false, done: false, live: false, timer: 0 };
-// beside it, the fixed point settling: the residual the solver reports after each round, on a log scale, falling
-// to the dashed line at the tolerance (1e-8). It stays after the solve, a record of how this one converged.
-const settle = { pts: [] };
-function settleReset() { settle.pts = []; settleDraw(); }
-function settleAdd(r) { if (r > 0 && isFinite(r)) { settle.pts.push(Math.log10(r)); settleDraw(); } }
-function settleDraw() {
-  const line = document.getElementById("settleline");
-  if (!line) return;
-  const p = settle.pts, n = p.length;
-  if (!n) { line.setAttribute("points", ""); return; }
-  const top = Math.max(p[0], -2), tol = -8, W = 56;
-  const y = (v) => 1.5 + 11 * Math.min(1, Math.max(0, (top - v) / Math.max(1e-9, top - tol)));
-  line.setAttribute("points", p.map((v, i) => `${(n === 1 ? 0 : (i / (n - 1)) * W).toFixed(1)},${y(v).toFixed(1)}`).join(" "));
+// under the status bar, the fixed point settling: the residual the solver reports after each best-response round, on
+// a log scale, falling to the dashed line at the solve's own tolerance (1e-10 stationary, 1e-8 finite: the result's
+// "converged" check carries it). A request can run more than one fixed-point solve (a start-up solve, then the model's):
+// the round count starting over marks a new one, drawn as its own line from round 1, the earlier ones faint. It stays
+// after the solve, a record of how this one converged.
+const settle = { runs: [], lastEval: 0, tol: {}, main: -1, cmp: -1 };
+function settleTol() { return settle.tol[game] || 1e-10; }
+function settleReset() { Object.assign(settle, { runs: [], lastEval: 0, main: -1, cmp: -1 }); settleDraw(); }
+function settleAdd(r, ev) {
+  if (!(r > 0 && isFinite(r))) return;
+  if (!settle.runs.length || (ev !== undefined && ev <= settle.lastEval)) settle.runs.push([]);
+  settle.runs[settle.runs.length - 1].push(Math.log10(r));
+  if (ev !== undefined) settle.lastEval = ev;
+  settleDraw();
 }
+function settleDone(res) {
+  const c = (res.checks || []).find((d) => d.name === "converged");
+  if (c && c.threshold > 0) settle.tol[game] = c.threshold;
+  if (!settle.runs.length) settleAdd(res.residual);
+  // which lines are the model's solve and the compared one (a start on a coarse grid runs before each): the last run
+  // with the result's round count, and for the comparison the last with its count after it
+  const find = (n, from) => { for (let j = settle.runs.length - 1; j >= from; j--) if (settle.runs[j].length === n) return j; return -1; };
+  settle.main = find(res.evaluations, 0);
+  const C = res.compare;
+  settle.cmp = C && C.ok !== false && C.evaluations ? find(C.evaluations, settle.main + 1) : -1;
+  if (settle.cmp === settle.main) settle.cmp = -1;
+  settleDraw();
+}
+function settleDraw() {
+  const svg = document.getElementById("conv"), panel = document.getElementById("convpanel");
+  if (!svg) return;
+  const runs = settle.runs.filter((r) => r.length);
+  if (panel) panel.hidden = !runs.length;
+  if (!runs.length) { svg.innerHTML = ""; return; }
+  const W = Math.max(240, svg.clientWidth || 600), H = W < 480 ? 150 : 190;
+  const L = 42, R = 14, T = 10, B = 28;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("height", H);
+  const all = runs.flat(), lt = Math.log10(settleTol());
+  const top = Math.ceil(Math.max(...all, lt + 1)), bot = Math.floor(Math.min(...all, lt) - 0.5);
+  const n = Math.max(5, ...runs.map((r) => r.length));
+  const x = (i) => L + (W - L - R) * (n === 1 ? 0 : i / (n - 1)), y = (v) => T + (H - T - B) * (top - v) / Math.max(1e-9, top - bot);
+  const step = top - bot > 8 ? 4 : 2;
+  let g = "";
+  for (let d = top; d >= bot; d--) {
+    if (d % step) continue;
+    g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(d).toFixed(1)}" y2="${y(d).toFixed(1)}"/>`;
+    g += `<text class="tick" x="${L - 6}" y="${(y(d) + 4).toFixed(1)}" text-anchor="end">${d === 0 ? "1" : `10<tspan dy="-6" font-size="0.72em">${d < 0 ? "\u2212" + -d : d}</tspan>`}</text>`;
+  }
+  const xs = n <= 10 ? 1 : n <= 25 ? 5 : n <= 60 ? 10 : 25;
+  for (let k = 1; k <= n; k++) if (k === 1 || k % xs === 0) g += `<text class="tick" x="${x(k - 1).toFixed(1)}" y="${H - 10}" text-anchor="middle">${k}</text>`;
+  g += `<text class="axis" x="${W - R}" y="${H - 10}" text-anchor="end" dx="0">round</text>`;
+  g += `<line class="tol" x1="${L}" x2="${W - R}" y1="${y(lt).toFixed(1)}" y2="${y(lt).toFixed(1)}"/>`;
+  g += `<text class="axis" x="${W - R}" y="${(y(lt) - 5).toFixed(1)}" text-anchor="end">tolerance</text>`;
+  // while solving, the latest line is the live one; after, the model's solve (solid, with its rounds marked) and the
+  // compared one (dashed, as in the plots below), the start-up solves faint
+  const done = settle.main >= 0;
+  const role = (j) => done ? (j === settle.main ? "run" : j === settle.cmp ? "run cmp" : "run early") : (j === runs.length - 1 ? "run" : "run early");
+  const rank = { "run early": 0, "run cmp": 1, "run": 2 };        // faint underneath, the model's solve on top
+  const order = runs.map((r, j) => j).sort((a, b) => rank[role(a)] - rank[role(b)] || a - b);
+  for (const j of order) {
+    const r = runs[j], c = role(j);
+    g += `<polyline class="${c}" points="${r.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ")}"/>`;
+    if (c === "run" && (W - L - R) / n >= 7) g += r.map((v, i) => `<circle class="pt" r="2.6" cx="${x(i).toFixed(1)}" cy="${y(v).toFixed(1)}"/>`).join("");
+  }
+  svg.innerHTML = g;
+}
+addEventListener("resize", () => { if (settle.runs.length) settleDraw(); });
+// the wide tables' fades: data-more says on which sides a table has more to scroll to ("l", "r", "lr", or none)
+function tableFades(w) {
+  const l = w.scrollLeft > 1, r = w.scrollLeft + w.clientWidth < w.scrollWidth - 1;
+  const v = (l ? "l" : "") + (r ? "r" : "");
+  if (v) w.dataset.more = v; else delete w.dataset.more;
+}
+function allTableFades() { for (const w of document.querySelectorAll(".explorer .tablewrap")) tableFades(w); }
+document.addEventListener("scroll", (e) => { if (e.target.classList && e.target.classList.contains("tablewrap")) tableFades(e.target); }, true);
+addEventListener("resize", allTableFades);
+{ let queued = false;
+  new MutationObserver(() => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; allTableFades(); }); } })
+    .observe(document.body, { childList: true, subtree: true }); }
 function rallyStart() {
   clearTimeout(rally.timer);
   Object.assign(rally, { hits: 0, played: 0, done: false, live: false });
@@ -1150,7 +1215,7 @@ function startWorker() {
       if (game === "custom" && !inFlight && !lastResult) customReady();
       else requestSolve(0);
     } else if (m.type === "progress") {
-      if (inFlight && m.id === inFlight.id) { progress = m; rallyProgress(); settleAdd(m.residual); }
+      if (inFlight && m.id === inFlight.id) { progress = m; rallyProgress(); settleAdd(m.residual, m.evaluation); }
     } else if (m.type === "result") {
       onSolved(m);
     } else if (m.type === "fatal") {
@@ -1243,7 +1308,7 @@ function onSolved(m) {
   const stale = pending || !req || req.game !== game || (key !== null && key !== req.key);
   const res = JSON.parse(m.result);
   rallyEnd(res.ok ? res.evaluations || 0 : 0);
-  if (res.ok) settleAdd(res.residual);
+  if (res.ok) settleDone(res);
   if (res.ok && window.siteTally)
     window.siteTally("solve", res.compare ? 2 : 1, `${(PRESETS[game] && PRESETS[game].tab) || "your model"}, ${(m.wall || 0).toFixed(1)} s`);
   if (!res.ok) {
