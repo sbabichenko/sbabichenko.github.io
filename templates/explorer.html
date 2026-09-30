@@ -127,10 +127,10 @@
       </section>
 
       <div class="notes">
-        <p>The solver is a C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a> 2.1 (MIT license)
+        <p>The solver is a C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a> 2.2 (MIT license)
           with the same equations and algorithms: the stationary and spectral engines, transitions with their past,
           band, buffer and march in T, monitored deviations and instant observations, and the refinement and stability checks. On its test grid its costs,
-          kernels, loss paths and first-order-condition terms agree with the Python package to 1e-10 or better.</p>
+          kernels, loss paths and first-order-condition terms agree with the Python package to 1e-9 or better.</p>
         <p>To solve games yourself, the Python package is on <a href="https://pypi.org/project/noisestate/">PyPI</a>:
           <code>pip install noisestate</code> (source on <a href="https://github.com/sbabichenko/noisestate">GitHub</a>).
           A model saved from the &ldquo;Your model&rdquo; tab runs there as <code>noisestate solve model.yaml</code>.</p>
@@ -158,7 +158,7 @@
 @software{noisestate,
   author  = {Babichenko, Sam},
   title   = {noisestate: equilibrium solver for linear-quadratic-Gaussian games with private information},
-  version = {2.1.0},
+  version = {2.2.0},
   year    = {2026},
   url     = {https://pypi.org/project/noisestate/}
 }</pre>
