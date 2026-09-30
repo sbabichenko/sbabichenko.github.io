@@ -38,7 +38,7 @@ onmessage = async ({ data: msg }) => {
     await ready;
     const request = { ...(msg.request || {}), threads: THREADS };
     if (request.method === "ch6-markov") {
-      if (!self.Ch6Markov) importScripts(new URL("ch6-markov.js?v=20260930-1", self.location.href).href);
+      if (!self.Ch6Markov) importScripts(new URL("ch6-markov.js?v=20260930-2", self.location.href).href);
       out = JSON.stringify(Ch6Markov.payload(msg.model, request));
     } else {
       const solver = await loadSolver();

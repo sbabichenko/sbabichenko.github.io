@@ -5,9 +5,12 @@
  */
 const assert = require('node:assert/strict');
 async function checkExplorerRetention(browser, base) {
-  const page = await browser.newPage({viewport: {width: 1100, height: 900}, reducedMotion: 'reduce'});
+  // The COI service worker can fetch scripts outside Playwright's routing.
+  // Disable it in this timing test so the lazy-load gate is deterministic.
+  const page = await browser.newPage({viewport: {width: 1100, height: 900}, reducedMotion: 'reduce', serviceWorkers: 'block'});
   const errors = [];
   page.on('pageerror', e => errors.push(String(e)));
+  await page.addInitScript(() => { window.coi = {shouldRegister: () => false}; });
   await page.route('https://**', route => route.abort());
   let release;
   const gate = new Promise(resolve => { release = resolve; });

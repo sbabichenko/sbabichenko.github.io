@@ -39,6 +39,23 @@ class Equilibrium:
         out=np.array([C@expm(F*t)@B for t in ages])
         return {k:out[:,i,:] for i,k in enumerate(('V','Q','P','D'))}
 
+    def path_reference(self, h=.1):
+        # Integrate the covariance directly, independently of the JS block exponential.
+        from scipy.integrate import quad_vec
+        s = self.params['sigma_Z']; b,d,p = self.beta,self.delta,self.pq
+        F = np.array([[-1,0,0,0],[1,-b/s,0,0],[0,-b,-d,0],[0,0,0,0]],float)
+        B = np.array([[1,0,-1],[0,-1,1],[0,-s,0],[1,0,0]],float)
+        G = B@B.T
+        initial = np.diag([1,s/b,s*s/(2*d) if self.params['gamma'] else 0,0])
+        C = np.array([[0,0,0,1],[0,0,1,0],[-1,-1,p,1],[0,b,d,0]],float)
+        def covariance(t):
+            noise, _ = quad_vec(lambda u: expm(F*u)@G@expm(F.T*u), 0, t, epsabs=1e-12, epsrel=1e-12)
+            A = expm(F*t)
+            return A@initial@A.T+noise, noise
+        moments = {str(t): np.diag(C@covariance(t)[0]@C.T).tolist() for t in (0,1,40)}
+        return dict(transition=expm(F*h).tolist(), noise_covariance=covariance(h)[1].tolist(),
+                    initial_covariance=initial.tolist(), variances=moments)
+
     def deviation(self, ages):
         if self.market=='transparent':
             q=self.blip_initial[0]*np.exp(-self.delta*np.asarray(ages))

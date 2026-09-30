@@ -1436,6 +1436,20 @@ function baseLayout(extra) {
 // one instead of redrawing: curves are matched by name and length, the axes hold both ranges meanwhile, and anything
 // unmatched (the dotted "before" lines, heatmaps) simply appears. Off under reduced motion.
 let plotSnapshot = null;
+const plotWork = new WeakMap();
+function trackPlot(el, work) {
+  let pending = plotWork.get(el);
+  if (!pending) { pending = new Set(); plotWork.set(el, pending); }
+  const token = {};
+  pending.add(token);
+  return Promise.resolve(work).finally(() => {
+    pending.delete(token);
+    if (!pending.size) {
+      plotWork.delete(el);
+      if (!el.isConnected) Plotly.purge(el);
+    }
+  });
+}
 const plotKey = (el) => el.id || (el.parentElement && el.parentElement.id ? el.parentElement.id + ":" + [...el.parentElement.children].indexOf(el) : null);
 function snapshotPlots(root) {
   const snap = {};
@@ -1450,7 +1464,11 @@ function snapshotPlots(root) {
 // Plotly's responsive handlers retain their chart after its DOM is detached.
 // Dispose before replacing a plot container, including selector/redraw changes.
 function clearPlots(root) {
-  if (window.Plotly) for (const gd of root.querySelectorAll(".js-plotly-plot")) Plotly.purge(gd);
+  // Purging during Plotly's own asynchronous layout deletes state its remaining
+  // callbacks still need. Detach now; the tracked operation disposes on settling.
+  if (window.Plotly) for (const gd of root.querySelectorAll(".js-plotly-plot")) {
+    if (!plotWork.has(gd)) Plotly.purge(gd);
+  }
   root.replaceChildren();
 }
 function glide(el, data, layout, cfg) {
@@ -1512,8 +1530,8 @@ function plotly(method, id, data, layout, cfg) {
     }
     layout.legend = { ...(layout.legend || {}), y: -0.12 };
   }
-  if (method === "newPlot" && el) { const g = glide(el, data, layout, cfg); if (g) return g; }
-  return Plotly[method](el, data, layout, cfg);
+  if (method === "newPlot" && el) { const g = glide(el, data, layout, cfg); if (g) return trackPlot(el, g); }
+  return trackPlot(el, Plotly[method](el, data, layout, cfg));
 }
 const plotCfg = { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"] };
 const titleOf = (s) => ({ text: s, font: { size: 13 }, x: 0, xanchor: "left", xref: "paper" });
@@ -1709,6 +1727,7 @@ function rng(seed) {
     const f = Math.sqrt(-2 * Math.log(r) / r); spare = y * f; return x * f; };
 }
 function simulatePaths(res, draws, seed) {
+  if (res.paths.kind === "state-space") return GaussianPaths.simulate(res.paths, draws, d => rng(seed * 7919 + d));
   const P = res.paths, names = Object.keys(P.kernels), sq = Math.sqrt(P.h);
   const out = {};
   if (P.kind === "stationary") {
@@ -1763,9 +1782,10 @@ function simulatePaths(res, draws, seed) {
   return out;
 }
 function renderPaths(res, out) {
-  const all = Object.keys(res.paths.kernels).filter((nm) => Object.keys(res.paths.kernels[nm]).length || Object.keys((res.paths.initial || {})[nm] || {}).length);
+  const markov = res.paths.kind === "state-space";
+  const all = markov ? Object.keys(res.paths.outputs) : Object.keys(res.paths.kernels).filter((nm) => Object.keys(res.paths.kernels[nm]).length || Object.keys((res.paths.initial || {})[nm] || {}).length);
   if (!all.length) return;
-  const stat = res.paths.kind === "stationary";
+  const stat = res.paths.kind === "stationary" || markov;
   const ctl = all.filter((nm) => isControl(nm)), sts = all.filter((nm) => !isControl(nm));
   const many = all.length > 6;
   let names = many ? ctl : sts.concat(ctl);
@@ -1773,8 +1793,8 @@ function renderPaths(res, out) {
     <div class="row"><button class="secondary" id="redraw">Draw new shocks</button><span class="small muted" id="seedlab"></span>
       ${many ? `<label for="pshow" class="small muted" style="margin-left:12px">Show</label><select id="pshow"><option value="c">controls</option><option value="s">states</option><option value="a">all</option></select>` : ""}</div>
     <div class="legend pathkey"><span><i style="opacity:1;height:2px"></i>draw 1</span><span><i style="opacity:0.55;height:1.5px"></i>draw 2</span><span><i style="opacity:0.3;height:1px"></i>draw 3</span><span><i class="band"></i>&plusmn; 2 sd</span><span><i class="dots"></i>mean</span></div>
-    <div class="grid3" id="pgrid"></div>
-    <p class="caption">Each panel is in its player's color, ink for a state. Three draws of the shocks pushed through the equilibrium${stat ? ", over two lag windows of the stationary game" : res.kind === "transition" ? ", old shocks before time 0 included" : ""}. The band is the mean plus and minus two standard deviations. The shocks are drawn in your browser, so a new draw is instant.</p></section>`);
+    <div class="grid3${all.length === 4 ? " four" : ""}" id="pgrid"></div>
+    <p class="caption">Each panel is in its player's color, ink for a state. Three draws of the shocks pushed through the equilibrium${markov ? ". The fundamental starts at zero; filtering errors" + (res.params_used.gamma ? " and inventory start in their stationary distribution" : " start in their stationary distribution, and unpenalized inventory starts at zero") + ". Steps between the plotted dates use the exact Gaussian transition" : stat ? ", over two lag windows of the stationary game" : res.kind === "transition" ? ", old shocks before time 0 included" : ""}. The band is the mean plus and minus two standard deviations. The shocks are drawn in your browser, so a new draw is instant.</p></section>`);
   const draw = () => {
     const sim = simulatePaths(res, 3, pathSeed), box = out.querySelector("#pgrid"); clearPlots(box);
     out.querySelector("#seedlab").textContent = `draw ${pathSeed}`;
