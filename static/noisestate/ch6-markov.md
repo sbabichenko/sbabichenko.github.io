@@ -39,11 +39,39 @@ Its symmetric value matrix `U` solves `r*U = R + A'*U + U*A - v*v'/cn`, where `v
 The feedback is `K = -v/cn`; equilibrium requires `K[0]=0`. The continuing drift in `xi` is essential.
 Together these are seven coupled equations in `(a,b,c,U11,U12,U22,p)`.
 
-We follow the competitive branch from zero inventory cost using damped Newton steps, check the original equation
-residual, and require positive trading intensity and, for positive inventory cost, positive inventory reversion,
-negative inventory quote loading and stabilizing maker feedback. This selects the stabilizing branch; it is not a
-proof that no other admissible roots exist. The reported residual is an algebraic equation residual, not a
-best-response spectral radius or a global equilibrium uniqueness certificate.
+The trader's equations imply `b=d/(r+d)`, `c=(2*e*d*d+2*l*d*b)/r`, and
+`p=-2*e*d-l*b-c`, where `d=delta`. Put `h=r/(r+d)`; then
+`a=h*h/(l*h+e*r+sqrt(e*r*(2*l*h+e*r)))` and `beta=sqrt(r*a/(2*e))`.
+The transparent maker reduces to the strictly increasing scalar equation
+
+```
+2*g = 4*e*r*d + 6*e*d*d + l*d*(r+2*d)/(r+d).
+```
+
+Its positive root is bracketed by `0` and `2*g/(4*e*r+l)`. For the opaque maker,
+equilibrium gives `v[0]=0`; its first two Riccati equations yield
+`U11=(g-p*d)/(r+2*d)` and `U12=-cx*(p/2+U11)/(r+d-kx)`. Define
+
+```
+T = (l*beta*(r+2*d)+d*(r+d))/((l-p)*(r+d)-l*beta*p)
+2*g = d*(r+2*d)/T-r*p.
+```
+
+This brackets a positive root between `0` and `2*g/(2*e*r+l)`. The remaining
+Riccati entry is a scalar quadratic: with `v0=cx/2-cn*U12`, its coefficients are
+`A=kn*kn/cn`, `B=r-2*kx+2*v0*kn/cn`, `C=2*cx*U12+v0*v0/cn`. We select
+`U22=-2*C/(B+sqrt(B*B-4*A*C))` and check the resulting drift. Both scalar roots
+are solved in `delta/gamma`, preserving relative accuracy for tiny positive
+inventory penalties. Opaque continuation remains a fallback if the eliminated
+candidate fails the original equations.
+
+We check the original equation residual and require positive trading intensity
+and, for positive inventory cost, positive inventory reversion, negative inventory
+quote loading and stabilizing maker feedback. Independent continuation comparisons
+cover 150 transparent and 250 opaque parameter draws, with coefficient differences
+below `9e-13`. This selects the checked stabilizing branch; it is not a proof of
+global equilibrium uniqueness. The reported residual is an algebraic equation
+residual, not a best-response spectral radius.
 
 ## Costs and responses
 
@@ -60,6 +88,10 @@ maker loss          = gross trader profit + inventory cost
 These are the preset's loss conventions. The chapter's total maker loss also subtracts noise-trader losses
 `(l-p)*s^2`; do not confuse those accounting conventions. At `g=0`, inventory is a random walk with no loss weight,
 so its penalty is zero. This differs from the limit of a positive penalty on stationary inventory.
+At the default trading cost, discount and noise, the positive-penalty limit of
+inventory cost is `0.35` (transparent) and `0.4395643924` (opaque). Inventory
+loadings vanish while stationary inventory variance diverges. Small-penalty
+regressions cover `gamma=1e-4` through `1e-16`, as well as exactly zero.
 
 Shock responses propagate `(V,Vhat1,Vhat0,Q)` with its constant drift matrix. A quote blip starts the transparent
 inventory at `1/(2*e)` and then decays at rate `delta`. In the opaque market it starts `(Q,xi)=(cn,-kn)` and evolves
@@ -118,3 +150,13 @@ Generating three 401-date sample paths and their uncertainty bands takes a media
 Plotly rendering. The state-transition descriptor is 647 bytes at the default parameters. Browser redraw checks
 cover delayed Plotly loading and interrupted animations: old plots are detached immediately and purged after
 pending layout work settles. DOM nodes and event listeners remain constant across repeated redraws.
+
+After scalar elimination, three isolated, interleaved pairs measured the two
+equilibrium solves at `359.85 -> 5.33` microseconds. The complete two-market
+payload, including response curves and path transitions, improved from
+`17.46 -> 16.51` ms. Peak Node RSS for the same workload fell from `88.9 -> 72.1`
+MiB; retained JS after repeated payloads stayed below `0.1` MiB for both versions.
+The unchanged 50 SciPy fixtures now agree within `1.3e-12`. Actual browser
+checks passed slider endpoints, solver switching, redraw/animation interruption,
+worker cancellation/retry, and hidden-worker release. These paired measurements
+use the earlier finite-state implementation as baseline, not the WASM solver.
