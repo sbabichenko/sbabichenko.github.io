@@ -51,6 +51,13 @@
             -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
             -webkit-mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent);
                     mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent); opacity: var(--hdr-fade, 0); }
+          /* the browser draws some things itself (a select's open list, scrollbars, a search box's clear button, pickers):
+             tell it which theme the page is in, so a dark page does not open a white menu, and give a select's options the
+             page's colours where the browser lets a page style them (Windows and Linux; macOS draws its own menus) */
+          html:not(.dark) { color-scheme: light; }
+          html.dark { color-scheme: dark; }
+          html:not(.dark) select option { background-color: #f3ead3; color: #1b1b1f; }
+          html.dark select option { background-color: #26272a; color: #ececef; }
           /* checkboxes take the page's colours, not the browser's white square: a clear box on the paper with a line
              in the text's colour, filled with the accent when ticked */
           html input[type=checkbox] { -webkit-appearance: none; appearance: none; width: 15px; height: 15px; flex: none; margin: 0 0.35em 0 0;
