@@ -953,7 +953,7 @@ function renderTabs() {
     b.setAttribute("aria-selected", g === game ? "true" : "false");
     b.onclick = () => {
       if (g === game) return;
-      game = g; renderAll(); writeHash(); lastResult = null; $("results").innerHTML = ""; $("savebtn").disabled = true;
+      game = g; renderAll(); writeHash(); lastResult = null; clearPlots($("results")); $("savebtn").disabled = true;
       // "Your model" waits for Solve: a solve still running for the tab left behind is stopped, not left reporting
       if (g !== "custom") requestSolve(0); else { if (inFlight) stopSolve(); clearTimeout(debounce); customReady(); }
     };
@@ -1447,6 +1447,12 @@ function snapshotPlots(root) {
   }
   return snap;
 }
+// Plotly's responsive handlers retain their chart after its DOM is detached.
+// Dispose before replacing a plot container, including selector/redraw changes.
+function clearPlots(root) {
+  if (window.Plotly) for (const gd of root.querySelectorAll(".js-plotly-plot")) Plotly.purge(gd);
+  root.replaceChildren();
+}
 function glide(el, data, layout, cfg) {
   const old = plotSnapshot && plotSnapshot[plotKey(el)];
   const oneAxis = layout && !Object.keys(layout).some((k) => /^[xy]axis\d/.test(k));
@@ -1462,16 +1468,18 @@ function glide(el, data, layout, cfg) {
   if (!idx.length) return null;
   el.style.visibility = "hidden";
   return Plotly.newPlot(el, data, layout, cfg).then(() => {
+    if (!el.isConnected) return;
     // the axes hold the union of the old and new ranges while the curves move (this Plotly does not
     // interpolate a range change inside a transition), then settle on the new equilibrium's own
     const nx = el._fullLayout.xaxis.range, ny = el._fullLayout.yaxis.range;
     const union = (a, b) => [Math.min(a[0], b[0]), Math.max(a[1], b[1])];
     const fixed = { ...layout, xaxis: { ...(layout.xaxis || {}), range: union(old.x, nx), autorange: false }, yaxis: { ...(layout.yaxis || {}), range: union(old.y, ny), autorange: false } };
     return Plotly.react(el, start, fixed, cfg).then(() => {
+      if (!el.isConnected) return;
       el.style.visibility = "";
       return Plotly.animate(el, { data: finals, traces: idx }, { transition: { duration: 650, easing: "cubic-in-out" }, frame: { duration: 650, redraw: false } });
-    }).then(() => Plotly.relayout(el, { "xaxis.autorange": true, "yaxis.autorange": true }));
-  }).catch(() => { el.style.visibility = ""; return Plotly.newPlot(el, data, layout, cfg); });
+    }).then(() => el.isConnected && Plotly.relayout(el, { "xaxis.autorange": true, "yaxis.autorange": true }));
+  }).catch(() => { if (!el.isConnected) return; el.style.visibility = ""; return Plotly.newPlot(el, data, layout, cfg); });
 }
 
 // Plotly loads in idle time after the page (the template passes its URL); a plot asked for before it arrives waits for it.
@@ -1490,8 +1498,11 @@ function ensurePlotly() {
 window.addEventListener("load", () => (window.requestIdleCallback || ((f) => setTimeout(f, 200)))(() => ensurePlotly().catch(() => {})));
 
 function plotly(method, id, data, layout, cfg) {
-  if (!window.Plotly) return ensurePlotly().then(() => plotly(method, id, data, layout, cfg));
+  // Capture this node before waiting for the lazy script. A later render can
+  // reuse its id, but the earlier data must never draw into that new chart.
   const el = typeof id === "string" ? document.getElementById(id) : id;
+  if (!el || !el.isConnected) return Promise.resolve();
+  if (!window.Plotly) return ensurePlotly().then(() => plotly(method, el, data, layout, cfg));
   if (el && el.clientWidth && el.clientWidth < 520 && layout) {
     layout = { ...layout };
     const t = layout.xaxis && layout.xaxis.title && (layout.xaxis.title.text || layout.xaxis.title);
@@ -1502,7 +1513,7 @@ function plotly(method, id, data, layout, cfg) {
     layout.legend = { ...(layout.legend || {}), y: -0.12 };
   }
   if (method === "newPlot" && el) { const g = glide(el, data, layout, cfg); if (g) return g; }
-  return Plotly[method](id, data, layout, cfg);
+  return Plotly[method](el, data, layout, cfg);
 }
 const plotCfg = { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"] };
 const titleOf = (s) => ({ text: s, font: { size: 13 }, x: 0, xanchor: "left", xref: "paper" });
@@ -1518,7 +1529,7 @@ function renderResults(res) {
   const out = $("results");
   const keepVar = out.querySelector("#kvar")?.value, keepCtl = out.querySelector("#fctl")?.value;
   plotSnapshot = prevResult && !window.matchMedia("(prefers-reduced-motion: reduce)").matches ? snapshotPlots(out) : null;
-  out.innerHTML = "";
+  clearPlots(out);
   const def = PRESETS[game];
   const params = res.params_used || (game !== "custom" ? values[game] : {});
   const cards = Object.entries(res.costs).map(([a, v]) => {
@@ -1571,7 +1582,7 @@ function renderFinite(res, out, keepVar, keepCtl) {
     <div class="grid3" id="kgrid"></div>
     <p class="caption">Each curve fixes a date t and shows the response at t to a unit shock that struck at time s ≤ t.${res.kind === "transition" ? " Shocks left of the dotted line struck under the old regime; the band reaches back one past window. An initial shock is a single draw at time 0, plotted at s = 0." : ""} Channels with no response are left out.</p></section>`);
   const drawK = (v) => {
-    const box = out.querySelector("#kgrid"); box.innerHTML = "";
+    const box = out.querySelector("#kgrid"); clearPlots(box);
     const tr = res.kind === "transition";
     const smin = Math.min(0, ...S.kernels[v][res.channels[0]].map((cv) => cv.s[0]));
     for (const c of (res.shocks || res.channels)) {
@@ -1672,7 +1683,7 @@ function renderDeviation(res, out) {
     if (def.deviation && def.deviation.caption) cap += " " + def.deviation.caption(res, C);
     out.querySelector("#dcap").innerHTML = cap;
     const show = def.deviation && def.deviation.show ? def.deviation.show : res.names;
-    const box = out.querySelector("#dgrid"); box.innerHTML = "";
+    const box = out.querySelector("#dgrid"); clearPlots(box);
     for (const q of show) {
       const y = W.controls[u].samples[q], yc = Wc && Wc.controls[u] ? Wc.controls[u].samples[q] : null;
       if (!y || (!nonzero(y) && !(yc && nonzero(yc)))) continue;
@@ -1765,7 +1776,7 @@ function renderPaths(res, out) {
     <div class="grid3" id="pgrid"></div>
     <p class="caption">Each panel is in its player's color, ink for a state. Three draws of the shocks pushed through the equilibrium${stat ? ", over two lag windows of the stationary game" : res.kind === "transition" ? ", old shocks before time 0 included" : ""}. The band is the mean plus and minus two standard deviations. The shocks are drawn in your browser, so a new draw is instant.</p></section>`);
   const draw = () => {
-    const sim = simulatePaths(res, 3, pathSeed), box = out.querySelector("#pgrid"); box.innerHTML = "";
+    const sim = simulatePaths(res, 3, pathSeed), box = out.querySelector("#pgrid"); clearPlots(box);
     out.querySelector("#seedlab").textContent = `draw ${pathSeed}`;
     const shade = [[1, 2], [0.55, 1.5], [0.3, 1]];     // draw 1, 2, 3: opacity and width, as in the key above the panels
     for (const nm of names) {
@@ -1892,7 +1903,7 @@ function renderFoc(res, out, keepCtl, caption, xlabel) {
     <div class="row"><label for="fctl" class="small muted">Control</label><select id="fctl">${ctls.map((c) => `<option value="${esc(c)}">${esc(label(c))} (${esc(AGENT_LABEL[F[c].agent] || F[c].agent)})</option>`).join("")}</select></div>
     <div class="grid3" id="fgrid"></div><p class="caption">${caption}</p></section>`);
   const drawF = (ctl) => {
-    const box = out.querySelector("#fgrid"); box.innerHTML = "";
+    const box = out.querySelector("#fgrid"); clearPlots(box);
     const f = F[ctl];
     const xs = x || f.s || (() => { const n = f.channels[res.channels[0]].physical.length, t = f.t; return Array.from({ length: n }, (_, i) => t * i / (n - 1)); })();
     for (const c of (res.shocks || res.channels)) {
@@ -1947,7 +1958,7 @@ function renderStrategy(res, out, keepCtl, xlabel) {
     <p class="caption" id="scap"></p></section>`);
   const interp = (xs, ys, x) => { let k = 1; while (k < xs.length - 1 && xs[k] < x) ++k; const w = (x - xs[k - 1]) / ((xs[k] - xs[k - 1]) || 1); return ys[k - 1] + w * (ys[k] - ys[k - 1]); };
   const drawS = (ctl) => {
-    const box = out.querySelector("#sgrid"); box.innerHTML = "";
+    const box = out.querySelector("#sgrid"); clearPlots(box);
     const f = F[ctl], g = lossHessian(model, ctl);
     out.querySelector("#scap").innerHTML = `Solid: the action${stat ? "" : at} as a response to each primitive shock, D<sub>W</sub>, the kernel plotted above. Dashed: the weight the action puts on the player's estimate of that shock, D, the strategy on the noise-state of Chapter 1. By Remark 1.13 the action is the player's estimate of its own shadow price, so D = D<sub>W</sub> &minus; &phi; / G<sup>DD</sup>, with &phi; the first-order-condition kernel above and G<sup>DD</sup> = ${fmt(g, 4)} the curvature of the player's loss in its own action.`;
     const xs = stat ? res.samples.age : f.s;
@@ -2076,7 +2087,7 @@ window.addEventListener("hashchange", () => {
   const before = game;
   readHash(); renderAll();
   // a new game starts from a clean page; new settings for the same game (a link in a caption) re-solve in place
-  if (game !== before) { lastResult = null; $("results").innerHTML = ""; $("savebtn").disabled = true; $("tabs").scrollIntoView({ block: "nearest" }); }
+  if (game !== before) { lastResult = null; clearPlots($("results")); $("savebtn").disabled = true; $("tabs").scrollIntoView({ block: "nearest" }); }
   if (game !== "custom") requestSolve(0); else customReady();
 });
 
