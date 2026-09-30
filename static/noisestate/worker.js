@@ -43,7 +43,16 @@ onmessage = async ({ data: msg }) => {
     } else {
       const solver = await loadSolver();
       current = msg.id;
-      out = solver.solve(JSON.stringify(msg.model), JSON.stringify(request));
+      try {
+        out = solver.solve(JSON.stringify(msg.model), JSON.stringify(request));
+        if (!out) throw new Error("the solver returned empty data");
+      } catch (err) {
+        // Native validation errors return JSON. A thrown exception can mean a
+        // trapped/aborted WASM runtime, which must not serve another request.
+        postMessage({ type: "fatal", phase: "solve", message: String(err && err.message ? err.message : err) });
+        self.close();
+        return;
+      }
     }
   } catch (err) {
     out = JSON.stringify({ ok: false, error: "the solver stopped: " + String(err && err.message ? err.message : err) });
