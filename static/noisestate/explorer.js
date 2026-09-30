@@ -376,7 +376,10 @@ numerics: {nodes: 24}
         const half = (R) => {
           const q = blip(R); if (!q || !(Math.abs(q.Q[0]) > 0)) return null;
           const k = q.Q.findIndex((v) => Math.abs(v) <= 0.5 * Math.abs(q.Q[0]));
-          return k < 0 ? null : R.samples.age[k];
+          if (k < 0) return null;
+          if (k === 0) return R.samples.age[0];
+          const y0 = Math.abs(q.Q[k - 1]), y1 = Math.abs(q.Q[k]), target = .5 * Math.abs(q.Q[0]);
+          return R.samples.age[k - 1] + (R.samples.age[k] - R.samples.age[k - 1]) * (y0 - target) / (y0 - y1);
         };
         const at0 = (R, f) => { const q = blip(R); return q ? f(q) : null; };
         return [
@@ -657,7 +660,7 @@ const AGENT_LABEL = { player1: "Player 1", player2: "Player 2", market_maker: "M
 // State
 let game = "ch1";
 const values = {};              // preset -> {slider key: value, nodes}
-const opts = { refine: false, stability: false, march: false };
+const opts = { refine: false, stability: false, march: false, reference: true };
 const MAX_NODES = 96, MAX_WINDOW = 96;   // how far a "solve again with" button, or a link, may take the grid and the window
 const lastStart = {};
 const lastStartCompare = {};       // preset -> the raw maps of its compared model's last equilibrium
@@ -885,7 +888,7 @@ function readHash() {
     for (const s of PRESETS[g].sliders) values[g][s.key] = sliderParams(m, s)[0][s.param || s.key];
   }
   opts.refine = h.get("refine") === "1"; opts.stability = h.get("stability") === "1";
-  opts.march = h.get("march") === "1";
+  opts.march = h.get("march") === "1"; opts.reference = h.get("method") !== "solver";
   customYaml = PRESETS.ch1.yaml;
   if (game === "custom" && h.get("model")) {
     try { customYaml = b64decode(h.get("model")); } catch (e) { /* keep the default */ }
@@ -915,6 +918,7 @@ function writeHash() {
     if (PRESETS[game].window) v[PRESETS[game].window.key] = values[game][PRESETS[game].window.key];
     h = new URLSearchParams({ game, ...v });
   }
+  if (game === "ch6" && !opts.reference) h.set("method", "solver");
   if (opts.refine) h.set("refine", "1");
   if (opts.stability) h.set("stability", "1");
   if (opts.march && PRESETS[game].march) h.set("march", "1");
@@ -968,6 +972,14 @@ function renderControls() {
   const box = $("controls"); box.innerHTML = "";
   $("editor").hidden = game !== "custom";
   if (game === "custom") { renderEditor(); renderOptions($("paramopts")); return; }
+  if (game === "ch6") {
+    const view = document.createElement("div"); view.className = "ctl ch6-view";
+    view.innerHTML = `<label for="ch6-view">View</label><select id="ch6-view"><option value="reference">Full equilibrium</option><option value="solver">General solver</option></select>
+      <span class="hint">Follow the full inventory unwind, or inspect the general solver's finite-window approximation and first-order conditions.</span>`;
+    box.appendChild(view);
+    const select = view.querySelector("select"); select.value = opts.reference ? "reference" : "solver";
+    select.onchange = () => { opts.reference = select.value === "reference"; renderControls(); writeHash(); requestSolve(0); };
+  }
   for (const p of def.sliders) {
     if (p.march === false && opts.march) continue;
     const wrap = document.createElement("div"); wrap.className = "ctl";
@@ -994,14 +1006,17 @@ function renderControls() {
     sel.addEventListener("change", () => { values[game][key] = +sel.value; writeHash(); requestSolve(0); });
   };
   if (def.grid) numSelect("ctl-grid", def.grid.label, "A longer window holds the slow-decaying responses; it costs time.", def.grid.options, def.grid.key);
-  if (def.window) numSelect("ctl-window", def.window.label, def.window.hint, def.window.options, def.window.key);
-  if (def.nodes) numSelect("ctl-nodes", "Grid (nodes per side)", "More nodes are more accurate and slower.", def.nodes.options, "nodes");
+  if (def.window && !(game === "ch6" && opts.reference)) numSelect("ctl-window", def.window.label, def.window.hint, def.window.options, def.window.key);
+  if (def.nodes && !(game === "ch6" && opts.reference)) numSelect("ctl-nodes", "Grid (nodes per side)", "More nodes are more accurate and slower.", def.nodes.options, "nodes");
   renderOptions(box);
 }
 
 // solver options: the end of a transition and the after-solve checks
 function renderOptions(box) {
   const def = PRESETS[game];
+  if (game === "ch6" && opts.reference) {
+    return;
+  }
   const wrap = document.createElement("div"); wrap.className = "ctl opts";
   let html = "";
   if (def.march) html += `<label class="pick"><span>End of the transition</span><select id="opt-march">
@@ -1205,7 +1220,7 @@ function rallyPlay() {
 function customReady() { setStatus("idle", "Ready", "Edit the model and press Solve."); if (!inFlight) $("solvebtn").disabled = false; }
 function startWorker() {
   workerReady = false;
-  try { worker = new Worker(WORKER_URL); }
+  try { const url = new URL(WORKER_URL, location.href); if (game === "ch6" && opts.reference) url.searchParams.set("lazy", "1"); worker = new Worker(url); }
   catch (e) { setStatus("bad", "Failed", "This browser could not start a Web Worker: " + e.message); return; }
   worker.onmessage = (ev) => {
     const m = ev.data;
@@ -1258,7 +1273,7 @@ function currentModel() {
   return d;
 }
 
-function currentRequest() { return { refine: opts.refine, stability: opts.stability }; }
+function currentRequest() { return game === "ch6" && opts.reference ? { method: "ch6-markov" } : { refine: opts.refine, stability: opts.stability }; }
 function requestSolve(delay) {
   clearTimeout(debounce);
   if (lastResult) $("results").classList.add("stale");
@@ -1308,8 +1323,8 @@ function onSolved(m) {
   try { key = JSON.stringify([currentModel(), currentRequest()]); } catch (e) { /* the editor holds an unfinished edit */ }
   const stale = pending || !req || req.game !== game || (key !== null && key !== req.key);
   const res = JSON.parse(m.result);
-  rallyEnd(res.ok ? res.evaluations || 0 : 0);
-  if (res.ok) settleDone(res);
+  rallyEnd(res.ok && res.engine !== "ch6-markov" ? res.evaluations || 0 : 0);
+  if (res.ok && res.engine !== "ch6-markov") settleDone(res);
   if (res.ok && window.siteTally)
     window.siteTally("solve", res.compare ? 2 : 1, `${(PRESETS[game] && PRESETS[game].tab) || "your model"}, ${(m.wall || 0).toFixed(1)} s`);
   if (!res.ok) {
@@ -1324,6 +1339,8 @@ function onSolved(m) {
   if (res.start && req) { if (res.converged) lastStart[req.game] = res.start; delete res.start; }
   if (res.compare && res.compare.start && req) { if (res.compare.converged) lastStartCompare[req.game] = res.compare.start; delete res.compare.start; }
   if (req && req.game === game) {
+    const tf = document.getElementById("threadfact");
+    if (tf) tf.textContent = res.engine === "ch6-markov" ? "finite-state equilibrium" : solverThreads > 1 ? `${solverThreads} threads in this browser` : "single-threaded in this browser";
     prevResult = lastResult && lastResult.name === res.name && lastResult.kind === res.kind ? lastResult : null;
     lastResult = res;
     $("savebtn").disabled = false;
@@ -1335,9 +1352,10 @@ function onSolved(m) {
   const failed = res.checks.filter((d) => d.ok === false && d.name !== "converged");
   const t = m.wall < 0.1 ? "under 0.1" : m.wall.toFixed(1), how = res.warm_start ? " from the last equilibrium" : "";
   const accuracy = failed.filter((d) => ACCURACY_CHECKS.has(d.name)), other = failed.filter((d) => !ACCURACY_CHECKS.has(d.name));
-  if (!res.converged) setStatus("bad", "Not converged", `The fixed point did not converge (residual ${fmtE(res.residual)} after ${res.evaluations} rounds). Try a finer grid or less extreme parameters.`);
+  if (res.engine === "ch6-markov") setStatus("ok", "Equilibrium", `Solved in ${t} s. Costs include the full inventory tail; the curves follow the finite-state equilibrium.`);
+  else if (!res.converged) setStatus("bad", "Not converged", `The fixed point did not converge (residual ${fmtE(res.residual)} after ${res.evaluations} rounds). Try a finer grid or less extreme parameters.`);
   else if (failed.length && !other.length)
-    setStatus("warn", "Solved, approximate", `Solved in ${t} s${how}. ${cap(accuracy.map(accuracyNote).join("; "))}. Costs are good to a few digits.`
+    setStatus("warn", "Solved, approximate", `Solved in ${t} s${how}. ${cap(accuracy.map(accuracyNote).join("; "))}.`
       + (game !== "custom" && PRESETS[game].approx && accuracy.every((d) => d.name === "resolution" || d.name === "settled") ? " " + PRESETS[game].approx : ""));
   else if (failed.length) setStatus("warn", "Converged, with warnings", `Solved in ${t} s${how}. Failed: ${failed.map((d) => checkName(d.name)).join(", ")}; the Diagnostics table says what each means.`);
   else setStatus("ok", "Solved", `Solved in ${t} s${how}, ${res.evaluations} best-response rounds, residual ${fmtE(res.residual)}. All checks passed.`);
@@ -1516,6 +1534,7 @@ function renderResults(res) {
   }).join("");
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Equilibrium costs</h2><div class="cards">${cards}</div>
     <p class="caption">Expected losses at the equilibrium (${esc(costKind(res))}); smaller is better.${prevResult ? " Arrows: the change from the previous solve." : ""}${res.compare ? ` These are the ${esc(((PRESETS[game].compare || {}).mainLabel || "first").toLowerCase())} market's; the ${esc((res.compare.label || "compared").toLowerCase())} one's are in the next panel.` : ""}</p>
+    ${res.engine === "ch6-markov" ? `<p class="caption">The finite-state solution includes the full inventory tail. The response plots show the first ${fmt(res.reference.plot_extent, 1)} units of time; their right edge is a crop, not an end to the response.${res.params_used.gamma === 0 ? " At zero inventory cost, inventory is a random walk and carries no penalty; this is a different limit from a positive penalty on a stationary inventory." : ""}</p>` : ""}
     ${res.warnings && res.warnings.length ? `<p class="caption" style="color:var(--warn)">${res.warnings.map(esc).join("<br>")}</p>` : ""}</section>`);
   if (res.kind === "transition") renderTransition(res, out);
   if (res.compare) renderCompare(res, out);
@@ -2010,8 +2029,8 @@ function renderDiagnostics(res, out) {
     <td class="mono">${checkValue(d)}</td>
     <td>${esc(d.ok === false ? (d.flag || d.meaning) : (CHECK_MEANING[d.name.split(":")[0]] || d.meaning))}</td></tr>`).join("");
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Diagnostics</h2>
-    <p class="small muted" style="margin-top:0">${esc(res.version)}${solverThreads > 1 ? ` · ${solverThreads} threads` : ""} · ${esc(res.message)} · solve ${fmt(res.seconds, 2)} s.
-    A failed check means the numbers may be off in the digits shown here; the row says what to raise.</p>
+    <p class="small muted" style="margin-top:0">${esc(res.version)}${res.engine !== "ch6-markov" && solverThreads > 1 ? ` · ${solverThreads} threads` : ""} · ${esc(res.message)} · solve ${fmt(res.seconds, 2)} s.
+    ${res.engine === "ch6-markov" ? "These checks test the coupled equilibrium equations and the stabilizing branch. The general solver view supplies grid checks and the best-response spectrum." : "A failed check means the numbers may be off in the digits shown here; the row says what to raise."}</p>
     <div class="tablewrap"><table class="diag checks"><thead><tr><th>Check</th><th>Status</th><th>Value / threshold</th><th>What it means</th></tr></thead><tbody>${rows}</tbody></table></div>
     ${res.stability ? spectrumPanel(res.stability) : ""}
     ${res.refinement ? `<p class="small" style="margin:6px 0 0">Refinement: re-solved at ${res.refinement.nodes} nodes in ${fmt(res.refinement.seconds, 1)} s; costs moved ${fmtE(res.refinement.cost_change)}, kernels ${fmtE(res.refinement.kernel_change)}.</p>` : ""}
@@ -2068,7 +2087,8 @@ var sweepWorker = null, sweepReady = null, sweep = null, sweepSeq = 0;   // var:
 var SWEEP_POINTS = 11;
 function ensureSweepWorker() {
   if (sweepWorker) return sweepReady;
-  sweepWorker = new Worker(WORKER_URL);
+  const sweepUrl = new URL(WORKER_URL, location.href); if (game === "ch6" && opts.reference) sweepUrl.searchParams.set("lazy", "1");
+  sweepWorker = new Worker(sweepUrl);
   sweepReady = new Promise((resolve, reject) => {
     sweepWorker.onmessage = (ev) => {
       const m = ev.data;
