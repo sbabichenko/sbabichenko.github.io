@@ -54,7 +54,7 @@
     throw Error("The finite-state equilibrium did not converge");
   }
   // Scaling and squaring with a Taylor series on a matrix whose row norm is <= 1/2.
-  // Small (2x2 or 4x4) matrices only; this also handles repeated and zero rates.
+  // Small matrices (up to 8x8) only; this also handles repeated and zero rates.
   function expm(a, t) {
     const n = a.length, norm = Math.max(...a.map(row => row.reduce((s, x) => s + Math.abs(x * t), 0)));
     const squarings = Math.max(0, Math.ceil(Math.log2(Math.max(norm * 2, 1))));
@@ -132,6 +132,38 @@
     }
     return { kernels, deviation };
   }
+  const transpose = a => a[0].map((_, j) => a.map(row => row[j]));
+  function cholesky(a) {
+    const n = a.length, L = zeros(n), scale = Math.max(1, maxabs(a.flat()));
+    for (let i = 0; i < n; i++) for (let j = 0; j <= i; j++) {
+      let v = (a[i][j] + a[j][i]) / 2;
+      for (let k = 0; k < j; k++) v -= L[i][k] * L[j][k];
+      if (i === j) {
+        if (v < -1e-12 * scale) throw Error("Invalid sample-path covariance");
+        L[i][j] = Math.sqrt(Math.max(0, v));
+      } else L[i][j] = L[j][j] ? v / L[j][j] : 0;
+    }
+    return L;
+  }
+  function paths(eq, h = .1, cells = 400) {
+    // State: filtering error E=V-Vhat1, information edge X=Vhat1-Vhat0,
+    // inventory Q, and the fundamental V (anchored at V(0)=0).
+    const { beta: b, delta: d, pq: p, params: { sigma_Z: s, gamma: g } } = eq;
+    const F = [[-1, 0, 0, 0], [1, -b/s, 0, 0], [0, -b, -d, 0], [0, 0, 0, 0]];
+    const B = [[1, 0, -1], [0, -1, 1], [0, -s, 0], [1, 0, 0]], G = mul(B, transpose(B));
+    // Van Loan's block exponential integrates the continuous shocks exactly
+    // between displayed dates, including their correlations. No Euler step.
+    const block = zeros(8);
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
+      block[i][j] = F[i][j]; block[i][j+4] = G[i][j]; block[i+4][j+4] = -F[j][i];
+    }
+    const E = expm(block, h), A = E.slice(0, 4).map(row => row.slice(0, 4));
+    const covariance = mul(E.slice(0, 4).map(row => row.slice(4)), transpose(A));
+    const variances = [1, s/b, g ? s*s/(2*d) : 0, 0];
+    return { kind: "state-space", h, cells, transition: A, noise: cholesky(covariance),
+      initial: variances.map((v, i) => variances.map((_, j) => i === j ? Math.sqrt(v) : 0)),
+      outputs: { V: [0, 0, 0, 1], Q: [0, 0, 1, 0], P: [-1, -1, p, 1], D: [0, b, d, 0] } };
+  }
   const baseModel = {"shocks":["wV","wZ","wY"],"states":{"V":{"drift":{},"noise":{"wV":1}},"Q":{"drift":{"D":-1},"noise":{"wZ":"-sigma_Z"}}},"agents":{"market_maker":{"controls":["P"],"signals":{"flow":{"drift":{"D":1},"noise":{"wZ":"sigma_Z"}}},"loss":[[1,"V","D"],[-1,"P","D"],["gamma","Q","Q"]]},"trader":{"controls":["D"],"monitors":["market_maker"],"instant":["P"],"signals":{"y":{"drift":{"V":1,"P":-1},"noise":{"wY":1}},"flow":{"drift":{},"noise":{"wZ":"sigma_Z"}}},"loss":[[-1,"V","D"],[1,"P","D"],["eps","D","D"]]}},"horizon":{"kind":"stationary","discount":"rho"}};
   function sorted(value) {
     if (Array.isArray(value)) return value.map(sorted);
@@ -167,6 +199,7 @@
         names: ["V", "Q", "P", "D"], states: ["V", "Q"], channels: ["wV", "wZ", "wY"], shocks: ["wV", "wZ", "wY"],
         agents: [maker, trader], definitions: [], params_used: eq.params,
         samples: { age: ages, kernels: data.kernels, foc: {} },
+        paths: paths(eq),
         deviation: { continuation: "blip", origins: { market_maker: {
           privy: eq.market === "transparent" ? ["market_maker", "trader"] : ["market_maker"],
           controls: { P: { samples: data.deviation } }
@@ -187,7 +220,7 @@
     out.seconds = (performance.now() - t0) / 1000;
     return out;
   }
-  const api = { solve, sample, payload };
+  const api = { solve, sample, paths, payload };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Ch6Markov = api;
 })(typeof self !== "undefined" ? self : globalThis);

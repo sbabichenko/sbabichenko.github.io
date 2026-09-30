@@ -9,5 +9,5 @@ for market in ('transparent','opaque'):
   eq=solve(market,**params)
   fixtures.append({'market':market,'params':params,'root':eq.root.tolist(),'costs':eq.costs,
                    'kernels':{k:v.tolist() for k,v in eq.kernels(ages).items()},
-                   'deviation':{k:v.tolist() for k,v in eq.deviation(ages).items()}})
+                   'deviation':{k:v.tolist() for k,v in eq.deviation(ages).items()}, 'paths':eq.path_reference()})
 pathlib.Path(__file__).with_name('ch6-reference.json').write_text(json.dumps({'source':'Independent SciPy root and matrix-exponential implementation; 2026-09-30','ages':ages,'cases':fixtures},separators=(',',':'))+'\n')

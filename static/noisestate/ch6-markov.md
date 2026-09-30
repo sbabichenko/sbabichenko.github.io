@@ -66,6 +66,30 @@ inventory at `1/(2*e)` and then decays at rate `delta`. In the opaque market it 
 under `A+B*K`. Quote and order responses use that same state. Small matrix exponentials handle repeated/zero rates;
 the plot's right edge does not impose a zero boundary. Plot ranges are chosen only for display; costs include all ages.
 
+## Sample paths
+
+Paths use the state `(E,X,Q,V)`, where `E=V-Vhat1` and `X=Vhat1-Vhat0`. Its drift and noise matrices are
+
+```
+F = [[-1,0,0,0], [1,-beta/s,0,0], [0,-beta,-delta,0], [0,0,0,0]]
+B = [[1,0,-1], [0,-1,1], [0,-s,0], [1,0,0]]
+```
+
+For each displayed step `h`, the transition is `exp(F*h)` and innovation covariance is
+`integral_0^h exp(F*u)*B*B'*exp(F'*u) du`. A block matrix exponential evaluates this integral; the browser
+draws the resulting correlated Gaussian innovation. This is the exact sampled linear diffusion, rather than
+an Euler approximation or a finite shock-history convolution. The implementation takes linear work and storage
+in the number of displayed dates for this fixed four-dimensional state.
+
+The fundamental is anchored at zero at time zero. Filtering errors start with variances `1` and `s/beta`;
+inventory starts with variance `s*s/(2*delta)` when its penalty is positive. These three components have zero
+cross-covariances. At zero inventory penalty, inventory instead starts at zero and follows its random walk.
+The page states these initial conditions. Exact covariance propagation supplies the uncertainty bands.
+
+The SciPy fixtures integrate the covariance independently using adaptive quadrature and check output variances
+at times 0, 1, and 40 across all 50 cases. Worst relative error including these path checks is `8.7e-11`.
+`node tools/noisestate/check-gaussian-paths.cjs` also checks recursion and seeded sample moments.
+
 ## Validation and provenance
 
 The independent derivation comes from the author's September 29 Chapter 6 math review. A separate SciPy
@@ -84,8 +108,13 @@ At the default parameters, maker/trader losses are `1.5978658138 / -0.9969306653
 `1.7138347039 / -0.9436176318` (opaque). The former eight-unit window substantially
 understated both makers' losses and forced the deviation curves to zero before inventory had unwound.
 
-A 40-solve warmed Node benchmark of the same two-market preset measured median 17.0 ms for the reference versus
-174.0 ms for the eight-unit WASM calculation. Peak process RSS was 75.3 versus 132.8 MB; these are Node process
+A 40-solve warmed Node benchmark of the same two-market preset measured median 21.5 ms for the reference including sample-path transitions versus
+174.0 ms for the eight-unit WASM calculation. Peak process RSS was 75.7 versus 132.8 MB; these are Node process
 measurements, not total browser-tab memory. The reference allocates no WASM heap. Both paths retained less than
 0.1 MB of extra JS heap after warm-up and explicit garbage collection. Separately, 15 repeated CARA solves kept
 the ST/MT WASM heaps constant after warm-up (60.2/59.4 MB), with stable process RSS and under 0.1 MB JS retention.
+
+Generating three 401-date sample paths and their uncertainty bands takes a median 2.7 ms in warmed Node, excluding
+Plotly rendering. The state-transition descriptor is 647 bytes at the default parameters. Browser redraw checks
+cover delayed Plotly loading and interrupted animations: old plots are detached immediately and purged after
+pending layout work settles. DOM nodes and event listeners remain constant across repeated redraws.
