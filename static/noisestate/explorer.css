@@ -134,11 +134,12 @@
 .explorer table.diag th, .explorer table.diag td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
 .explorer table.diag th { color: var(--muted); font-weight: 600; }
 .explorer table.diag td.mono { white-space: nowrap; }
-.explorer .tablewrap { overflow-x: auto;
-  background: linear-gradient(to right, var(--panel) 30%, transparent) left / 32px 100% no-repeat local,
-    linear-gradient(to left, var(--panel) 30%, transparent) right / 32px 100% no-repeat local,
-    radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, 0.16), transparent) left / 12px 100% no-repeat scroll,
-    radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.16), transparent) right / 12px 100% no-repeat scroll; }
+/* a table wider than its panel scrolls, and fades out on a side where more of it is hidden (data-more, set in the
+   script); a table that fits has no fades, so nothing is drawn over the paper at its edges */
+.explorer .tablewrap { overflow-x: auto; }
+.explorer .tablewrap[data-more="r"] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
+.explorer .tablewrap[data-more="l"] { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent); }
+.explorer .tablewrap[data-more="lr"] { -webkit-mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent); }
 .explorer details summary { cursor: pointer; color: var(--muted); }
 .explorer details.howto { margin: 0 0 18px; max-width: 800px; }
 .explorer details.howto p { font-size: 0.92rem; color: var(--muted); margin: 8px 0 0; }
@@ -195,10 +196,16 @@
 .explorer .cite { margin: 1.4rem 0 0; font-size: 0.88rem; color: var(--muted); }
 .explorer .cite summary { cursor: pointer; }
 .explorer .cite pre { background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 0.9rem 1rem; overflow-x: auto; font-size: 0.78rem; margin-top: 0.7rem; color: var(--text); white-space: pre; }
-.explorer .settle { width: 96px; height: 24px; flex: none; overflow: visible; }
-.explorer .settle .tol { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.7; vector-effect: non-scaling-stroke; }
-.explorer .settle polyline { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-@media (max-width: 520px) { .explorer .settle { display: none; } }
+.explorer .conv { padding: 10px 12px 4px; margin-bottom: 16px; }
+.explorer .conv svg { display: block; width: 100%; overflow: visible; font-size: 11px; }
+.explorer .conv .grid { stroke: var(--border); stroke-width: 1; }
+.explorer .conv .tick { fill: var(--muted); font-variant-numeric: tabular-nums; }
+.explorer .conv .axis { fill: var(--muted); font-style: italic; }
+.explorer .conv .tol { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.explorer .conv .run { fill: none; stroke: var(--accent); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+.explorer .conv .run.cmp { stroke-dasharray: 7 5; stroke-width: 2; }
+.explorer .conv .run.early { stroke: var(--muted); stroke-width: 1.6; opacity: 0.55; }
+.explorer .conv .pt { fill: var(--accent); }
 
 /* the key to the sample paths: the three draws told apart by weight and opacity, not colour (explorer.js renderPaths) */
 .explorer .legend.pathkey { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.8rem; color: var(--muted); margin: 6px 0 4px; }
@@ -218,3 +225,4 @@
 }
 /* "Your model": the example list is as wide as its longest name; on a phone it shrinks to the row instead */
 .explorer #editor .row select { max-width: 100%; min-width: 0; }
+
