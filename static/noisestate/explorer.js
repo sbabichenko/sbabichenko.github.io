@@ -1,4 +1,5 @@
 "use strict";
+const WORKER_URL = document.currentScript.dataset.worker || "worker.js";
 // ---------------------------------------------------------------------------------------------
 // Presets: a model file each, with sliders on some of its parameters.
 const PRESETS = {
@@ -375,7 +376,10 @@ numerics: {nodes: 24}
         const half = (R) => {
           const q = blip(R); if (!q || !(Math.abs(q.Q[0]) > 0)) return null;
           const k = q.Q.findIndex((v) => Math.abs(v) <= 0.5 * Math.abs(q.Q[0]));
-          return k < 0 ? null : R.samples.age[k];
+          if (k < 0) return null;
+          if (k === 0) return R.samples.age[0];
+          const y0 = Math.abs(q.Q[k - 1]), y1 = Math.abs(q.Q[k]), target = .5 * Math.abs(q.Q[0]);
+          return R.samples.age[k - 1] + (R.samples.age[k] - R.samples.age[k - 1]) * (y0 - target) / (y0 - y1);
         };
         const at0 = (R, f) => { const q = blip(R); return q ? f(q) : null; };
         return [
@@ -656,7 +660,7 @@ const AGENT_LABEL = { player1: "Player 1", player2: "Player 2", market_maker: "M
 // State
 let game = "ch1";
 const values = {};              // preset -> {slider key: value, nodes}
-const opts = { refine: false, stability: false, march: false };
+const opts = { refine: false, stability: false, march: false, reference: true };
 const MAX_NODES = 96, MAX_WINDOW = 96;   // how far a "solve again with" button, or a link, may take the grid and the window
 const lastStart = {};
 const lastStartCompare = {};       // preset -> the raw maps of its compared model's last equilibrium
@@ -884,7 +888,7 @@ function readHash() {
     for (const s of PRESETS[g].sliders) values[g][s.key] = sliderParams(m, s)[0][s.param || s.key];
   }
   opts.refine = h.get("refine") === "1"; opts.stability = h.get("stability") === "1";
-  opts.march = h.get("march") === "1";
+  opts.march = h.get("march") === "1"; opts.reference = h.get("method") !== "solver";
   customYaml = PRESETS.ch1.yaml;
   if (game === "custom" && h.get("model")) {
     try { customYaml = b64decode(h.get("model")); } catch (e) { /* keep the default */ }
@@ -914,6 +918,7 @@ function writeHash() {
     if (PRESETS[game].window) v[PRESETS[game].window.key] = values[game][PRESETS[game].window.key];
     h = new URLSearchParams({ game, ...v });
   }
+  if (game === "ch6" && !opts.reference) h.set("method", "solver");
   if (opts.refine) h.set("refine", "1");
   if (opts.stability) h.set("stability", "1");
   if (opts.march && PRESETS[game].march) h.set("march", "1");
@@ -948,7 +953,7 @@ function renderTabs() {
     b.setAttribute("aria-selected", g === game ? "true" : "false");
     b.onclick = () => {
       if (g === game) return;
-      game = g; renderAll(); writeHash(); lastResult = null; $("results").innerHTML = ""; $("savebtn").disabled = true;
+      game = g; renderAll(); writeHash(); lastResult = null; clearPlots($("results")); $("savebtn").disabled = true;
       // "Your model" waits for Solve: a solve still running for the tab left behind is stopped, not left reporting
       if (g !== "custom") requestSolve(0); else { if (inFlight) stopSolve(); clearTimeout(debounce); customReady(); }
     };
@@ -967,6 +972,14 @@ function renderControls() {
   const box = $("controls"); box.innerHTML = "";
   $("editor").hidden = game !== "custom";
   if (game === "custom") { renderEditor(); renderOptions($("paramopts")); return; }
+  if (game === "ch6") {
+    const view = document.createElement("div"); view.className = "ctl ch6-view";
+    view.innerHTML = `<label for="ch6-view">View</label><select id="ch6-view"><option value="reference">Full equilibrium</option><option value="solver">General solver</option></select>
+      <span class="hint">Follow the full inventory unwind, or inspect the general solver's finite-window approximation and first-order conditions.</span>`;
+    box.appendChild(view);
+    const select = view.querySelector("select"); select.value = opts.reference ? "reference" : "solver";
+    select.onchange = () => { opts.reference = select.value === "reference"; renderControls(); writeHash(); requestSolve(0); };
+  }
   for (const p of def.sliders) {
     if (p.march === false && opts.march) continue;
     const wrap = document.createElement("div"); wrap.className = "ctl";
@@ -993,14 +1006,17 @@ function renderControls() {
     sel.addEventListener("change", () => { values[game][key] = +sel.value; writeHash(); requestSolve(0); });
   };
   if (def.grid) numSelect("ctl-grid", def.grid.label, "A longer window holds the slow-decaying responses; it costs time.", def.grid.options, def.grid.key);
-  if (def.window) numSelect("ctl-window", def.window.label, def.window.hint, def.window.options, def.window.key);
-  if (def.nodes) numSelect("ctl-nodes", "Grid (nodes per side)", "More nodes are more accurate and slower.", def.nodes.options, "nodes");
+  if (def.window && !(game === "ch6" && opts.reference)) numSelect("ctl-window", def.window.label, def.window.hint, def.window.options, def.window.key);
+  if (def.nodes && !(game === "ch6" && opts.reference)) numSelect("ctl-nodes", "Grid (nodes per side)", "More nodes are more accurate and slower.", def.nodes.options, "nodes");
   renderOptions(box);
 }
 
 // solver options: the end of a transition and the after-solve checks
 function renderOptions(box) {
   const def = PRESETS[game];
+  if (game === "ch6" && opts.reference) {
+    return;
+  }
   const wrap = document.createElement("div"); wrap.className = "ctl opts";
   let html = "";
   if (def.march) html += `<label class="pick"><span>End of the transition</span><select id="opt-march">
@@ -1201,35 +1217,56 @@ function rallyPlay() {
 // ---------------------------------------------------------------------------------------------
 // Worker
 // the model tab waits for Solve rather than solving on load, so the button has to be pressable
-function customReady() { setStatus("idle", "Ready", "Edit the model and press Solve."); if (!inFlight) $("solvebtn").disabled = false; }
-function startWorker() {
+function customReady() {
+  if (inFlight) stopSolve();
+  pending = false; clearTimeout(debounce);
+  setStatus("idle", "Ready", "Edit the model and press Solve."); $("solvebtn").disabled = false;
+}
+function failWorker(message) {
+  if (worker) worker.terminate();
+  worker = null; workerReady = false; inFlight = null; pending = false;
+  clearTimeout(debounce); stopTimer();
+  $("stopbtn").disabled = true; $("solvebtn").disabled = false;
+  setStatus("bad", "Failed", message + ". Press Solve again to retry.");
+}
+function releaseHiddenWorker() {
+  if (document.hidden && workerReady && !inFlight && !pending) {
+    worker.terminate(); worker = null; workerReady = false;
+  }
+}
+document.addEventListener("visibilitychange", releaseHiddenWorker);
+function startWorker(autoSolve = true) {
   workerReady = false;
-  try { worker = new Worker("worker.js"); }
-  catch (e) { setStatus("bad", "Failed", "This browser could not start a Web Worker: " + e.message); return; }
+  try { const url = new URL(WORKER_URL, location.href); if (game === "ch6" && opts.reference) url.searchParams.set("lazy", "1"); worker = new Worker(url); }
+  catch (e) { failWorker("This browser could not start a Web Worker: " + e.message); return; }
+  const activeWorker = worker;
   worker.onmessage = (ev) => {
+    if (activeWorker !== worker) return;
     const m = ev.data;
     if (m.type === "ready") {
       workerReady = true; solverThreads = m.threads || 1;
       const tf = document.getElementById("threadfact");
       if (tf) tf.textContent = solverThreads > 1 ? `${solverThreads} threads in this browser` : "single-threaded in this browser";
-      if (game === "custom" && !inFlight && !lastResult) customReady();
-      else requestSolve(0);
+      if (pending || (autoSolve && game !== "custom")) requestSolve(0);
+      else if (game === "custom" && !inFlight && !lastResult) customReady();
+      releaseHiddenWorker();
     } else if (m.type === "progress") {
       if (inFlight && m.id === inFlight.id) { progress = m; rallyProgress(); settleAdd(m.residual, m.evaluation); }
     } else if (m.type === "result") {
       onSolved(m);
+      releaseHiddenWorker();
     } else if (m.type === "fatal") {
-      setStatus("bad", "Failed", "The solver could not load: " + m.message);
+      failWorker((m.phase === "solve" ? "The solver stopped: " : "The solver could not load: ") + m.message);
     }
   };
-  worker.onerror = (e) => { setStatus("bad", "Failed", "The solver stopped: " + (e.message || "unknown error") + ". Reload the page."); };
+  worker.onerror = (e) => { if (activeWorker === worker) failWorker("The solver stopped: " + (e.message || "unknown error")); };
 }
 function stopSolve() {
   if (!inFlight) return;
-  worker.terminate(); inFlight = null; pending = false; stopTimer();
+  worker.terminate(); worker = null; workerReady = false; inFlight = null; pending = false;
+  clearTimeout(debounce); stopTimer();
   $("stopbtn").disabled = true; $("solvebtn").disabled = false;
   setStatus("warn", "Stopped", "The solve was stopped. Change a parameter or press Solve again.");
-  startWorker();
 }
 
 // The equations in each game's description: typeset with KaTeX (served from the site) when it has loaded, otherwise
@@ -1257,12 +1294,12 @@ function currentModel() {
   return d;
 }
 
-function currentRequest() { return { refine: opts.refine, stability: opts.stability }; }
+function currentRequest() { return game === "ch6" && opts.reference ? { method: "ch6-markov" } : { refine: opts.refine, stability: opts.stability }; }
 function requestSolve(delay) {
   clearTimeout(debounce);
   if (lastResult) $("results").classList.add("stale");
   debounce = setTimeout(() => {
-    if (!workerReady) return;
+    if (!workerReady) { pending = true; if (!worker) startWorker(false); return; }
     if (inFlight) { pending = true; startTimer(false); return; }
     sendSolve();
   }, delay);
@@ -1301,14 +1338,17 @@ function addCompare(request, model, g, start) {
   if ((g !== "custom" && def.deviation) || (g === "custom" && ch6 && stat)) request.deviation = { continuation: "blip" };
 }
 function onSolved(m) {
+  if (!inFlight || m.id !== inFlight.id) return;
   const req = inFlight; inFlight = null; stopTimer();
   $("solvebtn").disabled = false; $("stopbtn").disabled = true;
   let key = null;
   try { key = JSON.stringify([currentModel(), currentRequest()]); } catch (e) { /* the editor holds an unfinished edit */ }
   const stale = pending || !req || req.game !== game || (key !== null && key !== req.key);
-  const res = JSON.parse(m.result);
-  rallyEnd(res.ok ? res.evaluations || 0 : 0);
-  if (res.ok) settleDone(res);
+  let res;
+  try { res = JSON.parse(m.result); }
+  catch (e) { failWorker("The solver returned unreadable data"); return; }
+  rallyEnd(res.ok && res.engine !== "ch6-markov" ? res.evaluations || 0 : 0);
+  if (res.ok && res.engine !== "ch6-markov") settleDone(res);
   if (res.ok && window.siteTally)
     window.siteTally("solve", res.compare ? 2 : 1, `${(PRESETS[game] && PRESETS[game].tab) || "your model"}, ${(m.wall || 0).toFixed(1)} s`);
   if (!res.ok) {
@@ -1317,12 +1357,14 @@ function onSolved(m) {
       if (game === "custom") $("yamlerror").textContent = res.error;
       $("results").classList.remove("stale");
     }
-    if (stale && req && req.game === game) sendSolve();
+    if (stale && req && (req.game === game || pending)) sendSolve();
     return;
   }
-  if (res.start && req) { lastStart[req.game] = res.start; delete res.start; }
+  if (res.start && req) { if (res.converged) lastStart[req.game] = res.start; delete res.start; }
   if (res.compare && res.compare.start && req) { if (res.compare.converged) lastStartCompare[req.game] = res.compare.start; delete res.compare.start; }
   if (req && req.game === game) {
+    const tf = document.getElementById("threadfact");
+    if (tf) tf.textContent = res.engine === "ch6-markov" ? "finite-state equilibrium" : solverThreads > 1 ? `${solverThreads} threads in this browser` : "single-threaded in this browser";
     prevResult = lastResult && lastResult.name === res.name && lastResult.kind === res.kind ? lastResult : null;
     lastResult = res;
     $("savebtn").disabled = false;
@@ -1334,9 +1376,10 @@ function onSolved(m) {
   const failed = res.checks.filter((d) => d.ok === false && d.name !== "converged");
   const t = m.wall < 0.1 ? "under 0.1" : m.wall.toFixed(1), how = res.warm_start ? " from the last equilibrium" : "";
   const accuracy = failed.filter((d) => ACCURACY_CHECKS.has(d.name)), other = failed.filter((d) => !ACCURACY_CHECKS.has(d.name));
-  if (!res.converged) setStatus("bad", "Not converged", `The fixed point did not converge (residual ${fmtE(res.residual)} after ${res.evaluations} rounds). Try a finer grid or less extreme parameters.`);
+  if (res.engine === "ch6-markov") setStatus("ok", "Equilibrium", `Solved in ${t} s. Costs include the full inventory tail; the curves follow the finite-state equilibrium.`);
+  else if (!res.converged) setStatus("bad", "Not converged", `The fixed point did not converge (residual ${fmtE(res.residual)} after ${res.evaluations} rounds). Try a finer grid or less extreme parameters.`);
   else if (failed.length && !other.length)
-    setStatus("warn", "Solved, approximate", `Solved in ${t} s${how}. ${cap(accuracy.map(accuracyNote).join("; "))}. Costs are good to a few digits.`
+    setStatus("warn", "Solved, approximate", `Solved in ${t} s${how}. ${cap(accuracy.map(accuracyNote).join("; "))}.`
       + (game !== "custom" && PRESETS[game].approx && accuracy.every((d) => d.name === "resolution" || d.name === "settled") ? " " + PRESETS[game].approx : ""));
   else if (failed.length) setStatus("warn", "Converged, with warnings", `Solved in ${t} s${how}. Failed: ${failed.map((d) => checkName(d.name)).join(", ")}; the Diagnostics table says what each means.`);
   else setStatus("ok", "Solved", `Solved in ${t} s${how}, ${res.evaluations} best-response rounds, residual ${fmtE(res.residual)}. All checks passed.`);
@@ -1417,6 +1460,20 @@ function baseLayout(extra) {
 // one instead of redrawing: curves are matched by name and length, the axes hold both ranges meanwhile, and anything
 // unmatched (the dotted "before" lines, heatmaps) simply appears. Off under reduced motion.
 let plotSnapshot = null;
+const plotWork = new WeakMap();
+function trackPlot(el, work) {
+  let pending = plotWork.get(el);
+  if (!pending) { pending = new Set(); plotWork.set(el, pending); }
+  const token = {};
+  pending.add(token);
+  return Promise.resolve(work).finally(() => {
+    pending.delete(token);
+    if (!pending.size) {
+      plotWork.delete(el);
+      if (!el.isConnected) Plotly.purge(el);
+    }
+  });
+}
 const plotKey = (el) => el.id || (el.parentElement && el.parentElement.id ? el.parentElement.id + ":" + [...el.parentElement.children].indexOf(el) : null);
 function snapshotPlots(root) {
   const snap = {};
@@ -1427,6 +1484,16 @@ function snapshotPlots(root) {
                   traces: gd.data.map((t) => ({ name: t.name, type: t.type || "scatter", x: t.x ? Array.from(t.x) : null, y: t.y ? Array.from(t.y) : null })) };
   }
   return snap;
+}
+// Plotly's responsive handlers retain their chart after its DOM is detached.
+// Dispose before replacing a plot container, including selector/redraw changes.
+function clearPlots(root) {
+  // Purging during Plotly's own asynchronous layout deletes state its remaining
+  // callbacks still need. Detach now; the tracked operation disposes on settling.
+  if (window.Plotly) for (const gd of root.querySelectorAll(".js-plotly-plot")) {
+    if (!plotWork.has(gd)) Plotly.purge(gd);
+  }
+  root.replaceChildren();
 }
 function glide(el, data, layout, cfg) {
   const old = plotSnapshot && plotSnapshot[plotKey(el)];
@@ -1443,16 +1510,18 @@ function glide(el, data, layout, cfg) {
   if (!idx.length) return null;
   el.style.visibility = "hidden";
   return Plotly.newPlot(el, data, layout, cfg).then(() => {
+    if (!el.isConnected) return;
     // the axes hold the union of the old and new ranges while the curves move (this Plotly does not
     // interpolate a range change inside a transition), then settle on the new equilibrium's own
     const nx = el._fullLayout.xaxis.range, ny = el._fullLayout.yaxis.range;
     const union = (a, b) => [Math.min(a[0], b[0]), Math.max(a[1], b[1])];
     const fixed = { ...layout, xaxis: { ...(layout.xaxis || {}), range: union(old.x, nx), autorange: false }, yaxis: { ...(layout.yaxis || {}), range: union(old.y, ny), autorange: false } };
     return Plotly.react(el, start, fixed, cfg).then(() => {
+      if (!el.isConnected) return;
       el.style.visibility = "";
       return Plotly.animate(el, { data: finals, traces: idx }, { transition: { duration: 650, easing: "cubic-in-out" }, frame: { duration: 650, redraw: false } });
-    }).then(() => Plotly.relayout(el, { "xaxis.autorange": true, "yaxis.autorange": true }));
-  }).catch(() => { el.style.visibility = ""; return Plotly.newPlot(el, data, layout, cfg); });
+    }).then(() => el.isConnected && Plotly.relayout(el, { "xaxis.autorange": true, "yaxis.autorange": true }));
+  }).catch(() => { if (!el.isConnected) return; el.style.visibility = ""; return Plotly.newPlot(el, data, layout, cfg); });
 }
 
 // Plotly loads in idle time after the page (the template passes its URL); a plot asked for before it arrives waits for it.
@@ -1471,8 +1540,11 @@ function ensurePlotly() {
 window.addEventListener("load", () => (window.requestIdleCallback || ((f) => setTimeout(f, 200)))(() => ensurePlotly().catch(() => {})));
 
 function plotly(method, id, data, layout, cfg) {
-  if (!window.Plotly) return ensurePlotly().then(() => plotly(method, id, data, layout, cfg));
+  // Capture this node before waiting for the lazy script. A later render can
+  // reuse its id, but the earlier data must never draw into that new chart.
   const el = typeof id === "string" ? document.getElementById(id) : id;
+  if (!el || !el.isConnected) return Promise.resolve();
+  if (!window.Plotly) return ensurePlotly().then(() => plotly(method, el, data, layout, cfg));
   if (el && el.clientWidth && el.clientWidth < 520 && layout) {
     layout = { ...layout };
     const t = layout.xaxis && layout.xaxis.title && (layout.xaxis.title.text || layout.xaxis.title);
@@ -1482,8 +1554,8 @@ function plotly(method, id, data, layout, cfg) {
     }
     layout.legend = { ...(layout.legend || {}), y: -0.12 };
   }
-  if (method === "newPlot" && el) { const g = glide(el, data, layout, cfg); if (g) return g; }
-  return Plotly[method](id, data, layout, cfg);
+  if (method === "newPlot" && el) { const g = glide(el, data, layout, cfg); if (g) return trackPlot(el, g); }
+  return trackPlot(el, Plotly[method](el, data, layout, cfg));
 }
 const plotCfg = { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"] };
 const titleOf = (s) => ({ text: s, font: { size: 13 }, x: 0, xanchor: "left", xref: "paper" });
@@ -1499,7 +1571,7 @@ function renderResults(res) {
   const out = $("results");
   const keepVar = out.querySelector("#kvar")?.value, keepCtl = out.querySelector("#fctl")?.value;
   plotSnapshot = prevResult && !window.matchMedia("(prefers-reduced-motion: reduce)").matches ? snapshotPlots(out) : null;
-  out.innerHTML = "";
+  clearPlots(out);
   const def = PRESETS[game];
   const params = res.params_used || (game !== "custom" ? values[game] : {});
   const cards = Object.entries(res.costs).map(([a, v]) => {
@@ -1515,6 +1587,7 @@ function renderResults(res) {
   }).join("");
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Equilibrium costs</h2><div class="cards">${cards}</div>
     <p class="caption">Expected losses at the equilibrium (${esc(costKind(res))}); smaller is better.${prevResult ? " Arrows: the change from the previous solve." : ""}${res.compare ? ` These are the ${esc(((PRESETS[game].compare || {}).mainLabel || "first").toLowerCase())} market's; the ${esc((res.compare.label || "compared").toLowerCase())} one's are in the next panel.` : ""}</p>
+    ${res.engine === "ch6-markov" ? `<p class="caption">The finite-state solution includes the full inventory tail. The response plots show the first ${fmt(res.reference.plot_extent, 1)} units of time; their right edge is a crop, not an end to the response.${res.params_used.gamma === 0 ? " At zero inventory cost, inventory is a random walk and carries no penalty; this is a different limit from a positive penalty on a stationary inventory." : ""}</p>` : ""}
     ${res.warnings && res.warnings.length ? `<p class="caption" style="color:var(--warn)">${res.warnings.map(esc).join("<br>")}</p>` : ""}</section>`);
   if (res.kind === "transition") renderTransition(res, out);
   if (res.compare) renderCompare(res, out);
@@ -1551,7 +1624,7 @@ function renderFinite(res, out, keepVar, keepCtl) {
     <div class="grid3" id="kgrid"></div>
     <p class="caption">Each curve fixes a date t and shows the response at t to a unit shock that struck at time s ≤ t.${res.kind === "transition" ? " Shocks left of the dotted line struck under the old regime; the band reaches back one past window. An initial shock is a single draw at time 0, plotted at s = 0." : ""} Channels with no response are left out.</p></section>`);
   const drawK = (v) => {
-    const box = out.querySelector("#kgrid"); box.innerHTML = "";
+    const box = out.querySelector("#kgrid"); clearPlots(box);
     const tr = res.kind === "transition";
     const smin = Math.min(0, ...S.kernels[v][res.channels[0]].map((cv) => cv.s[0]));
     for (const c of (res.shocks || res.channels)) {
@@ -1652,7 +1725,7 @@ function renderDeviation(res, out) {
     if (def.deviation && def.deviation.caption) cap += " " + def.deviation.caption(res, C);
     out.querySelector("#dcap").innerHTML = cap;
     const show = def.deviation && def.deviation.show ? def.deviation.show : res.names;
-    const box = out.querySelector("#dgrid"); box.innerHTML = "";
+    const box = out.querySelector("#dgrid"); clearPlots(box);
     for (const q of show) {
       const y = W.controls[u].samples[q], yc = Wc && Wc.controls[u] ? Wc.controls[u].samples[q] : null;
       if (!y || (!nonzero(y) && !(yc && nonzero(yc)))) continue;
@@ -1678,6 +1751,7 @@ function rng(seed) {
     const f = Math.sqrt(-2 * Math.log(r) / r); spare = y * f; return x * f; };
 }
 function simulatePaths(res, draws, seed) {
+  if (res.paths.kind === "state-space") return GaussianPaths.simulate(res.paths, draws, d => rng(seed * 7919 + d));
   const P = res.paths, names = Object.keys(P.kernels), sq = Math.sqrt(P.h);
   const out = {};
   if (P.kind === "stationary") {
@@ -1732,9 +1806,10 @@ function simulatePaths(res, draws, seed) {
   return out;
 }
 function renderPaths(res, out) {
-  const all = Object.keys(res.paths.kernels).filter((nm) => Object.keys(res.paths.kernels[nm]).length || Object.keys((res.paths.initial || {})[nm] || {}).length);
+  const markov = res.paths.kind === "state-space";
+  const all = markov ? Object.keys(res.paths.outputs) : Object.keys(res.paths.kernels).filter((nm) => Object.keys(res.paths.kernels[nm]).length || Object.keys((res.paths.initial || {})[nm] || {}).length);
   if (!all.length) return;
-  const stat = res.paths.kind === "stationary";
+  const stat = res.paths.kind === "stationary" || markov;
   const ctl = all.filter((nm) => isControl(nm)), sts = all.filter((nm) => !isControl(nm));
   const many = all.length > 6;
   let names = many ? ctl : sts.concat(ctl);
@@ -1742,10 +1817,10 @@ function renderPaths(res, out) {
     <div class="row"><button class="secondary" id="redraw">Draw new shocks</button><span class="small muted" id="seedlab"></span>
       ${many ? `<label for="pshow" class="small muted" style="margin-left:12px">Show</label><select id="pshow"><option value="c">controls</option><option value="s">states</option><option value="a">all</option></select>` : ""}</div>
     <div class="legend pathkey"><span><i style="opacity:1;height:2px"></i>draw 1</span><span><i style="opacity:0.55;height:1.5px"></i>draw 2</span><span><i style="opacity:0.3;height:1px"></i>draw 3</span><span><i class="band"></i>&plusmn; 2 sd</span><span><i class="dots"></i>mean</span></div>
-    <div class="grid3" id="pgrid"></div>
-    <p class="caption">Each panel is in its player's color, ink for a state. Three draws of the shocks pushed through the equilibrium${stat ? ", over two lag windows of the stationary game" : res.kind === "transition" ? ", old shocks before time 0 included" : ""}. The band is the mean plus and minus two standard deviations. The shocks are drawn in your browser, so a new draw is instant.</p></section>`);
+    <div class="grid3${all.length === 4 ? " four" : ""}" id="pgrid"></div>
+    <p class="caption">Each panel is in its player's color, ink for a state. Three draws of the shocks pushed through the equilibrium${markov ? ". The fundamental starts at zero; filtering errors" + (res.params_used.gamma ? " and inventory start in their stationary distribution" : " start in their stationary distribution, and unpenalized inventory starts at zero") + ". Steps between the plotted dates use the exact Gaussian transition" : stat ? ", over two lag windows of the stationary game" : res.kind === "transition" ? ", old shocks before time 0 included" : ""}. The band is the mean plus and minus two standard deviations. The shocks are drawn in your browser, so a new draw is instant.</p></section>`);
   const draw = () => {
-    const sim = simulatePaths(res, 3, pathSeed), box = out.querySelector("#pgrid"); box.innerHTML = "";
+    const sim = simulatePaths(res, 3, pathSeed), box = out.querySelector("#pgrid"); clearPlots(box);
     out.querySelector("#seedlab").textContent = `draw ${pathSeed}`;
     const shade = [[1, 2], [0.55, 1.5], [0.3, 1]];     // draw 1, 2, 3: opacity and width, as in the key above the panels
     for (const nm of names) {
@@ -1872,7 +1947,7 @@ function renderFoc(res, out, keepCtl, caption, xlabel) {
     <div class="row"><label for="fctl" class="small muted">Control</label><select id="fctl">${ctls.map((c) => `<option value="${esc(c)}">${esc(label(c))} (${esc(AGENT_LABEL[F[c].agent] || F[c].agent)})</option>`).join("")}</select></div>
     <div class="grid3" id="fgrid"></div><p class="caption">${caption}</p></section>`);
   const drawF = (ctl) => {
-    const box = out.querySelector("#fgrid"); box.innerHTML = "";
+    const box = out.querySelector("#fgrid"); clearPlots(box);
     const f = F[ctl];
     const xs = x || f.s || (() => { const n = f.channels[res.channels[0]].physical.length, t = f.t; return Array.from({ length: n }, (_, i) => t * i / (n - 1)); })();
     for (const c of (res.shocks || res.channels)) {
@@ -1927,7 +2002,7 @@ function renderStrategy(res, out, keepCtl, xlabel) {
     <p class="caption" id="scap"></p></section>`);
   const interp = (xs, ys, x) => { let k = 1; while (k < xs.length - 1 && xs[k] < x) ++k; const w = (x - xs[k - 1]) / ((xs[k] - xs[k - 1]) || 1); return ys[k - 1] + w * (ys[k] - ys[k - 1]); };
   const drawS = (ctl) => {
-    const box = out.querySelector("#sgrid"); box.innerHTML = "";
+    const box = out.querySelector("#sgrid"); clearPlots(box);
     const f = F[ctl], g = lossHessian(model, ctl);
     out.querySelector("#scap").innerHTML = `Solid: the action${stat ? "" : at} as a response to each primitive shock, D<sub>W</sub>, the kernel plotted above. Dashed: the weight the action puts on the player's estimate of that shock, D, the strategy on the noise-state of Chapter 1. By Remark 1.13 the action is the player's estimate of its own shadow price, so D = D<sub>W</sub> &minus; &phi; / G<sup>DD</sup>, with &phi; the first-order-condition kernel above and G<sup>DD</sup> = ${fmt(g, 4)} the curvature of the player's loss in its own action.`;
     const xs = stat ? res.samples.age : f.s;
@@ -2009,8 +2084,8 @@ function renderDiagnostics(res, out) {
     <td class="mono">${checkValue(d)}</td>
     <td>${esc(d.ok === false ? (d.flag || d.meaning) : (CHECK_MEANING[d.name.split(":")[0]] || d.meaning))}</td></tr>`).join("");
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Diagnostics</h2>
-    <p class="small muted" style="margin-top:0">${esc(res.version)}${solverThreads > 1 ? ` · ${solverThreads} threads` : ""} · ${esc(res.message)} · solve ${fmt(res.seconds, 2)} s.
-    A failed check means the numbers may be off in the digits shown here; the row says what to raise.</p>
+    <p class="small muted" style="margin-top:0">${esc(res.version)}${res.engine !== "ch6-markov" && solverThreads > 1 ? ` · ${solverThreads} threads` : ""} · ${esc(res.message)} · solve ${fmt(res.seconds, 2)} s.
+    ${res.engine === "ch6-markov" ? "These checks test the coupled equilibrium equations and the stabilizing branch. The general solver view supplies grid checks and the best-response spectrum." : "A failed check means the numbers may be off in the digits shown here; the row says what to raise."}</p>
     <div class="tablewrap"><table class="diag checks"><thead><tr><th>Check</th><th>Status</th><th>Value / threshold</th><th>What it means</th></tr></thead><tbody>${rows}</tbody></table></div>
     ${res.stability ? spectrumPanel(res.stability) : ""}
     ${res.refinement ? `<p class="small" style="margin:6px 0 0">Refinement: re-solved at ${res.refinement.nodes} nodes in ${fmt(res.refinement.seconds, 1)} s; costs moved ${fmtE(res.refinement.cost_change)}, kernels ${fmtE(res.refinement.kernel_change)}.</p>` : ""}
@@ -2056,26 +2131,41 @@ window.addEventListener("hashchange", () => {
   const before = game;
   readHash(); renderAll();
   // a new game starts from a clean page; new settings for the same game (a link in a caption) re-solve in place
-  if (game !== before) { lastResult = null; $("results").innerHTML = ""; $("savebtn").disabled = true; $("tabs").scrollIntoView({ block: "nearest" }); }
+  if (game !== before) { lastResult = null; clearPlots($("results")); $("savebtn").disabled = true; $("tabs").scrollIntoView({ block: "nearest" }); }
   if (game !== "custom") requestSolve(0); else customReady();
 });
 
 // ---------------------------------------------------------------------------------------------
 // Sweep: the equilibrium costs as one slider runs across its range, the others held.  A second worker solves the
 // points one after another, each from the last one's equilibrium, so the page's own solves are never queued behind it.
-var sweepWorker = null, sweepReady = null, sweep = null, sweepSeq = 0;   // var: renderAll reads them before this line runs
+var sweepWorker = null, sweepReady = null, sweepReject = null, sweep = null, sweepSeq = 0;   // var: renderAll reads them before this line runs
 var SWEEP_POINTS = 11;
+function disposeSweepWorker(message) {
+  if (sweepWorker) sweepWorker.terminate();
+  sweepWorker = null; sweepReady = null;
+  if (sweepReject) sweepReject(new Error(message));
+  sweepReject = null;
+}
 function ensureSweepWorker() {
   if (sweepWorker) return sweepReady;
-  sweepWorker = new Worker("worker.js");
+  const sweepUrl = new URL(WORKER_URL, location.href); if (game === "ch6" && opts.reference) sweepUrl.searchParams.set("lazy", "1");
+  sweepWorker = new Worker(sweepUrl);
+  const activeWorker = sweepWorker;
   sweepReady = new Promise((resolve, reject) => {
+    sweepReject = reject;
+    const fail = message => {
+      if (sweepWorker !== activeWorker) return;
+      disposeSweepWorker(message);
+      if (sweep && sweep.running) { sweep.running = false; sweep.error = message; updateSweepPanel(); }
+    };
     sweepWorker.onmessage = (ev) => {
+      if (sweepWorker !== activeWorker) return;
       const m = ev.data;
-      if (m.type === "ready") resolve();
-      else if (m.type === "fatal") reject(new Error(m.message));
+      if (m.type === "ready") { sweepReject = null; resolve(); }
+      else if (m.type === "fatal") fail(m.message);
       else if (m.type === "result") onSweepResult(m);
     };
-    sweepWorker.onerror = (e) => reject(new Error(e.message || "the sweep worker stopped"));
+    sweepWorker.onerror = (e) => fail(e.message || "the sweep worker stopped");
   });
   return sweepReady;
 }
@@ -2095,7 +2185,7 @@ function sweepPoints(s) {
   return out;
 }
 function stopSweep() {
-  if (sweepWorker && sweep && sweep.running) { sweepWorker.terminate(); sweepWorker = null; sweepReady = null; }
+  if (sweepWorker && sweep && sweep.running) disposeSweepWorker("The sweep was stopped");
   if (sweep) sweep.running = false;
 }
 async function runSweep() {
@@ -2103,30 +2193,52 @@ async function runSweep() {
   const def = PRESETS[game], s = def.sliders.find((k) => k.key === $("sweepkey").value);
   if (!s) return;
   sweep = { game, key: s.key, label: s.label, log: !!s.log, xs: sweepPoints(s), i: 0, costs: {}, naive: {}, start: lastStart[game] || null, startCompare: lastStartCompare[game] || null,
-    base: sweepBase(s.key), running: true, id: ++sweepSeq * 100, t0: performance.now(), failed: 0 };
+    values: { ...values[game] }, base: sweepBase(s.key), running: true, id: ++sweepSeq * 100, t0: performance.now(), failed: 0 };
+  const S = sweep;
+  // Freeze all eleven models before yielding: moving another slider or opening
+  // another game must not change what the remaining sweep points mean.
+  S.jobs = S.xs.map(x => {
+    const model = modelWith({ [S.key]: x });
+    const request = { ...currentRequest(), refine: false, stability: false, return_start: true };
+    addCompare(request, model, S.game, null);
+    delete request.deviation;
+    return { model: forSolver(model), request };
+  });
   updateSweepPanel();
-  try { await ensureSweepWorker(); } catch (e) { sweep.running = false; $("sweepnote").textContent = "The sweep could not start: " + e.message; return; }
+  try { await ensureSweepWorker(); } catch (e) {
+    if (sweep === S && S.running) { S.running = false; S.error = e.message; updateSweepPanel(); }
+    return;
+  }
+  if (sweep !== S || !S.running) return;
   nextSweep();
 }
 function nextSweep() {
   const S = sweep;
   if (!S || !S.running) return;
-  if (S.i >= S.xs.length) { S.running = false; S.wall = (performance.now() - S.t0) / 1000; updateSweepPanel(); return; }
-  const def = PRESETS[S.game];
-  const model = modelWith({ [S.key]: S.xs[S.i] });
-  const request = { ...currentRequest(), refine: false, stability: false, return_start: true };
-  addCompare(request, model, S.game, S.startCompare);
-  delete request.deviation;                                   // the sweep reads the costs only
+  if (S.i >= S.xs.length) {
+    S.running = false; S.wall = (performance.now() - S.t0) / 1000;
+    disposeSweepWorker("The sweep finished");
+    S.start = null; S.startCompare = null; S.jobs = null;
+    updateSweepPanel(); return;
+  }
+  const { model, request: savedRequest } = S.jobs[S.i], request = { ...savedRequest };
+  if (request.compare && S.startCompare) request.compare = { ...request.compare, start: S.startCompare };
   if (S.start) request.start = S.start; else request.start_policy = "coarse";
-  sweepWorker.postMessage({ type: "solve", id: S.id + S.i, model: forSolver(model), request });
+  sweepWorker.postMessage({ type: "solve", id: S.id + S.i, model, request });
   updateSweepPanel();
 }
 function onSweepResult(m) {
   const S = sweep;
   if (!S || !S.running || m.id !== S.id + S.i) return;
-  const res = JSON.parse(m.result), x = S.xs[S.i], def = PRESETS[S.game];
+  let res;
+  try { res = JSON.parse(m.result); }
+  catch (e) {
+    S.running = false; S.error = "the solver returned unreadable data";
+    disposeSweepWorker(S.error); updateSweepPanel(); return;
+  }
+  const x = S.xs[S.i], def = PRESETS[S.game];
   if (res.ok && window.siteTally) window.siteTally("solve");
-  const extra = def.constCost ? def.constCost({ ...values[S.game], [S.key]: x }) : {};
+  const extra = def.constCost ? def.constCost({ ...S.values, [S.key]: x }) : {};
   if (res.ok && res.converged) {
     for (const [a, v] of Object.entries(res.costs)) (S.costs[a] = S.costs[a] || []).push([x, v + (extra[a] || 0)]);
     const C = res.compare;
@@ -2175,7 +2287,8 @@ function updateSweepPanel() {
   plot.style.display = S ? "" : "none";
   plot.classList.toggle("stale-plot", !!(S && !S.running && S.base !== sweepBase(S.key)));
   if (!S) { note.textContent = `Eleven solves across the slider's range, the others held where they are.`; $("sweepcap").textContent = ""; return; }
-  if (S.running) note.textContent = `Solving ${Math.min(S.i + 1, S.xs.length)} of ${S.xs.length}…`;
+  if (S.error) note.textContent = `The sweep stopped: ${S.error}. Press Sweep again to retry.`;
+  else if (S.running) note.textContent = `Solving ${Math.min(S.i + 1, S.xs.length)} of ${S.xs.length}…`;
   else if (S.i < S.xs.length) note.textContent = `Stopped after ${S.i} of ${S.xs.length}.`;
   else note.textContent = `${S.xs.length} solves in ${S.wall.toFixed(1)} s${S.failed ? `, ${S.failed} did not converge and are left out` : ""}.`;
   if (!S.running && S.base !== sweepBase(S.key)) note.textContent += " The other parameters have moved since; sweep again to update.";

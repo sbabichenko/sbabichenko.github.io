@@ -57,7 +57,7 @@
   ];
   const R = { base: null, trace: {}, checks: null, checks12: null, windows: [], transition: null, version: 0 };
   const status = document.getElementById("solvestate");
-  let done = 0, t0 = performance.now();
+  let done = 0, failed = 0, t0 = performance.now();
   const prog = jobs.map(() => []);
   function onResult(k, res) {
     done++;
@@ -71,24 +71,33 @@
       else if (job.kind === "window") { R.windows.push({ L: job.L, rho: job.rho, res }); }
       else if (job.kind === "transition") R.transition = res;
       R.version++;
-    }
+    } else failed++;
     if (status) {
-      status.textContent = done < jobs.length ? `Solving: ${done} of ${jobs.length} solves…` : `Ran ${jobs.length} solves in your browser, in ${((performance.now() - t0) / 1000).toFixed(1)} s.`;
-      status.classList.toggle("ok", done === jobs.length);
+      status.textContent = done < jobs.length ? `Solving: ${done} of ${jobs.length} solves…` : `Ran ${jobs.length} solves in your browser, in ${((performance.now() - t0) / 1000).toFixed(1)} s.${failed ? ` ${failed} failed; their drawings are unavailable.` : ""}`;
+      status.classList.toggle("ok", done === jobs.length && !failed);
     }
     if (window.siteTally) window.siteTally("solve", 1, done === jobs.length ? `${jobs.length} solves for the solver's inner workings` : "");
+    wake();                                      // draw when data arrives, without polling every frame
   }
   try {
     const worker = new Worker(page.dataset.worker);
     let i = 0;
-    const next = () => { if (i < jobs.length) worker.postMessage({ type: "solve", id: i, model: jobs[i].model, request: jobs[i].request }); };
+    const next = () => {
+      if (i < jobs.length) worker.postMessage({ type: "solve", id: i, model: jobs[i].model, request: jobs[i].request });
+      else worker.terminate();                   // the drawings retain results, not the WASM heap
+    };
+    const fail = message => {
+      worker.terminate();
+      if (status) { status.classList.remove("ok"); status.textContent = "The solver stopped: " + message + ". Reload to try again."; }
+    };
     worker.onmessage = (ev) => {
       const m = ev.data;
       if (m.type === "ready") { t0 = performance.now(); next(); }
       else if (m.type === "progress") { if (m.id === i && prog[i]) prog[i].push([m.evaluation, m.residual]); }
-      else if (m.type === "result") { let res; try { res = JSON.parse(m.result); } catch (e) { res = { ok: false }; } onResult(m.id, res); i++; next(); }
-      else if (m.type === "fatal" && status) status.textContent = "The solver could not start in this browser: " + m.message;
+      else if (m.type === "result" && m.id === i) { let res; try { res = JSON.parse(m.result); } catch (e) { res = { ok: false }; } onResult(m.id, res); i++; next(); }
+      else if (m.type === "fatal") fail(m.message);
     };
+    worker.onerror = e => fail(e.message || "unknown worker error");
   } catch (e) { if (status) status.textContent = "This browser cannot run the solver."; }
 
   // a scene whose drawing needs solved data: build() once the data it reads has arrived
@@ -435,7 +444,7 @@
   // A step's progress runs from 0 as it becomes the active step (its top at the reading line) to 1 once 70% of it has
   // passed the line, so its drawing builds while the paragraph is read, on the way down as well as up. The drawing
   // follows that progress no faster than PACE a second: a flick of the wheel is caught up over a moment, not skipped.
-  // Frames are asked for only while something moves, or while solves are still arriving.
+  // Frames are asked for only while something moves; new solve data wakes a drawing once.
   const PACE = 0.9;
   let active = null, prog2 = 0, shown = 0, current = null, raf = 0, last = 0, from = null;
   function measure() {
@@ -468,7 +477,7 @@
     if (!sc) { last = 0; return; }
     shown = reduced ? 1 : Sketch.follow(shown, prog2, dt, PACE);
     const busy = sc.update(shown, now);
-    if (busy || (!reduced && shown !== prog2) || done < jobs.length || (sc.live !== undefined ? sc.live : sc.update.length > 1)) raf = requestAnimationFrame(frame);
+    if (busy || (!reduced && shown !== prog2) || (!reduced && (sc.live !== undefined ? sc.live : sc.update.length > 1))) raf = requestAnimationFrame(frame);
     else last = 0;
   }
   measure();

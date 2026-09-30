@@ -1,43 +1,61 @@
-// Web Worker: runs the C++ port of noisestate compiled to WebAssembly, so a solve never blocks the page.  When the page
-// is cross-origin isolated (coi-serviceworker.js sets the headers GitHub Pages cannot), the threaded build runs the
-// agents' best responses in parallel; otherwise the single-threaded one.  Results are identical either way.
-// Messages in: {type: "solve", id, model, request}; out: "ready", "progress", "result", "fatal".
+// Background solver worker. Chapter 6's reference can load on its own; general
+// models load the native solver compiled to WebAssembly, with threads when available.
 const MT = self.crossOriginIsolated === true && typeof SharedArrayBuffer !== "undefined";
 const THREADS = MT ? Math.max(1, Math.min(4, navigator.hardwareConcurrency || 2)) : 1;
-importScripts(MT ? "noisestate-mt.js" : "noisestate.js");
-
-let solve = null;
-// the threaded build's pool workers load the main script by URL (a module inside a worker cannot find its own)
-const ready = NoiseState(MT ? { mainScriptUrlOrBlob: new URL("noisestate-mt.js", self.location.href).href } : {}).then((mod) => {
-  const ns_solve = mod.cwrap("ns_solve", "number", ["string", "string"]);
-  const ns_free = mod.cwrap("ns_free", null, ["number"]);
-  const ns_version = mod.cwrap("ns_version", "number", []);
-  solve = (model, request) => {
-    const p = ns_solve(model, request);
-    const out = mod.UTF8ToString(p);
-    ns_free(p);
-    return out;
-  };
-  postMessage({ type: "ready", version: mod.UTF8ToString(ns_version()), threads: THREADS });
-}).catch((err) => postMessage({ type: "fatal", message: String(err && err.message ? err.message : err) }));
+const SOLVER_REV = "e1a1a89";
+const asset = (name) => new URL(name + "?v=" + SOLVER_REV, self.location.href).href;
+const entry = asset(MT ? "noisestate-mt.js" : "noisestate.js");
+let runtime = null;
+function loadSolver() {
+  if (!runtime) runtime = Promise.resolve().then(() => {
+    importScripts(entry);
+    return NoiseState({ locateFile: (name) => asset(name), ...(MT ? { mainScriptUrlOrBlob: entry } : {}) });
+  }).then((mod) => {
+    const ns_solve = mod.cwrap("ns_solve", "number", ["string", "string"]);
+    const ns_free = mod.cwrap("ns_free", null, ["number"]);
+    const ns_version = mod.cwrap("ns_version", "number", []);
+    return { version: mod.UTF8ToString(ns_version()), solve(model, request) {
+      const p = ns_solve(model, request);
+      try { return mod.UTF8ToString(p); } finally { ns_free(p); }
+    } };
+  }).catch(err => { runtime = null; throw err; });
+  return runtime;
+}
+const lazy = new URL(self.location.href).searchParams.get("lazy") === "1";
+const ready = lazy ? Promise.resolve({ version: "Chapter 6 finite-state reference" }) : loadSolver();
+ready.then(info => postMessage({ type: "ready", version: info.version, threads: THREADS }))
+  .catch(err => postMessage({ type: "fatal", message: String(err && err.message ? err.message : err) }));
 
 let current = null;
 self.nsProgress = (evaluation, residual, newton) => {
   if (current !== null) postMessage({ type: "progress", id: current, evaluation, residual, phase: newton ? "newton" : "anderson" });
 };
-
-onmessage = async (ev) => {
-  const msg = ev.data;
+onmessage = async ({ data: msg }) => {
   if (msg.type !== "solve") return;
-  await ready;
-  current = msg.id;
   const t0 = performance.now();
   let out;
   try {
-    out = solve(JSON.stringify(msg.model), JSON.stringify({ ...(msg.request || {}), threads: THREADS }));
+    await ready;
+    const request = { ...(msg.request || {}), threads: THREADS };
+    if (request.method === "ch6-markov") {
+      if (!self.Ch6Markov) importScripts(new URL("ch6-markov.js?v=20260930-2", self.location.href).href);
+      out = JSON.stringify(Ch6Markov.payload(msg.model, request));
+    } else {
+      const solver = await loadSolver();
+      current = msg.id;
+      try {
+        out = solver.solve(JSON.stringify(msg.model), JSON.stringify(request));
+        if (!out) throw new Error("the solver returned empty data");
+      } catch (err) {
+        // Native validation errors return JSON. A thrown exception can mean a
+        // trapped/aborted WASM runtime, which must not serve another request.
+        postMessage({ type: "fatal", phase: "solve", message: String(err && err.message ? err.message : err) });
+        self.close();
+        return;
+      }
+    }
   } catch (err) {
     out = JSON.stringify({ ok: false, error: "the solver stopped: " + String(err && err.message ? err.message : err) });
-  }
-  current = null;
+  } finally { current = null; }
   postMessage({ type: "result", id: msg.id, result: out, wall: (performance.now() - t0) / 1000 });
 };

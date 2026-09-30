@@ -27,11 +27,11 @@
   const R = { base: null, tug: {} };
   const status = document.getElementById("solvestate");
   const jobs = TUG.map((p) => ({ p, params: { p1: p, p2: p } }));
-  let done = 0, t0 = performance.now();
+  let done = 0, failed = 0, t0 = performance.now();
   const maxAbs = (a) => a.reduce((m, v) => Math.max(m, Math.abs(v)), 0);
   function onResult(job, res) {
     done++;
-    if (res.ok) {
+    if (res.ok && res.converged) {
       const f = res.samples.foc.D1, ch = Object.values(f.channels);
       if (job.p === 9) R.base = f;
       // the wedge's share of player 1's first-order condition: its largest size over the physical part's, across shocks
@@ -39,23 +39,34 @@
       R.tug[job.p] = { t: res.samples.mean_t, D1: res.samples.means.D1, D2: res.samples.means.D2, X: res.samples.means.X,
         J1: res.costs.player1, J2: res.costs.player2, wedge };
     }
-    for (const w of waits) w.textContent = `solving… ${done} of ${jobs.length}`;
+    if (!res.ok || !res.converged) failed++;
+    for (const w of waits) w.textContent = done < jobs.length ? `solving… ${done} of ${jobs.length}` : "This drawing could not be solved. Reload to try again.";
     if (status) {
-      status.textContent = done < jobs.length ? `Solving: ${done} of ${jobs.length} equilibria…` : `Solved ${jobs.length} equilibria in your browser, in ${((performance.now() - t0) / 1000).toFixed(1)} s.`;
-      status.classList.toggle("ok", done === jobs.length);
+      status.textContent = done < jobs.length ? `Solving: ${done} of ${jobs.length} equilibria…` : `Ran ${jobs.length} solves in your browser, in ${((performance.now() - t0) / 1000).toFixed(1)} s.${failed ? ` ${failed} failed; their drawings are unavailable.` : ""}`;
+      status.classList.toggle("ok", done === jobs.length && !failed);
     }
     if (window.siteTally) window.siteTally("solve", 1, done === jobs.length ? `${jobs.length} equilibria for the information wedge` : "");
+    wake();
   }
   try {
     const worker = new Worker(page.dataset.worker);
     let i = 0;
-    const next = () => { if (i < jobs.length) worker.postMessage({ type: "solve", id: i, model: model(jobs[i].params), request: {} }); };
+    const next = () => {
+      if (i < jobs.length) worker.postMessage({ type: "solve", id: i, model: model(jobs[i].params), request: {} });
+      else worker.terminate();
+    };
+    const fail = message => {
+      worker.terminate();
+      if (status) { status.classList.remove("ok"); status.textContent = "The solver stopped: " + message + ". Reload to try again."; }
+      for (const w of waits) w.textContent = "The solver stopped. Reload to try again.";
+    };
     worker.onmessage = (ev) => {
       const m = ev.data;
       if (m.type === "ready") { t0 = performance.now(); next(); }
-      else if (m.type === "result") { let res; try { res = JSON.parse(m.result); } catch (e) { res = { ok: false }; } onResult(jobs[m.id], res); i++; next(); }
-      else if (m.type === "fatal" && status) status.textContent = "The solver could not start in this browser: " + m.message;
+      else if (m.type === "result" && m.id === i) { let res; try { res = JSON.parse(m.result); } catch (e) { res = { ok: false }; } onResult(jobs[m.id], res); i++; next(); }
+      else if (m.type === "fatal") fail(m.message);
     };
+    worker.onerror = e => fail(e.message || "unknown worker error");
   } catch (e) { if (status) status.textContent = "This browser cannot run the solver."; }
 
   // ------------------------------------------------------------------ 1. alone: estimate, then act
@@ -310,7 +321,7 @@
   // follows that progress no faster than PACE a second: a flick of the wheel is caught up over a moment, not skipped.
   // A drawing whose one-shot motion is still playing forward stays up a moment longer (HOLD seconds at most), then
   // finishes the motion as it fades out under the next. Frames are asked for only while something moves, or while
-  // solves are still arriving.
+  // data arrives and wakes its drawing.
   const PACE = 0.9, HOLD = 0.5, FADE = 0.7;
   let active = null, prog = 0, shown = 0, current = null, held = 0, raf = 0, last = 0, still = null;
   let leaving = null, leftT = 0, leftFor = 0, from = null;
@@ -354,14 +365,14 @@
     if (reduced) {
       const key = want + done;
       if (still !== key) { still = key; sc.update(1, 0, 0); }
-      if (done < jobs.length) raf = requestAnimationFrame(frame); else last = 0;
+      last = 0;
       return;
     }
     shown = Sketch.follow(shown, prog, dt, PACE);
     const busy = sc.update(shown, now, dt);
     if (leaving) { leftFor += dt; leaving.update(leftT, now, dt); if (leftFor >= FADE || !leaving.shots.some((s) => s.moving)) leaving = null; }
     // a scene that moves by itself (its update reads the clock) keeps asking for frames while the story is on screen
-    if (busy || leaving || shown !== prog || done < jobs.length || (sc.live !== undefined ? sc.live : sc.update.length > 1)) raf = requestAnimationFrame(frame);
+    if (busy || leaving || shown !== prog || (sc.live !== undefined ? sc.live : sc.update.length > 1)) raf = requestAnimationFrame(frame);
     else last = 0;
   }
   measure();

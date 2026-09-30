@@ -625,14 +625,22 @@
   }
   // a mouse drag across empty background lays a ridge along the path (text keeps its own drag, selection)
   if (!nothing) {
+    const cancelStroke = () => {
+      if (stroke) clearTimeout(stroke.hold);
+      stroke = null;
+    };
+    document.addEventListener("pointercancel", cancelStroke);
+    window.addEventListener("blur", cancelStroke);
+    document.addEventListener("visibilitychange", () => { if (document.hidden) cancelStroke(); });
     document.addEventListener("pointerdown", (ev) => {
       if (ev.pointerType !== "mouse" || ev.button !== 0 || !overMesh(ev) || overText(ev)) return;
       ev.preventDefault();                                 // a press on the background starts no text selection
+      cancelStroke();
       const p = toCanvas(ev), G = geometry();
       stroke = { pts: [{ cx: p.x, cy: p.y, x: G.ux(p.x), y: G.uy(p.y) }], len: 0, at: performance.now(), hold: null };
       // held still for a moment, the press becomes a hold: samples collect under the pointer every quarter second
       const s0 = stroke;
-      setTimeout(() => {
+      s0.hold = setTimeout(() => {
         if (stroke !== s0 || s0.len > 10) return;
         const tick = () => {
           if (stroke !== s0) return;
