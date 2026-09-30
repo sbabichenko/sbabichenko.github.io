@@ -160,18 +160,58 @@
       accounts: { gross, trading, inventory, noise: (l - ans.pq) * s * s },
       rates: { information: l * ans.beta, inventory: ans.delta } };
   }
+  // Convolutions of two/three decaying exponentials. expm1 handles coincident
+  // rates; a short divided-difference series handles three nearby rates.
+  function twoRates(a, b, t) {
+    const gap = Math.abs(a - b), slow = Math.min(a, b);
+    return Math.exp(-slow * t) * (gap ? -Math.expm1(-gap * t) / gap : t);
+  }
+  function threeRates(a, b, c, t) {
+    const [slow, mid, fast] = [a, b, c].sort((x, y) => x - y);
+    if ((fast - slow) * t >= .5)
+      return (twoRates(slow, mid, t) - twoRates(mid, fast, t)) / (fast - slow);
+    const x = -(mid - slow) * t, y = -(fast - slow) * t;
+    let previous = 0, current = 1, factorial = .5, sum = .5;
+    for (let n = 1; n <= 20; n++) {
+      const next = (x + y) * current - x * y * previous;
+      previous = current; current = next; factorial /= n + 2;
+      const term = current * factorial; sum += term;
+      if (Math.abs(term) < 1e-18) break;
+    }
+    return Math.exp(-slow * t) * t * t * sum;
+  }
   function sample(eq, ages) {
     const { beta: b, delta: d, pq: p, params: { sigma_Z: s } } = eq, l = 1 / s;
-    const F = [[0, 0, 0, 0], [1, -1, 0, 0], [0, l * b, -l * b, 0], [0, -b, b, -d]];
-    const B = [[1, 0, 0], [0, 0, 1], [0, l * s, 0], [0, -s, 0]];
-    const C = [[1, 0, 0, 0], [0, 0, 0, 1], [0, 0, 1, p], [0, b, -b, d]];
+    const k = l * b, A = eq.drift;
+    let driftRates = null;
+    if (A.length === 2) {
+      const halfTrace = (A[0][0] + A[1][1]) / 2;
+      const discriminant = ((A[0][0] - A[1][1]) / 2) ** 2 + A[0][1] * A[1][0];
+      if (discriminant >= 0) {
+        const gap = Math.sqrt(discriminant);
+        const fast = -halfTrace + gap, determinant = A[0][0] * A[1][1] - A[0][1] * A[1][0];
+        driftRates = [fast ? determinant / fast : -halfTrace - gap, fast];
+      }
+    }
     const names = ["V", "Q", "P", "D"], shocks = ["wV", "wZ", "wY"];
     const kernels = Object.fromEntries(names.map(n => [n, Object.fromEntries(shocks.map(w => [w, []]))]));
     const deviation = { Q: [], P: [], D: [] };
     for (const t of ages) {
-      const K = mul(mul(C, expm(F, t)), B);
+      // State (E=V-Vhat1, X=Vhat1-Vhat0, Q): E'=-E, X'=E-kX,
+      // Q'=-bX-dQ. These exact cascade convolutions include repeated rates.
+      const e = Math.exp(-t), ek = Math.exp(-k * t), ed = Math.exp(-d * t);
+      const h = twoRates(1, k, t), qh = twoRates(k, d, t), qj = threeRates(1, k, d, t);
+      const X = [h, -ek, ek - h], Q = [-b * qj, b * qh - s * ed, b * (qj - qh)];
+      const K = [[1, 0, 0], Q, [1 - e - h + p * Q[0], ek + p * Q[1], e - ek + h + p * Q[2]],
+        X.map((x, i) => b * x + d * Q[i])];
       names.forEach((n, i) => shocks.forEach((w, j) => kernels[n][w].push(K[i][j])));
-      const state = mv(expm(eq.drift, t), eq.initial), q = state[0];
+      let state;
+      if (A.length === 1) state = [Math.exp(A[0][0] * t) * eq.initial[0]];
+      else if (driftRates) {
+        const [slow, fast] = driftRates, h = twoRates(slow, fast, t), e = Math.exp(-fast * t);
+        state = A.map((row, i) => e * eq.initial[i] + h * (dot(row, eq.initial) + fast * eq.initial[i]));
+      } else state = mv(expm(A, t), eq.initial);
+      const q = state[0];
       deviation.Q.push(q); deviation.P.push(p * q - dot(state, eq.gain)); deviation.D.push(-dot(state, eq.drift[0]));
     }
     return { kernels, deviation };

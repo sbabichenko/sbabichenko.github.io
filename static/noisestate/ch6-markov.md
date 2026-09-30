@@ -65,6 +65,15 @@ are solved in `delta/gamma`, preserving relative accuracy for tiny positive
 inventory penalties. Opaque continuation remains a fallback if the eliminated
 candidate fails the original equations.
 
+The opaque scalar root is unique too. Put `t=d/r`, `eta=e*r/l`, `w=l*beta/r`
+and `v=-p/l`. Then `2*eta*w*(1+w)=1/(1+t)`, so `w` decreases with `t`, while
+`v=2*eta*t*(1+t)+t*(1+2*t)/(1+t)` increases. Its equation is
+`2*g/(l*r)=v+H`, where
+`H=((1+v)*(1+t)+v*w)/(w/t+(1+t)/(1+2*t))` for `t>0`.
+At fixed `w,v`, the numerator increases and denominator decreases with `t`;
+`H` also increases with `v` and decreases with `w`. The full right side is
+therefore strictly increasing from zero to infinity.
+
 We check the original equation residual and require positive trading intensity
 and, for positive inventory cost, positive inventory reversion, negative inventory
 quote loading and stabilizing maker feedback. Independent continuation comparisons
@@ -93,10 +102,20 @@ inventory cost is `0.35` (transparent) and `0.4395643924` (opaque). Inventory
 loadings vanish while stationary inventory variance diverges. Small-penalty
 regressions cover `gamma=1e-4` through `1e-16`, as well as exactly zero.
 
-Shock responses propagate `(V,Vhat1,Vhat0,Q)` with its constant drift matrix. A quote blip starts the transparent
+Shock responses use the equivalent triangular state `(E=V-Vhat1,X=Vhat1-Vhat0,Q)`:
+`E'=-E`, `X'=E-(beta/s)*X`, `Q'=-beta*X-delta*Q`. Two- and three-exponential
+convolutions evaluate this cascade directly. `expm1` handles two close decay
+rates; a convergent divided-difference series handles three nearby rates,
+including exact coincidences. This avoids a full matrix exponential at each
+plot age while preserving the same continuous-time system.
+
+A quote blip starts the transparent
 inventory at `1/(2*e)` and then decays at rate `delta`. In the opaque market it starts `(Q,xi)=(cn,-kn)` and evolves
-under `A+B*K`. Quote and order responses use that same state. Small matrix exponentials handle repeated/zero rates;
-the plot's right edge does not impose a zero boundary. Plot ranges are chosen only for display; costs include all ages.
+under `A+B*K`. Quote and order responses use that same state. A two-state
+exponential uses its real decay rates and the same stable convolution; complex
+rates retain the general matrix-exponential fallback. The slow rate is recovered
+from the determinant and fast rate to avoid subtracting nearly equal numbers.
+The plot's right edge does not impose a zero boundary. Plot ranges are chosen only for display; costs include all ages.
 
 ## Sample paths
 
@@ -160,3 +179,20 @@ The unchanged 50 SciPy fixtures now agree within `1.3e-12`. Actual browser
 checks passed slider endpoints, solver switching, redraw/animation interruption,
 worker cancellation/retry, and hidden-worker release. These paired measurements
 use the earlier finite-state implementation as baseline, not the WASM solver.
+
+Eight additional propagation fixtures cover exact and nearly repeated rates,
+zero and widely separated rates, a nonnormal repeated-root system, and the
+complex-rate fallback. They use an independent 80-digit matrix exponential in
+the original state coordinates. This also caught a double-precision reference
+error of `9.1e-7` in one nearly repeated-rate case; the high-precision fixture
+agrees with the direct formulas. Regenerate them with
+`python tools/noisestate/generate_ch6_kernel_reference.py`. The combined 50
+equilibrium and eight propagation checks agree within `1.1e-12`.
+
+Three further isolated pairs compare direct propagation with the already
+scalarized equilibrium implementation. Over 200 complete payloads per process,
+median payload time fell from `15.03 -> 0.578` ms; batch mean time, including
+natural garbage collection, fell from `15.17 -> 0.630` ms. Peak Node RSS fell
+from `133.3 -> 77.5` MiB for this workload. Retained JS after collection stayed
+below `0.2` MiB in both versions. These measurements include curves and path
+transitions, but exclude Plotly rendering and browser worker startup.

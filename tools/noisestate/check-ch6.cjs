@@ -48,4 +48,11 @@ for (const market of ['transparent', 'opaque']) {
   const zero = M.solve(market, { eps: .2, gamma: 0, rho: .5, sigma_Z: 1 });
   assert.equal(zero.delta, 0); assert.equal(zero.accounts.inventory, 0);
 }
-console.log(`${reference.cases.length} independent reference cases passed; worst relative difference ${worst.toExponential(2)}`);
+const propagation = require('./ch6-kernel-reference.json');
+for (const c of propagation.cases) {
+  const samples = M.sample(c.equilibrium, c.ages);
+  for (const [name, values] of Object.entries(c.kernels))
+    close(values.map((_, i) => ['wV', 'wZ', 'wY'].map(w => samples.kernels[name][w][i])), values);
+  for (const [name, values] of Object.entries(c.deviation)) close(samples.deviation[name], values);
+}
+console.log(`${reference.cases.length} equilibrium and ${propagation.cases.length} propagation reference cases passed; worst relative difference ${worst.toExponential(2)}`);
