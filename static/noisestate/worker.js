@@ -4,19 +4,22 @@
 // Messages in: {type: "solve", id, model, request}; out: "ready", "progress", "result", "fatal".
 const MT = self.crossOriginIsolated === true && typeof SharedArrayBuffer !== "undefined";
 const THREADS = MT ? Math.max(1, Math.min(4, navigator.hardwareConcurrency || 2)) : 1;
-importScripts(MT ? "noisestate-mt.js" : "noisestate.js");
+// One revision identifies the JS, WASM and pthread entry point together.
+const SOLVER_REV = "03ed584";
+const asset = (name) => new URL(name + "?v=" + SOLVER_REV, self.location.href).href;
+const entry = asset(MT ? "noisestate-mt.js" : "noisestate.js");
+importScripts(entry);
 
 let solve = null;
 // the threaded build's pool workers load the main script by URL (a module inside a worker cannot find its own)
-const ready = NoiseState(MT ? { mainScriptUrlOrBlob: new URL("noisestate-mt.js", self.location.href).href } : {}).then((mod) => {
+const ready = NoiseState({ locateFile: (name) => asset(name), ...(MT ? { mainScriptUrlOrBlob: entry } : {}) }).then((mod) => {
   const ns_solve = mod.cwrap("ns_solve", "number", ["string", "string"]);
   const ns_free = mod.cwrap("ns_free", null, ["number"]);
   const ns_version = mod.cwrap("ns_version", "number", []);
   solve = (model, request) => {
     const p = ns_solve(model, request);
-    const out = mod.UTF8ToString(p);
-    ns_free(p);
-    return out;
+    try { return mod.UTF8ToString(p); }
+    finally { ns_free(p); }
   };
   postMessage({ type: "ready", version: mod.UTF8ToString(ns_version()), threads: THREADS });
 }).catch((err) => postMessage({ type: "fatal", message: String(err && err.message ? err.message : err) }));
