@@ -974,8 +974,8 @@ function renderControls() {
   if (game === "custom") { renderEditor(); renderOptions($("paramopts")); return; }
   if (game === "ch6") {
     const view = document.createElement("div"); view.className = "ctl ch6-view";
-    view.innerHTML = `<label for="ch6-view">View</label><select id="ch6-view"><option value="reference">Full equilibrium</option><option value="solver">General solver</option></select>
-      <span class="hint">Follow the full inventory unwind, or inspect the general solver's finite-window approximation and first-order conditions.</span>`;
+    view.innerHTML = `<label for="ch6-view">View</label><select id="ch6-view"><option value="reference">Full equilibrium</option><option value="solver">noisestate</option></select>
+      <span class="hint">Full equilibrium uses formulas worked out for this market, not noisestate. The noisestate view runs the package, which cuts the past off at the lag window, so its numbers here are approximate.</span>`;
     box.appendChild(view);
     const select = view.querySelector("select"); select.value = opts.reference ? "reference" : "solver";
     select.onchange = () => { opts.reference = select.value === "reference"; renderControls(); writeHash(); requestSolve(0); };
@@ -1406,7 +1406,7 @@ function onSolved(m) {
   const t = m.wall < 0.1 ? "under 0.1" : m.wall.toFixed(1), how = res.warm_start ? " from the last equilibrium" : "";
   const accuracy = failed.filter((d) => ACCURACY_CHECKS.has(d.name)), other = failed.filter((d) => !ACCURACY_CHECKS.has(d.name));
   if (problem) setStatus("bad", res.converged ? "Result not reliable" : "Not converged", problem + " Curves and costs are withheld; diagnostics are below.");
-  else if (res.engine === "ch6-markov") setStatus("ok", "Equilibrium", `Solved in ${t} s. Costs include the full inventory tail; the curves follow the finite-state equilibrium.`);
+  else if (res.engine === "ch6-markov") setStatus("ok", "Equilibrium", `Solved in ${t} s from this market's closed-form solution, not noisestate.`);
   else if (failed.length && !other.length)
     setStatus("warn", "Solved, approximate", `Solved in ${t} s${how}. ${cap(accuracy.map(accuracyNote).join("; "))}.`
       + (game !== "custom" && PRESETS[game].approx && accuracy.every((d) => d.name === "resolution" || d.name === "settled") ? " " + PRESETS[game].approx : ""));
