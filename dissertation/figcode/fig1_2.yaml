@@ -1,0 +1,20 @@
+# The two-player tracking game of Chapter 1, the model of Figure 1.2.
+# One state X, pushed by both players' actions and by a shock W0 that
+# neither sees. Each player watches X through its own noisy signal, and
+# pays for the distance of X from its target b and for its effort.
+name: ch1_tracking
+params: {p1: 3, p2: 10, r1: 0.1, r2: 0.1, b1: 1, b2: -1, sigma: 1, T: 1}
+shocks: [W0, W1, W2]
+states:
+  X: "(D1 + D2) dt + sigma dW0"
+agents:
+  player1:
+    controls: D1
+    observes: "sqrt(p1) X dt + dW1"
+    loss: "(X - b1)^2 + r1 D1^2"
+  player2:
+    controls: D2
+    observes: "sqrt(p2) X dt + dW2"
+    loss: "(X - b2)^2 + r2 D2^2"
+horizon: {T: T}
+numerics: {nodes: 24}

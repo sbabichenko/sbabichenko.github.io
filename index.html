@@ -1,0 +1,562 @@
+<!doctype html>
+<html class="not-ready lg:text-base" lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Title -->
+  <title>Sam Babichenko</title>
+
+  <!-- Meta -->
+  <meta name="theme-color" />
+  <meta name="description" content="Quantitative researcher. I work on game theory, empirical Bayes, machine learning, and quantitative finance, and increasingly on high-dimensional probability and statistics." />
+  <meta name="author" content="" />
+  <!-- The Open Graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Sam Babichenko" />
+  <meta property="og:site_name" content="Sam Babichenko" />
+  <meta property="og:description" content="Quantitative researcher. I work on game theory, empirical Bayes, machine learning, and quantitative finance, and increasingly on high-dimensional probability and statistics." />
+  <meta property="og:url" content="https:&#x2F;&#x2F;sbabichenko.com&#x2F;" />
+  <meta property="og:image" content="https://sbabichenko.com/images/og.png" />
+
+  <!-- CSS & JS -->
+  <link rel="preload stylesheet" as="style" href="https://sbabichenko.com/main.css?h=83e18233020b9c7a7a8c" />
+  <style>
+    :root {
+      --bg: #FFFFF0;
+      --bg-dark: #1F2022;
+      --header: #e4e4e7;
+      --header-dark: #27272a;
+    }
+  </style>
+
+  
+  <!-- Avatar: not preloaded; the home page (projects.html) does not show the theme's profile avatar -->
+
+  <!-- Social List -->
+  
+  <!---->
+  
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/github.svg" />  
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/linkedin.svg" />  
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/email.svg" />  
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/twitter.svg" />  
+  <!---->
+  
+  <!---->
+  
+
+  <!-- Dark Icon -->
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/theme.svg" />
+
+  <!-- Math -->
+  
+  <!---->
+
+  <!-- Mermaid -->
+  
+  <!---->
+
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://sbabichenko.com/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://sbabichenko.com/favicon-16x16.png">
+  <link rel="shortcut icon" href="https://sbabichenko.com/favicon.ico">
+  <link rel="apple-touch-icon" href="https://sbabichenko.com/apple-touch-icon.png">
+
+
+  <!-- Feeds -->
+  
+  <!---->
+  
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title="Atom"
+    href="https://sbabichenko.com/atom.xml"
+  />
+   
+  <!---->
+  
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https:&#x2F;&#x2F;sbabichenko.com" />
+
+  <!-- Head inject -->
+  <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="font" type="font/woff2" href="https://sbabichenko.com/fonts/newsreader-latin-opsz-normal.woff2" crossorigin>
+<link rel="stylesheet" href="https://sbabichenko.com/fonts/newsreader.css?h=5358dbda7c8bb2508eba">
+<link rel="stylesheet" href="https://sbabichenko.com/css/custom.css?h=f0c82a15a80fef316c80">
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="https://sbabichenko.com/css/home.css?h=282812b564ee603c30f2" />
+    
+<header
+  class="blur-header fixed top-0 z-40 mx-auto min-h-[3.5rem] w-full"
+>
+  <div class="mx-auto w-full max-w-4xl p-3 lg:flex lg:justify-between">
+    <div class="flex justify-between">
+      <div class="flex items-center">
+        <a class="text-2xl font-semibold" href="https://sbabichenko.com">Sam Babichenko</a>
+        <div
+          class="btn-dark ml-4 h-6 w-6 shrink-0 cursor-pointer text-[0px] [background:url(./icons/theme.svg)_left_center/cover_no-repeat] dark:[background-position:right] dark:invert"
+          role="button"
+          tabindex="0"
+          aria-label="Switch to dark theme"
+        ></div>
+        <style>
+          /* brown paper (a CC0 scan from ambientCG, reduced to its surface and fibers) is the page's own background: it scrolls with the page and stays behind the content, so it costs
+             nothing to scroll (an overlay blended over everything had to be recomposited on every frame) */
+          html :is(body, header.blur-header) { background-image: var(--paper-img); background-size: 768px 768px; background-blend-mode: multiply; }
+          html.dark :is(body, header.blur-header) { background-blend-mode: screen; }
+          /* a patch of the same paper, for the few things that must hide what passes under them (a sticky drawing on a
+             phone, a bar that stays put, a popup): background: var(--ground) var(--paper-img) 0 0 / 768px 768px with
+             background-blend-mode: var(--patch-blend). Everything else is clear, so the page's own paper runs through it.
+             Patches pin their paper to the window and shift it by the scroll (--paper-y), so a pill or bar that stays put
+             still shows the page's paper moving under it, lined up with the page around it. A new patch goes in the
+             list in the script below: only the patches carry --paper-y (set on the page's root, every scroll frame
+             restyled every element on the page, 100 ms and more a frame on a chapter). */
+          html:not(.dark) { --ground: #ecdebe; --patch-blend: multiply; }
+          html.dark { --ground: #1f2022; --patch-blend: screen; }
+          /* in light mode the paper also gets a paper's own warm tone: the site's near-white cream is what made the grain read as dirt */
+          html:not(.dark), html:not(.dark) :is(.home, .opening, .thesis, .gatehow) { --paper: #ecdebe; --sheet: #f0e4c8; }
+          html:not(.dark) body { background-color: var(--paper); }
+          /* the body's box grows with the page (the theme had it one window tall): browsers carry a body's background out
+             to the whole page, but a renderer that doesn't (a work browser behind a filtering proxy) painted the paper only
+             over the first screen */
+          html body { height: auto; min-height: 100vh; }
+          /* the paper runs through everything: the bar at the top is paper, cards and panels are clear (outlines only), and
+             pictures, plots and canvases are multiplied onto it, so their white ground becomes the paper and their ink stays ink */
+          html :is(.panel, .statusbar, button.tab:not([aria-selected="true"]), article.demo) { background-color: transparent !important; }
+          html header.blur-header { backdrop-filter: none; -webkit-backdrop-filter: none; background-color: var(--paper, #fffff0);
+            border-bottom: 0; box-shadow: none; }
+          html.dark header.blur-header { background-color: #1f2022; }
+          /* the bar stays put, but its paper is the page's: shifted with the scroll, so the grain moves under it as it does
+             everywhere else and lines up with the page at its edge */
+          html header.blur-header { background-position: 0 var(--paper-y, 0px); }
+          /* in place of a line under the bar: a soft band where whatever scrolls up (text, drawings, the mesh) blurs and fades
+             into the bar's paper, so nothing is cut off at a hard edge. It comes in over the first 44px of scroll: at the top of
+             the page nothing has scrolled under the bar, and the band would only wash out the first line below it */
+          html header.blur-header::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 44px; pointer-events: none;
+            background-color: inherit; background-image: inherit; background-size: inherit; background-blend-mode: inherit;
+            background-position: 0 calc(var(--paper-y, 0px) - var(--hdr-h, 56px));
+            -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+            -webkit-mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent);
+                    mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent); opacity: var(--hdr-fade, 0); }
+          /* the browser draws some things itself (a select's open list, scrollbars, a search box's clear button, pickers):
+             tell it which theme the page is in, so a dark page does not open a white menu, and give a select's options the
+             page's colours where the browser lets a page style them (Windows and Linux; macOS draws its own menus) */
+          html:not(.dark) { color-scheme: light; }
+          html.dark { color-scheme: dark; }
+          html:not(.dark) select option { background-color: #f3ead3; color: #1b1b1f; }
+          html.dark select option { background-color: #26272a; color: #ececef; }
+          /* secondary controls stay clear on the paper but get an edge that reads (28% of the text's colour; 9% vanished on
+             dim screens), a faint tint of ink under the cursor and when pressed, and fade as a whole when disabled */
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, #dsearch, .dsearch, button.copy, button.cite-copy,
+            button.tweet-load, .gatedeep .howbar button) { border-color: color-mix(in srgb, currentColor 28%, transparent) !important; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button) { transition: background-color 0.12s; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button):hover:not(:disabled) { background-color: color-mix(in srgb, currentColor 6%, transparent) !important; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button):active:not(:disabled) { background-color: color-mix(in srgb, currentColor 11%, transparent) !important; }
+          html :is(button, select):disabled { opacity: 0.45; }
+          /* checkboxes take the page's colours, not the browser's white square: a clear box on the paper with a line
+             in the text's colour, filled with the accent when ticked */
+          html input[type=checkbox] { -webkit-appearance: none; appearance: none; width: 15px; height: 15px; flex: none; margin: 0 0.35em 0 0;
+            vertical-align: -2px; display: inline-grid; place-content: center; cursor: pointer; background: transparent;
+            border: 1.5px solid color-mix(in srgb, currentColor 55%, transparent); border-radius: 4px; transition: background-color 0.12s, border-color 0.12s; }
+          html input[type=checkbox]::before { content: ""; width: 9px; height: 9px; transform: scale(0); transition: transform 0.12s;
+            background: var(--accent-ink, #fff); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
+          html input[type=checkbox]:checked { background: var(--accent, #1f3fd0); border-color: var(--accent, #1f3fd0); }
+          html.dark input[type=checkbox]:checked { background: var(--accent, #8fb0ff); border-color: var(--accent, #8fb0ff); }
+          html.dark input[type=checkbox]::before { background: var(--accent-ink, #0b1220); }
+          html input[type=checkbox]:checked::before { transform: scale(1); }
+          html input[type=checkbox]:focus-visible { outline: 2px solid var(--accent, #1f3fd0); outline-offset: 2px; }
+          html input[type=checkbox]:disabled { opacity: 0.45; cursor: default; }
+          /* sliders the same way: a thin track in the text's colour, filled with the accent up to the thumb (--fill,
+             kept by the script below), and an accent thumb ringed in the paper's colour */
+          html input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; height: 18px; cursor: pointer; }
+          html input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px;
+            background: linear-gradient(to right, var(--accent, #1f3fd0) var(--fill, 0%), color-mix(in srgb, currentColor 22%, transparent) var(--fill, 0%)); }
+          html input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: color-mix(in srgb, currentColor 22%, transparent); }
+          html input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--accent, #1f3fd0); }
+          html input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; border-radius: 50%;
+            background: var(--accent, #1f3fd0); border: 2px solid var(--ground, #ecdebe); box-shadow: 0 0 0 1px var(--accent, #1f3fd0); }
+          html input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--accent, #1f3fd0);
+            border: 2px solid var(--ground, #ecdebe); box-shadow: 0 0 0 1px var(--accent, #1f3fd0); }
+          html.dark input[type=range]::-webkit-slider-runnable-track { background: linear-gradient(to right, var(--accent, #8fb0ff) var(--fill, 0%), color-mix(in srgb, currentColor 22%, transparent) var(--fill, 0%)); }
+          html.dark input[type=range]::-moz-range-progress { background: var(--accent, #8fb0ff); }
+          html.dark input[type=range]::-webkit-slider-thumb { background: var(--accent, #8fb0ff); box-shadow: 0 0 0 1px var(--accent, #8fb0ff); }
+          html.dark input[type=range]::-moz-range-thumb { background: var(--accent, #8fb0ff); box-shadow: 0 0 0 1px var(--accent, #8fb0ff); }
+          html input[type=range]:focus-visible { outline: 2px solid var(--accent, #1f3fd0); outline-offset: 3px; border-radius: 4px; }
+          html:not(.dark) figure { background-color: transparent; }
+          /* the dissertation's figures (.webfig) are drawn transparent in the page's inks and need no blend */
+          html:not(.dark) :is(figure img, .shot img, .shot canvas, .panel canvas, .js-plotly-plot, main img):not(.webfig img) { mix-blend-mode: multiply; }
+          /* the tile is 768px: a 768-pixel image for ordinary screens (what the browser drew from the 1536 one anyway) and
+             the 1536 one for sharp screens */
+          html:not(.dark) { --paper-img: image-set(url(https://sbabichenko.com/images/paper/brown-light.webp?h=e5a70cdd56a8e0d11533) 1x, url(https://sbabichenko.com/images/paper/brown-light-2x.webp?h=839876cd80b11ff6e8b4) 2x); }
+          html.dark { --paper-img: image-set(url(https://sbabichenko.com/images/paper/brown-dark.webp?h=a1610218c435c74114b1) 1x, url(https://sbabichenko.com/images/paper/brown-dark-2x.webp?h=3eb5c860334b67cf2100) 2x); }
+        </style>
+        <script>
+          (() => {
+            // the patches of paper (above); a pseudo-element patch is listed as itself, and its element carries the scroll
+            // for browsers without scroll-driven animations
+            const PATCHES = ["header.blur-header", ".peek", ".figzoom", ".trace-note", ".wayback", ".gpanel", ".cover .cta a",
+              ".stage::before", ".gatehow .stage::before", "html.fold-table .story .stage", ".spike .controls", ".risk .rcontrols",
+              ".dsearch-panel", ".explorer #statusbar", ".explorer #race-statusbar", ".home .shot.draw .clear", ".home .shot.draw .status",
+              ".whimsy-coin p", ".whimsy-forecast", ".skip-pill"];
+            const root = document.documentElement, hdr = document.querySelector("header.blur-header");
+            if (hdr) new ResizeObserver(() => hdr.style.setProperty("--hdr-h", hdr.offsetHeight + "px")).observe(hdr);
+            const css = document.createElement("style");
+            css.textContent = '@property --paper-y { syntax: "<length>"; inherits: true; initial-value: 0px; }' +
+              '@property --hdr-fade { syntax: "<number>"; inherits: true; initial-value: 0; }';
+            if (CSS.supports("animation-timeline: scroll()") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+              // the browser moves each patch's paper with the scroll itself: --paper-y runs from 0 down by a pixel per
+              // pixel scrolled (the range is far longer than any page, so the ratio is one to one)
+              css.textContent += "@keyframes paper-y { from { --paper-y: 0px; } to { --paper-y: -1000000px; } }" +
+                "@keyframes hdr-fade { from { --hdr-fade: 0; } to { --hdr-fade: 1; } }" +
+                PATCHES.join(",") + " { animation: paper-y linear both; animation-timeline: scroll(root block); animation-range: 0px 1000000px; }" +
+                "header.blur-header { animation: paper-y linear both, hdr-fade linear both; animation-timeline: scroll(root block), scroll(root block);" +
+                " animation-range: 0px 1000000px, 0px 44px; }";
+            } else {
+              const hosts = PATCHES.map((s) => s.replace(/::before$/, "")).join(",");
+              let queued = false;
+              const put = () => { queued = false; const y = -(window.scrollY % 768) + "px";
+                for (const el of document.querySelectorAll(hosts)) el.style.setProperty("--paper-y", y);
+                if (hdr) hdr.style.setProperty("--hdr-fade", Math.min(1, window.scrollY / 44).toFixed(3)); };
+              addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(put); } }, { passive: true });
+              put();
+            }
+            document.head.appendChild(css);
+            // each slider's fill (--fill, the share of its range below the thumb): on input, on a script setting its value
+            // (the explorer and the demos redraw their sliders), and at load
+            const fill = (r) => { const lo = +r.min || 0, hi = r.max === "" ? 100 : +r.max, v = +r.value;
+              r.style.setProperty("--fill", (hi > lo ? (100 * (v - lo)) / (hi - lo) : 0).toFixed(2) + "%"); };
+            const fillAll = () => { for (const r of document.querySelectorAll("input[type=range]")) fill(r); };
+            addEventListener("input", (e) => { if (e.target.type === "range") fill(e.target); }, true);
+            const d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+            Object.defineProperty(HTMLInputElement.prototype, "value", { configurable: true, get: d.get,
+              set(v) { d.set.call(this, v); if (this.type === "range") fill(this); } });
+            let q = false;
+            new MutationObserver(() => { if (!q) { q = true; requestAnimationFrame(() => { q = false; fillAll(); }); } })
+              .observe(document.documentElement, { childList: true, subtree: true });
+            addEventListener("DOMContentLoaded", fillAll);
+          })();
+        </script>
+      </div>
+      
+      <div
+        class="btn-menu relative z-50 flex h-8 w-8 shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+        role="button"
+        tabindex="0"
+        aria-label="Menu"
+        aria-expanded="false"
+      ></div>
+      
+    </div>
+    <script>
+      // base
+      const htmlClass = document.documentElement.classList;
+      setTimeout(() => {
+        htmlClass.remove("not-ready");
+      }, 10);
+
+      // mobile menu
+      const btnMenu = document.querySelector(".btn-menu");
+      btnMenu?.addEventListener("click", () => {
+        btnMenu.setAttribute("aria-expanded", htmlClass.toggle("open"));
+      });
+      // the two div buttons answer Enter and Space like real buttons
+      for (const b of document.querySelectorAll(".btn-menu, .btn-dark"))
+        b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); b.click(); } });
+
+      // dark theme; storage can be blocked (privacy modes, locked-down browsers), so every read and write is guarded
+      const storedDark = () => { try { return localStorage.getItem("dark"); } catch (e) { return null; } };
+      const setDark = (isDark) => {
+        if (isDark) {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
+          htmlClass.add("dark");
+        } else {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "light" }));
+          htmlClass.remove("dark");
+        }
+        try { localStorage.setItem("dark", isDark); } catch (e) {}
+        document.querySelector(".btn-dark")?.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
+      };
+
+      // init
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      if (htmlClass.contains("dark")) {
+        setDark(true);
+      } else {
+        const darkVal = storedDark();
+        setDark(darkVal ? darkVal === "true" : darkScheme.matches);
+      }
+
+      // listen system
+      darkScheme.addEventListener("change", (event) => {
+        setDark(event.matches);
+      });
+
+      // manual switch
+      const btnDark = document.querySelector(".btn-dark");
+      btnDark.addEventListener("click", () => {
+        setDark(!htmlClass.contains("dark"));
+      });
+    </script>
+    
+    <nav class="flex w-full items-center lg:w-auto">
+      <ul
+        class="nav-wrapper flex w-full flex-col py-2 lg:w-auto lg:flex-row lg:self-center lg:py-0"
+      >
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/writing"
+            >Writing</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/dissertation"
+            >Dissertation</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/cv"
+            >CV</a
+          >
+        </li>
+        
+      </ul>
+      <!-- Header Nav inject -->
+      
+    </nav>
+    
+  </div>
+</header>
+
+
+    
+
+    <main class="home">
+      <section class="hero">
+        <canvas id="heroink" aria-hidden="true"></canvas>
+        <p class="eyebrow">Quantitative research &middot; PhD, UC Santa Barbara</p>
+        <h1>Sam Babichenko</h1>
+        <p class="lede">Quantitative researcher at Wells Fargo in Charlotte, NC. I work on game theory, empirical Bayes, machine learning, and quantitative finance, and increasingly on high-dimensional probability and statistics. My PhD work at UCSB solved the problem of forecasting the forecasts of others, which economics has had to work around since Keynes. Here I share projects and writing about what’s been on my mind. Feel free to reach out!
+</p>
+        
+        <ul class="social">
+          
+          <li>
+            <a href="https://github.com/sbabichenko"
+               target="_blank" rel="me noopener"
+               aria-label="Github"
+               title="Github">
+              
+
+
+<img 
+    src="https:&#x2F;&#x2F;sbabichenko.com&#x2F;icons&#x2F;github.svg"
+    width="17"
+    height="17"
+    loading="lazy"
+    aria-hidden="true"
+    style="vertical-align: middle;"
+/>
+
+            </a>
+          </li>
+          
+          <li>
+            <a href="https://www.linkedin.com/in/samuel-babichenko/"
+               target="_blank" rel="me noopener"
+               aria-label="Linkedin"
+               title="Linkedin">
+              
+
+
+<img 
+    src="https:&#x2F;&#x2F;sbabichenko.com&#x2F;icons&#x2F;linkedin.svg"
+    width="17"
+    height="17"
+    loading="lazy"
+    aria-hidden="true"
+    style="vertical-align: middle;"
+/>
+
+            </a>
+          </li>
+          
+          <li>
+            <a href="mailto:sam@sbabichenko.com"
+               
+               aria-label="sam@sbabichenko.com"
+               title="sam@sbabichenko.com">
+              
+
+
+<img 
+    src="https:&#x2F;&#x2F;sbabichenko.com&#x2F;icons&#x2F;email.svg"
+    width="17"
+    height="17"
+    loading="lazy"
+    aria-hidden="true"
+    style="vertical-align: middle;"
+/>
+
+            </a>
+          </li>
+          
+          <li>
+            <a href="https://x.com/SamBabichenko"
+               target="_blank" rel="me noopener"
+               aria-label="Twitter"
+               title="Twitter">
+              
+
+
+<img 
+    src="https:&#x2F;&#x2F;sbabichenko.com&#x2F;icons&#x2F;twitter.svg"
+    width="17"
+    height="17"
+    loading="lazy"
+    aria-hidden="true"
+    style="vertical-align: middle;"
+/>
+
+            </a>
+          </li>
+          
+        </ul>
+        
+        <p class="starthere">New here? Start with <a href="https://sbabichenko.com/dissertation/idea">the noise-state, explained</a>,
+          or <a href="https://sbabichenko.com/noisestate">solve a game</a> in your browser.</p>
+        <p class="poke" aria-hidden="true"><span class="for-mouse">click the mesh in the background to poke it, or drag to draw a ridge</span><span class="for-touch">tap the mesh in the background to poke it</span></p>
+        <a class="motif" href="https://sbabichenko.com/dissertation/idea"
+           aria-label="The noise-state: player i's estimate, at time t, of the primitive shock W at an earlier time u, given everything player i knows">
+          <span class="def"><svg style="vertical-align: -0.791ex;" xmlns="http://www.w3.org/2000/svg" width="21.701ex" height="3.268ex" role="img" focusable="false" viewBox="0 -1095 9591.8 1444.5"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g><g><g><g><g><path d="M436 683Q450 683 486 682T553 680Q604 680 638 681T677 682Q695 682 695 674Q695 670 692 659Q687 641 683 639T661 637Q636 636 621 632T600 624T597 615Q597 603 613 377T629 138L631 141Q633 144 637 151T649 170T666 200T690 241T720 295T759 362Q863 546 877 572T892 604Q892 619 873 628T831 637Q817 637 817 647Q817 650 819 660Q823 676 825 679T839 682Q842 682 856 682T895 682T949 681Q1015 681 1034 683Q1048 683 1048 672Q1048 666 1045 655T1038 640T1028 637Q1006 637 988 631T958 617T939 600T927 584L923 578L754 282Q586 -14 585 -15Q579 -22 561 -22Q546 -22 542 -17Q539 -14 523 229T506 480L494 462Q472 425 366 239Q222 -13 220 -15T215 -19Q210 -22 197 -22Q178 -22 176 -15Q176 -12 154 304T131 622Q129 631 121 633T82 637H58Q51 644 51 648Q52 671 64 683H76Q118 680 176 680Q301 680 313 683H323Q329 677 329 674T327 656Q322 641 318 637H297Q236 634 232 620Q262 160 266 136L501 550L499 587Q496 629 489 632Q483 636 447 637Q428 637 422 639T416 648Q416 650 418 660Q419 664 420 669T421 676T424 680T428 682T436 683Z"></path></g><g transform="translate(550,223) translate(-500 0)"><path d="M1004 603Q1004 600 999 583T991 565L960 574Q929 582 866 599T745 631L500 698Q497 698 254 631Q197 616 134 599T39 574L8 565Q5 565 0 582T-5 603L26 614Q58 624 124 646T248 687L499 772Q999 604 1004 603Z"></path></g></g></g><g transform="translate(1136.2,413) scale(0.707)"><g><path d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path></g></g><g transform="translate(977,-247) scale(0.707)"><path d="M26 385Q19 392 19 395Q19 399 22 411T27 425Q29 430 36 430T87 431H140L159 511Q162 522 166 540T173 566T179 586T187 603T197 615T211 624T229 626Q247 625 254 615T261 596Q261 589 252 549T232 470L222 433Q222 431 272 431H323Q330 424 330 420Q330 398 317 385H210L174 240Q135 80 135 68Q135 26 162 26Q197 26 230 60T283 144Q285 150 288 151T303 153H307Q322 153 322 145Q322 142 319 133Q314 117 301 95T267 48T216 6T155 -11Q125 -11 98 4T59 56Q57 64 57 83V101L92 241Q127 382 128 383Q128 385 77 385H26Z"></path></g></g><g transform="translate(1430.2,0)"><path d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g transform="translate(1819.2,0)"><path d="M21 287Q21 295 30 318T55 370T99 420T158 442Q204 442 227 417T250 358Q250 340 216 246T182 105Q182 62 196 45T238 27T291 44T328 78L339 95Q341 99 377 247Q407 367 413 387T427 416Q444 431 463 431Q480 431 488 421T496 402L420 84Q419 79 419 68Q419 43 426 35T447 26Q469 29 482 57T512 145Q514 153 532 153Q551 153 551 144Q550 139 549 130T540 98T523 55T498 17T462 -8Q454 -10 438 -10Q372 -10 347 46Q345 45 336 36T318 21T296 6T267 -6T233 -11Q189 -11 155 7Q103 38 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g><g transform="translate(2391.2,0)"><path d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g><g transform="translate(3057.9,0)"><path d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path></g><g transform="translate(4113.7,0)"><g><path d="M12 666Q12 675 24 683H582Q590 680 593 672V588Q593 514 591 502T575 490Q567 490 563 495T555 517Q552 556 517 590Q486 623 445 634T340 648H282Q266 636 264 620T260 492V370H277Q329 375 358 391T404 439Q420 480 420 506Q420 529 436 529Q445 529 451 521Q455 517 455 361Q455 333 455 298T456 253Q456 217 453 207T437 197Q420 196 420 217Q420 240 406 270Q377 328 284 335H260V201Q261 174 261 134Q262 73 264 61T278 38Q281 36 282 35H331Q400 35 449 50Q571 93 602 179Q605 203 622 203Q629 203 634 197T640 183Q638 181 624 95T604 3L600 -1H24Q12 5 12 16Q12 35 51 35Q92 38 97 52Q102 60 102 341T97 632Q91 645 51 648Q12 648 12 666ZM137 341Q137 131 136 89T130 37Q129 36 129 35H235Q233 41 231 48L226 61V623L231 635L235 648H129Q132 641 133 638T135 603T137 517T137 341ZM557 603V648H504Q504 646 515 639Q527 634 542 619L557 603ZM420 317V397L406 383Q394 370 380 363L366 355Q373 350 382 346Q400 333 409 328L420 317ZM582 61L586 88Q585 88 582 83Q557 61 526 46L511 37L542 35H577Q577 36 578 39T580 49T582 61Z"></path></g></g><g transform="translate(4947.4,0)"><g transform="translate(0 -0.5)"><path d="M202 -349V850H394V810H242V-309H394V-349H202Z"></path></g><g transform="translate(417,0)"><g></g></g><g transform="translate(584,0)"><g><path d="M436 683Q450 683 486 682T553 680Q604 680 638 681T677 682Q695 682 695 674Q695 670 692 659Q687 641 683 639T661 637Q636 636 621 632T600 624T597 615Q597 603 613 377T629 138L631 141Q633 144 637 151T649 170T666 200T690 241T720 295T759 362Q863 546 877 572T892 604Q892 619 873 628T831 637Q817 637 817 647Q817 650 819 660Q823 676 825 679T839 682Q842 682 856 682T895 682T949 681Q1015 681 1034 683Q1048 683 1048 672Q1048 666 1045 655T1038 640T1028 637Q1006 637 988 631T958 617T939 600T927 584L923 578L754 282Q586 -14 585 -15Q579 -22 561 -22Q546 -22 542 -17Q539 -14 523 229T506 480L494 462Q472 425 366 239Q222 -13 220 -15T215 -19Q210 -22 197 -22Q178 -22 176 -15Q176 -12 154 304T131 622Q129 631 121 633T82 637H58Q51 644 51 648Q52 671 64 683H76Q118 680 176 680Q301 680 313 683H323Q329 677 329 674T327 656Q322 641 318 637H297Q236 634 232 620Q262 160 266 136L501 550L499 587Q496 629 489 632Q483 636 447 637Q428 637 422 639T416 648Q416 650 418 660Q419 664 420 669T421 676T424 680T428 682T436 683Z"></path></g><g transform="translate(977,-150) scale(0.707)"><path d="M21 287Q21 295 30 318T55 370T99 420T158 442Q204 442 227 417T250 358Q250 340 216 246T182 105Q182 62 196 45T238 27T291 44T328 78L339 95Q341 99 377 247Q407 367 413 387T427 416Q444 431 463 431Q480 431 488 421T496 402L420 84Q419 79 419 68Q419 43 426 35T447 26Q469 29 482 57T512 145Q514 153 532 153Q551 153 551 144Q550 139 549 130T540 98T523 55T498 17T462 -8Q454 -10 438 -10Q372 -10 347 46Q345 45 336 36T318 21T296 6T267 -6T233 -11Q189 -11 155 7Q103 38 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g></g><g transform="translate(2293.2,0)"><path d="M139 -249H137Q125 -249 119 -235V251L120 737Q130 750 139 750Q152 750 159 735V-235Q151 -249 141 -249H139Z"></path></g><g transform="translate(2849,0)"><g><g><path d="M199 579Q181 579 181 590Q181 598 188 611T212 639T260 666T335 682Q336 682 349 682T383 682T431 682T493 683T561 683Q776 682 784 681Q826 673 829 647Q829 620 797 600T744 580Q728 580 728 595Q729 607 713 610Q698 613 598 614H500L499 610Q499 598 467 486T428 367Q428 365 551 365H674Q683 360 684 355Q687 346 677 329Q666 312 642 299T598 285Q586 285 582 296H402L394 277Q386 258 373 229T346 167T315 102T286 51Q265 22 225 -5T133 -32Q108 -32 87 -25T54 -7T33 15T21 35T18 47Q18 60 44 80T98 103Q108 103 111 101T119 88Q130 66 150 54T179 39T195 37Q199 37 203 43Q217 67 245 125T318 300T391 532Q393 543 398 564T406 598T409 613T339 614H269Q229 579 199 579Z"></path></g></g><g transform="translate(917.5,413) scale(0.707)"><g><path d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path></g></g><g transform="translate(752,-247) scale(0.707)"><path d="M26 385Q19 392 19 395Q19 399 22 411T27 425Q29 430 36 430T87 431H140L159 511Q162 522 166 540T173 566T179 586T187 603T197 615T211 624T229 626Q247 625 254 615T261 596Q261 589 252 549T232 470L222 433Q222 431 272 431H323Q330 424 330 420Q330 398 317 385H210L174 240Q135 80 135 68Q135 26 162 26Q197 26 230 60T283 144Q285 150 288 151T303 153H307Q322 153 322 145Q322 142 319 133Q314 117 301 95T267 48T216 6T155 -11Q125 -11 98 4T59 56Q57 64 57 83V101L92 241Q127 382 128 383Q128 385 77 385H26Z"></path></g></g><g transform="translate(4060.5,0)"><g></g></g><g transform="translate(4227.5,0) translate(0 -0.5)"><path d="M22 810V850H214V-349H22V-309H174V810H22Z"></path></g></g></g></g></svg></span>
+          <span class="bp"><svg style="vertical-align: -2.063ex;" xmlns="http://www.w3.org/2000/svg" width="43.252ex" height="5.526ex" role="img" focusable="false" viewBox="0 -1530.7 19117.6 2442.6"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g><g><g><path d="M366 683Q367 683 438 688T511 694Q523 694 523 686Q523 679 450 384T375 83T374 68Q374 26 402 26Q411 27 422 35Q443 55 463 131Q469 151 473 152Q475 153 483 153H487H491Q506 153 506 145Q506 140 503 129Q490 79 473 48T445 8T417 -8Q409 -10 393 -10Q359 -10 336 5T306 36L300 51Q299 52 296 50Q294 48 292 46Q233 -10 172 -10Q117 -10 75 30T33 157Q33 205 53 255T101 341Q148 398 195 420T280 442Q336 442 364 400Q369 394 369 396Q370 400 396 505T424 616Q424 629 417 632T378 637H357Q351 643 351 645T353 664Q358 683 366 683ZM352 326Q329 405 277 405Q242 405 210 374T160 293Q131 214 119 129Q119 126 119 118T118 106Q118 61 136 44T179 26Q233 26 290 98L298 109L352 326Z"></path></g><g transform="translate(553,-150) scale(0.707)"><path d="M21 287Q21 295 30 318T55 370T99 420T158 442Q204 442 227 417T250 358Q250 340 216 246T182 105Q182 62 196 45T238 27T291 44T328 78L339 95Q341 99 377 247Q407 367 413 387T427 416Q444 431 463 431Q480 431 488 421T496 402L420 84Q419 79 419 68Q419 43 426 35T447 26Q469 29 482 57T512 145Q514 153 532 153Q551 153 551 144Q550 139 549 130T540 98T523 55T498 17T462 -8Q454 -10 438 -10Q372 -10 347 46Q345 45 336 36T318 21T296 6T267 -6T233 -11Q189 -11 155 7Q103 38 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g></g><g transform="translate(1007.5,0)"><g><g><g><path d="M436 683Q450 683 486 682T553 680Q604 680 638 681T677 682Q695 682 695 674Q695 670 692 659Q687 641 683 639T661 637Q636 636 621 632T600 624T597 615Q597 603 613 377T629 138L631 141Q633 144 637 151T649 170T666 200T690 241T720 295T759 362Q863 546 877 572T892 604Q892 619 873 628T831 637Q817 637 817 647Q817 650 819 660Q823 676 825 679T839 682Q842 682 856 682T895 682T949 681Q1015 681 1034 683Q1048 683 1048 672Q1048 666 1045 655T1038 640T1028 637Q1006 637 988 631T958 617T939 600T927 584L923 578L754 282Q586 -14 585 -15Q579 -22 561 -22Q546 -22 542 -17Q539 -14 523 229T506 480L494 462Q472 425 366 239Q222 -13 220 -15T215 -19Q210 -22 197 -22Q178 -22 176 -15Q176 -12 154 304T131 622Q129 631 121 633T82 637H58Q51 644 51 648Q52 671 64 683H76Q118 680 176 680Q301 680 313 683H323Q329 677 329 674T327 656Q322 641 318 637H297Q236 634 232 620Q262 160 266 136L501 550L499 587Q496 629 489 632Q483 636 447 637Q428 637 422 639T416 648Q416 650 418 660Q419 664 420 669T421 676T424 680T428 682T436 683Z"></path></g><g transform="translate(550,223) translate(-500 0)"><path d="M1004 603Q1004 600 999 583T991 565L960 574Q929 582 866 599T745 631L500 698Q497 698 254 631Q197 616 134 599T39 574L8 565Q5 565 0 582T-5 603L26 614Q58 624 124 646T248 687L499 772Q999 604 1004 603Z"></path></g></g></g><g transform="translate(1136.2,413) scale(0.707)"><g><path d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path></g></g><g transform="translate(977,-247) scale(0.707)"><path d="M26 385Q19 392 19 395Q19 399 22 411T27 425Q29 430 36 430T87 431H140L159 511Q162 522 166 540T173 566T179 586T187 603T197 615T211 624T229 626Q247 625 254 615T261 596Q261 589 252 549T232 470L222 433Q222 431 272 431H323Q330 424 330 420Q330 398 317 385H210L174 240Q135 80 135 68Q135 26 162 26Q197 26 230 60T283 144Q285 150 288 151T303 153H307Q322 153 322 145Q322 142 319 133Q314 117 301 95T267 48T216 6T155 -11Q125 -11 98 4T59 56Q57 64 57 83V101L92 241Q127 382 128 383Q128 385 77 385H26Z"></path></g></g><g transform="translate(2437.6,0)"><path d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g transform="translate(2826.6,0)"><path d="M21 287Q21 295 30 318T55 370T99 420T158 442Q204 442 227 417T250 358Q250 340 216 246T182 105Q182 62 196 45T238 27T291 44T328 78L339 95Q341 99 377 247Q407 367 413 387T427 416Q444 431 463 431Q480 431 488 421T496 402L420 84Q419 79 419 68Q419 43 426 35T447 26Q469 29 482 57T512 145Q514 153 532 153Q551 153 551 144Q550 139 549 130T540 98T523 55T498 17T462 -8Q454 -10 438 -10Q372 -10 347 46Q345 45 336 36T318 21T296 6T267 -6T233 -11Q189 -11 155 7Q103 38 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g><g transform="translate(3398.6,0)"><path d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g><g transform="translate(4065.4,0)"><path d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path></g><g transform="translate(5121.2,0)"><g><path d="M128 619Q121 626 117 628T101 631T58 634H25V680H724V634H691Q651 633 640 631T622 619V61Q628 51 639 49T691 46H724V0H713Q692 3 569 3Q434 3 425 0H414V46H447Q489 47 498 49T517 61V634H232V348L233 61Q239 51 250 49T302 46H335V0H324Q303 3 180 3Q45 3 36 0H25V46H58Q100 47 109 49T128 61V619Z"></path></g><g transform="translate(783,413) scale(0.707)"><path d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path></g></g><g transform="translate(6198.1,0)"><g></g></g><g transform="translate(6365.1,0)"><path d="M366 683Q367 683 438 688T511 694Q523 694 523 686Q523 679 450 384T375 83T374 68Q374 26 402 26Q411 27 422 35Q443 55 463 131Q469 151 473 152Q475 153 483 153H487H491Q506 153 506 145Q506 140 503 129Q490 79 473 48T445 8T417 -8Q409 -10 393 -10Q359 -10 336 5T306 36L300 51Q299 52 296 50Q294 48 292 46Q233 -10 172 -10Q117 -10 75 30T33 157Q33 205 53 255T101 341Q148 398 195 420T280 442Q336 442 364 400Q369 394 369 396Q370 400 396 505T424 616Q424 629 417 632T378 637H357Q351 643 351 645T353 664Q358 683 366 683ZM352 326Q329 405 277 405Q242 405 210 374T160 293Q131 214 119 129Q119 126 119 118T118 106Q118 61 136 44T179 26Q233 26 290 98L298 109L352 326Z"></path></g><g transform="translate(6885.1,0)"><g><path d="M436 683Q450 683 486 682T553 680Q604 680 638 681T677 682Q695 682 695 674Q695 670 692 659Q687 641 683 639T661 637Q636 636 621 632T600 624T597 615Q597 603 613 377T629 138L631 141Q633 144 637 151T649 170T666 200T690 241T720 295T759 362Q863 546 877 572T892 604Q892 619 873 628T831 637Q817 637 817 647Q817 650 819 660Q823 676 825 679T839 682Q842 682 856 682T895 682T949 681Q1015 681 1034 683Q1048 683 1048 672Q1048 666 1045 655T1038 640T1028 637Q1006 637 988 631T958 617T939 600T927 584L923 578L754 282Q586 -14 585 -15Q579 -22 561 -22Q546 -22 542 -17Q539 -14 523 229T506 480L494 462Q472 425 366 239Q222 -13 220 -15T215 -19Q210 -22 197 -22Q178 -22 176 -15Q176 -12 154 304T131 622Q129 631 121 633T82 637H58Q51 644 51 648Q52 671 64 683H76Q118 680 176 680Q301 680 313 683H323Q329 677 329 674T327 656Q322 641 318 637H297Q236 634 232 620Q262 160 266 136L501 550L499 587Q496 629 489 632Q483 636 447 637Q428 637 422 639T416 648Q416 650 418 660Q419 664 420 669T421 676T424 680T428 682T436 683Z"></path></g><g transform="translate(977,-150) scale(0.707)"><path d="M21 287Q21 295 30 318T55 370T99 420T158 442Q204 442 227 417T250 358Q250 340 216 246T182 105Q182 62 196 45T238 27T291 44T328 78L339 95Q341 99 377 247Q407 367 413 387T427 416Q444 431 463 431Q480 431 488 421T496 402L420 84Q419 79 419 68Q419 43 426 35T447 26Q469 29 482 57T512 145Q514 153 532 153Q551 153 551 144Q550 139 549 130T540 98T523 55T498 17T462 -8Q454 -10 438 -10Q372 -10 347 46Q345 45 336 36T318 21T296 6T267 -6T233 -11Q189 -11 155 7Q103 38 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g></g><g transform="translate(8538.8,0)"><path d="M56 237T56 250T70 270H369V420L370 570Q380 583 389 583Q402 583 409 568V270H707Q722 262 722 250T707 230H409V-68Q401 -82 391 -82H389H387Q375 -82 369 -68V230H70Q56 237 56 250Z"></path></g><g transform="translate(9539,0)"><g transform="translate(0 -0.5)"><path d="M180 96T180 250T205 541T266 770T353 944T444 1069T527 1150H555Q561 1144 561 1141Q561 1137 545 1120T504 1072T447 995T386 878T330 721T288 513T272 251Q272 133 280 56Q293 -87 326 -209T399 -405T475 -531T536 -609T561 -640Q561 -643 555 -649H527Q483 -612 443 -568T353 -443T266 -270T205 -41Z"></path></g></g><g transform="translate(10302.7,0)"><g transform="translate(0 1)"><path d="M114 -798Q132 -824 165 -824H167Q195 -824 223 -764T275 -600T320 -391T362 -164Q365 -143 367 -133Q439 292 523 655T645 1127Q651 1145 655 1157T672 1201T699 1257T733 1306T777 1346T828 1360Q884 1360 912 1325T944 1245Q944 1220 932 1205T909 1186T887 1183Q866 1183 849 1198T832 1239Q832 1287 885 1296L882 1300Q879 1303 874 1307T866 1313Q851 1323 833 1323Q819 1323 807 1311T775 1255T736 1139T689 936T633 628Q574 293 510 -5T410 -437T355 -629Q278 -862 165 -862Q125 -862 92 -831T55 -746Q55 -711 74 -698T112 -685Q133 -685 150 -700T167 -741Q167 -789 114 -798Z"></path></g><g transform="translate(1046.4,1088.1) scale(0.707)"><path d="M26 385Q19 392 19 395Q19 399 22 411T27 425Q29 430 36 430T87 431H140L159 511Q162 522 166 540T173 566T179 586T187 603T197 615T211 624T229 626Q247 625 254 615T261 596Q261 589 252 549T232 470L222 433Q222 431 272 431H323Q330 424 330 420Q330 398 317 385H210L174 240Q135 80 135 68Q135 26 162 26Q197 26 230 60T283 144Q285 150 288 151T303 153H307Q322 153 322 145Q322 142 319 133Q314 117 301 95T267 48T216 6T155 -11Q125 -11 98 4T59 56Q57 64 57 83V101L92 241Q127 382 128 383Q128 385 77 385H26Z"></path></g><g transform="translate(589,-896.4) scale(0.707)"><path d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path></g></g><g transform="translate(11821,0)"><g><path d="M48 1Q31 1 31 11Q31 13 34 25Q38 41 42 43T65 46Q92 46 125 49Q139 52 144 61Q146 66 215 342T285 622Q285 629 281 629Q273 632 228 634H197Q191 640 191 642T193 659Q197 676 203 680H742Q749 676 749 669Q749 664 736 557T722 447Q720 440 702 440H690Q683 445 683 453Q683 454 686 477T689 530Q689 560 682 579T663 610T626 626T575 633T503 634H480Q398 633 393 631Q388 629 386 623Q385 622 352 492L320 363H375Q378 363 398 363T426 364T448 367T472 374T489 386Q502 398 511 419T524 457T529 475Q532 480 548 480H560Q567 475 567 470Q567 467 536 339T502 207Q500 200 482 200H470Q463 206 463 212Q463 215 468 234T473 274Q473 303 453 310T364 317H309L277 190Q245 66 245 60Q245 46 334 46H359Q365 40 365 39T363 19Q359 6 353 0H336Q295 2 185 2Q120 2 86 2T48 1Z"></path></g><g transform="translate(837.3,413) scale(0.707)"><g><path d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path></g></g><g transform="translate(676,-247) scale(0.707)"><path d="M26 385Q19 392 19 395Q19 399 22 411T27 425Q29 430 36 430T87 431H140L159 511Q162 522 166 540T173 566T179 586T187 603T197 615T211 624T229 626Q247 625 254 615T261 596Q261 589 252 549T232 470L222 433Q222 431 272 431H323Q330 424 330 420Q330 398 317 385H210L174 240Q135 80 135 68Q135 26 162 26Q197 26 230 60T283 144Q285 150 288 151T303 153H307Q322 153 322 145Q322 142 319 133Q314 117 301 95T267 48T216 6T155 -11Q125 -11 98 4T59 56Q57 64 57 83V101L92 241Q127 382 128 383Q128 385 77 385H26Z"></path></g></g><g transform="translate(12952.3,0)"><path d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g transform="translate(13341.3,0)"><path d="M21 287Q21 295 30 318T55 370T99 420T158 442Q204 442 227 417T250 358Q250 340 216 246T182 105Q182 62 196 45T238 27T291 44T328 78L339 95Q341 99 377 247Q407 367 413 387T427 416Q444 431 463 431Q480 431 488 421T496 402L420 84Q419 79 419 68Q419 43 426 35T447 26Q469 29 482 57T512 145Q514 153 532 153Q551 153 551 144Q550 139 549 130T540 98T523 55T498 17T462 -8Q454 -10 438 -10Q372 -10 347 46Q345 45 336 36T318 21T296 6T267 -6T233 -11Q189 -11 155 7Q103 38 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g><g transform="translate(13913.3,0)"><path d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g transform="translate(14358,0)"><path d="M131 289Q131 321 147 354T203 415T300 442Q362 442 390 415T419 355Q419 323 402 308T364 292Q351 292 340 300T328 326Q328 342 337 354T354 372T367 378Q368 378 368 379Q368 382 361 388T336 399T297 405Q249 405 227 379T204 326Q204 301 223 291T278 274T330 259Q396 230 396 163Q396 135 385 107T352 51T289 7T195 -10Q118 -10 86 19T53 87Q53 126 74 143T118 160Q133 160 146 151T160 120Q160 94 142 76T111 58Q109 57 108 57T107 55Q108 52 115 47T146 34T201 27Q237 27 263 38T301 66T318 97T323 122Q323 150 302 164T254 181T195 196T148 231Q131 256 131 289Z"></path></g><g transform="translate(14827,0)"><path d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g><g transform="translate(15216,0)"><g></g></g><g transform="translate(15383,0)"><path d="M366 683Q367 683 438 688T511 694Q523 694 523 686Q523 679 450 384T375 83T374 68Q374 26 402 26Q411 27 422 35Q443 55 463 131Q469 151 473 152Q475 153 483 153H487H491Q506 153 506 145Q506 140 503 129Q490 79 473 48T445 8T417 -8Q409 -10 393 -10Q359 -10 336 5T306 36L300 51Q299 52 296 50Q294 48 292 46Q233 -10 172 -10Q117 -10 75 30T33 157Q33 205 53 255T101 341Q148 398 195 420T280 442Q336 442 364 400Q369 394 369 396Q370 400 396 505T424 616Q424 629 417 632T378 637H357Q351 643 351 645T353 664Q358 683 366 683ZM352 326Q329 405 277 405Q242 405 210 374T160 293Q131 214 119 129Q119 126 119 118T118 106Q118 61 136 44T179 26Q233 26 290 98L298 109L352 326Z"></path></g><g transform="translate(15903,0)"><g><path d="M436 683Q450 683 486 682T553 680Q604 680 638 681T677 682Q695 682 695 674Q695 670 692 659Q687 641 683 639T661 637Q636 636 621 632T600 624T597 615Q597 603 613 377T629 138L631 141Q633 144 637 151T649 170T666 200T690 241T720 295T759 362Q863 546 877 572T892 604Q892 619 873 628T831 637Q817 637 817 647Q817 650 819 660Q823 676 825 679T839 682Q842 682 856 682T895 682T949 681Q1015 681 1034 683Q1048 683 1048 672Q1048 666 1045 655T1038 640T1028 637Q1006 637 988 631T958 617T939 600T927 584L923 578L754 282Q586 -14 585 -15Q579 -22 561 -22Q546 -22 542 -17Q539 -14 523 229T506 480L494 462Q472 425 366 239Q222 -13 220 -15T215 -19Q210 -22 197 -22Q178 -22 176 -15Q176 -12 154 304T131 622Q129 631 121 633T82 637H58Q51 644 51 648Q52 671 64 683H76Q118 680 176 680Q301 680 313 683H323Q329 677 329 674T327 656Q322 641 318 637H297Q236 634 232 620Q262 160 266 136L501 550L499 587Q496 629 489 632Q483 636 447 637Q428 637 422 639T416 648Q416 650 418 660Q419 664 420 669T421 676T424 680T428 682T436 683Z"></path></g><g transform="translate(977,-150) scale(0.707)"><path d="M131 289Q131 321 147 354T203 415T300 442Q362 442 390 415T419 355Q419 323 402 308T364 292Q351 292 340 300T328 326Q328 342 337 354T354 372T367 378Q368 378 368 379Q368 382 361 388T336 399T297 405Q249 405 227 379T204 326Q204 301 223 291T278 274T330 259Q396 230 396 163Q396 135 385 107T352 51T289 7T195 -10Q118 -10 86 19T53 87Q53 126 74 143T118 160Q133 160 146 151T160 120Q160 94 142 76T111 58Q109 57 108 57T107 55Q108 52 115 47T146 34T201 27Q237 27 263 38T301 66T318 97T323 122Q323 150 302 164T254 181T195 196T148 231Q131 256 131 289Z"></path></g></g><g transform="translate(17261.6,0)"><g transform="translate(0 -0.5)"><path d="M35 1138Q35 1150 51 1150H56H69Q113 1113 153 1069T243 944T330 771T391 541T416 250T391 -40T330 -270T243 -443T152 -568T69 -649H56Q43 -649 39 -647T35 -637Q65 -607 110 -548Q283 -316 316 56Q324 133 324 251Q324 368 316 445Q278 877 48 1123Q36 1137 35 1138Z"></path></g></g><g transform="translate(17858.6,0)"><g></g></g><g transform="translate(18025.6,0)"><path d="M366 683Q367 683 438 688T511 694Q523 694 523 686Q523 679 450 384T375 83T374 68Q374 26 402 26Q411 27 422 35Q443 55 463 131Q469 151 473 152Q475 153 483 153H487H491Q506 153 506 145Q506 140 503 129Q490 79 473 48T445 8T417 -8Q409 -10 393 -10Q359 -10 336 5T306 36L300 51Q299 52 296 50Q294 48 292 46Q233 -10 172 -10Q117 -10 75 30T33 157Q33 205 53 255T101 341Q148 398 195 420T280 442Q336 442 364 400Q369 394 369 396Q370 400 396 505T424 616Q424 629 417 632T378 637H357Q351 643 351 645T353 664Q358 683 366 683ZM352 326Q329 405 277 405Q242 405 210 374T160 293Q131 214 119 129Q119 126 119 118T118 106Q118 61 136 44T179 26Q233 26 290 98L298 109L352 326Z"></path></g><g transform="translate(18545.6,0)"><path d="M21 287Q21 295 30 318T55 370T99 420T158 442Q204 442 227 417T250 358Q250 340 216 246T182 105Q182 62 196 45T238 27T291 44T328 78L339 95Q341 99 377 247Q407 367 413 387T427 416Q444 431 463 431Q480 431 488 421T496 402L420 84Q419 79 419 68Q419 43 426 35T447 26Q469 29 482 57T512 145Q514 153 532 153Q551 153 551 144Q550 139 549 130T540 98T523 55T498 17T462 -8Q454 -10 438 -10Q372 -10 347 46Q345 45 336 36T318 21T296 6T267 -6T233 -11Q189 -11 155 7Q103 38 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g></g></g></svg></span>
+          <span class="cap">the noise-state: what player <i>i</i> believes, at time <i>t</i>, about the shock at <i>u</i></span>
+        </a>
+      </section>
+
+      <section id="projects">
+        <h2>Projects</h2>
+        <div class="demos">
+          <article class="demo nsheads-card"><div class="shot nsheads" role="img" data-think="https://sbabichenko.com/js/card-nsheads-think.json?h=fa05a7f33a9ac2a3ee36"
+                 aria-label="Two people facing each other, each with their own estimate of a shared row of shocks, each picturing the other; on hover, the pictures of each other leave and the whole card becomes one thought about the shared world">
+              <div class="pics">
+                <img class="img-light" loading="lazy" decoding="async" draggable="false" src="https://sbabichenko.com/images/card-nsheads-rest-light.webp?h=2944f8d081aab56f4668" alt="" width="480" height="240" />
+                <img class="img-dark" loading="lazy" decoding="async" draggable="false" src="https://sbabichenko.com/images/card-nsheads-rest-dark.webp?h=bfaaaaaa5ff07a48ef04" alt="" width="480" height="240" />
+                <img class="img-light base" loading="lazy" decoding="async" draggable="false" src="https://sbabichenko.com/images/card-nsheads-base-light.webp?h=223f6febff4f4adbcfa5" alt="" width="480" height="240" />
+                <img class="img-dark base" loading="lazy" decoding="async" draggable="false" src="https://sbabichenko.com/images/card-nsheads-base-dark.webp?h=bbfdf5164ccfc4413a78" alt="" width="480" height="240" />
+              </div>
+              
+<svg class="ov" aria-hidden="true" focusable="false" viewBox="0 0 480 240" preserveAspectRatio="xMidYMid slice"><g class="pic"><g class="bb cloud l"><path d="M226.6,55.0 Q227.7,56.9 228.5,58.5 Q229.2,60.1 229.6,62.3 Q229.6,64.4 229.2,66.0 Q228.3,67.8 227.2,69.3 Q225.0,70.3 223.4,71.6 Q221.1,71.9 218.6,72.8 Q218.4,74.7 218.1,77.0 Q217.0,78.7 216.0,80.5 Q214.4,81.6 212.9,83.2 Q210.6,83.7 208.7,84.3 Q206.5,84.1 204.1,84.1 Q201.9,83.2 199.6,82.3 Q198.0,83.4 196.0,84.7 Q194.2,85.7 191.9,86.5 Q189.9,86.7 187.5,86.9 Q185.7,85.8 183.5,85.1 Q181.5,83.8 180.1,82.7 Q179.1,81.1 177.9,79.0 Q175.3,78.8 173.1,79.1 Q170.8,78.8 168.7,78.1 Q167.4,77.1 165.5,75.6 Q164.6,73.9 163.1,72.5 Q162.8,70.7 163.0,68.4 Q163.0,66.8 163.3,64.6 Q161.6,63.5 160.3,61.9 Q158.9,60.0 157.7,58.7 Q156.8,57.0 156.5,55.0 Q156.5,53.2 157.2,51.3 Q158.6,49.8 160.3,48.1 Q161.7,46.5 163.3,45.4 Q163.0,43.3 162.8,41.5 Q163.2,39.7 163.0,37.5 Q164.2,35.9 165.5,34.4 Q167.3,32.9 168.6,31.8 Q170.8,31.5 173.2,30.9 Q175.8,30.9 177.8,30.9 Q179.0,29.2 180.1,27.3 Q182.1,26.2 183.5,24.9 Q185.4,24.0 187.6,23.5 Q189.6,23.4 191.8,23.1 Q193.7,24.0 196.0,25.0 Q197.9,26.3 199.7,27.4 Q201.7,26.8 204.1,26.0 Q206.0,26.2 208.5,26.0 Q210.6,26.7 212.7,27.1 Q214.5,28.3 216.0,29.6 Q217.0,31.3 218.0,33.1 Q218.2,34.8 218.8,37.1 Q220.8,37.8 223.3,38.4 Q225.3,39.7 227.1,40.7 Q227.9,42.1 229.4,43.9 Q229.9,45.7 230.1,47.6 Q229.2,49.4 228.5,51.5 Q227.4,53.5 226.2,55.0 Z" class="pn acc" style="fill: none; stroke-width: var(--nscw);"></path><circle cx="141.3" cy="70.7" r="2" class="pn acc" stroke-width="1.4"></circle><circle cx="147.5" cy="68.4" r="2.9" class="pn acc" stroke-width="1.4"></circle><circle cx="153.6" cy="66.2" r="3.8" class="pn acc" stroke-width="1.4"></circle></g><g class="bb nest l"><ellipse cx="192.14285714285714" cy="54.42857142857143" rx="10.285714285714285" ry="7.714285714285714" class="fwarm" filter="url(#nsm0)" style="opacity: var(--nsmw);"></ellipse><path d="M206.8,82.2 Q207.2,80.3 207.2,79.2 Q208.0,77.8 208.4,76.4 Q208.9,75.4 209.9,73.7 Q210.5,72.4 211.4,71.1 Q212.5,69.4 212.8,68.4 Q213.5,67.0 214.0,65.6 Q214.2,64.1 215.0,62.7 Q215.3,61.1 215.7,59.7 Q215.8,58.5 216.1,56.7 Q216.5,54.9 216.3,53.6 Q216.2,52.4 216.2,50.6 Q216.2,49.0 215.7,47.6 Q215.2,46.0 214.9,44.6 Q213.9,43.5 213.6,41.9 Q212.4,40.6 211.8,39.4 Q210.5,38.2 209.6,37.3 Q208.3,36.3 207.1,35.6 Q205.5,35.1 204.3,34.2 Q202.7,33.4 201.4,33.3 Q199.7,33.3 198.4,32.8 Q196.6,32.7 195.4,32.6 Q194.1,32.7 192.4,32.9 Q190.8,33.2 189.4,33.7 Q188.2,34.5 186.7,35.0 Q185.5,35.6 184.2,36.8 Q183.1,37.9 182.1,39.0 Q181.4,40.4 180.5,41.6 Q180.1,43.3 179.4,44.5 Q179.5,46.3 178.8,47.5 Q178.8,49.3 178.7,50.5 Q178.5,52.1 178.8,53.6 Q178.9,55.2 178.5,56.6 Q177.9,57.6 177.0,59.2 Q176.1,60.8 175.4,61.8 Q176.3,62.9 176.9,63.8 Q177.6,65.1 177.7,66.3 Q178.0,67.5 177.8,68.8 Q178.1,70.2 178.8,71.4 Q180.0,72.3 180.8,73.6 Q182.2,74.1 183.8,73.9 Q185.6,73.4 186.9,73.6 Q187.1,74.8 187.3,76.1 Q187.0,77.3 187.0,79.2 Q186.9,80.4 186.6,82.2" class="pn warm" style="stroke-width: var(--nshw);"></path><path d="M207.3,82.5 Q206.9,81.5 207.7,79.5 Q208.3,78.2 208.9,76.7 Q210.0,75.6 210.4,74.1 Q211.7,73.1 211.9,71.4 Q212.4,69.6 213.3,68.7 Q214.3,67.0 214.5,65.9 Q214.7,64.2 215.5,63.0 Q215.7,61.9 216.2,60.1 Q216.0,59.0 216.6,57.0 Q216.9,55.3 216.8,54.0 Q217.1,52.9 216.7,50.9 Q216.9,49.8 216.2,47.9 Q215.5,46.8 215.4,45.0 Q214.9,43.7 214.1,42.2 Q212.7,40.6 212.3,39.8 Q211.4,39.0 210.1,37.7 Q208.8,37.4 207.6,35.9 Q206.3,35.5 204.8,34.6 Q203.9,34.4 201.9,33.6 Q200.7,33.5 198.9,33.1 Q197.2,33.6 195.9,33.0 Q194.3,33.3 192.9,33.3 Q191.9,34.0 189.9,34.1 Q188.2,34.1 187.2,35.4 Q185.8,36.4 184.7,37.2 Q184.2,38.2 182.6,39.4 Q182.0,40.8 181.0,42.0 Q180.8,43.9 179.9,44.8 Q180.2,46.7 179.3,47.8 Q179.1,49.8 179.2,50.9 Q179.4,52.4 179.3,53.9 Q178.9,55.2 179.0,57.0 Q178.2,58.2 177.5,59.6 Q176.3,60.6 175.9,62.2 Q177.0,63.8 177.4,64.2 Q178.2,65.8 178.2,66.7 Q178.7,67.7 178.3,69.2 Q178.8,70.4 179.3,71.8 Q180.3,72.8 181.3,73.9 Q182.9,74.5 184.3,74.3 Q185.9,74.4 187.4,73.9 Q187.9,74.7 187.8,76.5 Q187.5,77.9 187.5,79.5 Q186.8,81.5 187.1,82.5" class="pn warm" stroke-width="0.8" style="opacity: 0.45;"></path></g><g class="bb cloud r"><path d="M318.6,55.0 Q319.7,56.6 320.4,58.5 Q321.1,60.4 321.8,62.3 Q321.3,64.0 321.3,66.1 Q320.4,67.9 318.8,69.2 Q316.8,70.2 315.0,71.4 Q312.5,71.9 310.7,72.8 Q310.4,75.1 310.1,77.0 Q309.1,78.7 307.9,80.3 Q306.1,81.5 304.7,82.9 Q302.4,83.5 300.7,84.3 Q298.1,83.9 296.1,83.9 Q293.6,83.4 291.6,82.5 Q290.0,83.9 288.0,85.0 Q285.9,85.7 283.8,86.8 Q281.5,87.0 279.5,86.8 Q277.2,86.2 275.4,85.6 Q273.7,84.0 272.2,82.6 Q271.0,80.9 269.7,79.3 Q267.5,79.3 265.1,79.1 Q263.1,78.7 260.7,78.1 Q258.9,77.1 257.5,75.6 Q256.4,74.2 255.2,72.4 Q254.7,70.7 254.7,68.5 Q255.2,66.6 255.8,64.5 Q254.1,63.1 252.4,61.9 Q251.2,60.5 249.6,58.7 Q249.0,56.6 248.4,55.0 Q248.8,53.1 249.7,51.4 Q250.8,49.8 251.7,48.0 Q253.9,46.9 255.9,45.6 Q255.4,43.5 254.9,41.5 Q255.1,39.5 255.5,37.7 Q256.6,36.1 257.5,34.4 Q259.4,33.4 260.8,32.0 Q263.3,31.6 265.3,31.0 Q267.6,30.7 269.8,30.8 Q271.2,29.0 272.2,27.5 Q274.1,26.0 275.5,24.7 Q277.3,24.0 279.5,23.2 Q281.5,23.3 283.9,23.5 Q285.7,24.1 288.0,24.7 Q289.7,26.0 291.7,27.3 Q293.8,26.5 296.0,26.3 Q298.2,25.9 300.6,25.8 Q302.5,26.2 304.7,27.1 Q306.4,28.5 307.8,29.8 Q309.1,31.3 310.1,33.0 Q310.6,35.2 310.9,37.0 Q312.8,37.8 315.0,38.6 Q316.7,39.9 318.9,40.8 Q319.7,42.2 321.0,44.0 Q321.4,45.6 321.7,47.7 Q321.3,49.9 320.8,51.5 Q319.5,53.3 318.7,55.0 Z" class="pn warm" style="fill: none; stroke-width: var(--nscw);"></path><circle cx="338.7" cy="70.7" r="2" class="pn warm" stroke-width="1.4"></circle><circle cx="332.5" cy="68.4" r="2.9" class="pn warm" stroke-width="1.4"></circle><circle cx="326.4" cy="66.2" r="3.8" class="pn warm" stroke-width="1.4"></circle></g><g class="bb nest r"><ellipse cx="287.85714285714283" cy="54.42857142857143" rx="10.285714285714285" ry="7.714285714285714" class="facc" filter="url(#nsm1)" style="opacity: var(--nsmw);"></ellipse><path d="M273.2,82.2 Q273.0,80.5 272.8,79.2 Q272.4,78.1 271.6,76.4 Q271.0,75.3 270.1,73.7 Q269.0,72.7 268.6,71.1 Q267.7,69.5 267.2,68.4 Q266.5,67.1 266.0,65.6 Q265.2,63.8 265.0,62.7 Q264.4,61.3 264.3,59.7 Q264.0,58.4 263.9,56.7 Q263.5,54.9 263.7,53.6 Q263.6,52.3 263.8,50.6 Q263.9,49.2 264.3,47.6 Q265.0,46.1 265.1,44.6 Q266.0,43.2 266.4,41.9 Q267.0,40.5 268.2,39.4 Q269.5,38.4 270.4,37.3 Q271.8,36.6 272.9,35.6 Q274.3,34.8 275.7,34.2 Q277.0,34.0 278.6,33.3 Q280.2,32.8 281.6,32.8 Q283.0,32.6 284.6,32.6 Q285.8,32.9 287.6,32.9 Q289.0,33.1 290.6,33.7 Q291.8,34.5 293.3,35.0 Q294.4,35.7 295.8,36.8 Q296.9,37.9 297.9,39.0 Q298.7,40.6 299.5,41.6 Q299.9,42.8 300.6,44.5 Q300.6,45.8 301.2,47.5 Q301.4,48.8 301.3,50.5 Q301.2,52.3 301.2,53.6 Q301.2,55.1 301.5,56.6 Q302.3,58.2 303.0,59.2 Q303.5,60.5 304.6,61.8 Q303.7,62.6 303.1,63.8 Q302.8,64.8 302.3,66.3 Q302.4,67.7 302.2,68.8 Q301.4,70.1 301.2,71.4 Q300.3,72.2 299.2,73.6 Q297.4,73.5 296.2,73.9 Q294.6,74.0 293.1,73.6 Q292.9,74.9 292.7,76.1 Q292.6,77.8 293.0,79.2 Q293.1,80.8 293.4,82.2" class="pn acc" style="stroke-width: var(--nshw);"></path><path d="M273.7,82.5 Q274.1,81.4 273.3,79.5 Q272.1,78.5 272.1,76.7 Q271.1,75.5 270.6,74.1 Q269.9,72.3 269.1,71.4 Q268.7,70.2 267.7,68.7 Q267.4,67.2 266.5,65.9 Q265.4,64.7 265.5,63.0 Q265.0,61.9 264.8,60.1 Q264.7,59.0 264.4,57.0 Q264.1,55.5 264.2,54.0 Q264.1,52.3 264.3,50.9 Q264.5,49.6 264.8,47.9 Q265.3,47.0 265.6,45.0 Q266.7,43.5 266.9,42.2 Q268.4,40.6 268.7,39.8 Q270.3,38.9 270.9,37.7 Q272.4,37.4 273.4,35.9 Q274.4,34.9 276.2,34.6 Q277.2,34.6 279.1,33.6 Q280.6,32.9 282.1,33.1 Q283.9,33.5 285.1,33.0 Q286.9,33.7 288.1,33.3 Q289.1,34.3 291.1,34.1 Q292.5,35.0 293.8,35.4 Q295.6,36.7 296.3,37.2 Q297.0,38.2 298.4,39.4 Q299.4,40.9 300.0,42.0 Q300.2,43.7 301.1,44.8 Q301.1,46.4 301.7,47.8 Q302.0,49.3 301.8,50.9 Q301.3,52.3 301.7,53.9 Q301.6,55.2 302.0,57.0 Q303.2,58.8 303.5,59.6 Q304.7,60.8 305.1,62.2 Q303.9,62.6 303.6,64.2 Q303.6,65.6 302.8,66.7 Q302.7,68.3 302.7,69.2 Q302.1,70.1 301.7,71.8 Q301.1,73.4 299.7,73.9 Q298.5,74.1 296.7,74.3 Q294.8,73.8 293.6,73.9 Q293.4,75.1 293.2,76.5 Q293.9,77.9 293.5,79.5 Q293.9,80.8 293.9,82.5" class="pn acc" stroke-width="0.8" style="opacity: 0.45;"></path></g><g class="bb wx"><path d="M269.0,146.0 Q270.2,146.2 271.0,146.0 Q271.9,144.9 273.0,143.9 Q274.2,142.9 275.0,142.1 Q276.1,141.3 277.0,140.9 Q277.8,140.9 279.0,140.5 Q280.2,140.9 281.0,140.9 Q281.8,141.5 283.0,142.1 Q283.9,143.0 285.0,143.9 Q286.2,145.2 287.0,146.0 Q285.7,145.9 284.0,146.0 Q285.2,144.7 286.0,142.9 Q287.1,141.6 288.0,140.3 Q289.2,139.5 290.0,138.6 Q291.2,138.2 292.0,138.0 Q292.8,138.5 294.0,138.6 Q294.9,139.3 296.0,140.3 Q297.0,141.5 298.0,142.9 Q299.0,144.4 300.0,146.0 Q298.3,145.8 297.0,146.0 Q298.0,145.1 299.0,143.9 Q299.9,143.0 301.0,142.1 Q302.0,141.6 303.0,140.9 Q304.1,141.0 305.0,140.5 Q305.9,140.9 307.0,140.9 Q308.2,141.5 309.0,142.1 Q310.0,142.8 311.0,143.9 Q311.8,144.9 313.0,146.0 Q314.2,145.8 315.0,146.0 Q292.0,146.2 269.0,146.0" class="pn" stroke-width="1" style="opacity: var(--nsfaint);"></path></g><g class="bb wx birds"><path d="M217.8,111.5 Q219.1,110.6 220.6,109.6 Q221.8,110.7 223.1,111.8 Q223.6,112.4 224.0,113.0 Q224.4,112.5 224.9,111.8 Q226.1,110.8 227.4,109.6 Q228.8,110.6 230.2,111.5" class="pn" stroke-width="1" style="opacity: var(--nsbird);"></path><path d="M236.8,102.7 Q237.9,102.0 239.1,101.1 Q240.2,102.2 241.2,103.0 Q241.6,103.6 242.0,104.0 Q242.4,103.6 242.8,103.0 Q243.9,102.2 244.9,101.1 Q246.1,101.8 247.2,102.7" class="pn" stroke-width="1" style="opacity: var(--nsbird);"></path><path d="M251.6,114.9 Q252.6,114.2 253.6,113.6 Q254.6,114.4 255.3,115.1 Q255.8,115.6 256.0,116.0 Q256.3,115.6 256.7,115.1 Q257.5,114.4 258.4,113.6 Q259.3,114.2 260.4,114.9" class="pn" stroke-width="1" style="opacity: var(--nsbird);"></path></g></g><g class="boost"><line x1="153.0" x2="327.0" y1="194" y2="194" class="pn " stroke-width="1.4" style="opacity: 1;"></line></g><defs><filter id="nsw0" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"></feGaussianBlur></filter><filter id="nsm0" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2"></feGaussianBlur></filter><filter id="nsw1" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"></feGaussianBlur></filter><filter id="nsm1" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2"></feGaussianBlur></filter></defs><g class="think"><ellipse cx="74.56" cy="94.72" rx="50" ry="27" class="facc" filter="url(#nsw0)" style="opacity: var(--nsglow);"></ellipse><line x1="26.6" x2="122.6" y1="94.72" y2="94.72" class="pn acc" stroke-width="0.9" style="opacity: 0.6;"></line><g class="tk h0" data-x0="29.560" data-sl="6.42857" data-y="94.720"><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(32.774px, 94.72px) scale(1, -16.910);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(39.203px, 94.72px) scale(1, -9.310);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(45.631px, 94.72px) scale(1, -12.920);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(52.06px, 94.72px) scale(1, 4.560);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(58.489px, 94.72px) scale(1, -14.440);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(64.917px, 94.72px) scale(1, 17.480);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(71.346px, 94.72px) scale(1, 10.640);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(77.774px, 94.72px) scale(1, -1.140);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(84.203px, 94.72px) scale(1, 28.880);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(90.631px, 94.72px) scale(1, -29.830);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(97.06px, 94.72px) scale(1, -2.090);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(103.489px, 94.72px) scale(1, -14.820);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(109.917px, 94.72px) scale(1, -3.800);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(116.346px, 94.72px) scale(1, 4.370);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="facc" style="transform: translate(122.774px, 94.72px) scale(1, 0); opacity: 0;"></rect></g><ellipse cx="405.44" cy="94.72" rx="50" ry="27" class="fwarm" filter="url(#nsw1)" style="opacity: var(--nsglow);"></ellipse><line x1="357.4" x2="453.4" y1="94.72" y2="94.72" class="pn warm" stroke-width="0.9" style="opacity: 0.6;"></line><g class="tk h1" data-x0="360.440" data-sl="6.42857" data-y="94.720"><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(363.654px, 94.72px) scale(1, -13.300);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(370.083px, 94.72px) scale(1, 5.890);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(376.511px, 94.72px) scale(1, -17.290);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(382.94px, 94.72px) scale(1, 12.730);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(389.369px, 94.72px) scale(1, -7.790);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(395.797px, 94.72px) scale(1, 20.330);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(402.226px, 94.72px) scale(1, 6.650);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(408.654px, 94.72px) scale(1, -3.990);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(415.083px, 94.72px) scale(1, 27.170);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(421.511px, 94.72px) scale(1, -18.430);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(427.94px, 94.72px) scale(1, -4.180);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(434.369px, 94.72px) scale(1, -15.770);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(440.797px, 94.72px) scale(1, 7.030);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(447.226px, 94.72px) scale(1, -4.560);"></rect><rect x="-1.60" y="-1" width="3.2" height="1" class="fwarm" style="transform: translate(453.654px, 94.72px) scale(1, 0); opacity: 0;"></rect></g><g class="shocks" data-x0="156" data-sl="12" data-y="194"><g class="sh" style="transform: translate(162.000px, 194px); --d: 0.00s;"><g class="ink" style="transform: scale(1, -13.870);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, -16.910);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 0.820; --sx: -3px;"></rect></g><g class="pw" style="transform: scale(1, -13.300);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: 1.043; --sx: 3px;"></rect></g></g><g class="sh" style="transform: translate(174.000px, 194px); --d: 0.02s;"><g class="ink" style="transform: scale(1, -10.260);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, -9.310);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 1.102; --sx: -3px;"></rect></g><g class="pw" style="transform: scale(1, 5.890);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: -1.742; --sx: 3px;"></rect></g></g><g class="sh kept" style="transform: translate(186.000px, 194px); --d: 0.04s;"><g class="ink" style="transform: scale(1, -20.140);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, -12.920);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 1.559; --sx: -4.9px;"></rect></g><g class="pw" style="transform: scale(1, -17.290);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: 1.165; --sx: 4.9px;"></rect></g></g><g class="sh" style="transform: translate(198.000px, 194px); --d: 0.06s;"><g class="ink" style="transform: scale(1, 8.360);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, 4.560);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 1.833; --sx: -3px;"></rect></g><g class="pw" style="transform: scale(1, 12.730);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: 0.657; --sx: 3px;"></rect></g></g><g class="sh" style="transform: translate(210.000px, 194px); --d: 0.08s;"><g class="ink" style="transform: scale(1, -7.600);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, -14.440);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 0.526; --sx: -3px;"></rect></g><g class="pw" style="transform: scale(1, -7.790);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: 0.976; --sx: 3px;"></rect></g></g><g class="sh" style="transform: translate(222.000px, 194px); --d: 0.10s;"><g class="ink" style="transform: scale(1, 17.480);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, 17.480);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 1.000; --sx: -3px;"></rect></g><g class="pw" style="transform: scale(1, 20.330);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: 0.860; --sx: 3px;"></rect></g></g><g class="sh" style="transform: translate(234.000px, 194px); --d: 0.12s;"><g class="ink" style="transform: scale(1, 18.050);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, 10.640);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 1.696; --sx: -3px;"></rect></g><g class="pw" style="transform: scale(1, 6.650);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: 2.714; --sx: 3px;"></rect></g></g><g class="sh" style="transform: translate(246.000px, 194px); --d: 0.14s;"><g class="ink" style="transform: scale(1, -9.690);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, -1.140);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 8.500; --sx: -3px;"></rect></g><g class="pw" style="transform: scale(1, -3.990);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: 2.429; --sx: 3px;"></rect></g></g><g class="sh kept" style="transform: translate(258.000px, 194px); --d: 0.16s;"><g class="ink" style="transform: scale(1, 28.500);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, 28.880);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 0.987; --sx: -4.9px;"></rect></g><g class="pw" style="transform: scale(1, 27.170);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: 1.049; --sx: 4.9px;"></rect></g></g><g class="sh" style="transform: translate(270.000px, 194px); --d: 0.18s;"><g class="ink" style="transform: scale(1, -20.330);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, -29.830);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 0.682; --sx: -3px;"></rect></g><g class="pw" style="transform: scale(1, -18.430);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: 1.103; --sx: 3px;"></rect></g></g><g class="sh" style="transform: translate(282.000px, 194px); --d: 0.20s;"><g class="ink" style="transform: scale(1, -28.690);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, -2.090);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 13.727; --sx: -3px;"></rect></g><g class="pw" style="transform: scale(1, -4.180);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: 6.864; --sx: 3px;"></rect></g></g><g class="sh" style="transform: translate(294.000px, 194px); --d: 0.22s;"><g class="ink" style="transform: scale(1, -18.050);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, -14.820);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 1.218; --sx: -3px;"></rect></g><g class="pw" style="transform: scale(1, -15.770);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: 1.145; --sx: 3px;"></rect></g></g><g class="sh kept" style="transform: translate(306.000px, 194px); --d: 0.24s;"><g class="ink" style="transform: scale(1, -10.640);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, -3.800);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 2.800; --sx: -4.9px;"></rect></g><g class="pw" style="transform: scale(1, 7.030);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: -1.514; --sx: 4.9px;"></rect></g></g><g class="sh" style="transform: translate(318.000px, 194px); --d: 0.26s;"><g class="ink" style="transform: scale(1, 11.970);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, 4.370);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 2.739; --sx: -3px;"></rect></g><g class="pw" style="transform: scale(1, -4.560);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: -2.625; --sx: 3px;"></rect></g></g><g class="sh" style="transform: translate(330.000px, 194px); --d: 0.28s; opacity: 0;"><g class="ink" style="transform: scale(1, 0.000);"><rect x="-2.5" y="-1" width="5" height="1" class="fink"></rect></g><g class="pb" style="transform: scale(1, 0.000);"><rect x="-1.6" y="-1" width="3.2" height="1" class="facc" style="--k: 1.000; --sx: -3px;"></rect></g><g class="pw" style="transform: scale(1, 0.000);"><rect x="-1.6" y="-1" width="3.2" height="1" class="fwarm" style="--k: 1.000; --sx: 3px;"></rect></g></g></g></g><g class="wxsplit"><path d="M269.0,146.0 Q270.2,146.2 271.0,146.0 Q271.9,144.9 273.0,143.9 Q274.2,142.9 275.0,142.1 Q276.1,141.3 277.0,140.9 Q277.8,140.9 279.0,140.5 Q280.2,140.9 281.0,140.9 Q281.8,141.5 283.0,142.1 Q283.9,143.0 285.0,143.9 Q286.2,145.2 287.0,146.0 Q285.7,145.9 284.0,146.0 Q285.2,144.7 286.0,142.9 Q287.1,141.6 288.0,140.3 Q289.2,139.5 290.0,138.6 Q291.2,138.2 292.0,138.0 Q292.8,138.5 294.0,138.6 Q294.9,139.3 296.0,140.3 Q297.0,141.5 298.0,142.9 Q299.0,144.4 300.0,146.0 Q298.3,145.8 297.0,146.0 Q298.0,145.1 299.0,143.9 Q299.9,143.0 301.0,142.1 Q302.0,141.6 303.0,140.9 Q304.1,141.0 305.0,140.5 Q305.9,140.9 307.0,140.9 Q308.2,141.5 309.0,142.1 Q310.0,142.8 311.0,143.9 Q311.8,144.9 313.0,146.0 Q314.2,145.8 315.0,146.0 Q292.0,146.2 269.0,146.0" class="pn acc" stroke-width="1" style="--sx: -19px;"></path><path d="M269.0,146.0 Q270.2,146.2 271.0,146.0 Q271.9,144.9 273.0,143.9 Q274.2,142.9 275.0,142.1 Q276.1,141.3 277.0,140.9 Q277.8,140.9 279.0,140.5 Q280.2,140.9 281.0,140.9 Q281.8,141.5 283.0,142.1 Q283.9,143.0 285.0,143.9 Q286.2,145.2 287.0,146.0 Q285.7,145.9 284.0,146.0 Q285.2,144.7 286.0,142.9 Q287.1,141.6 288.0,140.3 Q289.2,139.5 290.0,138.6 Q291.2,138.2 292.0,138.0 Q292.8,138.5 294.0,138.6 Q294.9,139.3 296.0,140.3 Q297.0,141.5 298.0,142.9 Q299.0,144.4 300.0,146.0 Q298.3,145.8 297.0,146.0 Q298.0,145.1 299.0,143.9 Q299.9,143.0 301.0,142.1 Q302.0,141.6 303.0,140.9 Q304.1,141.0 305.0,140.5 Q305.9,140.9 307.0,140.9 Q308.2,141.5 309.0,142.1 Q310.0,142.8 311.0,143.9 Q311.8,144.9 313.0,146.0 Q314.2,145.8 315.0,146.0 Q292.0,146.2 269.0,146.0" class="pn warm" stroke-width="1" style="--sx: 19px;"></path><path d="M217.8,111.5 Q219.1,110.6 220.6,109.6 Q221.8,110.7 223.1,111.8 Q223.6,112.4 224.0,113.0 Q224.4,112.5 224.9,111.8 Q226.1,110.8 227.4,109.6 Q228.8,110.6 230.2,111.5" class="pn acc" stroke-width="1" style="--sx: 26.5px;"></path><path d="M217.8,111.5 Q219.1,110.6 220.6,109.6 Q221.8,110.7 223.1,111.8 Q223.6,112.4 224.0,113.0 Q224.4,112.5 224.9,111.8 Q226.1,110.8 227.4,109.6 Q228.8,110.6 230.2,111.5" class="pn warm" stroke-width="1" style="--sx: -26.5px;"></path><path d="M236.8,102.7 Q237.9,102.0 239.1,101.1 Q240.2,102.2 241.2,103.0 Q241.6,103.6 242.0,104.0 Q242.4,103.6 242.8,103.0 Q243.9,102.2 244.9,101.1 Q246.1,101.8 247.2,102.7" class="pn acc" stroke-width="1" style="--sx: 27px;"></path><path d="M236.8,102.7 Q237.9,102.0 239.1,101.1 Q240.2,102.2 241.2,103.0 Q241.6,103.6 242.0,104.0 Q242.4,103.6 242.8,103.0 Q243.9,102.2 244.9,101.1 Q246.1,101.8 247.2,102.7" class="pn warm" stroke-width="1" style="--sx: -27px;"></path><path d="M251.6,114.9 Q252.6,114.2 253.6,113.6 Q254.6,114.4 255.3,115.1 Q255.8,115.6 256.0,116.0 Q256.3,115.6 256.7,115.1 Q257.5,114.4 258.4,113.6 Q259.3,114.2 260.4,114.9" class="pn acc" stroke-width="1" style="--sx: 26px;"></path><path d="M251.6,114.9 Q252.6,114.2 253.6,113.6 Q254.6,114.4 255.3,115.1 Q255.8,115.6 256.0,116.0 Q256.3,115.6 256.7,115.1 Q257.5,114.4 258.4,113.6 Q259.3,114.2 260.4,114.9" class="pn warm" stroke-width="1" style="--sx: -26px;"></path></g></svg>
+
+            </div>
+            <div class="body">
+              <h3><a href="https://sbabichenko.com/noisestate">Noise-State Calculus</a></h3>
+              <p class="sub">A calculus for solving a century-old problem in economics</p>
+              <p>Instead of tracking beliefs about beliefs about beliefs indefinitely, players track beliefs
+                about the shocks to the system, and the game becomes solvable.</p>
+              <p class="pipline"><button type="button" class="copy" data-copy="pip install noisestate" title="Copy the command"><code>pip install noisestate</code></button></p>
+              <a class="go" href="https://sbabichenko.com/noisestate">Solve a game <span class="arrow">&rarr;</span></a>
+              <div class="more">
+                <a href="https://sbabichenko.com/dissertation/idea">The noise-state, explained</a>
+                <a href="https://sbabichenko.com/dissertation/wedge">The price of changing someone&rsquo;s mind</a>
+                <a href="https://sbabichenko.com/dissertation">Read the dissertation</a>
+                <a href="https://arxiv.org/abs/2603.12140" target="_blank" rel="noopener">The paper on arXiv</a>
+                <a href="https://github.com/sbabichenko/noisestate" target="_blank" rel="noopener">GitHub</a>
+              </div>
+            </div><svg class="nsheads-rim" aria-hidden="true" focusable="false">
+              <path class="scallop acc" pathLength="1" /><path class="scallop warm" pathLength="1" />
+              <circle class="tail b1 acc" /><circle class="tail b2 acc" /><circle class="tail b3 acc" /><circle class="tail b4 acc" />
+              <circle class="tail b1 warm" /><circle class="tail b2 warm" /><circle class="tail b3 warm" /><circle class="tail b4 warm" />
+            </svg>
+          </article>
+          <article class="demo"><div class="shot draw" id="card-mesh" data-worker="https://sbabichenko.com/mesh/fit-worker.js?h=fa66935bcf44abd29f7f"
+                 aria-label="Draw odds on the picture; the estimator fits them">
+              <img class="img-light" loading="lazy" decoding="async" draggable="false" src="https://sbabichenko.com/images/card-gate-light.webp?h=023632eca982c851cb20" alt="" width="480" height="240" />
+              <img class="img-dark" loading="lazy" decoding="async" draggable="false" src="https://sbabichenko.com/images/card-gate-dark.webp?h=645aec54fc64b86047f4" alt="" width="480" height="240" />
+              <canvas aria-hidden="true"></canvas><div class="drawhint" aria-hidden="true">
+                <svg class="dh-box l" focusable="false"><rect width="100%" height="100%" /></svg>
+                <svg class="dh-box r" focusable="false"><rect width="100%" height="100%" /></svg>
+                <svg class="dh-pic" viewBox="0 0 960 480" preserveAspectRatio="xMidYMid slice" focusable="false"><text class="dh-text" x="240" y="220" text-anchor="middle">draw here</text></svg>
+              </div>
+              <span class="status" aria-live="polite"></span>
+              <button type="button" class="clear">clear</button>
+            </div>
+            <div class="body">
+              <span class="hint" aria-hidden="true"><span class="for-mouse">scribble on the faces</span><span class="for-touch">hold, then draw</span></span>
+              <h3><a href="https://sbabichenko.com/decisionmesh">Decision Mesh</a></h3>
+              <p class="sub">A decision theorist&rsquo;s perspective on estimating binomial surfaces</p>
+              <p>The mesh works by carefully untangling its errors
+                and uncertainty, deciding how much to refine its estimate and trust its data.</p>
+              <p>Each decision is made not alone, but by
+                borrowing the wisdom of its neighbors.</p>
+              <a class="go" href="https://sbabichenko.com/decisionmesh">See how it decides <span class="arrow">&rarr;</span></a>
+              <div class="more">
+                <a href="https://sbabichenko.com/decisionmesh/detail">The algorithm in detail</a>
+                <a href="https://github.com/sbabichenko/triangular-decision-mesh" target="_blank" rel="noopener">Right triangles on GitHub</a>
+                <a href="https://github.com/sbabichenko/rectangular-decision-mesh" target="_blank" rel="noopener">Rectangles on GitHub</a>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div class="work">
+          
+        </div>
+      </section>
+
+      
+      
+      <section>
+        <h2>Writing</h2>
+        <div class="posts">
+          
+          <a class="post" href="https:&#x2F;&#x2F;sbabichenko.com&#x2F;writing&#x2F;partial-pooling&#x2F;">
+            <time datetime="2025-11-08">Nov 2025</time>
+            <span class="t">Partial Pooling for Estimating Interaction Effects in Factor Models</span>
+          </a>
+          
+        </div>
+        <a class="more" href="https://sbabichenko.com/writing">All writing &rarr;</a>
+      </section>
+      
+
+    </main>
+
+    
+<footer class="site-foot">
+  
+  <span>&copy; 2025&ndash;2026 Sam Babichenko</span>
+  <a href="https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by&#x2F;4.0&#x2F;deed.en" rel="noopener" target="_blank">CC BY 4.0</a>
+  <a href="https://sbabichenko.com/colophon">Colophon</a>
+  <a href="https://sbabichenko.com/atom.xml" title="New writing, in any feed reader">Feed</a>
+  <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
+</footer>
+<script src="https://sbabichenko.com/js/tally.js?h=4000db8cd9e27f8f27cd"></script>
+<link rel="stylesheet" href="https://sbabichenko.com/css/whimsy.css?h=d4251323faf1bde2b9ac" />
+<link rel="stylesheet" href="https://sbabichenko.com/css/fold.css?h=c5acda3ad83f04ce162c" />
+<script src="https://sbabichenko.com/js/whimsy.js?h=a8c298c7f32b36526f42"></script>
+<script src="https://sbabichenko.com/js/skip.js?h=8b0612be930eb6b54639" defer></script>
+<script src="https://sbabichenko.com/js/fold.js?h=e11d63b1e1ab91ad246a"></script>
+
+    <script src="https://sbabichenko.com/mesh/decision-mesh.js?h=d07d0c0efc14a06f4c01"></script>
+    <script src="https://sbabichenko.com/js/heroink.js?h=33542ab853a4a33cdbdc"></script>
+    <script src="https://sbabichenko.com/js/formula.js?h=1cdcdf244c9eb45ab50e"></script>
+    <script src="https://sbabichenko.com/js/cards.js?h=e040ad5bb1f5640810bd" defer></script>
+  </body>
+</html>

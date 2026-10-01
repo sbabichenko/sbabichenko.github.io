@@ -1,0 +1,638 @@
+<!doctype html>
+<html class="not-ready lg:text-base" lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Title -->
+  <title>Noise-State Calculus for Dynamic Games with Strategic Information - Sam Babichenko</title>
+
+  <!-- Meta -->
+  <meta name="theme-color" />
+  <meta name="description" content="My dissertation, to read in the browser: dynamic games with dispersed private information, where each player keeps estimates of the primitive shocks instead of belief hierarchies." />
+  <meta name="author" content="" />
+  <!-- The Open Graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Noise-State Calculus for Dynamic Games with Strategic Information" />
+  <meta property="og:site_name" content="Sam Babichenko" />
+  <meta property="og:description" content="My dissertation, to read in the browser: dynamic games with dispersed private information, where each player keeps estimates of the primitive shocks instead of belief hierarchies." />
+  <meta property="og:url" content="https:&#x2F;&#x2F;sbabichenko.com&#x2F;dissertation&#x2F;" />
+  <meta property="og:image" content="https://sbabichenko.com/images/og-dissertation.png" />
+
+  <!-- CSS & JS -->
+  <link rel="preload stylesheet" as="style" href="https://sbabichenko.com/main.css?h=83e18233020b9c7a7a8c" />
+  <style>
+    :root {
+      --bg: #FFFFF0;
+      --bg-dark: #1F2022;
+      --header: #e4e4e7;
+      --header-dark: #27272a;
+    }
+  </style>
+
+  
+
+  <!-- Dark Icon -->
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/theme.svg" />
+
+  <!-- Math -->
+  
+  <!---->
+
+  <!-- Mermaid -->
+  
+  <!---->
+
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://sbabichenko.com/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://sbabichenko.com/favicon-16x16.png">
+  <link rel="shortcut icon" href="https://sbabichenko.com/favicon.ico">
+  <link rel="apple-touch-icon" href="https://sbabichenko.com/apple-touch-icon.png">
+
+
+  <!-- Feeds -->
+  
+  <!---->
+  
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title="Atom"
+    href="https://sbabichenko.com/atom.xml"
+  />
+   
+  <!---->
+  
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https:&#x2F;&#x2F;sbabichenko.com" />
+
+  <!-- Head inject -->
+  <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="font" type="font/woff2" href="https://sbabichenko.com/fonts/newsreader-latin-opsz-normal.woff2" crossorigin>
+<link rel="stylesheet" href="https://sbabichenko.com/fonts/newsreader.css?h=5358dbda7c8bb2508eba">
+<link rel="stylesheet" href="https://sbabichenko.com/css/custom.css?h=f0c82a15a80fef316c80">
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="https://sbabichenko.com/dissertation/opening.css?h=f19150e18980924c70cd" />
+    <link rel="stylesheet" href="https://sbabichenko.com/dissertation/search.css?h=8e4e57182028a77dc48f" />
+    
+<header
+  class="blur-header fixed top-0 z-40 mx-auto min-h-[3.5rem] w-full"
+>
+  <div class="mx-auto w-full max-w-4xl p-3 lg:flex lg:justify-between">
+    <div class="flex justify-between">
+      <div class="flex items-center">
+        <a class="text-2xl font-semibold" href="https://sbabichenko.com">Sam Babichenko</a>
+        <div
+          class="btn-dark ml-4 h-6 w-6 shrink-0 cursor-pointer text-[0px] [background:url(./icons/theme.svg)_left_center/cover_no-repeat] dark:[background-position:right] dark:invert"
+          role="button"
+          tabindex="0"
+          aria-label="Switch to dark theme"
+        ></div>
+        <style>
+          /* brown paper (a CC0 scan from ambientCG, reduced to its surface and fibers) is the page's own background: it scrolls with the page and stays behind the content, so it costs
+             nothing to scroll (an overlay blended over everything had to be recomposited on every frame) */
+          html :is(body, header.blur-header) { background-image: var(--paper-img); background-size: 768px 768px; background-blend-mode: multiply; }
+          html.dark :is(body, header.blur-header) { background-blend-mode: screen; }
+          /* a patch of the same paper, for the few things that must hide what passes under them (a sticky drawing on a
+             phone, a bar that stays put, a popup): background: var(--ground) var(--paper-img) 0 0 / 768px 768px with
+             background-blend-mode: var(--patch-blend). Everything else is clear, so the page's own paper runs through it.
+             Patches pin their paper to the window and shift it by the scroll (--paper-y), so a pill or bar that stays put
+             still shows the page's paper moving under it, lined up with the page around it. A new patch goes in the
+             list in the script below: only the patches carry --paper-y (set on the page's root, every scroll frame
+             restyled every element on the page, 100 ms and more a frame on a chapter). */
+          html:not(.dark) { --ground: #ecdebe; --patch-blend: multiply; }
+          html.dark { --ground: #1f2022; --patch-blend: screen; }
+          /* in light mode the paper also gets a paper's own warm tone: the site's near-white cream is what made the grain read as dirt */
+          html:not(.dark), html:not(.dark) :is(.home, .opening, .thesis, .gatehow) { --paper: #ecdebe; --sheet: #f0e4c8; }
+          html:not(.dark) body { background-color: var(--paper); }
+          /* the body's box grows with the page (the theme had it one window tall): browsers carry a body's background out
+             to the whole page, but a renderer that doesn't (a work browser behind a filtering proxy) painted the paper only
+             over the first screen */
+          html body { height: auto; min-height: 100vh; }
+          /* the paper runs through everything: the bar at the top is paper, cards and panels are clear (outlines only), and
+             pictures, plots and canvases are multiplied onto it, so their white ground becomes the paper and their ink stays ink */
+          html :is(.panel, .statusbar, button.tab:not([aria-selected="true"]), article.demo) { background-color: transparent !important; }
+          html header.blur-header { backdrop-filter: none; -webkit-backdrop-filter: none; background-color: var(--paper, #fffff0);
+            border-bottom: 0; box-shadow: none; }
+          html.dark header.blur-header { background-color: #1f2022; }
+          /* the bar stays put, but its paper is the page's: shifted with the scroll, so the grain moves under it as it does
+             everywhere else and lines up with the page at its edge */
+          html header.blur-header { background-position: 0 var(--paper-y, 0px); }
+          /* in place of a line under the bar: a soft band where whatever scrolls up (text, drawings, the mesh) blurs and fades
+             into the bar's paper, so nothing is cut off at a hard edge. It comes in over the first 44px of scroll: at the top of
+             the page nothing has scrolled under the bar, and the band would only wash out the first line below it */
+          html header.blur-header::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 44px; pointer-events: none;
+            background-color: inherit; background-image: inherit; background-size: inherit; background-blend-mode: inherit;
+            background-position: 0 calc(var(--paper-y, 0px) - var(--hdr-h, 56px));
+            -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+            -webkit-mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent);
+                    mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent); opacity: var(--hdr-fade, 0); }
+          /* the browser draws some things itself (a select's open list, scrollbars, a search box's clear button, pickers):
+             tell it which theme the page is in, so a dark page does not open a white menu, and give a select's options the
+             page's colours where the browser lets a page style them (Windows and Linux; macOS draws its own menus) */
+          html:not(.dark) { color-scheme: light; }
+          html.dark { color-scheme: dark; }
+          html:not(.dark) select option { background-color: #f3ead3; color: #1b1b1f; }
+          html.dark select option { background-color: #26272a; color: #ececef; }
+          /* secondary controls stay clear on the paper but get an edge that reads (28% of the text's colour; 9% vanished on
+             dim screens), a faint tint of ink under the cursor and when pressed, and fade as a whole when disabled */
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, #dsearch, .dsearch, button.copy, button.cite-copy,
+            button.tweet-load, .gatedeep .howbar button) { border-color: color-mix(in srgb, currentColor 28%, transparent) !important; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button) { transition: background-color 0.12s; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button):hover:not(:disabled) { background-color: color-mix(in srgb, currentColor 6%, transparent) !important; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button):active:not(:disabled) { background-color: color-mix(in srgb, currentColor 11%, transparent) !important; }
+          html :is(button, select):disabled { opacity: 0.45; }
+          /* checkboxes take the page's colours, not the browser's white square: a clear box on the paper with a line
+             in the text's colour, filled with the accent when ticked */
+          html input[type=checkbox] { -webkit-appearance: none; appearance: none; width: 15px; height: 15px; flex: none; margin: 0 0.35em 0 0;
+            vertical-align: -2px; display: inline-grid; place-content: center; cursor: pointer; background: transparent;
+            border: 1.5px solid color-mix(in srgb, currentColor 55%, transparent); border-radius: 4px; transition: background-color 0.12s, border-color 0.12s; }
+          html input[type=checkbox]::before { content: ""; width: 9px; height: 9px; transform: scale(0); transition: transform 0.12s;
+            background: var(--accent-ink, #fff); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
+          html input[type=checkbox]:checked { background: var(--accent, #1f3fd0); border-color: var(--accent, #1f3fd0); }
+          html.dark input[type=checkbox]:checked { background: var(--accent, #8fb0ff); border-color: var(--accent, #8fb0ff); }
+          html.dark input[type=checkbox]::before { background: var(--accent-ink, #0b1220); }
+          html input[type=checkbox]:checked::before { transform: scale(1); }
+          html input[type=checkbox]:focus-visible { outline: 2px solid var(--accent, #1f3fd0); outline-offset: 2px; }
+          html input[type=checkbox]:disabled { opacity: 0.45; cursor: default; }
+          /* sliders the same way: a thin track in the text's colour, filled with the accent up to the thumb (--fill,
+             kept by the script below), and an accent thumb ringed in the paper's colour */
+          html input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; height: 18px; cursor: pointer; }
+          html input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px;
+            background: linear-gradient(to right, var(--accent, #1f3fd0) var(--fill, 0%), color-mix(in srgb, currentColor 22%, transparent) var(--fill, 0%)); }
+          html input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: color-mix(in srgb, currentColor 22%, transparent); }
+          html input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--accent, #1f3fd0); }
+          html input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; border-radius: 50%;
+            background: var(--accent, #1f3fd0); border: 2px solid var(--ground, #ecdebe); box-shadow: 0 0 0 1px var(--accent, #1f3fd0); }
+          html input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--accent, #1f3fd0);
+            border: 2px solid var(--ground, #ecdebe); box-shadow: 0 0 0 1px var(--accent, #1f3fd0); }
+          html.dark input[type=range]::-webkit-slider-runnable-track { background: linear-gradient(to right, var(--accent, #8fb0ff) var(--fill, 0%), color-mix(in srgb, currentColor 22%, transparent) var(--fill, 0%)); }
+          html.dark input[type=range]::-moz-range-progress { background: var(--accent, #8fb0ff); }
+          html.dark input[type=range]::-webkit-slider-thumb { background: var(--accent, #8fb0ff); box-shadow: 0 0 0 1px var(--accent, #8fb0ff); }
+          html.dark input[type=range]::-moz-range-thumb { background: var(--accent, #8fb0ff); box-shadow: 0 0 0 1px var(--accent, #8fb0ff); }
+          html input[type=range]:focus-visible { outline: 2px solid var(--accent, #1f3fd0); outline-offset: 3px; border-radius: 4px; }
+          html:not(.dark) figure { background-color: transparent; }
+          /* the dissertation's figures (.webfig) are drawn transparent in the page's inks and need no blend */
+          html:not(.dark) :is(figure img, .shot img, .shot canvas, .panel canvas, .js-plotly-plot, main img):not(.webfig img) { mix-blend-mode: multiply; }
+          /* the tile is 768px: a 768-pixel image for ordinary screens (what the browser drew from the 1536 one anyway) and
+             the 1536 one for sharp screens */
+          html:not(.dark) { --paper-img: image-set(url(https://sbabichenko.com/images/paper/brown-light.webp?h=e5a70cdd56a8e0d11533) 1x, url(https://sbabichenko.com/images/paper/brown-light-2x.webp?h=839876cd80b11ff6e8b4) 2x); }
+          html.dark { --paper-img: image-set(url(https://sbabichenko.com/images/paper/brown-dark.webp?h=a1610218c435c74114b1) 1x, url(https://sbabichenko.com/images/paper/brown-dark-2x.webp?h=3eb5c860334b67cf2100) 2x); }
+        </style>
+        <script>
+          (() => {
+            // the patches of paper (above); a pseudo-element patch is listed as itself, and its element carries the scroll
+            // for browsers without scroll-driven animations
+            const PATCHES = ["header.blur-header", ".peek", ".figzoom", ".trace-note", ".wayback", ".gpanel", ".cover .cta a",
+              ".stage::before", ".gatehow .stage::before", "html.fold-table .story .stage", ".spike .controls", ".risk .rcontrols",
+              ".dsearch-panel", ".explorer #statusbar", ".explorer #race-statusbar", ".home .shot.draw .clear", ".home .shot.draw .status",
+              ".whimsy-coin p", ".whimsy-forecast", ".skip-pill"];
+            const root = document.documentElement, hdr = document.querySelector("header.blur-header");
+            if (hdr) new ResizeObserver(() => hdr.style.setProperty("--hdr-h", hdr.offsetHeight + "px")).observe(hdr);
+            const css = document.createElement("style");
+            css.textContent = '@property --paper-y { syntax: "<length>"; inherits: true; initial-value: 0px; }' +
+              '@property --hdr-fade { syntax: "<number>"; inherits: true; initial-value: 0; }';
+            if (CSS.supports("animation-timeline: scroll()") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+              // the browser moves each patch's paper with the scroll itself: --paper-y runs from 0 down by a pixel per
+              // pixel scrolled (the range is far longer than any page, so the ratio is one to one)
+              css.textContent += "@keyframes paper-y { from { --paper-y: 0px; } to { --paper-y: -1000000px; } }" +
+                "@keyframes hdr-fade { from { --hdr-fade: 0; } to { --hdr-fade: 1; } }" +
+                PATCHES.join(",") + " { animation: paper-y linear both; animation-timeline: scroll(root block); animation-range: 0px 1000000px; }" +
+                "header.blur-header { animation: paper-y linear both, hdr-fade linear both; animation-timeline: scroll(root block), scroll(root block);" +
+                " animation-range: 0px 1000000px, 0px 44px; }";
+            } else {
+              const hosts = PATCHES.map((s) => s.replace(/::before$/, "")).join(",");
+              let queued = false;
+              const put = () => { queued = false; const y = -(window.scrollY % 768) + "px";
+                for (const el of document.querySelectorAll(hosts)) el.style.setProperty("--paper-y", y);
+                if (hdr) hdr.style.setProperty("--hdr-fade", Math.min(1, window.scrollY / 44).toFixed(3)); };
+              addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(put); } }, { passive: true });
+              put();
+            }
+            document.head.appendChild(css);
+            // each slider's fill (--fill, the share of its range below the thumb): on input, on a script setting its value
+            // (the explorer and the demos redraw their sliders), and at load
+            const fill = (r) => { const lo = +r.min || 0, hi = r.max === "" ? 100 : +r.max, v = +r.value;
+              r.style.setProperty("--fill", (hi > lo ? (100 * (v - lo)) / (hi - lo) : 0).toFixed(2) + "%"); };
+            const fillAll = () => { for (const r of document.querySelectorAll("input[type=range]")) fill(r); };
+            addEventListener("input", (e) => { if (e.target.type === "range") fill(e.target); }, true);
+            const d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+            Object.defineProperty(HTMLInputElement.prototype, "value", { configurable: true, get: d.get,
+              set(v) { d.set.call(this, v); if (this.type === "range") fill(this); } });
+            let q = false;
+            new MutationObserver(() => { if (!q) { q = true; requestAnimationFrame(() => { q = false; fillAll(); }); } })
+              .observe(document.documentElement, { childList: true, subtree: true });
+            addEventListener("DOMContentLoaded", fillAll);
+          })();
+        </script>
+      </div>
+      
+      <div
+        class="btn-menu relative z-50 flex h-8 w-8 shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+        role="button"
+        tabindex="0"
+        aria-label="Menu"
+        aria-expanded="false"
+      ></div>
+      
+    </div>
+    <script>
+      // base
+      const htmlClass = document.documentElement.classList;
+      setTimeout(() => {
+        htmlClass.remove("not-ready");
+      }, 10);
+
+      // mobile menu
+      const btnMenu = document.querySelector(".btn-menu");
+      btnMenu?.addEventListener("click", () => {
+        btnMenu.setAttribute("aria-expanded", htmlClass.toggle("open"));
+      });
+      // the two div buttons answer Enter and Space like real buttons
+      for (const b of document.querySelectorAll(".btn-menu, .btn-dark"))
+        b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); b.click(); } });
+
+      // dark theme; storage can be blocked (privacy modes, locked-down browsers), so every read and write is guarded
+      const storedDark = () => { try { return localStorage.getItem("dark"); } catch (e) { return null; } };
+      const setDark = (isDark) => {
+        if (isDark) {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
+          htmlClass.add("dark");
+        } else {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "light" }));
+          htmlClass.remove("dark");
+        }
+        try { localStorage.setItem("dark", isDark); } catch (e) {}
+        document.querySelector(".btn-dark")?.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
+      };
+
+      // init
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      if (htmlClass.contains("dark")) {
+        setDark(true);
+      } else {
+        const darkVal = storedDark();
+        setDark(darkVal ? darkVal === "true" : darkScheme.matches);
+      }
+
+      // listen system
+      darkScheme.addEventListener("change", (event) => {
+        setDark(event.matches);
+      });
+
+      // manual switch
+      const btnDark = document.querySelector(".btn-dark");
+      btnDark.addEventListener("click", () => {
+        setDark(!htmlClass.contains("dark"));
+      });
+    </script>
+    
+    <nav class="flex w-full items-center lg:w-auto">
+      <ul
+        class="nav-wrapper flex w-full flex-col py-2 lg:w-auto lg:flex-row lg:self-center lg:py-0"
+      >
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/writing"
+            >Writing</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/dissertation"
+            >Dissertation</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/cv"
+            >CV</a
+          >
+        </li>
+        
+      </ul>
+      <!-- Header Nav inject -->
+      
+    </nav>
+    
+  </div>
+</header>
+
+    <div class="progress" id="progress" data-auto aria-hidden="true"></div>
+
+    <main class="opening" id="opening">
+      <section class="cover">
+        <svg class="shocks" id="shocks" aria-hidden="true"></svg>
+        <div class="cover-text">
+          <p class="eyebrow">A dissertation &middot; UC Santa Barbara &middot; 2026</p>
+          <h1 class="big" aria-label="No one knows much."><span>No</span> <span>one</span> <span>knows</span> <span>much.</span></h1>
+          <p class="title">Noise-State Calculus for Dynamic Games with Strategic Information</p>
+          <p class="by">Samuel Babichenko</p>
+          <div class="cta">
+            <a class="primary" href="https://sbabichenko.com/dissertation/introduction">Start reading</a>
+            <a href="https://sbabichenko.com/dissertation/idea">The Noise-State, Explained</a>
+            <a href="https://sbabichenko.com/dissertation/babichenko-dissertation.pdf">PDF, 250 pages</a>
+          </div>
+          <p class="ctamore"><a href="https://sbabichenko.com/dissertation/wedge">The price of changing someone&rsquo;s mind</a>
+            <a href="https://sbabichenko.com/dissertation/spike">The life of a spike</a>
+            <a href="#abstract">Abstract</a>
+            <a href="#contents">Contents</a>
+            <a href="https://sbabichenko.com/dissertation/map">What rests on what</a></p>
+        </div>
+        <p class="scrollhint" aria-hidden="true">scroll</p>
+      </section>
+
+      
+<noscript>
+  <style>
+    .story .step, .cover .big span, .cover .title, .cover .by, .cover .cta { opacity: 1 !important; transform: none !important; }
+    .story .stage, #solvestate { display: none !important; }
+    .story .steps, .told .toldbody .steps { padding-top: 4vh !important; }
+    .noscript-note { width: min(1100px, calc(100% - 40px)); margin: 2rem auto 0; font: 0.9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
+  </style>
+  <p class="noscript-note">The drawings on this page need JavaScript.</p>
+</noscript>
+
+      <section class="story" id="story">
+        <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
+        <div class="steps">
+          <div class="step" data-scene="corner">
+            <p>No one knows much. In life, we only see a corner of the world, and we see beyond it by watching what others say or do.</p>
+            <p class="small">With each of us knowing so little, it is surprising that an economy can function at all.</p>
+          </div>
+          <div class="step" data-scene="pencil">
+            <p>No one person knows everything needed to make a pencil, yet pencils manage to exist, costing almost nothing.</p>
+            <p class="small">Leonard Read traced the paths of cedar, graphite, lacquer, and rubber across the world to loggers, miners,
+              and chemists who know nothing of each other&rsquo;s work. Why would any of these strangers bother? How would any of
+              them know what to make, and how much?</p>
+            <p class="src">Leonard Read, &ldquo;I, Pencil&rdquo;</p>
+          </div>
+          <div class="step" data-scene="smith">
+            <p>Adam Smith answered the first question with decentralized exchange: people pursuing their own interests could
+              coordinate without anyone directing the whole.</p>
+            <p class="small">In competitive markets where many people can offer the same thing, no one has much power over the price.
+              Prices emerged from the exchange itself, set by no one.</p>
+          </div>
+          <div class="step" data-scene="prices">
+            <p>Friedrich Hayek answered the second. Prices, for Hayek, were a telecommunications system. The logger never sees
+              beyond their own corner; the prices that reach them carry what the rest of the world needs them to know.</p>
+            <p class="small">The relevant knowledge, of the particular circumstances of time and place, exists only in dispersed
+              fragments in countless minds, and no planning board could collect it.</p>
+          </div>
+          <div class="step" data-scene="car">
+            <p>Prices may be useful for communication, but they must come from somewhere. Consider buying a car from a used-car
+              salesman. The seller knows more about the car than you do. But why should their knowing more cost you anything?</p>
+            <p class="small">You pay what you believe the car is worth, but the seller shapes what you learn.</p>
+          </div>
+          <div class="step" data-scene="loop">
+            <p>The same problem appears whenever actions both do things and signal, and formalizing that is hard.</p>
+            <p class="small">Actions move the state of the system, the state generates observations, observations update beliefs.
+              Beliefs complete the cycle by determining the actions that started it. A loop. There is also a chord, where an action
+              can set what others observe directly.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="detour" id="detour" aria-label="Ninety years of economics going around one problem">
+        <div class="dt-sticky">
+          <svg class="dt-map" aria-hidden="true"></svg>
+          <div class="dt-caps">
+            <p class="dt-cap" data-at="0">Keynes described the recursion in 1936 with his beauty contest. Winning meant anticipating not which faces were prettiest, but which faces everyone else expected everyone else to choose.</p>
+            <p class="dt-cap" data-at="0.08">The first obstacle was defining equilibrium under private information at all, which Harsanyi solved through priors over player types. Muth proposed that players hold rational expectations consistent with the beliefs the model implies.</p>
+            <p class="dt-cap" data-at="0.17">Lucas explained the shifting Phillips curve with Phelps&rsquo;s economy of islands, and the idea rebuilt the field. But the lesson was applied mainly to the government. Private agents remained price takers whose actions move nothing observed by others.</p>
+            <p class="dt-cap" data-at="0.26">Grossman and Stiglitz asked if prices could reveal everything traders know. They cannot. If the price revealed everything, gathering information would earn nothing.</p>
+            <p class="dt-cap" data-at="0.34">Townsend&rsquo;s firms had to predict what other firms believed, and beliefs about those beliefs, and so on. To get a solvable model, he revealed all private information after a fixed number of periods.</p>
+            <p class="dt-cap" data-at="0.42">Kyle kept the core of the problem, but in a special case where it could all be solved, with one insider, informed once at the start of trading. When the finance community saw the whole problem in a solvable model, it pounced.</p>
+            <p class="dt-cap" data-at="0.5">Extensions stayed solvable only under heavy symmetry, and interest spilled into nearby approaches. After a generation, students learn dispersed information through these ideas.</p>
+            <p class="dt-cap" data-at="0.64">Each approach removes a defining feature of dispersed information. A model where information and incentives can be treated separately has removed the interaction it set out to study, akin to a method that lets people study correlations between variables only when those correlations are zero.</p>
+            <p class="dt-cap" data-at="0.72">An outside modeler sees decades of work and assumes the problem has been studied. What looks like an exhausted subject is one whose most expressive models have remained out of reach.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="story" id="story2">
+        <div class="stage" aria-hidden="true"><svg id="stage2" viewBox="0 0 600 600"></svg></div>
+        <div class="steps">
+          <div class="step" data-scene="attempt">
+            <p>This dissertation is my attempt to allow the field to build the models it set out to build.</p>
+          </div>
+          <div class="step" data-scene="moore">
+            <p>Art Moore, my linear algebra professor in community college, who inspired me to do this PhD, once explained the difference
+              between ordinary and partial differential equations by saying that PDEs are so much harder to analyze because they can
+              describe so much more.</p>
+            <p class="small">A language capable of describing complex phenomena necessarily carries some of that complexity in its own
+              structure. My ambition for the dissertation&rsquo;s central device, the noise-state, is to give economists a tractable way to
+              write down that complexity. The resulting mathematics may be complex, but it is the simplest machinery I know that keeps
+              the loop intact.</p>
+          </div>
+          <div class="step" data-scene="noise">
+            <p>Each player keeps estimates of the primitive shocks instead of belief hierarchies about the endogenous state.
+              Under perfect information, these estimates are the shocks themselves.</p>
+          </div>
+          <div class="step" data-scene="wedge">
+            <p>The information wedge is the shadow price of changing an opponent&rsquo;s beliefs. It breaks the separation
+              principle and vanishes when the loop is cut.</p>
+            <p class="small">Every manipulation channel passes through it.</p>
+          </div>
+          <div class="step" data-scene="finale">
+            <p>I hope that the stories told through Hayek&rsquo;s &ldquo;The Use of Knowledge in Society&rdquo; and Leonard
+              Read&rsquo;s &ldquo;I, Pencil&rdquo; can be put to paper more fully, and that I can someday enjoy reading the papers of a
+              field that has kept its heart.</p>
+          </div>
+        </div>
+      </section>
+
+      <a class="skip-pill" href="#contents" data-from="#story" data-until="#story2">Skip to the contents</a>
+      <section class="abstract" id="abstract" aria-labelledby="abstract-h">
+        <h2 id="abstract-h">Abstract</h2>
+        <p>Dynamic games with dispersed private information look hard, even when linearized, because each player needs
+          forecasts of others&rsquo; forecasts, without end. The regress comes from a loop. Actions move the state, the state
+          generates observations, observations update beliefs, and beliefs determine actions. Current approaches become
+          tractable by cutting the loop. This dissertation builds a noise-state calculus that keeps the loop intact.</p>
+        <p>Each player keeps estimates of the primitive shocks instead of belief hierarchies about the endogenous state.
+          Beliefs, prices, and policy rules are deterministic impulse responses in continuous-time linear-quadratic-Gaussian
+          games. Equilibrium is a fixed point in those functions and is solved numerically.</p>
+        <p>The information wedge is the shadow price of changing an opponent&rsquo;s beliefs. It breaks the separation
+          principle and vanishes when the loop is cut.</p>
+        <p class="abs-full"><a href="https://sbabichenko.com/dissertation/front#abstract">The full abstract</a> is in the front matter.</p>
+      </section>
+
+      <section class="contents" id="contents">
+        <h2>Contents</h2>
+        <input class="dsearch" id="dsearch" type="search" placeholder="Search all 250 pages: a word, a phrase, &ldquo;Theorem 1.8&rdquo;" aria-label="Search the dissertation" autocomplete="off" data-base="https://sbabichenko.com/dissertation" />
+        <p class="lede">New to the idea? <a href="https://sbabichenko.com/dissertation/idea">From beliefs about beliefs to the
+          noise-state</a> explains it with drawings computed live, and <a href="https://sbabichenko.com/dissertation/wedge">The price of
+          changing someone&rsquo;s mind</a> does the same for the information wedge. Every page below is the dissertation itself, with its numbering, cross-references and citations
+          intact. Hover a reference to see what it points to.
+          The games of Chapters 1, 3, 4, 5 and 6 also <a href="https://sbabichenko.com/noisestate">run in your browser</a>,
+          and the solver is a Python package: <a href="https://pypi.org/project/noisestate/"><code>pip install noisestate</code></a>.</p><ol class="cards">
+          <li class="card">
+            <a href="https://sbabichenko.com/dissertation/front">
+              
+              <span class="what">&nbsp;</span>
+              <span class="t">Front matter</span>
+              <span class="d">The acknowledgements, a vita, the abstract, and the notation used throughout.</span>
+            </a>
+          </li>
+          <li class="card">
+            <a href="https://sbabichenko.com/dissertation/introduction">
+              
+              <span class="what">&nbsp;</span>
+              <span class="t">Introduction</span>
+              <span class="d">No one knows much. Pencils, prices, Lucas’s islands, Townsend’s regress, and the loop every tractable model cuts.</span>
+            </a>
+          </li>
+          <li class="card chapter">
+            <a href="https://sbabichenko.com/dissertation/chapter-1">
+              <span class="num">1</span>
+              <span class="what">Chapter 1</span>
+              <span class="t">Baseline Linear-Quadratic-Gaussian Games</span>
+              <span class="d">The calculus in the finite-horizon LQG game: the noise-state linear class, the belief prices, the information wedge, and a finite-deviation identity that verifies a computed equilibrium against every admissible deviation.</span>
+            </a>
+          </li>
+          <li class="card chapter">
+            <a href="https://sbabichenko.com/dissertation/chapter-2">
+              <span class="num">2</span>
+              <span class="what">Chapter 2</span>
+              <span class="t">Delayed Public Signals and Asynchronous Learning</span>
+              <span class="d">News arrives late. Until it arrives a player can move what others believe; once it arrives, it explains the movement away.</span>
+            </a>
+          </li>
+          <li class="card chapter">
+            <a href="https://sbabichenko.com/dissertation/chapter-3">
+              <span class="num">3</span>
+              <span class="what">Chapter 3</span>
+              <span class="t">Stationary Infinite-Horizon LQG</span>
+              <span class="d">A game run long enough to become stationary: kernels become functions of ages rather than dates, and it is the easiest to compute.</span>
+            </a>
+          </li>
+          <li class="card chapter">
+            <a href="https://sbabichenko.com/dissertation/chapter-4">
+              <span class="num">4</span>
+              <span class="what">Chapter 4</span>
+              <span class="t">The Information Wedge in a Stationary Kyle–Back Market</span>
+              <span class="d">Kyle–Back trading on an infinite horizon, where order flow is both an action and a signal, and price impact becomes trader-specific.</span>
+            </a>
+          </li>
+          <li class="card chapter">
+            <a href="https://sbabichenko.com/dissertation/chapter-5">
+              <span class="num">5</span>
+              <span class="what">Chapter 5</span>
+              <span class="t">Local Strategic Information in Symmetric Network Economies</span>
+              <span class="d">Many small local markets on a symmetric network: the shocks average out, the incentives do not.</span>
+            </a>
+          </li>
+          <li class="card chapter">
+            <a href="https://sbabichenko.com/dissertation/chapter-6">
+              <span class="num">6</span>
+              <span class="what">Chapter 6</span>
+              <span class="t">Monitored Deviations: Naive Distortions and Privy Responses</span>
+              <span class="d">A deviation seen by some players and not others: naive players filter it as a shock, privy players respond to it directly.</span>
+            </a>
+          </li>
+          <li class="card chapter">
+            <a href="https://sbabichenko.com/dissertation/chapter-7">
+              <span class="num">7</span>
+              <span class="what">Chapter 7</span>
+              <span class="t">Conclusion: The Information Wedge Across Environments</span>
+              <span class="d">The information wedge across all of it, and the directions beyond: closure, computation, sources, networks, markets.</span>
+            </a>
+          </li>
+          <li class="card">
+            <a href="https://sbabichenko.com/dissertation/afterword">
+              
+              <span class="what">&nbsp;</span>
+              <span class="t">Afterword</span>
+              <span class="d">Optical illusions, I, Pencil, and two simple questions. Illustrated, like the opening.</span>
+            </a>
+          </li>
+          <li class="card">
+            <a href="https://sbabichenko.com/dissertation/appendix-a">
+              <span class="num">A</span>
+              <span class="what">Appendix A</span>
+              <span class="t">Additional Finite-Horizon Extensions</span>
+              <span class="d">Additional finite-horizon extensions.</span>
+            </a>
+          </li>
+          <li class="card">
+            <a href="https://sbabichenko.com/dissertation/references">
+              
+              <span class="what">&nbsp;</span>
+              <span class="t">References</span>
+              <span class="d"></span>
+            </a>
+          </li>
+        </ol>
+        <details class="cite">
+          <summary>Cite it</summary>
+          <p>Babichenko, Samuel. 2026. <i>Noise-State Calculus for Dynamic Games with Strategic Information.</i> PhD dissertation,
+            University of California, Santa Barbara.</p>
+          <p>The core of the dissertation is also a paper: Babichenko, Sam. 2026. &ldquo;Forecasting and Manipulating the Forecasts of Others.&rdquo;
+            arXiv:2603.12140.</p>
+          <button type="button" class="cite-copy" data-for="cite-bib">Copy BibTeX</button>
+<pre id="cite-bib">@phdthesis{Babichenko2026Dissertation,
+  author = {Babichenko, Samuel},
+  title  = {Noise-State Calculus for Dynamic Games with Strategic Information},
+  school = {University of California, Santa Barbara},
+  year   = {2026},
+  url    = {https://sbabichenko.com/dissertation/}
+}
+
+@misc{Babichenko2026Forecasting,
+  author        = {Babichenko, Sam},
+  title         = {Forecasting and Manipulating the Forecasts of Others},
+  year          = {2026},
+  eprint        = {2603.12140},
+  archivePrefix = {arXiv},
+  primaryClass  = {math.OC},
+  url           = {https://arxiv.org/abs/2603.12140}
+}</pre>
+        </details>
+        <script>
+          document.querySelectorAll(".cite-copy").forEach((b) => b.addEventListener("click", () => {
+            const t = document.getElementById(b.dataset.for).textContent;
+            (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(
+              () => { b.textContent = "Copied"; setTimeout(() => { b.textContent = "Copy BibTeX"; }, 1600); },
+              () => { b.textContent = "Select the text below to copy"; });
+          }));
+        </script>
+      </section>
+    </main>
+
+    
+<footer class="site-foot">
+  
+  <span>&copy; 2025&ndash;2026 Sam Babichenko</span>
+  <a href="https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by&#x2F;4.0&#x2F;deed.en" rel="noopener" target="_blank">CC BY 4.0</a>
+  <a href="https://sbabichenko.com/colophon">Colophon</a>
+  <a href="https://sbabichenko.com/atom.xml" title="New writing, in any feed reader">Feed</a>
+  <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
+</footer>
+<script src="https://sbabichenko.com/js/tally.js?h=4000db8cd9e27f8f27cd"></script>
+<link rel="stylesheet" href="https://sbabichenko.com/css/whimsy.css?h=d4251323faf1bde2b9ac" />
+<link rel="stylesheet" href="https://sbabichenko.com/css/fold.css?h=c5acda3ad83f04ce162c" />
+<script src="https://sbabichenko.com/js/whimsy.js?h=a8c298c7f32b36526f42"></script>
+<script src="https://sbabichenko.com/js/skip.js?h=8b0612be930eb6b54639" defer></script>
+<script src="https://sbabichenko.com/js/fold.js?h=e11d63b1e1ab91ad246a"></script>
+
+    <script src="https://sbabichenko.com/js/sketch.js?h=3337a51b1d36fbc923ce"></script>
+    <script src="https://sbabichenko.com/dissertation/opening.js?h=9860ddc192cfc44a36e3"></script>
+    <script src="https://sbabichenko.com/dissertation/detour.js?h=ea2b28d770a2ab3da1ff"></script>
+    <script src="https://sbabichenko.com/dissertation/search.js?h=2d7afaeded96efc3cf89"></script>
+    <script src="https://sbabichenko.com/dissertation/bookmark.js?h=4b4777ad0ccb4b7bd7ea"></script>
+  </body>
+</html>

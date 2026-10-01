@@ -1,0 +1,546 @@
+
+<!doctype html>
+<html class="not-ready lg:text-base" lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Title -->
+  <title>The Decision Mesh, in Detail - Sam Babichenko</title>
+
+  <!-- Meta -->
+  <meta name="theme-color" />
+  <meta name="description" content="The decision mesh&#x27;s algorithm one level down: bisection and its closure, the hierarchical basis, the candidate score and its corrections, Lindsey&#x27;s null, admission, the two variances, stopping and the rectangle engine, drawn from live runs in your browser." />
+  <meta name="author" content="" />
+  <!-- The Open Graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="The Decision Mesh, in Detail" />
+  <meta property="og:site_name" content="Sam Babichenko" />
+  <meta property="og:description" content="The decision mesh&#x27;s algorithm one level down: bisection and its closure, the hierarchical basis, the candidate score and its corrections, Lindsey&#x27;s null, admission, the two variances, stopping and the rectangle engine, drawn from live runs in your browser." />
+  <meta property="og:url" content="https:&#x2F;&#x2F;sbabichenko.com&#x2F;decisionmesh&#x2F;detail&#x2F;" />
+  <meta property="og:image" content="https://sbabichenko.com/images/og.png" />
+
+  <!-- CSS & JS -->
+  <link rel="preload stylesheet" as="style" href="https://sbabichenko.com/main.css?h=83e18233020b9c7a7a8c" />
+  <style>
+    :root {
+      --bg: #FFFFF0;
+      --bg-dark: #1F2022;
+      --header: #e4e4e7;
+      --header-dark: #27272a;
+    }
+  </style>
+
+  
+
+  <!-- Dark Icon -->
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/theme.svg" />
+
+  <!-- Math -->
+  
+  <!---->
+
+  <!-- Mermaid -->
+  
+  <!---->
+
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://sbabichenko.com/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://sbabichenko.com/favicon-16x16.png">
+  <link rel="shortcut icon" href="https://sbabichenko.com/favicon.ico">
+  <link rel="apple-touch-icon" href="https://sbabichenko.com/apple-touch-icon.png">
+
+
+  <!-- Feeds -->
+  
+  <!---->
+  
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title="Atom"
+    href="https://sbabichenko.com/atom.xml"
+  />
+   
+  <!---->
+  
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https:&#x2F;&#x2F;sbabichenko.com&#x2F;decisionmesh&#x2F;detail&#x2F;" />
+
+  <!-- Head inject -->
+  <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="font" type="font/woff2" href="https://sbabichenko.com/fonts/newsreader-latin-opsz-normal.woff2" crossorigin>
+<link rel="stylesheet" href="https://sbabichenko.com/fonts/newsreader.css?h=5358dbda7c8bb2508eba">
+<link rel="stylesheet" href="https://sbabichenko.com/css/custom.css?h=f0c82a15a80fef316c80">
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="https://sbabichenko.com/dissertation/opening.css?h=f19150e18980924c70cd" />
+    <link rel="stylesheet" href="https://sbabichenko.com/mesh/gate-deep.css?h=65fa6782c07f68990178" />
+    
+<header
+  class="blur-header fixed top-0 z-40 mx-auto min-h-[3.5rem] w-full"
+>
+  <div class="mx-auto w-full max-w-4xl p-3 lg:flex lg:justify-between">
+    <div class="flex justify-between">
+      <div class="flex items-center">
+        <a class="text-2xl font-semibold" href="https://sbabichenko.com">Sam Babichenko</a>
+        <div
+          class="btn-dark ml-4 h-6 w-6 shrink-0 cursor-pointer text-[0px] [background:url(./icons/theme.svg)_left_center/cover_no-repeat] dark:[background-position:right] dark:invert"
+          role="button"
+          tabindex="0"
+          aria-label="Switch to dark theme"
+        ></div>
+        <style>
+          /* brown paper (a CC0 scan from ambientCG, reduced to its surface and fibers) is the page's own background: it scrolls with the page and stays behind the content, so it costs
+             nothing to scroll (an overlay blended over everything had to be recomposited on every frame) */
+          html :is(body, header.blur-header) { background-image: var(--paper-img); background-size: 768px 768px; background-blend-mode: multiply; }
+          html.dark :is(body, header.blur-header) { background-blend-mode: screen; }
+          /* a patch of the same paper, for the few things that must hide what passes under them (a sticky drawing on a
+             phone, a bar that stays put, a popup): background: var(--ground) var(--paper-img) 0 0 / 768px 768px with
+             background-blend-mode: var(--patch-blend). Everything else is clear, so the page's own paper runs through it.
+             Patches pin their paper to the window and shift it by the scroll (--paper-y), so a pill or bar that stays put
+             still shows the page's paper moving under it, lined up with the page around it. A new patch goes in the
+             list in the script below: only the patches carry --paper-y (set on the page's root, every scroll frame
+             restyled every element on the page, 100 ms and more a frame on a chapter). */
+          html:not(.dark) { --ground: #ecdebe; --patch-blend: multiply; }
+          html.dark { --ground: #1f2022; --patch-blend: screen; }
+          /* in light mode the paper also gets a paper's own warm tone: the site's near-white cream is what made the grain read as dirt */
+          html:not(.dark), html:not(.dark) :is(.home, .opening, .thesis, .gatehow) { --paper: #ecdebe; --sheet: #f0e4c8; }
+          html:not(.dark) body { background-color: var(--paper); }
+          /* the body's box grows with the page (the theme had it one window tall): browsers carry a body's background out
+             to the whole page, but a renderer that doesn't (a work browser behind a filtering proxy) painted the paper only
+             over the first screen */
+          html body { height: auto; min-height: 100vh; }
+          /* the paper runs through everything: the bar at the top is paper, cards and panels are clear (outlines only), and
+             pictures, plots and canvases are multiplied onto it, so their white ground becomes the paper and their ink stays ink */
+          html :is(.panel, .statusbar, button.tab:not([aria-selected="true"]), article.demo) { background-color: transparent !important; }
+          html header.blur-header { backdrop-filter: none; -webkit-backdrop-filter: none; background-color: var(--paper, #fffff0);
+            border-bottom: 0; box-shadow: none; }
+          html.dark header.blur-header { background-color: #1f2022; }
+          /* the bar stays put, but its paper is the page's: shifted with the scroll, so the grain moves under it as it does
+             everywhere else and lines up with the page at its edge */
+          html header.blur-header { background-position: 0 var(--paper-y, 0px); }
+          /* in place of a line under the bar: a soft band where whatever scrolls up (text, drawings, the mesh) blurs and fades
+             into the bar's paper, so nothing is cut off at a hard edge. It comes in over the first 44px of scroll: at the top of
+             the page nothing has scrolled under the bar, and the band would only wash out the first line below it */
+          html header.blur-header::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 44px; pointer-events: none;
+            background-color: inherit; background-image: inherit; background-size: inherit; background-blend-mode: inherit;
+            background-position: 0 calc(var(--paper-y, 0px) - var(--hdr-h, 56px));
+            -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+            -webkit-mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent);
+                    mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent); opacity: var(--hdr-fade, 0); }
+          /* the browser draws some things itself (a select's open list, scrollbars, a search box's clear button, pickers):
+             tell it which theme the page is in, so a dark page does not open a white menu, and give a select's options the
+             page's colours where the browser lets a page style them (Windows and Linux; macOS draws its own menus) */
+          html:not(.dark) { color-scheme: light; }
+          html.dark { color-scheme: dark; }
+          html:not(.dark) select option { background-color: #f3ead3; color: #1b1b1f; }
+          html.dark select option { background-color: #26272a; color: #ececef; }
+          /* secondary controls stay clear on the paper but get an edge that reads (28% of the text's colour; 9% vanished on
+             dim screens), a faint tint of ink under the cursor and when pressed, and fade as a whole when disabled */
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, #dsearch, .dsearch, button.copy, button.cite-copy,
+            button.tweet-load, .gatedeep .howbar button) { border-color: color-mix(in srgb, currentColor 28%, transparent) !important; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button) { transition: background-color 0.12s; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button):hover:not(:disabled) { background-color: color-mix(in srgb, currentColor 6%, transparent) !important; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button):active:not(:disabled) { background-color: color-mix(in srgb, currentColor 11%, transparent) !important; }
+          html :is(button, select):disabled { opacity: 0.45; }
+          /* checkboxes take the page's colours, not the browser's white square: a clear box on the paper with a line
+             in the text's colour, filled with the accent when ticked */
+          html input[type=checkbox] { -webkit-appearance: none; appearance: none; width: 15px; height: 15px; flex: none; margin: 0 0.35em 0 0;
+            vertical-align: -2px; display: inline-grid; place-content: center; cursor: pointer; background: transparent;
+            border: 1.5px solid color-mix(in srgb, currentColor 55%, transparent); border-radius: 4px; transition: background-color 0.12s, border-color 0.12s; }
+          html input[type=checkbox]::before { content: ""; width: 9px; height: 9px; transform: scale(0); transition: transform 0.12s;
+            background: var(--accent-ink, #fff); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
+          html input[type=checkbox]:checked { background: var(--accent, #1f3fd0); border-color: var(--accent, #1f3fd0); }
+          html.dark input[type=checkbox]:checked { background: var(--accent, #8fb0ff); border-color: var(--accent, #8fb0ff); }
+          html.dark input[type=checkbox]::before { background: var(--accent-ink, #0b1220); }
+          html input[type=checkbox]:checked::before { transform: scale(1); }
+          html input[type=checkbox]:focus-visible { outline: 2px solid var(--accent, #1f3fd0); outline-offset: 2px; }
+          html input[type=checkbox]:disabled { opacity: 0.45; cursor: default; }
+          /* sliders the same way: a thin track in the text's colour, filled with the accent up to the thumb (--fill,
+             kept by the script below), and an accent thumb ringed in the paper's colour */
+          html input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; height: 18px; cursor: pointer; }
+          html input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px;
+            background: linear-gradient(to right, var(--accent, #1f3fd0) var(--fill, 0%), color-mix(in srgb, currentColor 22%, transparent) var(--fill, 0%)); }
+          html input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: color-mix(in srgb, currentColor 22%, transparent); }
+          html input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--accent, #1f3fd0); }
+          html input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; border-radius: 50%;
+            background: var(--accent, #1f3fd0); border: 2px solid var(--ground, #ecdebe); box-shadow: 0 0 0 1px var(--accent, #1f3fd0); }
+          html input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--accent, #1f3fd0);
+            border: 2px solid var(--ground, #ecdebe); box-shadow: 0 0 0 1px var(--accent, #1f3fd0); }
+          html.dark input[type=range]::-webkit-slider-runnable-track { background: linear-gradient(to right, var(--accent, #8fb0ff) var(--fill, 0%), color-mix(in srgb, currentColor 22%, transparent) var(--fill, 0%)); }
+          html.dark input[type=range]::-moz-range-progress { background: var(--accent, #8fb0ff); }
+          html.dark input[type=range]::-webkit-slider-thumb { background: var(--accent, #8fb0ff); box-shadow: 0 0 0 1px var(--accent, #8fb0ff); }
+          html.dark input[type=range]::-moz-range-thumb { background: var(--accent, #8fb0ff); box-shadow: 0 0 0 1px var(--accent, #8fb0ff); }
+          html input[type=range]:focus-visible { outline: 2px solid var(--accent, #1f3fd0); outline-offset: 3px; border-radius: 4px; }
+          html:not(.dark) figure { background-color: transparent; }
+          /* the dissertation's figures (.webfig) are drawn transparent in the page's inks and need no blend */
+          html:not(.dark) :is(figure img, .shot img, .shot canvas, .panel canvas, .js-plotly-plot, main img):not(.webfig img) { mix-blend-mode: multiply; }
+          /* the tile is 768px: a 768-pixel image for ordinary screens (what the browser drew from the 1536 one anyway) and
+             the 1536 one for sharp screens */
+          html:not(.dark) { --paper-img: image-set(url(https://sbabichenko.com/images/paper/brown-light.webp?h=e5a70cdd56a8e0d11533) 1x, url(https://sbabichenko.com/images/paper/brown-light-2x.webp?h=839876cd80b11ff6e8b4) 2x); }
+          html.dark { --paper-img: image-set(url(https://sbabichenko.com/images/paper/brown-dark.webp?h=a1610218c435c74114b1) 1x, url(https://sbabichenko.com/images/paper/brown-dark-2x.webp?h=3eb5c860334b67cf2100) 2x); }
+        </style>
+        <script>
+          (() => {
+            // the patches of paper (above); a pseudo-element patch is listed as itself, and its element carries the scroll
+            // for browsers without scroll-driven animations
+            const PATCHES = ["header.blur-header", ".peek", ".figzoom", ".trace-note", ".wayback", ".gpanel", ".cover .cta a",
+              ".stage::before", ".gatehow .stage::before", "html.fold-table .story .stage", ".spike .controls", ".risk .rcontrols",
+              ".dsearch-panel", ".explorer #statusbar", ".explorer #race-statusbar", ".home .shot.draw .clear", ".home .shot.draw .status",
+              ".whimsy-coin p", ".whimsy-forecast", ".skip-pill"];
+            const root = document.documentElement, hdr = document.querySelector("header.blur-header");
+            if (hdr) new ResizeObserver(() => hdr.style.setProperty("--hdr-h", hdr.offsetHeight + "px")).observe(hdr);
+            const css = document.createElement("style");
+            css.textContent = '@property --paper-y { syntax: "<length>"; inherits: true; initial-value: 0px; }' +
+              '@property --hdr-fade { syntax: "<number>"; inherits: true; initial-value: 0; }';
+            if (CSS.supports("animation-timeline: scroll()") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+              // the browser moves each patch's paper with the scroll itself: --paper-y runs from 0 down by a pixel per
+              // pixel scrolled (the range is far longer than any page, so the ratio is one to one)
+              css.textContent += "@keyframes paper-y { from { --paper-y: 0px; } to { --paper-y: -1000000px; } }" +
+                "@keyframes hdr-fade { from { --hdr-fade: 0; } to { --hdr-fade: 1; } }" +
+                PATCHES.join(",") + " { animation: paper-y linear both; animation-timeline: scroll(root block); animation-range: 0px 1000000px; }" +
+                "header.blur-header { animation: paper-y linear both, hdr-fade linear both; animation-timeline: scroll(root block), scroll(root block);" +
+                " animation-range: 0px 1000000px, 0px 44px; }";
+            } else {
+              const hosts = PATCHES.map((s) => s.replace(/::before$/, "")).join(",");
+              let queued = false;
+              const put = () => { queued = false; const y = -(window.scrollY % 768) + "px";
+                for (const el of document.querySelectorAll(hosts)) el.style.setProperty("--paper-y", y);
+                if (hdr) hdr.style.setProperty("--hdr-fade", Math.min(1, window.scrollY / 44).toFixed(3)); };
+              addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(put); } }, { passive: true });
+              put();
+            }
+            document.head.appendChild(css);
+            // each slider's fill (--fill, the share of its range below the thumb): on input, on a script setting its value
+            // (the explorer and the demos redraw their sliders), and at load
+            const fill = (r) => { const lo = +r.min || 0, hi = r.max === "" ? 100 : +r.max, v = +r.value;
+              r.style.setProperty("--fill", (hi > lo ? (100 * (v - lo)) / (hi - lo) : 0).toFixed(2) + "%"); };
+            const fillAll = () => { for (const r of document.querySelectorAll("input[type=range]")) fill(r); };
+            addEventListener("input", (e) => { if (e.target.type === "range") fill(e.target); }, true);
+            const d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+            Object.defineProperty(HTMLInputElement.prototype, "value", { configurable: true, get: d.get,
+              set(v) { d.set.call(this, v); if (this.type === "range") fill(this); } });
+            let q = false;
+            new MutationObserver(() => { if (!q) { q = true; requestAnimationFrame(() => { q = false; fillAll(); }); } })
+              .observe(document.documentElement, { childList: true, subtree: true });
+            addEventListener("DOMContentLoaded", fillAll);
+          })();
+        </script>
+      </div>
+      
+      <div
+        class="btn-menu relative z-50 flex h-8 w-8 shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+        role="button"
+        tabindex="0"
+        aria-label="Menu"
+        aria-expanded="false"
+      ></div>
+      
+    </div>
+    <script>
+      // base
+      const htmlClass = document.documentElement.classList;
+      setTimeout(() => {
+        htmlClass.remove("not-ready");
+      }, 10);
+
+      // mobile menu
+      const btnMenu = document.querySelector(".btn-menu");
+      btnMenu?.addEventListener("click", () => {
+        btnMenu.setAttribute("aria-expanded", htmlClass.toggle("open"));
+      });
+      // the two div buttons answer Enter and Space like real buttons
+      for (const b of document.querySelectorAll(".btn-menu, .btn-dark"))
+        b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); b.click(); } });
+
+      // dark theme; storage can be blocked (privacy modes, locked-down browsers), so every read and write is guarded
+      const storedDark = () => { try { return localStorage.getItem("dark"); } catch (e) { return null; } };
+      const setDark = (isDark) => {
+        if (isDark) {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
+          htmlClass.add("dark");
+        } else {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "light" }));
+          htmlClass.remove("dark");
+        }
+        try { localStorage.setItem("dark", isDark); } catch (e) {}
+        document.querySelector(".btn-dark")?.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
+      };
+
+      // init
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      if (htmlClass.contains("dark")) {
+        setDark(true);
+      } else {
+        const darkVal = storedDark();
+        setDark(darkVal ? darkVal === "true" : darkScheme.matches);
+      }
+
+      // listen system
+      darkScheme.addEventListener("change", (event) => {
+        setDark(event.matches);
+      });
+
+      // manual switch
+      const btnDark = document.querySelector(".btn-dark");
+      btnDark.addEventListener("click", () => {
+        setDark(!htmlClass.contains("dark"));
+      });
+    </script>
+    
+    <nav class="flex w-full items-center lg:w-auto">
+      <ul
+        class="nav-wrapper flex w-full flex-col py-2 lg:w-auto lg:flex-row lg:self-center lg:py-0"
+      >
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/writing"
+            >Writing</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/dissertation"
+            >Dissertation</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/cv"
+            >CV</a
+          >
+        </li>
+        
+      </ul>
+      <!-- Header Nav inject -->
+      
+    </nav>
+    
+  </div>
+</header>
+
+    <div class="progress" id="progress" aria-hidden="true"></div>
+
+    <main class="opening idea gatedeep" id="gatedeep" data-worker="https://sbabichenko.com/mesh/fit-worker.js?h=fa66935bcf44abd29f7f">
+      <section class="ideahead">
+        <p class="eyebrow"><a href="https://sbabichenko.com#projects">Projects</a> &middot; <a href="https://sbabichenko.com/decisionmesh">Decision Mesh</a> &middot; in detail</p>
+        <h1>The Decision Mesh, in Detail</h1>
+        <p class="lede">The <a href="https://sbabichenko.com/decisionmesh#how">illustrated gate</a> follows one fit from start to
+          finish. This page goes one level down: how a triangle is split, how a height is stored, where a candidate&rsquo;s
+          score and its <i>z</i> come from, how the null is fitted, how candidates are admitted, and when the fit stops.
+          Both estimators run in your browser on coin flips drawn on this page.</p>
+        <div class="howbar">
+          <label>The odds <select id="truth"><option value="peaks" selected>Three peaks</option><option value="hills">A hill and a pit</option><option value="ring">A ring</option></select></label>
+          <label>Coin effects, sd <input type="range" id="coinsd" min="0" max="1" step="0.05" value="0.25" /> <span class="val" id="coinsdval">0.25</span></label>
+          <button id="again" type="button">Flip again</button>
+          <span class="howstatus" id="howstatus">Fitting&hellip;</span>
+        </div>
+      </section>
+
+      <section class="story" id="story">
+        <div class="stage" aria-hidden="true"><svg id="stage" viewBox="0 0 600 600"></svg></div>
+        <div class="steps">
+          <div class="step" data-scene="bisect">
+            <h2>Newest-Vertex Bisection</h2>
+            <p>Every face of the triangle mesh is a right triangle, and it can be split only one way: at the midpoint of
+              its longest edge. Both halves are right triangles again, and each half&rsquo;s longest edge is one of the old
+              triangle&rsquo;s short edges.</p>
+            <p class="small">A vertex asked for in the middle of a short edge forces the triangle to split its long edge
+              first, and that split can force a neighbor in turn. This chain is the <em>conformity closure</em>: it keeps
+              every vertex at a corner of each triangle around it, never in the middle of an edge. The run starts from the
+              square cut along one diagonal and split evenly to <span data-v="faces0">&hellip;</span> faces. The drawing
+              then asks for five splits near the run&rsquo;s deepest vertex, with the engine&rsquo;s rule computed on this
+              page; the <span class="warmword">orange</span> vertices are the ones the closure added, <span data-v="forced">&hellip;</span> in all. A vertex
+              added this way sits exactly at the average of its two parents, so it does not change the surface.</p>
+          </div>
+          <div class="step" data-scene="basis1d">
+            <h2>Parents, Surplus and Tents</h2>
+            <p>The surface is stored as corrections. A vertex that splits a segment has two parents, the segment&rsquo;s
+              ends. Its height is the average of its parents&rsquo; heights plus a number of its own, its
+              <em>surplus</em>.</p>
+            <p class="small">Changing one surplus moves that vertex and everything finer built on it. The surface changes by
+              the surplus times a <em>tent</em>: a function that is 1 at the vertex and falls linearly to 0 at the
+              neighboring vertices of its level. Level by level, the tents add up to the whole surface, and on a smooth
+              surface the deep surpluses are small. That is why a prior can pull each surplus toward zero. This drawing is a
+              one-dimensional sketch.</p>
+          </div>
+          <div class="step" data-scene="basis2d">
+            <h2>The Same Sum in Two Dimensions</h2>
+            <p>In two dimensions a tent covers the faces around its vertex. In the triangle mesh it is a pyramid over the two
+              triangles that share the split edge; in the rectangle mesh it is a bilinear bump over the cells beside it.</p>
+            <p class="small">The drawing rebuilds the rectangle run&rsquo;s surface from its surpluses, adding one depth at a
+              time. A vertex&rsquo;s depth is the level of the segment it splits: the shorter the segment, the deeper the
+              vertex. Rebuilt this way, the heights agree with the engine&rsquo;s to within <span data-v="rebuild">&hellip;</span>
+              logits. Only free vertices carry a surplus; every other vertex sits at its parents&rsquo; average.</p>
+          </div>
+          <div class="step" data-scene="score">
+            <h2>Where the Score Comes From</h2>
+            <p>A candidate is a vertex whose surplus is still held at zero. Its score says which way the fit would like
+              that surplus to move: it is the slope of the log-likelihood as the surplus leaves zero.</p>
+            <p class="small">For a site with <i>n</i> flips, <i>k</i> heads and fitted probability <i>p</i>, the slope is the
+              tent&rsquo;s height at the site times <i>k</i> &minus; <i>np</i>, summed over the sites under the tent. Each
+              term has variance tent&sup2; &times; <i>np</i>(1 &minus; <i>p</i>): the site&rsquo;s Fisher information, which
+              measures how sharply its flips pin down its odds, weighted by the tent. The candidate drawn is the one with the
+              largest round-0 |<i>z</i>| among the centers of the starting squares. Its sites are drawn against the final fit
+              with the surface flattened across the square. With coin effects the engine replaces <i>k</i> &minus; <i>np</i>
+              by the site&rsquo;s residual after its coin effect is estimated, centered on its expected value, and
+              <i>np</i>(1 &minus; <i>p</i>) by that residual&rsquo;s information, which is smaller. A candidate with fewer
+              than 10 sites under its tent is not scored.</p>
+          </div>
+          <div class="step" data-scene="refit">
+            <h2>Taking Out What the Parents Can Fit</h2>
+            <p>Part of any tent can be made by coefficients already in the fit. If the data only need a steeper slope
+              between the parents, the candidate should not get credit for it.</p>
+            <p class="small">Write each coefficient&rsquo;s tent, evaluated at the sites, as a column. The candidate&rsquo;s
+              column <i>x</i> splits into the closest combination <i>Xa</i> of the existing columns, measured with the
+              sites&rsquo; weights and the prior, and a remainder <i>x</i> &minus; <i>Xa</i>. The remainder&rsquo;s weighted
+              squared length, <i>h</i>, is the information left for the candidate alone. For the square in the last step,
+              the tents at its four corners could absorb <span data-v="absorb">&hellip;</span> of its tent, computed here with
+              weights <i>np</i>(1 &minus; <i>p</i>) on the sites inside the square. The engine uses every site, its own
+              weights and the prior. The vector picture is a sketch.</p>
+          </div>
+          <div class="step" data-scene="bias">
+            <h2>Shrinkage Bias and the <i>z</i></h2>
+            <p>The prior pulls every surplus toward zero, so the fit falls a little short where the data want more. A
+              candidate nearby picks up that shortfall in its score even when no new vertex is needed.</p>
+            <p class="small">The engine estimates that part of the score as <i>c</i>&prime;<i>J</i><sup>&minus;1</sup><i>P&theta;</i>,
+              with <i>&theta;</i> the fitted coefficients and <i>P</i> the prior&rsquo;s precision, and subtracts it. Because
+              the fit sets <i>X</i>&prime;<i>s</i> = <i>P&theta;</i>, the corrected score is the score of the remainder,
+              (<i>x</i> &minus; <i>Xa</i>)&prime;<i>s</i>. Dividing by its standard deviation, built from each site&rsquo;s
+              variance the same way, gives the candidate&rsquo;s <i>z</i>. The surplus it proposes is <i>S</i>/(<i>h</i> +
+              <i>&lambda;</i>), with <i>S</i> the score and <i>&lambda;</i> the prior&rsquo;s precision at its depth. The top
+              of the drawing is a one-dimensional sketch; the numbers below it are the engine&rsquo;s.</p>
+          </div>
+          <div class="step" data-scene="lindsey">
+            <h2>Fitting the Null</h2>
+            <p>If none of a round&rsquo;s candidates mattered, their <i>z</i>&rsquo;s would follow one bell curve, the
+              <em>null</em>. The gate estimates that curve from the round&rsquo;s own scores, by Lindsey&rsquo;s method.</p>
+            <p class="small">The scores are counted into 72 bins, each score split between its two nearest bins. A Poisson
+              regression of the counts on a degree-6 polynomial in <i>z</i> gives a smooth log-density. A normal&rsquo;s
+              log-density is a parabola, and near zero the null dominates, so a parabola is fitted to the log-density over
+              |<i>z</i>| &le; 2 (central matching). Its peak gives the null&rsquo;s center, its curvature the spread, and its
+              height <i>&pi;</i><sub>0</sub>, the share of candidates that are noise. Recomputed on this page from round
+              0&rsquo;s scores: <span data-v="lnull">&hellip;</span>. The engine&rsquo;s: <span data-v="enull">&hellip;</span>.
+              The fitted null can come out wider than the sharp peak of the bars, which is right, since many null scores
+              really are that spread out.
+              The spread is held between 0.35 and 6 (3 in the rectangle engine).</p>
+          </div>
+          <div class="step" data-scene="select">
+            <h2>Three Ways to Pick</h2>
+            <p>A candidate&rsquo;s local false discovery rate, <em>lfdr</em>, is the chance it is noise given its
+              <i>z</i>: <i>&pi;</i><sub>0</sub> times the null&rsquo;s density at <i>z</i>, divided by the fitted density.
+              The gate sorts by lfdr and takes the longest run from the top whose average lfdr stays at or below 10%.</p>
+            <p class="small">That average estimates the share of noise among those taken. On round 0&rsquo;s scores the
+              gate takes <span data-v="nLfdr">&hellip;</span>. Benjamini&ndash;Hochberg at the same 10%, against the textbook
+              null N(0, 1), would take <span data-v="nBH">&hellip;</span>, and |<i>z</i>| &gt; 1.96 would take
+              <span data-v="nNaive">&hellip;</span>. The gate falls back to Benjamini&ndash;Hochberg only when a round has
+              fewer than 50 candidates, or when the fitted density has no peak near zero to match.</p>
+          </div>
+          <div class="step" data-scene="rescore">
+            <h2>Admitting One at a Time</h2>
+            <p>Tents at neighboring vertices overlap. If two candidates sit on the same bump in the data, both score well,
+              but once one is admitted the other has less left to explain.</p>
+            <p class="small">So the selected candidates are admitted one at a time, best first, and each is scored again
+              against the surface the earlier admissions left. The surplus committed is the one from the new score. In this
+              one-dimensional sketch, admitting A leaves B with <span data-v="skB">&hellip;</span> of its score.</p>
+          </div>
+          <div class="step" data-scene="overlap">
+            <h2>Overlapping Tents in the Run</h2>
+            <p>Round 0 of the run selected <span data-v="sel0">&hellip;</span> candidates. Their tents are outlined here,
+              numbered in the order they were admitted.</p>
+            <p class="small"><span data-v="ovl">&hellip;</span> A candidate is turned back only when its new score no longer
+              promises a gain, which in practice means its score is exactly zero or fewer than 10 sites remain under its
+              tent. Over the whole run the engine scored <span data-v="reprof">&hellip;</span> candidates again at admission
+              and turned back <span data-v="rejected">&hellip;</span>. Admission first adds the candidate&rsquo;s closure at
+              zero surplus; those vertices stay even if the candidate is turned back.</p>
+          </div>
+          <div class="step" data-scene="variance">
+            <h2>Two Variances</h2>
+            <p>The coin variance <i>v</i> is the spread of the coin effects around the surface. It is estimated again at the
+              start of every round, by matching the squared residuals to what <i>v</i> predicts once the fit is allowed
+              for.</p>
+            <p class="small">As the mesh takes up the pattern in the odds, <i>v</i> falls toward the true
+              <span data-v="truev">&hellip;</span>. The depth variance <i>&tau;</i>&sup2; sets the prior on the surpluses at
+              one depth, with precision <i>&lambda;</i> = 1/<i>&tau;</i>&sup2;. It is estimated by EM: the average, over that
+              depth&rsquo;s admitted vertices, of the surplus squared plus its posterior variance. A depth needs three
+              admitted vertices; with fewer it borrows from the nearest depth that has them. <i>&tau;</i> starts at 1 logit
+              and never goes below 0.005.</p>
+          </div>
+          <div class="step" data-scene="stop">
+            <h2>Stopping</h2>
+            <p>The rounds stop after three in a row select nothing, when no candidate can be scored, or when the mesh passes
+              its face budget: <span data-v="cap">&hellip;</span> faces here, the larger of 600 and one face per 24 sites.</p>
+            <p class="small">The whole surface is refitted at the start of every round and after every third round. After
+              the last round comes one more refit. Then any coefficient whose tent covers no training site is retired, fixed
+              at zero surplus: <span data-v="retired">&hellip;</span> here. Last comes a final refit with a tighter tolerance
+              and more accurate variance calculations. This run took <span data-v="nr">&hellip;</span> rounds.</p>
+          </div>
+          <div class="step" data-scene="rect">
+            <h2>The Rectangle Engine</h2>
+            <p>The rectangle engine runs the same gate on different cells. Each cell is a rectangle with a bilinear
+              surface, and it can be cut along either axis, so each cell offers both cuts as candidates and the gate
+              picks.</p>
+            <p class="small">It starts from an 8 &times; 8 grid with the corners and the two midlines free. Cutting a cell
+              leaves its neighbor with a vertex in the middle of an edge, a <em>hanging</em> vertex (orange). Its parents
+              are the ends of that edge, so it sits on the edge&rsquo;s line and the surface stays continuous without a
+              closure. <span data-v="hang">&hellip;</span> Its null&rsquo;s spread is capped at 3, and a round counts toward
+              the three that stop the fit whenever it admits nothing, not only when it selects nothing. On the held-out half
+              the mean deviance per site is <span data-v="devR">&hellip;</span> for the rectangles and
+              <span data-v="devT">&hellip;</span> for the triangles<span data-v="devV"></span>. A site&rsquo;s deviance is twice the log of how much
+              likelier its flips are under its own share of heads than under the fit.</p>
+          </div>
+        </div>
+      </section>
+
+      <a class="skip-pill" href="#more" data-from="#story">Skip to the end</a>
+      <section class="ideafoot" id="more">
+        <p>The same run, told as a story rather than taken apart, is on the <a href="https://sbabichenko.com/decisionmesh#how">illustrated gate</a>.</p>
+        <div class="cta">
+          <a class="primary" href="https://sbabichenko.com/decisionmesh#truth=drawing">Fit your own drawing</a>
+          <a href="https://sbabichenko.com/decisionmesh#how">The gate, step by step</a>
+        </div>
+        <p class="note">The runs: 6,000 sites on the unit square, each flipping a coin between 10 and 30 times, with odds
+          from the picture chosen above plus a normal effect per coin on the log-odds, fitted by
+          <a href="https://github.com/sbabichenko/triangular-decision-mesh">triangular-decision-mesh</a> and
+          <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a> compiled to
+          WebAssembly, with half the sites held out. The scores, nulls, lfdrs, admissions, variances and meshes drawn are
+          the engines&rsquo; own. The null in the seventh step and the counts in the eighth are recomputed on the page from
+          the engine&rsquo;s scores. The splits in the first step are computed on the page with the engine&rsquo;s rule.
+          The second, fifth, sixth (top) and ninth drawings are sketches.</p>
+      </section>
+    </main>
+
+    
+<footer class="site-foot">
+  
+  <span>&copy; 2025&ndash;2026 Sam Babichenko</span>
+  <a href="https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by&#x2F;4.0&#x2F;deed.en" rel="noopener" target="_blank">CC BY 4.0</a>
+  <a href="https://sbabichenko.com/colophon">Colophon</a>
+  <a href="https://sbabichenko.com/atom.xml" title="New writing, in any feed reader">Feed</a>
+  <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
+</footer>
+<script src="https://sbabichenko.com/js/tally.js?h=4000db8cd9e27f8f27cd"></script>
+<link rel="stylesheet" href="https://sbabichenko.com/css/whimsy.css?h=d4251323faf1bde2b9ac" />
+<link rel="stylesheet" href="https://sbabichenko.com/css/fold.css?h=c5acda3ad83f04ce162c" />
+<script src="https://sbabichenko.com/js/whimsy.js?h=a8c298c7f32b36526f42"></script>
+<script src="https://sbabichenko.com/js/skip.js?h=8b0612be930eb6b54639" defer></script>
+<script src="https://sbabichenko.com/js/fold.js?h=e11d63b1e1ab91ad246a"></script>
+
+    <script src="https://sbabichenko.com/js/sketch.js?h=3337a51b1d36fbc923ce"></script>
+    <script src="https://sbabichenko.com/mesh/gate-deep.js?h=7656159969a1fe68bdae"></script>
+  </body>
+</html>
