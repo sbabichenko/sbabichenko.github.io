@@ -127,9 +127,9 @@
       </section>
 
       <div class="notes">
-        <p>Chapter 6's full-equilibrium view solves its finite-state Hamilton–Jacobi equations directly, including the
-          opaque trader's evolving misperception. It includes the entire inventory tail. Choose General solver in that
-          tab to inspect the windowed calculation, its first-order conditions, and its numerical checks.</p>
+        <p>Chapter 6's full-equilibrium view does not use noisestate. It solves equations worked out for this market alone.
+          The noisestate view runs the package on the same model, which cuts the past off at the lag window, so it is only
+          approximate there.</p>
         <p>The solver is a C++ port of <a href="https://github.com/sbabichenko/noisestate">noisestate</a> 2.3 (MIT license)
           with the same equations and algorithms: the stationary and spectral engines, transitions with their past,
           band, buffer and march in T, monitored deviations and instant observations, and the refinement and stability checks. On its test grid its costs,
