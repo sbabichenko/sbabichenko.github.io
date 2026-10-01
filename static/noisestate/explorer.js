@@ -96,7 +96,7 @@ numerics: {nodes: 32}
       <div class="tex" data-tex="\\text{trader sees } dY^1 = \\gamma_1 (V - P)\\,dt + dW^1 \\text{ and the flow}">trader sees dY<sup>1</sup> = &gamma;<sub>1</sub> (V &minus; P) dt + dW<sup>1</sup> and the flow</div>
       <div class="tex" data-tex="\\text{trader maximizes } \\mathbb{E}\\int e^{-\\rho t}\\big[D^1 (V - P) - \\varepsilon\\,(D^1)^2\\big]\\,dt, \\qquad P = \\mathbb{E}[V \\mid \\text{flow}]">trader maximizes E &int; e<sup>&minus;&rho;t</sup> [ D<sup>1</sup>(V &minus; P) &minus; &epsilon; (D<sup>1</sup>)<sup>2</sup> ] dt, &nbsp; P = E[V | flow]</div></div>
       <p class="small muted" style="margin:0">Costs are flow losses, so the trader's profit shows as a negative number.
-      The market maker's number omits the V<sup>2</sup> term and is not a welfare measure. Small trading costs make the
+      The market maker's loss is the mean squared pricing error E[(P &minus; V)<sup>2</sup>]. Small trading costs make the
       fixed point hard to reach; the status bar says when a solve did not converge.</p>`,
     yaml: `name: ch4_kyle_back
 params: {eps: 0.2, rho: 0.5, gamma1: 1.0, sigma_V: 1.0, sigma_Z: 1.0}
@@ -109,7 +109,7 @@ agents:
     myopic: true
     signals:
       flow: {drift: {D1: 1.0}, noise: {wZ: sigma_Z}}
-    loss: [[1.0, P, P], [-2.0, P, V]]
+    loss: [[1.0, P, P], [-2.0, P, V], [1.0, V, V]]
   trader1:
     controls: [D1]
     signals:
@@ -117,7 +117,7 @@ agents:
       flow: {drift: {}, noise: {wZ: sigma_Z}}
     loss: [[-1.0, D1, V], [1.0, D1, P], [eps, D1, D1]]
 horizon: {kind: stationary, discount: rho, window: 12.0}
-numerics: {nodes: 16}
+numerics: {nodes: 32}
 `,
     sliders: [
       { key: "eps", label: "ε trading cost", min: 0.05, max: 2, log: true },
@@ -128,7 +128,7 @@ numerics: {nodes: 16}
     ],
     defaultVar: "P", defaultCtl: "D1",
     channelNames: { wV: "value shock", wZ: "noise-trader flow shock", w1: "trader's signal noise" },
-    nodes: { def: 16, options: [[12, "12: quick"], [16, "16: the default"], [24, "24: fine, slower"]] },
+    nodes: { def: 32, options: [[16, "16: quick, rough"], [24, "24: medium"], [32, "32: the default"], [40, "40: fine, slower"]] },
     window: { key: "window", check: "window", label: "Lag window", def: 12, options: [[8, "8: quick"], [12, "12: the default"], [16, "16: long, slower"]],
       hint: "A longer window holds slow-decaying responses; it costs time.", apply: (d, v) => { d.horizon.window = v; } },
   },
@@ -734,7 +734,7 @@ P, D1 = ns.Control("P"), ns.Control("D1")
 V.d = sigma_V * dwV
 market_maker = ns.Agent("market_maker", controls=P, myopic=True,
                         observes={"flow": D1 * dt + sigma_Z * dwZ},
-                        loss=P**2 - 2 * P * V)
+                        loss=(P - V)**2)
 trader1 = ns.Agent("trader1", controls=D1,
                    observes={"y1": (gamma1 * V - gamma1 * P) * dt + dw1, "flow": sigma_Z * dwZ},
                    loss=-D1 * V + D1 * P + eps * D1**2)`;
@@ -1337,6 +1337,35 @@ function addCompare(request, model, g, start) {
   const stat = !model.horizon || !model.horizon.kind || model.horizon.kind === "stationary";
   if ((g !== "custom" && def.deviation) || (g === "custom" && ch6 && stat)) request.deviation = { continuation: "blip" };
 }
+// A converged fixed point can still be a badly truncated or non-minimizing
+// result. Keep diagnostics/export available, but do not present its curves as
+// an equilibrium or reuse it as a warm start. Mild accuracy failures stay visible.
+function resultProblem(res) {
+  if (!res || !res.ok) return "The model could not be solved.";
+  if (!res.converged) return `The fixed point did not converge (residual ${fmtE(res.residual)}).`;
+  const checks = res.checks || [];
+  const minimum = checks.find(d => d.ok === false && d.name.startsWith("second_order:"));
+  if (minimum) return checks.some(d => d.name === "resolution" && d.ok === false)
+    ? "A best response failed the minimum check on an under-resolved grid. Refine the grid before interpreting it."
+    : "A best response failed the minimum check.";
+  // Ten percent is a display cutoff, not a replacement for the solver's tighter
+  // acceptance threshold. Slow, mildly truncated curves remain marked approximate.
+  const tail = checks.find(d => d.ok === false && ["window", "past window", "continuation window"].includes(d.name) && d.value > 0.1);
+  if (tail) return `The ${tail.name} check shows a ${(100 * tail.value).toFixed(1)}% boundary change; this window is too short to draw a reliable result.`;
+  return "";
+}
+function displayProblem(res) {
+  const own = resultProblem(res);
+  if (own) return own;
+  return res.compare && resultProblem(res.compare) ? `${res.compare.label || "Compared model"}: ${resultProblem(res.compare)}` : "";
+}
+function failedChecks(res) {
+  return (res.checks || []).filter(d => d.ok === false && d.name !== "converged").concat(
+    res.compare ? (res.compare.checks || []).filter(d => d.ok === false && d.name !== "converged").map(d => ({ ...d, scope: res.compare.label || "Compared model" })) : []);
+}
+function sweepEligible(res) {
+  return !displayProblem(res) && !failedChecks(res).length;
+}
 function onSolved(m) {
   if (!inFlight || m.id !== inFlight.id) return;
   const req = inFlight; inFlight = null; stopTimer();
@@ -1360,12 +1389,12 @@ function onSolved(m) {
     if (stale && req && (req.game === game || pending)) sendSolve();
     return;
   }
-  if (res.start && req) { if (res.converged) lastStart[req.game] = res.start; delete res.start; }
-  if (res.compare && res.compare.start && req) { if (res.compare.converged) lastStartCompare[req.game] = res.compare.start; delete res.compare.start; }
+  if (res.start && req) { if (!resultProblem(res)) lastStart[req.game] = res.start; delete res.start; }
+  if (res.compare && res.compare.start && req) { if (!resultProblem(res.compare)) lastStartCompare[req.game] = res.compare.start; delete res.compare.start; }
   if (req && req.game === game) {
     const tf = document.getElementById("threadfact");
     if (tf) tf.textContent = res.engine === "ch6-markov" ? "finite-state equilibrium" : solverThreads > 1 ? `${solverThreads} threads in this browser` : "single-threaded in this browser";
-    prevResult = lastResult && lastResult.name === res.name && lastResult.kind === res.kind ? lastResult : null;
+    prevResult = lastResult && !displayProblem(lastResult) && lastResult.name === res.name && lastResult.kind === res.kind ? lastResult : null;
     lastResult = res;
     $("savebtn").disabled = false;
     try { renderResults(res); plotSnapshot = null; updateSweepPanel(); drawSweep(); }
@@ -1373,25 +1402,28 @@ function onSolved(m) {
   }
   if (stale) { sendSolve(); return; }
   $("results").classList.remove("stale");
-  const failed = res.checks.filter((d) => d.ok === false && d.name !== "converged");
+  const failed = failedChecks(res), problem = displayProblem(res);
   const t = m.wall < 0.1 ? "under 0.1" : m.wall.toFixed(1), how = res.warm_start ? " from the last equilibrium" : "";
   const accuracy = failed.filter((d) => ACCURACY_CHECKS.has(d.name)), other = failed.filter((d) => !ACCURACY_CHECKS.has(d.name));
-  if (res.engine === "ch6-markov") setStatus("ok", "Equilibrium", `Solved in ${t} s. Costs include the full inventory tail; the curves follow the finite-state equilibrium.`);
-  else if (!res.converged) setStatus("bad", "Not converged", `The fixed point did not converge (residual ${fmtE(res.residual)} after ${res.evaluations} rounds). Try a finer grid or less extreme parameters.`);
+  if (problem) setStatus("bad", res.converged ? "Result not reliable" : "Not converged", problem + " Curves and costs are withheld; diagnostics are below.");
+  else if (res.engine === "ch6-markov") setStatus("ok", "Equilibrium", `Solved in ${t} s. Costs include the full inventory tail; the curves follow the finite-state equilibrium.`);
   else if (failed.length && !other.length)
     setStatus("warn", "Solved, approximate", `Solved in ${t} s${how}. ${cap(accuracy.map(accuracyNote).join("; "))}.`
       + (game !== "custom" && PRESETS[game].approx && accuracy.every((d) => d.name === "resolution" || d.name === "settled") ? " " + PRESETS[game].approx : ""));
-  else if (failed.length) setStatus("warn", "Converged, with warnings", `Solved in ${t} s${how}. Failed: ${failed.map((d) => checkName(d.name)).join(", ")}; the Diagnostics table says what each means.`);
+  else if (failed.length) setStatus("warn", "Converged, with warnings", `Solved in ${t} s${how}. Failed: ${failed.map((d) => (d.scope ? d.scope + ": " : "") + checkName(d.name)).join(", ")}; the Diagnostics table says what each means.`);
   else setStatus("ok", "Solved", `Solved in ${t} s${how}, ${res.evaluations} best-response rounds, residual ${fmtE(res.residual)}. All checks passed.`);
-  showFixes(res.converged ? accuracy : failed.filter((d) => d.name === "resolution"));
+  showFixes(accuracy);
 }
 
 // Checks that measure numerical accuracy (the grid, the windows, whether a transition has settled), as against
 // findings about the equilibrium (a saddle, unstable best responses). Only these grade a solve "approximate".
-const ACCURACY_CHECKS = new Set(["resolution", "window", "past window", "continuation window", "settled"]);
+const ACCURACY_CHECKS = new Set(["resolution", "window", "past window", "continuation window", "settled", "cost window", "window cost"]);
 const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
 function accuracyNote(d) {
+  if (d.scope) return d.scope + ": " + accuracyNote({ ...d, scope: null });
   const pct = (x) => (100 * x).toFixed(x < 0.01 ? 2 : 1) + "%";
+  if (d.name === "cost window") return `${pct(d.value)} of a reported cost still accrues in the last tenth of the window`;
+  if (d.name === "window cost") return `a longer window changes a reported cost by ${fmtE(d.value)} (target ${fmtE(d.threshold)})`;
   if (d.name === "resolution") return `the grid represents the strategies to ${fmtE(d.value)} (target ${fmtE(d.threshold)})`;
   if (d.name === "settled") return `the transition's last window is ${fmtE(d.value)} of its peak from the new stationary rules (target ${fmtE(d.threshold)})`;
   const which = d.name === "window" ? "" : d.name === "past window" ? "the old regime's " : "the new regime's ";
@@ -1417,7 +1449,7 @@ function fixesFor(checks) {
       const n = values[game].nodes, next = Math.min(def.nodes.max || MAX_NODES, Math.max(n + 2, Math.round(n * 1.5)));
       if (next > n) fix = { key: "nodes", value: next, label: `Solve again with ${next} nodes` };
     } else {
-      const W = [def.window, def.grid].find((G) => G && G.check === d.name);
+      const W = [def.window, def.grid].find((G) => G && G.check === (["cost window", "window cost"].includes(d.name) ? "window" : d.name));
       if (W) {
         const w = values[game][W.key], next = Math.min(MAX_WINDOW, Math.round(w * 1.5 * 2) / 2);
         if (next > w) fix = { key: W.key, value: next, label: `Solve again with ${d.name === "past window" ? "a past window" : "a window"} of ${next}` };
@@ -1520,7 +1552,13 @@ function glide(el, data, layout, cfg) {
       if (!el.isConnected) return;
       el.style.visibility = "";
       return Plotly.animate(el, { data: finals, traces: idx }, { transition: { duration: 650, easing: "cubic-in-out" }, frame: { duration: 650, redraw: false } });
-    }).then(() => el.isConnected && Plotly.relayout(el, { "xaxis.autorange": true, "yaxis.autorange": true }));
+    }).then(() => {
+      if (!el.isConnected) return;
+      // Plotly can retain the animation's union-range SVG coordinates after
+      // autoranging (T: 9 -> 3 left the paths ending at time 1). Finish with a
+      // fresh plot of the target data so lines and filled bands use the final axes.
+      return Plotly.newPlot(el, data, layout, cfg);
+    });
   }).catch(() => { if (!el.isConnected) return; el.style.visibility = ""; return Plotly.newPlot(el, data, layout, cfg); });
 }
 
@@ -1574,10 +1612,26 @@ function renderResults(res) {
   clearPlots(out);
   const def = PRESETS[game];
   const params = res.params_used || (game !== "custom" ? values[game] : {});
+  const problem = displayProblem(res);
+  if (problem) {
+    plotSnapshot = null;
+    out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Result not reliable</h2><p>${esc(problem)}</p><p>Curves and costs are withheld. The diagnostics and saved JSON retain the solver's result.</p>
+      ${game === "ch6" ? '<button class="secondary" id="use-reference">Show the full equilibrium</button>' : ''}
+      ${lastStart[game] || lastStartCompare[game] ? '<button class="secondary" id="solve-cold">Solve from scratch</button>' : ''}</section>`);
+    const reference = out.querySelector("#use-reference");
+    if (reference) reference.onclick = () => { opts.reference = true; renderControls(); writeHash(); requestSolve(0); };
+    const cold = out.querySelector("#solve-cold");
+    if (cold) cold.onclick = () => { delete lastStart[game]; delete lastStartCompare[game]; requestSolve(0); };
+    renderDiagnostics(res, out);
+    if (res.compare && res.compare.ok) renderDiagnostics(res.compare, out, res.compare.label || "Compared model");
+    return;
+  }
   const cards = Object.entries(res.costs).map(([a, v]) => {
     let shown = v, note = res.cost_kind;
     const extra = def.constCost ? def.constCost(values[game])[a] : 0;
     if (def.constCost) { shown = v + extra; note = def.constNote ? def.constNote(res) : "expected cost over [0, T]"; }
+    const costTail = (res.checks || []).find(d => d.name === "cost window" && d.ok === false);
+    if (costTail && res.cost_tail && res.cost_tail[a] > costTail.threshold) note = `truncated at lag ${fmt(res.window, 1)}; not yet a settled flow cost`;
     const parts = res.cost_parts[a];
     const split = parts && Math.abs(parts.mean) > 1e-12 ? `variance ${fmt(parts.variance, 3)}, mean ${fmt(parts.mean + extra, 3)}` : "";
     const before = prevResult && prevResult.costs[a] !== undefined ? prevResult.costs[a] + extra : null;
@@ -1596,6 +1650,7 @@ function renderResults(res) {
   if (res.kind.startsWith("finite") || res.kind === "transition") renderFinite(res, out, keepVar, keepCtl);
   else renderStationary(res, out, keepVar, keepCtl);
   renderDiagnostics(res, out);
+  if (res.compare && res.compare.ok) renderDiagnostics(res.compare, out, res.compare.label || "Compared model");
 }
 
 function renderFinite(res, out, keepVar, keepCtl) {
@@ -2079,17 +2134,17 @@ function spectrumPanel(st) {
       <p class="muted" style="margin:0">Inside the unit circle a round of best responses shrinks a deviation. Past &minus;1 on the real axis each round overshoots with the sign flipped, and damping pulls it inside; past +1 each round pushes the same way, and damping cannot. ${st.method === "arnoldi" ? "Arnoldi returns the largest eigenvalues in modulus; the others are smaller." : ""}</p>
     </div></div>`;
 }
-function renderDiagnostics(res, out) {
+function renderDiagnostics(res, out, scope = "") {
   const rows = res.checks.map((d) => `<tr><td>${esc(checkName(d.name))}</td><td><span class="chip ${d.ok === false ? "warn" : "ok"}">${d.ok === false ? "failed" : "passed"}</span></td>
     <td class="mono">${checkValue(d)}</td>
-    <td>${esc(d.ok === false ? (d.flag || d.meaning) : (CHECK_MEANING[d.name.split(":")[0]] || d.meaning))}</td></tr>`).join("");
-  out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Diagnostics</h2>
+    <td>${esc(d.ok === false ? (d.name.startsWith("second_order:") && (res.checks || []).some(c => c.name === "resolution" && c.ok === false) ? "Negative curvature on an under-resolved grid. Refine before concluding that the best response is not a minimum." : (d.flag || d.meaning)) : (CHECK_MEANING[d.name.split(":")[0]] || d.meaning))}</td></tr>`).join("");
+  out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Diagnostics${scope ? ": " + esc(scope) : ""}</h2>
     <p class="small muted" style="margin-top:0">${esc(res.version)}${res.engine !== "ch6-markov" && solverThreads > 1 ? ` · ${solverThreads} threads` : ""} · ${esc(res.message)} · solve ${fmt(res.seconds, 2)} s.
     ${res.engine === "ch6-markov" ? "These checks test the coupled equilibrium equations and the stabilizing branch. The general solver view supplies grid checks and the best-response spectrum." : "A failed check means the numbers may be off in the digits shown here; the row says what to raise."}</p>
     <div class="tablewrap"><table class="diag checks"><thead><tr><th>Check</th><th>Status</th><th>Value / threshold</th><th>What it means</th></tr></thead><tbody>${rows}</tbody></table></div>
     ${res.stability ? spectrumPanel(res.stability) : ""}
     ${res.refinement ? `<p class="small" style="margin:6px 0 0">Refinement: re-solved at ${res.refinement.nodes} nodes in ${fmt(res.refinement.seconds, 1)} s; costs moved ${fmtE(res.refinement.cost_change)}, kernels ${fmtE(res.refinement.kernel_change)}.</p>` : ""}
-    ${game !== "custom" ? modelPanel(currentModel()) : ""}</section>`);
+    ${game !== "custom" && !scope ? modelPanel(currentModel()) : ""}</section>`);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -2239,12 +2294,19 @@ function onSweepResult(m) {
   const x = S.xs[S.i], def = PRESETS[S.game];
   if (res.ok && window.siteTally) window.siteTally("solve");
   const extra = def.constCost ? def.constCost({ ...S.values, [S.key]: x }) : {};
-  if (res.ok && res.converged) {
+  if (sweepEligible(res)) {
     for (const [a, v] of Object.entries(res.costs)) (S.costs[a] = S.costs[a] || []).push([x, v + (extra[a] || 0)]);
     const C = res.compare;
     if (C && C.ok && C.converged) { for (const [a, v] of Object.entries(C.costs)) (S.naive[a] = S.naive[a] || []).push([x, v + (extra[a] || 0)]); if (C.start) S.startCompare = C.start; }
     if (res.start) S.start = res.start;
-  } else S.failed++;
+  } else {
+    S.failed++;
+    // Explicit gaps prevent a line from implying a valid equilibrium between
+    // accepted points on either side of a failed solve or numerical check.
+    const agents = Object.keys(S.jobs[S.i].model.agents || {});
+    for (const a of agents) (S.costs[a] = S.costs[a] || []).push([x, null]);
+    if (S.jobs[S.i].request.compare) for (const a of agents) (S.naive[a] = S.naive[a] || []).push([x, null]);
+  }
   S.i++;
   if (S.game === game) drawSweep();
   nextSweep();
@@ -2255,9 +2317,9 @@ function drawSweep() {
   const pal = palette(), agents = Object.keys(S.costs), tr = [];
   agents.forEach((a, i) => {
     const col = pal[(i + 1) % pal.length], P = S.costs[a];
-    tr.push({ x: P.map((p) => p[0]), y: P.map((p) => p[1]), name: AGENT_LABEL[a] || a, type: "scatter", mode: "lines+markers", line: { color: col, width: 2 }, marker: { size: 5, color: col } });
+    tr.push({ x: P.map((p) => p[0]), y: P.map((p) => p[1]), name: AGENT_LABEL[a] || a, type: "scatter", mode: "lines+markers", connectgaps: false, line: { color: col, width: 2 }, marker: { size: 5, color: col } });
     const Q = S.naive[a];
-    if (Q && Q.length) tr.push({ x: Q.map((p) => p[0]), y: Q.map((p) => p[1]), name: (AGENT_LABEL[a] || a) + ", " + (((PRESETS[S.game].compare || {}).label) || "compared").toLowerCase(), type: "scatter", mode: "lines+markers", line: { color: col, width: 2, dash: "dash" }, marker: { size: 5, color: col, symbol: "circle-open" } });
+    if (Q && Q.length) tr.push({ x: Q.map((p) => p[0]), y: Q.map((p) => p[1]), name: (AGENT_LABEL[a] || a) + ", " + (((PRESETS[S.game].compare || {}).label) || "compared").toLowerCase(), type: "scatter", mode: "lines+markers", connectgaps: false, line: { color: col, width: 2, dash: "dash" }, marker: { size: 5, color: col, symbol: "circle-open" } });
   });
   const cur = values[game][S.key], L = baseLayout();
   plotly("react", "psweep", tr, baseLayout({
@@ -2290,9 +2352,9 @@ function updateSweepPanel() {
   if (S.error) note.textContent = `The sweep stopped: ${S.error}. Press Sweep again to retry.`;
   else if (S.running) note.textContent = `Solving ${Math.min(S.i + 1, S.xs.length)} of ${S.xs.length}…`;
   else if (S.i < S.xs.length) note.textContent = `Stopped after ${S.i} of ${S.xs.length}.`;
-  else note.textContent = `${S.xs.length} solves in ${S.wall.toFixed(1)} s${S.failed ? `, ${S.failed} did not converge and are left out` : ""}.`;
+  else note.textContent = `${S.xs.length} solves in ${S.wall.toFixed(1)} s${S.failed ? `, ${S.failed} failed a solve or numerical check and are left out` : ""}.`;
   if (!S.running && S.base !== sweepBase(S.key)) note.textContent += " The other parameters have moved since; sweep again to update.";
-  $("sweepcap").textContent = `Each point is a full equilibrium; the dotted line is the slider's current value.${PRESETS[game].compare ? ` Solid: the ${(PRESETS[game].compare.mainLabel || "first").toLowerCase()} market; dashed: the ${PRESETS[game].compare.label.toLowerCase()} one.` : ""} Checks are off in the sweep.`;
+  $("sweepcap").textContent = `Only points passing the solve and numerical checks are shown; the dotted line is the slider's current value.${PRESETS[game].compare ? ` Solid: the ${(PRESETS[game].compare.mainLabel || "first").toLowerCase()} market; dashed: the ${PRESETS[game].compare.label.toLowerCase()} one.` : ""} Refinement and stability runs are off in the sweep.`;
 }
 $("sweepbtn").onclick = runSweep;
 $("sweepkey").onchange = () => { if (sweep && sweep.game === game && !sweep.running) { sweep = null; } updateSweepPanel(); };
