@@ -2,3 +2,4 @@
 <link rel="preload" as="font" type="font/woff2" href="{{ get_url(path='fonts/newsreader-latin-opsz-normal.woff2') }}" crossorigin>
 <link rel="stylesheet" href="{{ get_url(path='fonts/newsreader.css', cachebust=true) }}">
 <link rel="stylesheet" href="{{ get_url(path='css/custom.css', cachebust=true) }}">
+{%- if page is defined and page.extra.hidden is defined and page.extra.hidden %}<meta name="robots" content="noindex, nofollow">{% endif %}
