@@ -1,0 +1,123 @@
+{#- A page that is not linked from anywhere: how the Decision Mesh came about, in drawings, one per screen, and the
+    dissertation pages in a frame. The Decision Mesh page's body is in the page but hidden: two of its parts, the race of
+    geometries and the coin demo, are lent to screens of the first tab. -#}
+<!doctype html>
+<html class="not-ready lg:text-base" lang="{{ lang }}">
+  {% include "partials/head.html" %}
+  <body class="backstory text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="{{ get_url(path='noisestate/explorer.css', cachebust=true) }}" />
+    <link rel="stylesheet" href="{{ get_url(path='mesh/mesh.css', cachebust=true) }}" />
+    <link rel="stylesheet" href="{{ get_url(path='mesh/gate-how.css', cachebust=true) }}" />
+    <link rel="stylesheet" href="{{ get_url(path='backstory-n97y4fu/backstory.css', cachebust=true) }}" />
+    {%- for f in ["mesh/decision-mesh.js", "mesh/right-mesh.js", "mesh/rect-mesh.js", "backstory-n97y4fu/mesh-demo.js"] %}
+    <link rel="preload" as="script" href="{{ get_url(path=f, cachebust=true) }}" />
+    {%- endfor %}
+    {% include "partials/header.html" %}
+
+    <nav class="iv-bar" id="iv-bar">
+      <div class="iv-tabs" role="tablist">
+        <button role="tab" data-tab="origin" aria-selected="true">Where it started</button>
+        <button role="tab" data-tab="diss" aria-selected="false">Dissertation</button>
+      </div>
+      <div class="iv-jumps" data-for="origin">
+        <span class="iv-dots iv-toc" id="or-dots" aria-label="Screens, by chapter"></span>
+      </div>
+      <div class="iv-jumps" data-for="mesh" hidden>
+        <a data-jump="#gate">Try it</a>
+        <span class="iv-tries"><a data-try="#truth=hills&amp;flips=160" title="The hill and the pit, with eight times the flips">more flips</a><a data-try="#truth=nothing&amp;flips=160" title="No pattern at all: the mesh should stay uncut">nothing there</a><a data-try="#truth=drawing" title="Paint the odds yourself">paint</a></span>
+        <a data-jump="#how">Steps</a>
+        <span class="iv-dots" id="iv-dots" aria-label="Steps of the gate story"></span>
+        <a data-jump="#results-rounds">Rounds</a>
+        <a data-jump="#own">Own data</a>
+        <a data-frame="{{ get_url(path='decisionmesh/detail/') }}">In detail</a>
+      </div>
+      <div class="iv-jumps" data-for="diss" hidden>
+        <a data-frame="{{ get_url(path='dissertation/') }}" class="on">The idea</a>
+        <a data-frame="{{ get_url(path='noisestate/') }}">Explorer</a>
+        <a data-frame="{{ get_url(path='dissertation/wedge/') }}">The wedge</a>
+        <a data-frame="{{ get_url(path='dissertation/spike/') }}">Life of a spike</a>
+        <a data-frame="{{ get_url(path='noisestate/how/') }}">The solver</a>
+        <a data-frame="{{ get_url(path='dissertation/map/') }}">What rests on what</a>
+      </div>
+      <button class="iv-theme" id="iv-theme" title="Light or dark (t)" aria-label="Switch theme"></button>
+    </nav>
+
+    <div class="iv-pane" id="pane-origin">
+      <main class="explorer origin" id="origin">
+{% include "partials/backstory-slides.html" %}
+        <section class="or-slide" data-name="On real pools" data-group="Real (public) data" data-depth="0" hidden>
+          <div class="or-head"><h2 id="gn-title">Fannie Mae, February 2020</h2>{% include "partials/backstory-mini.html" %}</div>
+          <div class="mesh ginnie" id="ginnie" data-worker="{{ get_url(path='mesh/fit-worker.js', cachebust=true) }}" data-base="{{ get_url(path='backstory-n97y4fu/ginnie/') }}">
+            <div class="gn-stage"><figure><canvas id="gn-cvfit"></canvas></figure></div>
+            <div class="gn-read" id="gn-read"></div>
+            <div class="gn-foot"><span class="scale" id="gn-scale"></span><span class="gn-sets"><button id="gn-where" class="on" title="A dot wherever there are pools, its area in proportion to the loans there">heatmap</button><button id="gn-rect" title="Fit the same pools with the rectangular engine">rectangles</button><span class="gn-sets" id="gn-sets"></span></span></div>
+            <div class="or-ctl"><span>coarsest</span><input type="range" id="gn-depth" min="0" max="1" step="1" value="1" aria-label="Depth of the mesh" /><span>every depth</span></div>
+            <div hidden>
+              <select id="gn-month"><option value="202002" selected>February 2020</option><option value="202606">June 2026</option></select>
+              <select id="gn-pools"><option value="fnma" selected>Fannie Mae 30-year</option><option value="all">Ginnie Mae</option><option value="thirty">Ginnie Mae 30-year</option></select>
+              <select id="gn-engine"><option value="tri" selected>Right triangles</option><option value="rect">Rectangles</option></select>
+              <span id="gn-qval"></span><input type="range" id="gn-q" min="0.01" max="0.5" step="0.01" value="0.4" />
+              <span id="gn-chip"></span><span id="gn-statustext"></span><span id="gn-cutcap"></span>
+              <canvas id="gn-cvpools"></canvas><canvas id="gn-cvcut"></canvas>
+              <input type="checkbox" id="gn-edges" checked /><input type="checkbox" id="gn-admit" checked />
+              <div id="gn-cards"></div>
+            </div>
+          </div>
+        </section>
+        <section class="or-slide" data-name="Past two dimensions" data-group="Real (public) data" data-depth="0" hidden>
+          <div class="or-head"><h2>Past two dimensions</h2>{% include "partials/backstory-mini.html" %}</div>
+          <div class="th" id="th" data-src="{{ get_url(path='backstory-n97y4fu/third.json', cachebust=true) }}">
+            <div class="th-map"><canvas id="th-cv"></canvas></div>
+            <div class="th-side">
+              <svg id="th-box" viewBox="0 0 300 180" role="img" aria-label="The three inputs as a box, with the slice shown"></svg>
+              <div class="cards" id="th-cards"></div>
+              <svg id="th-cuts" viewBox="0 0 300 96" role="img" aria-label="A box is cut across one axis at a time: age, coupon or balance"></svg>
+            </div>
+          </div>
+          <div class="or-ctl"><span>smaller loans</span><input type="range" id="th-z" min="0" max="1" step="0.01" value="0.65" aria-label="Average loan balance" /><span>larger loans</span><b id="th-bal"></b></div>
+        </section>
+      </main>
+    </div>
+
+    <div class="iv-pane" id="pane-mesh" hidden>
+      <div id="mesh-native">
+        {% include "partials/backstory-dmesh.html" %}
+      </div>
+      <iframe class="iv-frame" id="frame-mesh" title="Decision Mesh, in detail" hidden></iframe>
+    </div>
+
+    <div class="iv-pane" id="pane-diss" hidden>
+      <iframe class="iv-frame" id="frame-diss" title="Dissertation"></iframe>
+    </div>
+
+
+    {% include "partials/footer.html" %}
+    <script src="{{ get_url(path='backstory-n97y4fu/rounds.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='backstory-n97y4fu/gate.js', cachebust=true) }}"></script>
+    <script>
+      // As on the site's page: the story and the race load their scripts when their drawings near the window.
+      (function () {
+        "use strict";
+        function load(el) {
+          for (const src of el.dataset.src.split(" ")) { const s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); }
+        }
+        const lazy = new Map([[document.getElementById("story"), document.getElementById("gatehow")],
+                              [document.querySelector("#race .stage"), document.getElementById("race")]]);
+        const io = new IntersectionObserver((es) => {
+          for (const e of es) if (e.isIntersecting) { io.unobserve(e.target); load(lazy.get(e.target)); }
+        }, { rootMargin: "200px 0px 200px 0px" });
+        lazy.forEach((_, el) => io.observe(el));
+      })();
+    </script>
+    <script src="{{ get_url(path='backstory-n97y4fu/ginnie.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='backstory-n97y4fu/schools.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='backstory-n97y4fu/tails.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='backstory-n97y4fu/admit.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='backstory-n97y4fu/topo.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='backstory-n97y4fu/months.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='backstory-n97y4fu/third.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='backstory-n97y4fu/starcore.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='backstory-n97y4fu/star.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='backstory-n97y4fu/backstory.js', cachebust=true) }}"></script>
+  </body>
+</html>
