@@ -1,7 +1,7 @@
 // /backstory, "Binomial noise": the chance of each count of terminations in a pool, live. Colours are the equation's.
 //   dark line   the normal with the plain binomial's mean and variance: what a calibration that assumes normal noise expects;
 //   amber       the binomial: its bars on the left, and on the right the upper tail it has beyond the normal's;
-//   purple      the same pool once each pool's own rate is spread around the average (tau > 0, normal on the log-odds,
+//   purple      the same pool once each pool's own rate is spread around the average (psd > 0, normal on the log-odds,
 //               the average rate held where the slider puts it): outlined bars on the left, a further tail on the right;
 //   grey        left, the normal's weight below zero, where no count can be.
 // Left is a plain scale, right a log scale. Counts are placed by standard deviations from the mean, so the normal keeps
@@ -14,13 +14,13 @@
   const LG = [76.18009172947146, -86.50532032941677, 24.01409824083091, -1.231739572450155, 0.1208650973866179e-2, -0.5395239384953e-5];
   function lgamma(x) { let y = x, t = x + 5.5, s = 1.000000000190015; t -= (x + 0.5) * Math.log(t); for (let j = 0; j < 6; ++j) s += LG[j] / ++y; return -t + Math.log(2.5066282746310005 * s / x); }
   const expit = (t) => 1 / (1 + Math.exp(-t));
-  // the pool effect: 41 points of a standard normal, scaled by tau on the log-odds
+  // the pool effect: 41 points of a standard normal, scaled by psd on the log-odds
   const TH = [], TW = []; { let sw = 0; for (let i = -20; i <= 20; ++i) { const x = i * 0.2; TH.push(x); TW.push(Math.exp(-0.5 * x * x)); sw += TW[TW.length - 1]; } for (let i = 0; i < TW.length; ++i) TW[i] /= sw; }
-  function rates(rate, tau) {
-    if (tau < 1e-6) return [[rate, 1]];
+  function rates(rate, psd) {
+    if (psd < 1e-6) return [[rate, 1]];
     let lo = -14, hi = 6, mid = 0;
-    for (let it = 0; it < 50; ++it) { mid = (lo + hi) / 2; let m = 0; for (let i = 0; i < TH.length; ++i) m += TW[i] * expit(mid + tau * TH[i]); if (m < rate) lo = mid; else hi = mid; }
-    return TH.map((x, i) => [expit(mid + tau * x), TW[i]]);
+    for (let it = 0; it < 50; ++it) { mid = (lo + hi) / 2; let m = 0; for (let i = 0; i < TH.length; ++i) m += TW[i] * expit(mid + psd * TH[i]); if (m < rate) lo = mid; else hi = mid; }
+    return TH.map((x, i) => [expit(mid + psd * x), TW[i]]);
   }
   function pmf(k, n, ps) {   // k may be any real number from 0 to n: the curves are drawn through the gamma function
     const c = lgamma(n + 1) - lgamma(k + 1) - lgamma(n - k + 1); let s = 0;
@@ -30,9 +30,9 @@
   const ZLO = -4.6, ZHI = 8.2, TOP = 44, BASE = 470, LLO = -7;
   const A = { x: 60, w: 400 }, B = { x: 585, w: 375 };
   function draw() {
-    const rate = Math.pow(10, +$("tl-rate").value), n = Math.round(Math.pow(10, +$("tl-n").value)), tau = +$("tl-tau").value;
-    $("tl-rate-v").textContent = (100 * rate).toFixed(rate < 0.1 ? 1 : 0) + "%"; $("tl-n-v").textContent = n.toLocaleString(); $("tl-tau-v").textContent = tau.toFixed(2);
-    const mu = n * rate, sd = Math.sqrt(n * rate * (1 - rate)), plain = [[rate, 1]], pooled = tau > 1e-6 ? rates(rate, tau) : null;
+    const rate = Math.pow(10, +$("tl-rate").value), n = Math.round(Math.pow(10, +$("tl-n").value)), psd = +$("tl-pool").value;
+    $("tl-rate-v").textContent = (100 * rate).toFixed(rate < 0.1 ? 1 : 0) + "%"; $("tl-n-v").textContent = n.toLocaleString(); $("tl-pool-v").textContent = psd.toFixed(2);
+    const mu = n * rate, sd = Math.sqrt(n * rate * (1 - rate)), plain = [[rate, 1]], pooled = psd > 1e-6 ? rates(rate, psd) : null;
     const k0 = Math.max(0, Math.ceil(mu + ZLO * sd)), k1 = Math.min(n, Math.floor(mu + ZHI * sd)), ks = [];
     for (let k = k0; k <= k1; ++k) ks.push(k);
     const pb = ks.map((k) => pmf(k, n, plain)), pu = pooled ? ks.map((k) => pmf(k, n, pooled)) : null;
@@ -70,13 +70,13 @@
     h += `</g><path class="or-axis" d="M${B.x} ${BASE}H${B.x + B.w}"/>`;
     log.innerHTML = h;
   }
-  // each slider is a symbol of the equation at the top right: sigma(.) the rate, n the loans, tau the pool effect. Pointing
+  // each slider is a symbol of the equation at the top right: Lambda(.) the rate, n the loans, sigma the pool effect. Pointing
   // at a slider, or moving it, lights that symbol there.
   for (const lab of document.querySelectorAll(".or-ctl.multi label[data-sym]")) {
     const lit = (on) => { for (const e of document.querySelectorAll(`#tl-eq [data-sym="${lab.dataset.sym}"]`)) e.classList.toggle("lit", on); lab.classList.toggle("lit", on); };
     lab.addEventListener("pointerenter", () => lit(true)); lab.addEventListener("pointerleave", () => lit(false));
     lab.addEventListener("focusin", () => lit(true)); lab.addEventListener("focusout", () => lit(false));
   }
-  for (const id of ["tl-rate", "tl-n", "tl-tau"]) { $(id).addEventListener("input", draw); $(id).addEventListener("change", () => $(id).blur()); }
+  for (const id of ["tl-rate", "tl-n", "tl-pool"]) { $(id).addEventListener("input", draw); $(id).addEventListener("change", () => $(id).blur()); }
   draw();
 })();

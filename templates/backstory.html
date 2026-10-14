@@ -1,5 +1,5 @@
 {#- A page that is not linked from anywhere: how the Decision Mesh came about, in drawings, one per screen, and the
-    dissertation pages in a frame. The Decision Mesh page's body is in the page but hidden: two of its parts, the race of
+    dissertation the same way. The Decision Mesh page's body is in the page but hidden: two of its parts, the race of
     geometries and the coin demo, are lent to screens of the first tab. -#}
 <!doctype html>
 <html class="not-ready lg:text-base" lang="{{ lang }}">
@@ -32,12 +32,7 @@
         <a data-frame="{{ get_url(path='decisionmesh/detail/') }}">In detail</a>
       </div>
       <div class="iv-jumps" data-for="diss" hidden>
-        <a data-frame="{{ get_url(path='dissertation/') }}" class="on">The idea</a>
-        <a data-frame="{{ get_url(path='noisestate/') }}">Explorer</a>
-        <a data-frame="{{ get_url(path='dissertation/wedge/') }}">The wedge</a>
-        <a data-frame="{{ get_url(path='dissertation/spike/') }}">Life of a spike</a>
-        <a data-frame="{{ get_url(path='noisestate/how/') }}">The solver</a>
-        <a data-frame="{{ get_url(path='dissertation/map/') }}">What rests on what</a>
+        <span class="iv-dots iv-toc" id="di-dots" aria-label="Screens, by chapter"></span>
       </div>
       <button class="iv-theme" id="iv-theme" title="Light or dark (t)" aria-label="Switch theme"></button>
     </nav>
@@ -51,7 +46,7 @@
             <div class="gn-stage"><figure><canvas id="gn-cvfit"></canvas></figure></div>
             <div class="gn-read" id="gn-read"></div>
             <div class="gn-foot"><span class="scale" id="gn-scale"></span><span class="gn-sets"><button id="gn-where" class="on" title="A dot wherever there are pools, its area in proportion to the loans there">heatmap</button><button id="gn-rect" title="Fit the same pools with the rectangular engine">rectangles</button><span class="gn-sets" id="gn-sets"></span></span></div>
-            <div class="or-ctl"><span>coarsest</span><input type="range" id="gn-depth" min="0" max="1" step="1" value="1" aria-label="Depth of the mesh" /><span>every depth</span></div>
+            <div class="or-ctl"><span>coarsest</span><input type="range" id="gn-depth" min="0" max="1" step="1" value="0" aria-label="Depth of the mesh" /><span>every depth</span></div>
             <div hidden>
               <select id="gn-month"><option value="202002" selected>February 2020</option><option value="202606">June 2026</option></select>
               <select id="gn-pools"><option value="fnma" selected>Fannie Mae 30-year</option><option value="all">Ginnie Mae</option><option value="thirty">Ginnie Mae 30-year</option></select>
@@ -64,6 +59,7 @@
             </div>
           </div>
         </section>
+{% include "partials/backstory-late.html" %}
         <section class="or-slide" data-name="Past two dimensions" data-group="Real (public) data" data-depth="0" hidden>
           <div class="or-head"><h2>Past two dimensions</h2>{% include "partials/backstory-mini.html" %}</div>
           <div class="th" id="th" data-src="{{ get_url(path='backstory-n97y4fu/third.json', cachebust=true) }}">
@@ -87,7 +83,9 @@
     </div>
 
     <div class="iv-pane" id="pane-diss" hidden>
-      <iframe class="iv-frame" id="frame-diss" title="Dissertation"></iframe>
+      <main class="explorer origin diss" id="diss">
+{% include "partials/backstory-talk.html" %}
+      </main>
     </div>
 
 
@@ -118,6 +116,8 @@
     <script src="{{ get_url(path='backstory-n97y4fu/third.js', cachebust=true) }}"></script>
     <script src="{{ get_url(path='backstory-n97y4fu/starcore.js', cachebust=true) }}"></script>
     <script src="{{ get_url(path='backstory-n97y4fu/star.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='js/sketch.js', cachebust=true) }}"></script>
+    <script src="{{ get_url(path='backstory-n97y4fu/diss/scenes.js', cachebust=true) }}"></script>
     <script src="{{ get_url(path='backstory-n97y4fu/backstory.js', cachebust=true) }}"></script>
   </body>
 </html>

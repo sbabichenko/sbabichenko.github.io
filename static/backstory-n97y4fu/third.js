@@ -15,7 +15,7 @@
   const VMAX = 1.5, M = { l: 46, r: 10, t: 10, b: 34 };
   let D = null;
   function rgb(dl) {   // the real-data screen's colours
-    const dark = isDark(), lo = dark ? [110, 150, 255] : [31, 72, 200], mid = dark ? [34, 35, 38] : [250, 247, 238], hi = dark ? [255, 140, 80] : [205, 66, 20];
+    const dark = isDark(), lo = dark ? [110, 150, 255] : [31, 72, 200], mid = dark ? [34, 35, 38] : [238, 229, 205], hi = dark ? [255, 140, 80] : [205, 66, 20];
     const s = Math.max(-1, Math.min(1, dl / VMAX)), a = s < 0 ? lo : hi, w = Math.pow(Math.abs(s), 0.8);
     return [0, 1, 2].map((j) => Math.round(mid[j] + (a[j] - mid[j]) * w));
   }
