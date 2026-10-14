@@ -1,0 +1,420 @@
+<!doctype html>
+<html class="not-ready lg:text-base" lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Title -->
+  <title>Sam Babichenko</title>
+
+  <!-- Meta -->
+  <meta name="theme-color" />
+  <meta name="description" content="Quantitative researcher. I work on game theory, empirical Bayes, machine learning, and quantitative finance, and increasingly on high-dimensional probability and statistics." />
+  <meta name="author" content="" />
+  <!-- The Open Graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Sam Babichenko" />
+  <meta property="og:site_name" content="Sam Babichenko" />
+  <meta property="og:description" content="Quantitative researcher. I work on game theory, empirical Bayes, machine learning, and quantitative finance, and increasingly on high-dimensional probability and statistics." />
+  <meta property="og:url" content="https://sbabichenko.com" />
+  <meta property="og:image" content="https://sbabichenko.com/images/og.png" />
+
+  <!-- CSS & JS -->
+  <link rel="preload stylesheet" as="style" href="https://sbabichenko.com/main.css?h=83e18233020b9c7a7a8c" />
+  <style>
+    :root {
+      --bg: #FFFFF0;
+      --bg-dark: #1F2022;
+      --header: #e4e4e7;
+      --header-dark: #27272a;
+    }
+  </style>
+
+  
+
+  <!-- Dark Icon -->
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/theme.svg" />
+
+  <!-- Math -->
+  
+  <!---->
+
+  <!-- Mermaid -->
+  
+  <!---->
+
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://sbabichenko.com/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://sbabichenko.com/favicon-16x16.png">
+  <link rel="shortcut icon" href="https://sbabichenko.com/favicon.ico">
+  <link rel="apple-touch-icon" href="https://sbabichenko.com/apple-touch-icon.png">
+
+
+  <!-- Feeds -->
+  
+  <!---->
+  
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title="Atom"
+    href="https://sbabichenko.com/atom.xml"
+  />
+   
+  <!---->
+  
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https:&#x2F;&#x2F;sbabichenko.com" />
+
+  <!-- Head inject -->
+  <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="font" type="font/woff2" href="https://sbabichenko.com/fonts/newsreader-latin-opsz-normal.woff2" crossorigin>
+<link rel="stylesheet" href="https://sbabichenko.com/fonts/newsreader.css?h=5358dbda7c8bb2508eba">
+<link rel="stylesheet" href="https://sbabichenko.com/css/custom.css?h=f0c82a15a80fef316c80">
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    
+<header
+  class="blur-header fixed top-0 z-40 mx-auto min-h-[3.5rem] w-full"
+>
+  <div class="mx-auto w-full max-w-4xl p-3 lg:flex lg:justify-between">
+    <div class="flex justify-between">
+      <div class="flex items-center">
+        <a class="text-2xl font-semibold" href="https://sbabichenko.com">Sam Babichenko</a>
+        <div
+          class="btn-dark ml-4 h-6 w-6 shrink-0 cursor-pointer text-[0px] [background:url(./icons/theme.svg)_left_center/cover_no-repeat] dark:[background-position:right] dark:invert"
+          role="button"
+          tabindex="0"
+          aria-label="Switch to dark theme"
+        ></div>
+        <style>
+          /* brown paper (a CC0 scan from ambientCG, reduced to its surface and fibers) is the page's own background: it scrolls with the page and stays behind the content, so it costs
+             nothing to scroll (an overlay blended over everything had to be recomposited on every frame) */
+          html :is(body, header.blur-header) { background-image: var(--paper-img); background-size: 768px 768px; background-blend-mode: multiply; }
+          html.dark :is(body, header.blur-header) { background-blend-mode: screen; }
+          /* a patch of the same paper, for the few things that must hide what passes under them (a sticky drawing on a
+             phone, a bar that stays put, a popup): background: var(--ground) var(--paper-img) 0 0 / 768px 768px with
+             background-blend-mode: var(--patch-blend). Everything else is clear, so the page's own paper runs through it.
+             Patches pin their paper to the window and shift it by the scroll (--paper-y), so a pill or bar that stays put
+             still shows the page's paper moving under it, lined up with the page around it. A new patch goes in the
+             list in the script below: only the patches carry --paper-y (set on the page's root, every scroll frame
+             restyled every element on the page, 100 ms and more a frame on a chapter). */
+          html:not(.dark) { --ground: #ecdebe; --patch-blend: multiply; }
+          html.dark { --ground: #1f2022; --patch-blend: screen; }
+          /* in light mode the paper also gets a paper's own warm tone: the site's near-white cream is what made the grain read as dirt */
+          html:not(.dark), html:not(.dark) :is(.home, .opening, .thesis, .gatehow) { --paper: #ecdebe; --sheet: #f0e4c8; }
+          html:not(.dark) body { background-color: var(--paper); }
+          /* the body's box grows with the page (the theme had it one window tall): browsers carry a body's background out
+             to the whole page, but a renderer that doesn't (a work browser behind a filtering proxy) painted the paper only
+             over the first screen */
+          html body { height: auto; min-height: 100vh; }
+          /* the paper runs through everything: the bar at the top is paper, cards and panels are clear (outlines only), and
+             pictures, plots and canvases are multiplied onto it, so their white ground becomes the paper and their ink stays ink */
+          html :is(.panel, .statusbar, button.tab:not([aria-selected="true"]), article.demo) { background-color: transparent !important; }
+          html header.blur-header { backdrop-filter: none; -webkit-backdrop-filter: none; background-color: var(--paper, #fffff0);
+            border-bottom: 0; box-shadow: none; }
+          html.dark header.blur-header { background-color: #1f2022; }
+          /* the bar stays put, but its paper is the page's: shifted with the scroll, so the grain moves under it as it does
+             everywhere else and lines up with the page at its edge */
+          html header.blur-header { background-position: 0 var(--paper-y, 0px); }
+          /* in place of a line under the bar: a soft band where whatever scrolls up (text, drawings, the mesh) blurs and fades
+             into the bar's paper, so nothing is cut off at a hard edge. It comes in over the first 44px of scroll: at the top of
+             the page nothing has scrolled under the bar, and the band would only wash out the first line below it */
+          html header.blur-header::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 44px; pointer-events: none;
+            background-color: inherit; background-image: inherit; background-size: inherit; background-blend-mode: inherit;
+            background-position: 0 calc(var(--paper-y, 0px) - var(--hdr-h, 56px));
+            -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+            -webkit-mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent);
+                    mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent); opacity: var(--hdr-fade, 0); }
+          /* the browser draws some things itself (a select's open list, scrollbars, a search box's clear button, pickers):
+             tell it which theme the page is in, so a dark page does not open a white menu, and give a select's options the
+             page's colours where the browser lets a page style them (Windows and Linux; macOS draws its own menus) */
+          html:not(.dark) { color-scheme: light; }
+          html.dark { color-scheme: dark; }
+          html:not(.dark) select option { background-color: #f3ead3; color: #1b1b1f; }
+          html.dark select option { background-color: #26272a; color: #ececef; }
+          /* secondary controls stay clear on the paper but get an edge that reads (28% of the text's colour; 9% vanished on
+             dim screens), a faint tint of ink under the cursor and when pressed, and fade as a whole when disabled */
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, #dsearch, .dsearch, button.copy, button.cite-copy,
+            button.tweet-load, .gatedeep .howbar button) { border-color: color-mix(in srgb, currentColor 28%, transparent) !important; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button) { transition: background-color 0.12s; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button):hover:not(:disabled) { background-color: color-mix(in srgb, currentColor 6%, transparent) !important; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button):active:not(:disabled) { background-color: color-mix(in srgb, currentColor 11%, transparent) !important; }
+          html :is(button, select):disabled { opacity: 0.45; }
+          /* checkboxes take the page's colours, not the browser's white square: a clear box on the paper with a line
+             in the text's colour, filled with the accent when ticked */
+          html input[type=checkbox] { -webkit-appearance: none; appearance: none; width: 15px; height: 15px; flex: none; margin: 0 0.35em 0 0;
+            vertical-align: -2px; display: inline-grid; place-content: center; cursor: pointer; background: transparent;
+            border: 1.5px solid color-mix(in srgb, currentColor 55%, transparent); border-radius: 4px; transition: background-color 0.12s, border-color 0.12s; }
+          html input[type=checkbox]::before { content: ""; width: 9px; height: 9px; transform: scale(0); transition: transform 0.12s;
+            background: var(--accent-ink, #fff); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
+          html input[type=checkbox]:checked { background: var(--accent, #1f3fd0); border-color: var(--accent, #1f3fd0); }
+          html.dark input[type=checkbox]:checked { background: var(--accent, #8fb0ff); border-color: var(--accent, #8fb0ff); }
+          html.dark input[type=checkbox]::before { background: var(--accent-ink, #0b1220); }
+          html input[type=checkbox]:checked::before { transform: scale(1); }
+          html input[type=checkbox]:focus-visible { outline: 2px solid var(--accent, #1f3fd0); outline-offset: 2px; }
+          html input[type=checkbox]:disabled { opacity: 0.45; cursor: default; }
+          /* sliders the same way: a thin track in the text's colour, filled with the accent up to the thumb (--fill,
+             kept by the script below), and an accent thumb ringed in the paper's colour */
+          html input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; height: 18px; cursor: pointer; }
+          html input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px;
+            background: linear-gradient(to right, var(--accent, #1f3fd0) var(--fill, 0%), color-mix(in srgb, currentColor 22%, transparent) var(--fill, 0%)); }
+          html input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: color-mix(in srgb, currentColor 22%, transparent); }
+          html input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--accent, #1f3fd0); }
+          html input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; border-radius: 50%;
+            background: var(--accent, #1f3fd0); border: 2px solid var(--ground, #ecdebe); box-shadow: 0 0 0 1px var(--accent, #1f3fd0); }
+          html input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--accent, #1f3fd0);
+            border: 2px solid var(--ground, #ecdebe); box-shadow: 0 0 0 1px var(--accent, #1f3fd0); }
+          html.dark input[type=range]::-webkit-slider-runnable-track { background: linear-gradient(to right, var(--accent, #8fb0ff) var(--fill, 0%), color-mix(in srgb, currentColor 22%, transparent) var(--fill, 0%)); }
+          html.dark input[type=range]::-moz-range-progress { background: var(--accent, #8fb0ff); }
+          html.dark input[type=range]::-webkit-slider-thumb { background: var(--accent, #8fb0ff); box-shadow: 0 0 0 1px var(--accent, #8fb0ff); }
+          html.dark input[type=range]::-moz-range-thumb { background: var(--accent, #8fb0ff); box-shadow: 0 0 0 1px var(--accent, #8fb0ff); }
+          html input[type=range]:focus-visible { outline: 2px solid var(--accent, #1f3fd0); outline-offset: 3px; border-radius: 4px; }
+          html:not(.dark) figure { background-color: transparent; }
+          /* the dissertation's figures (.webfig) are drawn transparent in the page's inks and need no blend */
+          html:not(.dark) :is(figure img, .shot img, .shot canvas, .panel canvas, .js-plotly-plot, main img):not(.webfig img) { mix-blend-mode: multiply; }
+          /* the tile is 768px: a 768-pixel image for ordinary screens (what the browser drew from the 1536 one anyway) and
+             the 1536 one for sharp screens */
+          html:not(.dark) { --paper-img: image-set(url(https://sbabichenko.com/images/paper/brown-light.webp?h=e5a70cdd56a8e0d11533) 1x, url(https://sbabichenko.com/images/paper/brown-light-2x.webp?h=839876cd80b11ff6e8b4) 2x); }
+          html.dark { --paper-img: image-set(url(https://sbabichenko.com/images/paper/brown-dark.webp?h=a1610218c435c74114b1) 1x, url(https://sbabichenko.com/images/paper/brown-dark-2x.webp?h=3eb5c860334b67cf2100) 2x); }
+        </style>
+        <script>
+          (() => {
+            // the patches of paper (above); a pseudo-element patch is listed as itself, and its element carries the scroll
+            // for browsers without scroll-driven animations
+            const PATCHES = ["header.blur-header", ".peek", ".figzoom", ".trace-note", ".wayback", ".gpanel", ".cover .cta a",
+              ".stage::before", ".gatehow .stage::before", "html.fold-table .story .stage", ".spike .controls", ".risk .rcontrols",
+              ".dsearch-panel", ".explorer #statusbar", ".explorer #race-statusbar", ".home .shot.draw .clear", ".home .shot.draw .status",
+              ".whimsy-coin p", ".whimsy-forecast", ".skip-pill"];
+            const root = document.documentElement, hdr = document.querySelector("header.blur-header");
+            if (hdr) new ResizeObserver(() => hdr.style.setProperty("--hdr-h", hdr.offsetHeight + "px")).observe(hdr);
+            const css = document.createElement("style");
+            css.textContent = '@property --paper-y { syntax: "<length>"; inherits: true; initial-value: 0px; }' +
+              '@property --hdr-fade { syntax: "<number>"; inherits: true; initial-value: 0; }';
+            if (CSS.supports("animation-timeline: scroll()") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+              // the browser moves each patch's paper with the scroll itself: --paper-y runs from 0 down by a pixel per
+              // pixel scrolled (the range is far longer than any page, so the ratio is one to one)
+              css.textContent += "@keyframes paper-y { from { --paper-y: 0px; } to { --paper-y: -1000000px; } }" +
+                "@keyframes hdr-fade { from { --hdr-fade: 0; } to { --hdr-fade: 1; } }" +
+                PATCHES.join(",") + " { animation: paper-y linear both; animation-timeline: scroll(root block); animation-range: 0px 1000000px; }" +
+                "header.blur-header { animation: paper-y linear both, hdr-fade linear both; animation-timeline: scroll(root block), scroll(root block);" +
+                " animation-range: 0px 1000000px, 0px 44px; }";
+            } else {
+              const hosts = PATCHES.map((s) => s.replace(/::before$/, "")).join(",");
+              let queued = false;
+              const put = () => { queued = false; const y = -(window.scrollY % 768) + "px";
+                for (const el of document.querySelectorAll(hosts)) el.style.setProperty("--paper-y", y);
+                if (hdr) hdr.style.setProperty("--hdr-fade", Math.min(1, window.scrollY / 44).toFixed(3)); };
+              addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(put); } }, { passive: true });
+              put();
+            }
+            document.head.appendChild(css);
+            // each slider's fill (--fill, the share of its range below the thumb): on input, on a script setting its value
+            // (the explorer and the demos redraw their sliders), and at load
+            const fill = (r) => { const lo = +r.min || 0, hi = r.max === "" ? 100 : +r.max, v = +r.value;
+              r.style.setProperty("--fill", (hi > lo ? (100 * (v - lo)) / (hi - lo) : 0).toFixed(2) + "%"); };
+            const fillAll = () => { for (const r of document.querySelectorAll("input[type=range]")) fill(r); };
+            addEventListener("input", (e) => { if (e.target.type === "range") fill(e.target); }, true);
+            const d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+            Object.defineProperty(HTMLInputElement.prototype, "value", { configurable: true, get: d.get,
+              set(v) { d.set.call(this, v); if (this.type === "range") fill(this); } });
+            let q = false;
+            new MutationObserver(() => { if (!q) { q = true; requestAnimationFrame(() => { q = false; fillAll(); }); } })
+              .observe(document.documentElement, { childList: true, subtree: true });
+            addEventListener("DOMContentLoaded", fillAll);
+          })();
+        </script>
+      </div>
+      
+      <div
+        class="btn-menu relative z-50 flex h-8 w-8 shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+        role="button"
+        tabindex="0"
+        aria-label="Menu"
+        aria-expanded="false"
+      ></div>
+      
+    </div>
+    <script>
+      // base
+      const htmlClass = document.documentElement.classList;
+      setTimeout(() => {
+        htmlClass.remove("not-ready");
+      }, 10);
+
+      // mobile menu
+      const btnMenu = document.querySelector(".btn-menu");
+      btnMenu?.addEventListener("click", () => {
+        btnMenu.setAttribute("aria-expanded", htmlClass.toggle("open"));
+      });
+      // the two div buttons answer Enter and Space like real buttons
+      for (const b of document.querySelectorAll(".btn-menu, .btn-dark"))
+        b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); b.click(); } });
+
+      // dark theme; storage can be blocked (privacy modes, locked-down browsers), so every read and write is guarded
+      const storedDark = () => { try { return localStorage.getItem("dark"); } catch (e) { return null; } };
+      const setDark = (isDark) => {
+        if (isDark) {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
+          htmlClass.add("dark");
+        } else {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "light" }));
+          htmlClass.remove("dark");
+        }
+        try { localStorage.setItem("dark", isDark); } catch (e) {}
+        document.querySelector(".btn-dark")?.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
+      };
+
+      // init
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      if (htmlClass.contains("dark")) {
+        setDark(true);
+      } else {
+        const darkVal = storedDark();
+        setDark(darkVal ? darkVal === "true" : darkScheme.matches);
+      }
+
+      // listen system
+      darkScheme.addEventListener("change", (event) => {
+        setDark(event.matches);
+      });
+
+      // manual switch
+      const btnDark = document.querySelector(".btn-dark");
+      btnDark.addEventListener("click", () => {
+        setDark(!htmlClass.contains("dark"));
+      });
+    </script>
+    
+    <nav class="flex w-full items-center lg:w-auto">
+      <ul
+        class="nav-wrapper flex w-full flex-col py-2 lg:w-auto lg:flex-row lg:self-center lg:py-0"
+      >
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/writing"
+            >Writing</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/dissertation"
+            >Dissertation</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/cv"
+            >CV</a
+          >
+        </li>
+        
+      </ul>
+      <!-- Header Nav inject -->
+      
+    </nav>
+    
+  </div>
+</header>
+
+
+    <!-- Body Start inject -->
+    
+
+    <div class="flex">
+      <div class="order-1 hidden w-[calc((100%-var(--container-3xl))/2)] lg:block"></div>
+      <aside
+        class="sticky top-0 order-3 mt-48 hidden h-min w-[calc((100%-var(--container-3xl))/2)] lg:block"
+      >
+        
+
+      </aside>
+      <main
+        class="prose prose-neutral dark:prose-invert prose-pre:rounded-lg prose-img:rounded-lg order-2 mx-auto min-h-[calc(100vh-9rem)] w-full max-w-3xl px-4 pt-24 pb-16 break-words lg:pt-32"
+      >
+        
+<!-- Term Title -->
+<h1 class="mb-16">#methods</h1>
+<!-- Pages -->
+<!-- Pages -->
+<!---->
+<!---->
+<!---->
+
+
+<section
+  class="block-bg relative mb-4 rounded-lg p-4 first-of-type:mt-0 last-of-type:mb-0 active:scale-95 lg:mb-6 lg:p-6"
+>
+  <!---->
+
+  <h2 class="my-0! pb-1 leading-none! font-bold">Partial Pooling for Estimating Interaction Effects in Factor Models</h2>
+
+  <div class="not-prose my-1 truncate">
+    
+    <p>Every additional filter halves the sample again. Each one has a cost. We want to estimate the abnormality of the returns without leaving food on the table.</p>
+    
+  </div>
+
+  
+<div class="text-sm antialiased opacity-60">
+  
+  <time datetime="2025-11-08">8 November 2025</time>
+  <span class="mx-1">&middot;</span>
+  <span>21 min read</span>
+  
+  
+  
+  
+</div>
+
+
+  <a class="absolute inset-0 text-[0px]" href="https:&#x2F;&#x2F;sbabichenko.com&#x2F;writing&#x2F;partial-pooling&#x2F;">Partial Pooling for Estimating Interaction Effects in Factor Models</a>
+</section>
+
+
+<!-- Main Nav -->
+
+<nav class="not-prose mt-16 flex font-bold">
+  <!---->
+  
+</nav>
+
+<!---->
+
+      </main>
+    </div>
+
+    
+<footer class="site-foot">
+  
+  <span>&copy; 2025&ndash;2026 Sam Babichenko</span>
+  <a href="https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by&#x2F;4.0&#x2F;deed.en" rel="noopener" target="_blank">CC BY 4.0</a>
+  <a href="https://sbabichenko.com/colophon">Colophon</a>
+  <a href="https://sbabichenko.com/atom.xml" title="New writing, in any feed reader">Feed</a>
+  <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
+</footer>
+<script src="https://sbabichenko.com/js/tally.js?h=4000db8cd9e27f8f27cd"></script>
+<link rel="stylesheet" href="https://sbabichenko.com/css/whimsy.css?h=d4251323faf1bde2b9ac" />
+<link rel="stylesheet" href="https://sbabichenko.com/css/fold.css?h=c5acda3ad83f04ce162c" />
+<script src="https://sbabichenko.com/js/whimsy.js?h=a8c298c7f32b36526f42"></script>
+<script src="https://sbabichenko.com/js/skip.js?h=8b0612be930eb6b54639" defer></script>
+<script src="https://sbabichenko.com/js/fold.js?h=e11d63b1e1ab91ad246a"></script>
+
+
+    <!-- Body End inject -->
+    
+  </body>
+</html>

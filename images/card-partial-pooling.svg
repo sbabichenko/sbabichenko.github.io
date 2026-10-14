@@ -1,0 +1,32 @@
+
+<svg width="560" height="300" viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Partial pooling diagram">
+  <!-- Arrowhead -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+  </defs>
+
+  <!-- Top node -->
+  <circle cx="280" cy="60" r="36" fill="#ffffff" stroke="#666" stroke-width="2"/>
+  <text x="280" y="65" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#222">μ, τ</text>
+
+  <!-- Bottom nodes -->
+  <circle cx="110" cy="220" r="26" fill="#ffffff" stroke="#666" stroke-width="2"/>
+  <text x="110" y="225" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#222">(1)</text>
+
+  <circle cx="230" cy="220" r="26" fill="#ffffff" stroke="#666" stroke-width="2"/>
+  <text x="230" y="225" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#222">(2)</text>
+
+  <circle cx="330" cy="220" r="26" fill="#ffffff" stroke="#666" stroke-width="2"/>
+  <text x="330" y="225" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#222">(3)</text>
+
+  <circle cx="450" cy="220" r="26" fill="#ffffff" stroke="#666" stroke-width="2"/>
+  <text x="450" y="225" text-anchor="middle" font-family="sans-serif" font-size="13" fill="#222">(n)</text>
+
+  <!-- Arrows -->
+  <line x1="266" y1="96" x2="122" y2="194" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="274" y1="96" x2="238" y2="194" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="286" y1="96" x2="322" y2="194" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="294" y1="96" x2="438" y2="194" stroke="#666" stroke-width="2" marker-end="url(#arrowhead)"/>
+</svg>

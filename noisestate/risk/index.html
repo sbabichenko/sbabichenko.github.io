@@ -1,0 +1,588 @@
+
+<!doctype html>
+<html class="not-ready lg:text-base" lang="en">
+  <head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <!-- Title -->
+  <title>Risk Aversion, Entropically - Sam Babichenko</title>
+
+  <!-- Meta -->
+  <meta name="theme-color" />
+  <meta name="description" content="What risk aversion does to a player in a game of dispersed information: it believes what a risk-neutral player believes, judges its plan at a cost-weighted point, and pushes harder, in equilibrium and for a lone controller, until no control is enough." />
+  <meta name="author" content="" />
+  <!-- The Open Graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Risk Aversion, Entropically" />
+  <meta property="og:site_name" content="Sam Babichenko" />
+  <meta property="og:description" content="What risk aversion does to a player in a game of dispersed information: it believes what a risk-neutral player believes, judges its plan at a cost-weighted point, and pushes harder, in equilibrium and for a lone controller, until no control is enough." />
+  <meta property="og:url" content="https:&#x2F;&#x2F;sbabichenko.com&#x2F;noisestate&#x2F;risk&#x2F;" />
+  <meta property="og:image" content="https://sbabichenko.com/images/og.png" />
+
+  <!-- CSS & JS -->
+  <link rel="preload stylesheet" as="style" href="https://sbabichenko.com/main.css?h=83e18233020b9c7a7a8c" />
+  <style>
+    :root {
+      --bg: #FFFFF0;
+      --bg-dark: #1F2022;
+      --header: #e4e4e7;
+      --header-dark: #27272a;
+    }
+  </style>
+
+  
+
+  <!-- Dark Icon -->
+  <link rel="preload" as="image" href="https://sbabichenko.com/icons/theme.svg" />
+
+  <!-- Math -->
+  
+  <!---->
+
+  <!-- Mermaid -->
+  
+  <!---->
+
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="https://sbabichenko.com/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://sbabichenko.com/favicon-16x16.png">
+  <link rel="shortcut icon" href="https://sbabichenko.com/favicon.ico">
+  <link rel="apple-touch-icon" href="https://sbabichenko.com/apple-touch-icon.png">
+
+
+  <!-- Feeds -->
+  
+  <!---->
+  
+  <link
+    rel="alternate"
+    type="application/atom+xml"
+    title="Atom"
+    href="https://sbabichenko.com/atom.xml"
+  />
+   
+  <!---->
+  
+
+  <!-- Canonical -->
+  <link rel="canonical" href="https:&#x2F;&#x2F;sbabichenko.com&#x2F;noisestate&#x2F;risk&#x2F;" />
+
+  <!-- Head inject -->
+  <meta name="twitter:card" content="summary_large_image">
+<link rel="preload" as="font" type="font/woff2" href="https://sbabichenko.com/fonts/newsreader-latin-opsz-normal.woff2" crossorigin>
+<link rel="stylesheet" href="https://sbabichenko.com/fonts/newsreader.css?h=5358dbda7c8bb2508eba">
+<link rel="stylesheet" href="https://sbabichenko.com/css/custom.css?h=f0c82a15a80fef316c80">
+</head>
+
+  <body class="text-black duration-200 ease-out dark:text-white">
+    <link rel="stylesheet" href="https://sbabichenko.com/dissertation/opening.css?h=f19150e18980924c70cd" />
+    
+<header
+  class="blur-header fixed top-0 z-40 mx-auto min-h-[3.5rem] w-full"
+>
+  <div class="mx-auto w-full max-w-4xl p-3 lg:flex lg:justify-between">
+    <div class="flex justify-between">
+      <div class="flex items-center">
+        <a class="text-2xl font-semibold" href="https://sbabichenko.com">Sam Babichenko</a>
+        <div
+          class="btn-dark ml-4 h-6 w-6 shrink-0 cursor-pointer text-[0px] [background:url(./icons/theme.svg)_left_center/cover_no-repeat] dark:[background-position:right] dark:invert"
+          role="button"
+          tabindex="0"
+          aria-label="Switch to dark theme"
+        ></div>
+        <style>
+          /* brown paper (a CC0 scan from ambientCG, reduced to its surface and fibers) is the page's own background: it scrolls with the page and stays behind the content, so it costs
+             nothing to scroll (an overlay blended over everything had to be recomposited on every frame) */
+          html :is(body, header.blur-header) { background-image: var(--paper-img); background-size: 768px 768px; background-blend-mode: multiply; }
+          html.dark :is(body, header.blur-header) { background-blend-mode: screen; }
+          /* a patch of the same paper, for the few things that must hide what passes under them (a sticky drawing on a
+             phone, a bar that stays put, a popup): background: var(--ground) var(--paper-img) 0 0 / 768px 768px with
+             background-blend-mode: var(--patch-blend). Everything else is clear, so the page's own paper runs through it.
+             Patches pin their paper to the window and shift it by the scroll (--paper-y), so a pill or bar that stays put
+             still shows the page's paper moving under it, lined up with the page around it. A new patch goes in the
+             list in the script below: only the patches carry --paper-y (set on the page's root, every scroll frame
+             restyled every element on the page, 100 ms and more a frame on a chapter). */
+          html:not(.dark) { --ground: #ecdebe; --patch-blend: multiply; }
+          html.dark { --ground: #1f2022; --patch-blend: screen; }
+          /* in light mode the paper also gets a paper's own warm tone: the site's near-white cream is what made the grain read as dirt */
+          html:not(.dark), html:not(.dark) :is(.home, .opening, .thesis, .gatehow) { --paper: #ecdebe; --sheet: #f0e4c8; }
+          html:not(.dark) body { background-color: var(--paper); }
+          /* the body's box grows with the page (the theme had it one window tall): browsers carry a body's background out
+             to the whole page, but a renderer that doesn't (a work browser behind a filtering proxy) painted the paper only
+             over the first screen */
+          html body { height: auto; min-height: 100vh; }
+          /* the paper runs through everything: the bar at the top is paper, cards and panels are clear (outlines only), and
+             pictures, plots and canvases are multiplied onto it, so their white ground becomes the paper and their ink stays ink */
+          html :is(.panel, .statusbar, button.tab:not([aria-selected="true"]), article.demo) { background-color: transparent !important; }
+          html header.blur-header { backdrop-filter: none; -webkit-backdrop-filter: none; background-color: var(--paper, #fffff0);
+            border-bottom: 0; box-shadow: none; }
+          html.dark header.blur-header { background-color: #1f2022; }
+          /* the bar stays put, but its paper is the page's: shifted with the scroll, so the grain moves under it as it does
+             everywhere else and lines up with the page at its edge */
+          html header.blur-header { background-position: 0 var(--paper-y, 0px); }
+          /* in place of a line under the bar: a soft band where whatever scrolls up (text, drawings, the mesh) blurs and fades
+             into the bar's paper, so nothing is cut off at a hard edge. It comes in over the first 44px of scroll: at the top of
+             the page nothing has scrolled under the bar, and the band would only wash out the first line below it */
+          html header.blur-header::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 44px; pointer-events: none;
+            background-color: inherit; background-image: inherit; background-size: inherit; background-blend-mode: inherit;
+            background-position: 0 calc(var(--paper-y, 0px) - var(--hdr-h, 56px));
+            -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+            -webkit-mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent);
+                    mask-image: linear-gradient(to bottom, #000, rgba(0,0,0,0.6) 40%, transparent); opacity: var(--hdr-fade, 0); }
+          /* the browser draws some things itself (a select's open list, scrollbars, a search box's clear button, pickers):
+             tell it which theme the page is in, so a dark page does not open a white menu, and give a select's options the
+             page's colours where the browser lets a page style them (Windows and Linux; macOS draws its own menus) */
+          html:not(.dark) { color-scheme: light; }
+          html.dark { color-scheme: dark; }
+          html:not(.dark) select option { background-color: #f3ead3; color: #1b1b1f; }
+          html.dark select option { background-color: #26272a; color: #ececef; }
+          /* secondary controls stay clear on the paper but get an edge that reads (28% of the text's colour; 9% vanished on
+             dim screens), a faint tint of ink under the cursor and when pressed, and fade as a whole when disabled */
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, #dsearch, .dsearch, button.copy, button.cite-copy,
+            button.tweet-load, .gatedeep .howbar button) { border-color: color-mix(in srgb, currentColor 28%, transparent) !important; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button) { transition: background-color 0.12s; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button):hover:not(:disabled) { background-color: color-mix(in srgb, currentColor 6%, transparent) !important; }
+          html :is(button.secondary, button.tab:not([aria-selected="true"]), select, button.copy, button.cite-copy, button.tweet-load,
+            .gatedeep .howbar button):active:not(:disabled) { background-color: color-mix(in srgb, currentColor 11%, transparent) !important; }
+          html :is(button, select):disabled { opacity: 0.45; }
+          /* checkboxes take the page's colours, not the browser's white square: a clear box on the paper with a line
+             in the text's colour, filled with the accent when ticked */
+          html input[type=checkbox] { -webkit-appearance: none; appearance: none; width: 15px; height: 15px; flex: none; margin: 0 0.35em 0 0;
+            vertical-align: -2px; display: inline-grid; place-content: center; cursor: pointer; background: transparent;
+            border: 1.5px solid color-mix(in srgb, currentColor 55%, transparent); border-radius: 4px; transition: background-color 0.12s, border-color 0.12s; }
+          html input[type=checkbox]::before { content: ""; width: 9px; height: 9px; transform: scale(0); transition: transform 0.12s;
+            background: var(--accent-ink, #fff); clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
+          html input[type=checkbox]:checked { background: var(--accent, #1f3fd0); border-color: var(--accent, #1f3fd0); }
+          html.dark input[type=checkbox]:checked { background: var(--accent, #8fb0ff); border-color: var(--accent, #8fb0ff); }
+          html.dark input[type=checkbox]::before { background: var(--accent-ink, #0b1220); }
+          html input[type=checkbox]:checked::before { transform: scale(1); }
+          html input[type=checkbox]:focus-visible { outline: 2px solid var(--accent, #1f3fd0); outline-offset: 2px; }
+          html input[type=checkbox]:disabled { opacity: 0.45; cursor: default; }
+          /* sliders the same way: a thin track in the text's colour, filled with the accent up to the thumb (--fill,
+             kept by the script below), and an accent thumb ringed in the paper's colour */
+          html input[type=range] { -webkit-appearance: none; appearance: none; background: transparent; height: 18px; cursor: pointer; }
+          html input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px;
+            background: linear-gradient(to right, var(--accent, #1f3fd0) var(--fill, 0%), color-mix(in srgb, currentColor 22%, transparent) var(--fill, 0%)); }
+          html input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: color-mix(in srgb, currentColor 22%, transparent); }
+          html input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--accent, #1f3fd0); }
+          html input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; margin-top: -6px; border-radius: 50%;
+            background: var(--accent, #1f3fd0); border: 2px solid var(--ground, #ecdebe); box-shadow: 0 0 0 1px var(--accent, #1f3fd0); }
+          html input[type=range]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--accent, #1f3fd0);
+            border: 2px solid var(--ground, #ecdebe); box-shadow: 0 0 0 1px var(--accent, #1f3fd0); }
+          html.dark input[type=range]::-webkit-slider-runnable-track { background: linear-gradient(to right, var(--accent, #8fb0ff) var(--fill, 0%), color-mix(in srgb, currentColor 22%, transparent) var(--fill, 0%)); }
+          html.dark input[type=range]::-moz-range-progress { background: var(--accent, #8fb0ff); }
+          html.dark input[type=range]::-webkit-slider-thumb { background: var(--accent, #8fb0ff); box-shadow: 0 0 0 1px var(--accent, #8fb0ff); }
+          html.dark input[type=range]::-moz-range-thumb { background: var(--accent, #8fb0ff); box-shadow: 0 0 0 1px var(--accent, #8fb0ff); }
+          html input[type=range]:focus-visible { outline: 2px solid var(--accent, #1f3fd0); outline-offset: 3px; border-radius: 4px; }
+          html:not(.dark) figure { background-color: transparent; }
+          /* the dissertation's figures (.webfig) are drawn transparent in the page's inks and need no blend */
+          html:not(.dark) :is(figure img, .shot img, .shot canvas, .panel canvas, .js-plotly-plot, main img):not(.webfig img) { mix-blend-mode: multiply; }
+          /* the tile is 768px: a 768-pixel image for ordinary screens (what the browser drew from the 1536 one anyway) and
+             the 1536 one for sharp screens */
+          html:not(.dark) { --paper-img: image-set(url(https://sbabichenko.com/images/paper/brown-light.webp?h=e5a70cdd56a8e0d11533) 1x, url(https://sbabichenko.com/images/paper/brown-light-2x.webp?h=839876cd80b11ff6e8b4) 2x); }
+          html.dark { --paper-img: image-set(url(https://sbabichenko.com/images/paper/brown-dark.webp?h=a1610218c435c74114b1) 1x, url(https://sbabichenko.com/images/paper/brown-dark-2x.webp?h=3eb5c860334b67cf2100) 2x); }
+        </style>
+        <script>
+          (() => {
+            // the patches of paper (above); a pseudo-element patch is listed as itself, and its element carries the scroll
+            // for browsers without scroll-driven animations
+            const PATCHES = ["header.blur-header", ".peek", ".figzoom", ".trace-note", ".wayback", ".gpanel", ".cover .cta a",
+              ".stage::before", ".gatehow .stage::before", "html.fold-table .story .stage", ".spike .controls", ".risk .rcontrols",
+              ".dsearch-panel", ".explorer #statusbar", ".explorer #race-statusbar", ".home .shot.draw .clear", ".home .shot.draw .status",
+              ".whimsy-coin p", ".whimsy-forecast", ".skip-pill"];
+            const root = document.documentElement, hdr = document.querySelector("header.blur-header");
+            if (hdr) new ResizeObserver(() => hdr.style.setProperty("--hdr-h", hdr.offsetHeight + "px")).observe(hdr);
+            const css = document.createElement("style");
+            css.textContent = '@property --paper-y { syntax: "<length>"; inherits: true; initial-value: 0px; }' +
+              '@property --hdr-fade { syntax: "<number>"; inherits: true; initial-value: 0; }';
+            if (CSS.supports("animation-timeline: scroll()") && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+              // the browser moves each patch's paper with the scroll itself: --paper-y runs from 0 down by a pixel per
+              // pixel scrolled (the range is far longer than any page, so the ratio is one to one)
+              css.textContent += "@keyframes paper-y { from { --paper-y: 0px; } to { --paper-y: -1000000px; } }" +
+                "@keyframes hdr-fade { from { --hdr-fade: 0; } to { --hdr-fade: 1; } }" +
+                PATCHES.join(",") + " { animation: paper-y linear both; animation-timeline: scroll(root block); animation-range: 0px 1000000px; }" +
+                "header.blur-header { animation: paper-y linear both, hdr-fade linear both; animation-timeline: scroll(root block), scroll(root block);" +
+                " animation-range: 0px 1000000px, 0px 44px; }";
+            } else {
+              const hosts = PATCHES.map((s) => s.replace(/::before$/, "")).join(",");
+              let queued = false;
+              const put = () => { queued = false; const y = -(window.scrollY % 768) + "px";
+                for (const el of document.querySelectorAll(hosts)) el.style.setProperty("--paper-y", y);
+                if (hdr) hdr.style.setProperty("--hdr-fade", Math.min(1, window.scrollY / 44).toFixed(3)); };
+              addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(put); } }, { passive: true });
+              put();
+            }
+            document.head.appendChild(css);
+            // each slider's fill (--fill, the share of its range below the thumb): on input, on a script setting its value
+            // (the explorer and the demos redraw their sliders), and at load
+            const fill = (r) => { const lo = +r.min || 0, hi = r.max === "" ? 100 : +r.max, v = +r.value;
+              r.style.setProperty("--fill", (hi > lo ? (100 * (v - lo)) / (hi - lo) : 0).toFixed(2) + "%"); };
+            const fillAll = () => { for (const r of document.querySelectorAll("input[type=range]")) fill(r); };
+            addEventListener("input", (e) => { if (e.target.type === "range") fill(e.target); }, true);
+            const d = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+            Object.defineProperty(HTMLInputElement.prototype, "value", { configurable: true, get: d.get,
+              set(v) { d.set.call(this, v); if (this.type === "range") fill(this); } });
+            let q = false;
+            new MutationObserver(() => { if (!q) { q = true; requestAnimationFrame(() => { q = false; fillAll(); }); } })
+              .observe(document.documentElement, { childList: true, subtree: true });
+            addEventListener("DOMContentLoaded", fillAll);
+          })();
+        </script>
+      </div>
+      
+      <div
+        class="btn-menu relative z-50 flex h-8 w-8 shrink-0 cursor-pointer flex-col items-center justify-center gap-2.5 lg:hidden"
+        role="button"
+        tabindex="0"
+        aria-label="Menu"
+        aria-expanded="false"
+      ></div>
+      
+    </div>
+    <script>
+      // base
+      const htmlClass = document.documentElement.classList;
+      setTimeout(() => {
+        htmlClass.remove("not-ready");
+      }, 10);
+
+      // mobile menu
+      const btnMenu = document.querySelector(".btn-menu");
+      btnMenu?.addEventListener("click", () => {
+        btnMenu.setAttribute("aria-expanded", htmlClass.toggle("open"));
+      });
+      // the two div buttons answer Enter and Space like real buttons
+      for (const b of document.querySelectorAll(".btn-menu, .btn-dark"))
+        b.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); b.click(); } });
+
+      // dark theme; storage can be blocked (privacy modes, locked-down browsers), so every read and write is guarded
+      const storedDark = () => { try { return localStorage.getItem("dark"); } catch (e) { return null; } };
+      const setDark = (isDark) => {
+        if (isDark) {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "dark" }));
+          htmlClass.add("dark");
+        } else {
+          document.body.dispatchEvent(new CustomEvent("set-theme", { detail: "light" }));
+          htmlClass.remove("dark");
+        }
+        try { localStorage.setItem("dark", isDark); } catch (e) {}
+        document.querySelector(".btn-dark")?.setAttribute("aria-label", isDark ? "Switch to light theme" : "Switch to dark theme");
+      };
+
+      // init
+      const darkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+      if (htmlClass.contains("dark")) {
+        setDark(true);
+      } else {
+        const darkVal = storedDark();
+        setDark(darkVal ? darkVal === "true" : darkScheme.matches);
+      }
+
+      // listen system
+      darkScheme.addEventListener("change", (event) => {
+        setDark(event.matches);
+      });
+
+      // manual switch
+      const btnDark = document.querySelector(".btn-dark");
+      btnDark.addEventListener("click", () => {
+        setDark(!htmlClass.contains("dark"));
+      });
+    </script>
+    
+    <nav class="flex w-full items-center lg:w-auto">
+      <ul
+        class="nav-wrapper flex w-full flex-col py-2 lg:w-auto lg:flex-row lg:self-center lg:py-0"
+      >
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/writing"
+            >Writing</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/dissertation"
+            >Dissertation</a
+          >
+        </li>
+        
+        <li>
+          <a
+            class="primary-link block py-2 text-center text-lg font-medium lg:px-3 lg:py-0"
+            href="https://sbabichenko.com/cv"
+            >CV</a
+          >
+        </li>
+        
+      </ul>
+      <!-- Header Nav inject -->
+      
+    </nav>
+    
+  </div>
+</header>
+
+
+    <main class="opening idea risk">
+      <section class="ideahead">
+        <p class="eyebrow"><a href="https://sbabichenko.com/noisestate">Noise-State Game Explorer</a> &middot; risk aversion</p>
+        <h1>Risk Aversion, Entropically</h1>
+        <p class="lede">A driver on an icy road stays farther from the edge than the average skid calls for. The games
+          of the dissertation cannot say why: with quadratic costs and Gaussian shocks, a player cares only about
+          averages, and can ignore what it has not seen yet. The usual way to add risk aversion reads it as pessimism, a
+          player acting as if the world were worse than it believes. In a game that is costly. Each player would carry
+          its own pessimism, the others would have to forecast it, and the hierarchy of beliefs about beliefs would
+          return.</p>
+        <p class="lede">It does not. A risk-averse player, with a coefficient <i>&theta;</i>, minimizes
+          <i>&theta;</i><sup>&minus;1</sup>&thinsp;log&thinsp;E&thinsp;<i>e</i><sup><i>&theta;C</i></sup> of its cost <i>C</i>: the certain cost it would
+          trade its uncertain one for. It believes exactly what a risk-neutral player would. What changes is where it
+          judges a deviation from its plan: at a point moved by an affine map of its beliefs.</p>
+        <figure class="headfig">
+          <svg id="headfig" viewBox="0 0 360 200" role="img" aria-label="One shock: the player's belief, a gray bell that stays still, and the cost-weighted curve, a dashed blue bell that slides right and widens as risk aversion grows"></svg>
+        </figure>
+      </section>
+
+      <section class="rsec">
+        <h2>Judging a deviation</h2>
+        <p class="lede2">Whether a small change to a plan pays is a derivative: the change in cost, averaged over the
+          outcomes the player thinks possible. For a risk-neutral player that average is taken with its beliefs. For a
+          risk-averse one, differentiating log&thinsp;E&thinsp;<i>e</i><sup><i>&theta;C</i></sup> gives the same average with every
+          outcome weighted by <i>e</i><sup><i>&theta;C</i></sup>: the costly outcomes count for more. The weight is the exponential of a quadratic, so weighted Gaussian densities are Gaussian again, with a
+          moved center. And the change in cost from a small deviation is a straight line in the shocks, and the
+          average of a straight line is the line at the average. So the risk-averse judgment is the risk-neutral one,
+          taken at the moved center.</p>
+        <div class="rcontrols">
+          <label class="scrub"><span><i>&theta;</i> / <i>&theta;</i>*</span> <input type="range" id="theta-1d" min="0" max="95" value="55" /><span class="clock" id="theta-1d-read"></span></label>
+          <label class="scrub"><span>what the player has seen</span> <input type="range" id="mu-1d" min="-150" max="150" value="60" /><span class="clock" id="mu-1d-read"></span></label>
+        </div>
+        <div class="rgrid">
+          <figure>
+            <svg id="why" role="img" aria-label="A belief, the weight e to the theta C, the weighted curve, and the marginal cost line"></svg>
+            <div class="legend" id="why-legend"></div>
+            <figcaption>One shock <i>w</i>. Gray: the player&rsquo;s belief about it. Orange: the weight
+              <i>e</i><sup><i>&theta;C</i></sup> on a log scale, where it is the parabola <i>&theta;C</i>, the cost <i>C</i>
+              being quadratic in <i>w</i>. Dashed blue: the belief times the
+              weight, again a bell curve, shifted and widened. It is not a new belief: the player
+              still believes the gray curve, and the blue one only says how much each outcome counts in the average that
+              judges a deviation. Below: the change in cost from a small deviation, a
+              straight line in <i>w</i>. Its average under each curve (computed by summing over <i>w</i>) equals the line
+              at that curve&rsquo;s center.</figcaption>
+          </figure>
+          <figure>
+            <svg id="affine" role="img" aria-label="The weighted center against the belief's center: a straight line"></svg>
+            <div class="legend" id="affine-legend"></div>
+            <figcaption>Where the judgment is taken, against what the player believes. Wherever the belief sits, the judgment point moves
+              by the same stretch and the same shift: an affine map, steeper as <i>&theta;</i> grows. At <i>&theta;</i>* the
+              weighted curve stops being a bell (it no longer has an average) and the map breaks down.</figcaption>
+          </figure>
+        </div>
+        <p class="rnote">Here the belief is <i>w</i> ~ N(<i>&mu;</i>, 0.8&sup2;), the cost <i>C</i> = &frac12;<i>w</i>&sup2; +
+          &frac12;<i>w</i>, so the weighted center is (<i>&mu;</i> + <i>&theta;</i>&middot;0.8&sup2;&middot;&frac12;) / (1 &minus;
+          <i>&theta;</i>&middot;0.8&sup2;), and <i>&theta;</i>* = 1/0.8&sup2;. With many shocks the stretch is
+          (<i>I</i> &minus; <i>&theta;</i>&Sigma;<i>K</i>)<sup>&minus;1</sup>, &Sigma; the uncertainty and <i>K</i> the cost&rsquo;s quadratic
+          part, and the shift comes from its linear part: the appendix to Chapter 1.</p>
+      </section>
+
+      <section class="rsec">
+        <h2>A past shock and a future one</h2>
+        <p class="lede2">With more than one shock the moved center can land where the belief expects nothing. Take a shock
+          that has happened, seen through noise, and one still to come, with the cost the square of their sum. The
+          belief about the future shock is centered at zero; the weighted one is not, because the costly outcomes are
+          the ones where both push the same way. A risk-neutral player can ignore what it has not seen yet. A
+          risk-averse one cannot: certainty equivalence fails here.</p>
+        <div class="rcontrols">
+          <label class="scrub"><span><i>&theta;</i> / <i>&theta;</i>*</span> <input type="range" id="theta-toy" min="0" max="95" value="58" /><span class="clock" id="theta-toy-read"></span></label>
+        </div>
+        <div class="rgrid">
+          <figure class="wide toyfig">
+            <svg id="toy" role="img" aria-label="Two shocks: the belief and the same weighted by cost"></svg>
+            <div class="legend" id="toy-legend"></div>
+            <figcaption>Gray: what the player believes, the past shock about 0.6 and the next one anybody&rsquo;s guess.
+              Dashed blue: the same belief with every outcome weighted by <i>e</i><sup><i>&theta;C</i></sup>. It leans along the
+              costly diagonal, and its hollow center, the point where a deviation is judged, moves off zero on the future
+              shock&rsquo;s axis. The player does not expect the next shock to push; it weighs the outcomes where it
+              does.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="rsec">
+        <h2>In the tracking game</h2>
+        <p class="lede2">The same for player 1 of Chapter 1&rsquo;s tracking game, halfway through, having seen the state
+          pushed up. Its noise-state is its belief about every shock, past and future. Its first-order condition is the
+          risk-neutral one evaluated at the risk-adjusted noise-state,
+          <span class="nw"><i>&Wcirc;</i><sup><i>&theta;</i></sup> = (<i>I</i> &minus; <i>&theta;</i>&Sigma;<i>K</i>)<sup>&minus;1</sup><i>&Wcirc;</i></span>
+          (no shift here: the game has no targets), where &Sigma; is how uncertain player 1 still is about the shocks
+          and <i>K</i> is how they enter its cost. Like an adjoint, it is a point at which a derivative is taken, not a
+          belief.</p>
+        <div class="rcontrols">
+          <label class="scrub"><span><i>&theta;</i> / <i>&theta;</i>*</span> <input type="range" id="theta" min="0" max="40" value="24" /><span class="clock" id="theta-read"></span></label>
+        </div>
+        <div class="rgrid">
+          <figure class="wide">
+            <svg id="state" role="img" aria-label="Player 1's estimate and forecast of the state, and the same weighted by cost"></svg>
+            <div class="legend" id="state-legend"></div>
+            <figcaption>Gray: what player 1 believes, its estimate of the state so far and its forecast of the rest;
+              the thin dark line is what actually happened. Dashed blue: the same path averaged over outcomes weighted by
+              their cost, where the risk-averse player judges a change in its plan. It is neither an estimate nor a
+              forecast: it leans up, past and future, because the outcomes
+              where the state ran high are the ones that count most.</figcaption>
+          </figure>
+          <figure class="wide">
+            <svg id="push" role="img" aria-label="What a small extra push against the state is worth, judged with the belief and cost-weighted"></svg>
+            <div class="legend" id="push-legend"></div>
+            <figcaption>The judgment itself: how much player 1&rsquo;s cost changes if, now, it pushes a little harder
+              against the state. With its belief the answer is zero (up to the time cells), as it must be: the plan is
+              optimal for a risk-neutral player. Cost-weighted, the push lowers the cost, more so as <i>&theta;</i> grows:
+              a risk-averse player would push harder, as in <a href="#eq-section">the equilibrium below</a>.</figcaption>
+          </figure>
+          <figure class="wide">
+            <svg id="shocks" role="img" aria-label="Player 1's noise-state, shock by shock, and the same weighted by cost"></svg>
+            <figcaption>Shock by shock: player 1&rsquo;s estimate of each shock path (gray) and the same averaged over
+              outcomes weighted by their cost (dashed blue). Every future shock averages zero in the belief, flat after the
+              line; weighted by cost, the future shocks average a drift that pushes the state further, and the past is
+              weighted toward the bigger pushes. Thin dark line: what actually happened.</figcaption>
+          </figure>
+        </div>
+        <p class="rnote">Because the map is affine, the first-order system stays a linear system in noise-states, with
+          the same filters: CARA fits the noise-state method without changing its machinery. Past
+          <i>&theta;</i>*, when <i>I</i> &minus; <i>&theta;</i>&Sigma;<sup>1/2</sup><i>K</i>&Sigma;<sup>1/2</sup> stops being positive, the
+          weighting has no average. These drawings hold the strategies at the risk-neutral equilibrium&rsquo;s; <a href="#eq-section">the
+          equilibrium section</a> solves for risk-averse ones. Computed on 100 time cells; the belief matches player 1&rsquo;s own filter
+          in noisestate to within the cells.</p>
+      </section>
+
+      <section class="rsec" id="equiv-section">
+        <h2>Weight, then look; or look, then weight</h2>
+        <p class="lede2">Chapter 1&rsquo;s appendix and the noisestate solver compute this weighting in different orders.
+          The appendix looks first: each time the player sees something, it takes the player&rsquo;s updated belief and
+          weights it by <i>e</i><sup><i>&theta;C</i></sup>, so the weighting is redone at every moment. The solver weights
+          first: it weights every outcome of the whole game once, then conditions on what the player has seen. Could
+          the two disagree? They cannot: by Bayes&rsquo; rule the two orders give the same weighted curve, so the
+          derivative that decides whether a plan is best comes out the same either way. Here are two shocks, one the
+          player has seen and one still to come, correlated, with cost <i>C</i> = &frac12;(seen + to come)&sup2;.</p>
+        <div class="rcontrols">
+          <label class="scrub"><span><i>&theta;</i> / <i>&theta;</i>*</span> <input type="range" id="theta-eq2" min="0" max="95" value="60" /><span class="clock" id="theta-eq2-read"></span></label>
+          <label class="scrub"><span>the shock already seen</span> <input type="range" id="seen-eq2" min="-150" max="150" value="80" /><span class="clock" id="seen-eq2-read"></span></label>
+        </div>
+        <figure class="wide routes" id="routes">
+          <div class="route">
+            <p class="rname">Weight, then look<small>the solver: once, for the whole game</small></p>
+            <div class="rstep"><svg id="r1a" role="img" aria-label="The prior over both shocks"></svg><span>prior over both shocks</span></div>
+            <p class="rarrow">weight every outcome by <i>e</i><sup><i>&theta;C</i></sup></p>
+            <div class="rstep"><svg id="r1b" role="img" aria-label="Both shocks, every outcome weighted by cost"></svg><span>weighted (not a belief)</span></div>
+            <p class="rarrow">condition on what was seen (read along the line)</p>
+            <div class="rstep"><svg id="r1c" role="img" aria-label="The weighting read along the line of what was seen"></svg><span>weighted curve (not a belief)</span></div>
+          </div>
+          <div class="route">
+            <p class="rname">Look, then weight<small>the appendix: redone at each moment</small></p>
+            <div class="rstep"><svg id="r2a" role="img" aria-label="The prior over both shocks"></svg><span>prior over both shocks</span></div>
+            <p class="rarrow">condition on what was seen (read along the line)</p>
+            <div class="rstep"><svg id="r2b" role="img" aria-label="The player's belief about the shock to come"></svg><span>the player&rsquo;s belief</span></div>
+            <p class="rarrow">weight by <i>e</i><sup><i>&theta;C</i></sup></p>
+            <div class="rstep"><svg id="r2c" role="img" aria-label="The belief weighted by cost, with the other route's curve on top"></svg><span>weighted curve, and the row above&rsquo;s</span></div>
+          </div>
+          <div class="legend" id="routes-legend"></div>
+          <figcaption>In every panel the shock still to come runs across. In the squares the shock already seen runs up,
+            and the dark line is its value; conditioning on it reads the square along that line. The two shocks are
+            correlated, so what was seen moves the player&rsquo;s belief. The last panel draws both routes&rsquo; curves: they
+            are one curve. Its center (the circle) is the point at which a derivative of the cost is taken, the same
+            either way. In symbols: <i>e</i><sup><i>&theta;C</i>(<i>x</i>,<i>y</i>)</sup><i>p</i>(<i>x</i>, <i>y</i>) read at
+            <i>x</i> = <i>x</i><sub>0</sub> is <i>e</i><sup><i>&theta;C</i>(<i>x</i><sub>0</sub>,<i>y</i>)</sup><i>p</i>(<i>y</i> | <i>x</i><sub>0</sub>),
+            up to a constant. The prior is standard normal with correlation 0.6, and <i>&theta;</i>* = 1/3.2; near it the
+            weighting spreads along the costly diagonal.</figcaption>
+        </figure>
+      </section>
+
+      <section class="rsec" id="eq-section">
+        <h2>An equilibrium of risk-averse players</h2>
+        <p class="lede2">Now let both players of the tracking game be risk averse, and let each best-respond to the
+          other. Every player then judges its plan at its risk-adjusted noise-state, and so the kernels, the adjoints and the costs
+          that define each player&rsquo;s adjustment all come from the risk-averse players themselves.</p>
+        <div class="rcontrols">
+          <label class="scrub"><span><i>&theta;</i></span> <input type="range" id="theta-eq" min="0" max="30" value="10" /><span class="clock" id="theta-eq-read"></span></label>
+        </div>
+        <div class="rgrid two">
+          <figure>
+            <svg id="eq-life" role="img" aria-label="An early state shock's life at this risk aversion and without it"></svg>
+            <div class="legend" id="eq-life-legend"></div>
+            <figcaption>The life of a state shock at <i>t</i> = 0.2: the state, and player 1&rsquo;s push back. Risk-averse
+              players push back harder, and the shock dies sooner.</figcaption>
+          </figure>
+          <figure>
+            <svg id="eq-costs" role="img" aria-label="Each player's entropic and expected cost against its risk aversion"></svg>
+            <div class="legend" id="eq-costs-legend"></div>
+            <figcaption>Each player&rsquo;s entropic cost rises with <i>&theta;</i> here. Its expected cost first
+              falls, a little, to its lowest near <i>&theta;</i> = 0.9: when both push harder, both gain on average, which
+              suggests the risk-neutral players each leave some of the pushing to the other. Far enough out, they over-insure, and at <i>&theta;</i> &asymp;
+              3.04 the equilibrium breaks down. That is higher than <a href="#state">the tracking game&rsquo;s</a> <i>&theta;</i>* = 1.93: here the players push
+              harder, damp the shocks, and so can bear more risk aversion.</figcaption>
+          </figure>
+        </div>
+        <p class="rnote">Solved by noisestate, in its development version, and checked against a brute-force solver.</p>
+      </section>
+
+      <section class="rsec">
+        <h2>A single controller</h2>
+        <p class="lede2">One controller, alone, steering a state that shocks keep pushing: d<i>X</i> = <i>D</i>&thinsp;d<i>t</i> +
+          d<i>W</i>, at a cost <i>X</i>&sup2; + 0.1&thinsp;<i>D</i>&sup2; per unit of time. The risk-neutral controller
+          pushes back with gain &radic;10 &asymp; 3.2. A risk-averse one pushes back harder, with gain
+          &radic;10&thinsp;/&thinsp;&radic;(1&minus;0.2<i>&theta;</i>): it pays more for control to keep the state from
+          wandering into a bad run. At <i>&theta;</i>* = 5 no gain is enough.</p>
+        <div class="rcontrols">
+          <label class="scrub"><span><i>&theta;</i></span> <input type="range" id="theta2" min="0" max="970" value="700" /><span class="clock" id="theta2-read"></span></label>
+        </div>
+        <div class="rgrid two">
+          <figure>
+            <svg id="gain" role="img" aria-label="The controller's gain against its risk aversion"></svg>
+            <figcaption>The gain against <i>&theta;</i>, with the breakdown at <i>&theta;</i>* = 5.</figcaption>
+          </figure>
+          <figure>
+            <svg id="paths" role="img" aria-label="The state under the risk-neutral and the risk-averse controller, driven by the same shocks"></svg>
+            <div class="legend" id="paths-legend"></div>
+            <figcaption>The state under both controllers, driven by the same shocks, with the band each keeps it in most of the time (two standard deviations): the risk-averse one&rsquo;s is tighter.</figcaption>
+          </figure>
+        </div>
+        <p class="rnote">The gain is the risk-sensitive regulator&rsquo;s closed form; minimizing the exact entropic cost
+          rate of the controlled process over the gain gives the same number at every <i>&theta;</i>.</p>
+      </section>
+
+      <section class="ideafoot">
+        <div class="cta">
+          <a class="primary" href="https://sbabichenko.com/noisestate">The explorer</a>
+          <a href="https://sbabichenko.com/noisestate/how">How the solver works</a>
+          <a href="https://sbabichenko.com/dissertation">The dissertation</a>
+        </div>
+      </section>
+    </main>
+
+    
+<footer class="site-foot">
+  
+  <span>&copy; 2025&ndash;2026 Sam Babichenko</span>
+  <a href="https:&#x2F;&#x2F;creativecommons.org&#x2F;licenses&#x2F;by&#x2F;4.0&#x2F;deed.en" rel="noopener" target="_blank">CC BY 4.0</a>
+  <a href="https://sbabichenko.com/colophon">Colophon</a>
+  <a href="https://sbabichenko.com/atom.xml" title="New writing, in any feed reader">Feed</a>
+  <span class="tally"><span id="tally" aria-live="polite"></span><span id="foldtally"></span></span>
+</footer>
+<script src="https://sbabichenko.com/js/tally.js?h=4000db8cd9e27f8f27cd"></script>
+<link rel="stylesheet" href="https://sbabichenko.com/css/whimsy.css?h=d4251323faf1bde2b9ac" />
+<link rel="stylesheet" href="https://sbabichenko.com/css/fold.css?h=c5acda3ad83f04ce162c" />
+<script src="https://sbabichenko.com/js/whimsy.js?h=a8c298c7f32b36526f42"></script>
+<script src="https://sbabichenko.com/js/skip.js?h=8b0612be930eb6b54639" defer></script>
+<script src="https://sbabichenko.com/js/fold.js?h=e11d63b1e1ab91ad246a"></script>
+
+    <script src="https://sbabichenko.com/js/sketch.js?h=3337a51b1d36fbc923ce"></script>
+    <script src="https://sbabichenko.com/noisestate/risk.js?h=3a162066d6e560835a70" data-ns="https://sbabichenko.com/noisestate/risk/noisestate.json?h=46b7cc7c0cc1e8bdb555" data-eq="https://sbabichenko.com/noisestate/risk/equilibria.json?h=912fa45a9acdde775f6b"></script>
+  </body>
+</html>

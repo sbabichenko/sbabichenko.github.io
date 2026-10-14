@@ -1,0 +1,7 @@
+/* /noisestate/how: layout and inks come from dissertation/opening.css; this only enlarges the drawing's labels on a
+   phone, where the drawing is shown at about half its size */
+@media (max-width: 820px) {
+  #solverpage #stage text { font-size: 19px; }
+  #solverpage #stage text.label { font-size: 18px; }
+  #solverpage #stage text.mono { font-size: 13px; letter-spacing: 0.02em; }
+}

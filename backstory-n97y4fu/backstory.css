@@ -1,0 +1,589 @@
+/* /backstory: the bar and the panes. The Decision Mesh tab is styled by the site's own sheets. */
+/* the site's header and footer stay in the page for their scripts, out of sight */
+body.backstory > header, body.backstory .site-foot { display: none !important; }
+body.backstory .crumbs, body.backstory .dm-end { display: none; }
+body.backstory .explorer { padding-top: 4.6rem; }
+body.backstory[data-tab]:not([data-tab="mesh"]) :is(.skip-pill, .progress) { display: none !important; }
+/* ---- the bar: a patch of the page's paper, fixed at the top */
+.iv-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 70; display: flex; align-items: center; gap: 18px; height: 48px; padding: 0 16px;
+  font: 0.86rem/1 ui-sans-serif, system-ui, sans-serif; color: #1b1b1f;
+  background: var(--ground) var(--paper-img) 0 0 / 768px 768px; background-blend-mode: var(--patch-blend);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12); }
+.dark .iv-bar { color: #ececef; border-bottom-color: rgba(255, 255, 255, 0.12); }
+.iv-tabs { display: flex; gap: 4px; flex: none; }
+.iv-tabs button { font: inherit; font-weight: 600; padding: 7px 12px; border-radius: 7px; border: 1px solid transparent; background: none; color: inherit; cursor: pointer; opacity: 0.6; }
+.iv-tabs button:hover { opacity: 1; }
+.iv-tabs button[aria-selected="true"] { opacity: 1; border-color: currentColor; }
+.iv-jumps { display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; white-space: nowrap; }
+.iv-jumps[hidden] { display: none; }
+.iv-jumps a { padding: 6px 9px; border-radius: 6px; cursor: pointer; opacity: 0.72; color: inherit; text-decoration: none; }
+.iv-jumps a:hover { opacity: 1; background: rgba(127, 127, 127, 0.14); }
+.iv-jumps a.on { opacity: 1; background: rgba(127, 127, 127, 0.2); }
+.iv-dots { display: inline-flex; gap: 2px; margin: 0 6px 0 0; }
+.iv-dots button { font: 0.68rem/1 ui-monospace, Menlo, monospace; width: 20px; height: 20px; padding: 0; border-radius: 50%; border: 1px solid rgba(127, 127, 127, 0.45); background: none; color: inherit; cursor: pointer; opacity: 0.7; }
+.iv-dots button:hover { opacity: 1; border-color: currentColor; }
+.iv-dots button.on { opacity: 1; background: #1f3fd0; border-color: #1f3fd0; color: #fff; }
+.dark .iv-dots button.on { background: #8fb0ff; border-color: #8fb0ff; color: #0b1220; }
+.iv-theme { flex: none; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid currentColor; background: linear-gradient(90deg, currentColor 50%, transparent 50%); cursor: pointer; opacity: 0.6; padding: 0; }
+.iv-theme:hover { opacity: 1; }
+/* ---- panes and framed pages */
+.iv-pane[hidden], #mesh-native[hidden] { display: none; }
+.iv-frame { display: block; width: 100%; height: calc(100vh - 48px); margin-top: 48px; border: 0; background: transparent; }
+.iv-frame[hidden] { display: none; }
+/* the gate story's drawing sits below the bar */
+body.backstory .gatehow .stage { top: 48px; height: calc(100vh - 48px); }
+@media (max-width: 900px) {
+.iv-dots { display: none; }
+}
+/* ---- the live Ginnie Mae fit, the last screen of the first tab */
+.or-slide .ginnie { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+#gn-cvfit { flex: 1; min-height: 0; width: 100%; display: block; cursor: crosshair; touch-action: none; }
+.gn-foot { flex: none; display: flex; gap: 24px; align-items: center; min-height: 1.6em; font-size: 0.86rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.gn-foot .scale { display: inline-flex; align-items: center; gap: 8px; font: 0.8rem ui-monospace, Menlo, monospace; color: var(--faint); }
+.gn-sets { margin-left: auto; display: inline-flex; gap: 6px; }
+.gn-sets .gn-sets { margin-left: 14px; }
+.gn-sets button { font: inherit; font-size: 0.82rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); background: none; color: var(--muted); cursor: pointer; }
+.gn-sets button i { font-style: normal; color: var(--faint); }
+.gn-sets button.on { border-color: var(--accent); color: var(--text); }
+.gn-foot .scale i { display: inline-block; width: 160px; height: 8px; border-radius: 4px; }
+/* ---- the Where it started tab: one drawing per screen. The equation's terms keep one colour on every screen. */
+body.backstory .origin { max-width: 1320px !important; padding-top: 48px; padding-bottom: 0; --corr: var(--accent); --pool: var(--c4); --noise: var(--c6); }
+.or-slide { height: calc(100vh - 48px); display: flex; flex-direction: column; padding: 22px 0 18px; overflow: clip; }
+.or-slide[hidden] { display: none; }
+.or-head { flex: none; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; margin: 0 0 6px; }
+.or-slide h2 { margin: 0; font: 500 1.9rem/1.1 Newsreader, "Iowan Old Style", Georgia, serif; letter-spacing: -0.02em; }
+.or-mini { font: italic 1.6rem/1 Newsreader, "Iowan Old Style", Georgia, serif; color: var(--faint); white-space: nowrap; letter-spacing: 0.01em; }
+.or-mini i { color: var(--muted); }
+.or-mini i.on { font-weight: 700; font-size: 1.25em; }
+.or-mini .t-base.on { color: var(--text); }
+.or-mini .t-corr.on { color: var(--corr); }
+.or-mini .t-pool.on { color: var(--pool); }
+.or-mini .t-noise.on { color: var(--noise); }
+.or-slide svg { flex: 1; min-height: 0; width: 100%; display: block; }
+.or-slide text { font: 17px ui-sans-serif, system-ui, sans-serif; fill: var(--muted); }
+.or-slide text.or-ax { font-size: 14px; fill: var(--faint); }
+.or-ctl { flex: none; display: flex; align-items: center; justify-content: center; gap: 16px; padding-top: 10px; font-size: 0.9rem; color: var(--muted); }
+.or-ctl input { width: min(46vw, 560px); accent-color: var(--accent); }
+.or-ctl.multi { gap: 34px; }
+.or-ctl.multi label { display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; padding: 4px 10px 6px; border-radius: 10px; transition: background 0.15s; }
+.or-ctl.multi label.lit { background: rgba(127, 127, 127, 0.13); }
+.or-ctl.multi .sym { font: italic 1.35rem/1 Newsreader, "Iowan Old Style", Georgia, serif; color: var(--text); margin-right: 2px; }
+.or-ctl.multi .sym.t-pool { color: var(--pool); }
+.or-ctl.multi b { margin-left: auto; }
+.or-ctl.multi input { flex-basis: 100%; }
+/* the whole equation, small, on the binomial screen; a slider lights its symbol */
+.or-mini.full [data-sym] { border-radius: 6px; padding: 1px 3px; margin: 0 -3px; transition: background 0.15s, color 0.15s; }
+.or-mini.full [data-sym].lit { background: var(--accent-soft); color: var(--text); font-weight: 700; }
+.or-mini.full [data-sym].lit i { color: var(--text); }
+.or-mini.full i.t-pool { color: var(--pool); }
+.or-mini.full i.t-pool.lit { color: var(--pool); }
+.or-ctl.multi b { font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+.or-ctl.multi input { grid-column: 1 / -1; width: min(22vw, 260px); }
+/* shared marks */
+.or-frame { fill: none; stroke: var(--border); }
+.or-axis { fill: none; stroke: var(--faint); stroke-width: 1; }
+.or-grid { fill: none; stroke: var(--grid); stroke-width: 1; }
+.or-dot { fill: var(--text); }
+.or-arrow { fill: none; stroke: var(--faint); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.or-rep { fill: var(--accent); fill-opacity: 0.8; stroke: var(--accent); }
+/* cohorting: --p (the slider, 0 to 1) is how far each pool has gone toward its cohort's average pool */
+.or-pools { --p: 0; }
+.or-pools .or-dot { transform: translate(calc(var(--tx) * var(--p)), calc(var(--ty) * var(--p))); opacity: calc(0.75 - 0.6 * var(--p) * var(--p)); }
+.or-pools .or-rep { transform-box: fill-box; transform-origin: center; transform: scale(var(--p)); opacity: calc(var(--p) * var(--p)); }
+/* the map and what is drawn on it */
+.or-tint { fill: var(--text); fill-opacity: 0.035; stroke: none; }
+.or-topo { fill: none; stroke: var(--text); stroke-width: 0.6; stroke-opacity: 0.42; stroke-linejoin: round; }
+.or-topo.idx { stroke-width: 1.3; stroke-opacity: 0.6; }
+.or-band { fill: var(--accent); fill-opacity: 0.6; stroke: none; }
+.or-leaf { fill: var(--text); stroke: var(--text); stroke-width: 1.1; stroke-opacity: 0.55; }
+.or-cell { fill: var(--accent); fill-opacity: 0.55; stroke: var(--corr); stroke-width: 1.3; }
+.or-leaf.edge, .or-mesh.edge { stroke: var(--corr); stroke-opacity: 0.9; }
+.or-surface { fill: var(--accent); fill-opacity: 0.035; stroke: none; }
+.or-miss { stroke: var(--text); stroke-width: 1; stroke-opacity: 0.5; }
+.or-miss.hi { fill: var(--hi); }
+.or-miss.lo { fill: var(--lo); }
+.or-shade { fill: var(--text); }
+.or-mesh { fill: none; stroke: var(--text); stroke-width: 1.2; stroke-opacity: 0.8; stroke-linecap: round; }
+.or-quiet .or-topo { stroke-opacity: 0.2; }
+.or-quiet .or-topo.idx { stroke-opacity: 0.34; }
+/* a staged drawing: only the slider's stage is painted, and stages cross-fade */
+.or-slide [data-stage] { visibility: hidden; opacity: 0; transition: opacity 0.28s ease, visibility 0s 0.28s; }
+.or-slide [data-stage].on { visibility: visible; opacity: 1; transition: opacity 0.28s ease; }
+.or-err { fill: none; stroke-width: 2.4; stroke-linejoin: round; }
+.or-err.tree { stroke: var(--text); stroke-opacity: 0.6; }
+.or-err.mesh { stroke: var(--corr); }
+.or-errpt { stroke: var(--ground, #fff); stroke-width: 1.5; }
+.or-errpt.tree { fill: var(--text); }
+.or-errpt.mesh { fill: var(--corr); }
+/* fewer cohorts: bins dark, tree blue; the hollow dot is the tree with the bins' error */
+.or-err.bins { stroke: var(--text); stroke-opacity: 0.6; }
+.or-errpt.bins { fill: var(--text); }
+.or-err.hero { stroke: var(--corr); }
+.or-errpt.hero { fill: var(--corr); }
+.or-same { fill: none; stroke: var(--corr); stroke-width: 1.6; stroke-dasharray: 4 4; }
+.or-errpt.hollow { fill: var(--ground, #fff); stroke: var(--corr); stroke-width: 2.4; }
+/* the equation */
+.or-slide text.or-eq { font: italic 58px Newsreader, "Iowan Old Style", Georgia, serif; fill: var(--text); }
+.or-slide text.or-eq.op { font-style: normal; fill: var(--faint); }
+.or-slide text.or-eq.sub { font-size: 38px; }
+.or-slide text.or-eq .up { font-style: normal; }
+.or-slide text.or-eqlab { font: 18px ui-sans-serif, system-ui, sans-serif; fill: var(--muted); }
+.or-slide text.t-corr { fill: var(--corr); }
+.or-slide text.t-pool { fill: var(--pool); }
+.or-slide text.t-noise { fill: var(--noise); }
+/* binomial noise (tails.js) and seeing missing signal: amber is binomial noise, purple the pool effect */
+.or-normal { fill: none; stroke: var(--text); stroke-width: 2.4; stroke-linejoin: round; }
+.or-below { fill: var(--text); fill-opacity: 0.16; }
+.or-zero { fill: none; stroke: var(--faint); stroke-width: 1.2; stroke-dasharray: 3 4; }
+.or-pmf { fill: var(--noise); fill-opacity: 0.85; }
+.or-pmfu { fill: none; stroke: var(--pool); stroke-width: 2.2; }
+.or-wedge.noise { fill: var(--noise); fill-opacity: 0.3; }
+.or-wedge.pool { fill: var(--pool); fill-opacity: 0.26; }
+.or-tail { fill: none; stroke-width: 1.8; stroke-linejoin: round; }
+.or-tail.noise { stroke: var(--noise); }
+.or-tail.pool { stroke: var(--pool); }
+.or-pt { stroke: var(--ground, #fff); stroke-width: 1.5; }
+.or-pt.noise { fill: var(--noise); }
+.or-pt.pool { fill: var(--pool); }
+.or-noiseband { fill: var(--noise); fill-opacity: 0.2; stroke: var(--noise); stroke-opacity: 0.6; }
+.or-poolline { fill: none; stroke: var(--pool); stroke-width: 1.8; stroke-dasharray: 5 5; }
+/* eight schools (schools.js): amber error bars, blue pooled estimates, purple distribution of effects */
+.or-mu { fill: none; stroke: var(--faint); stroke-width: 1.4; stroke-dasharray: 4 7; }
+.or-bar { fill: none; stroke: var(--noise); stroke-width: 2.2; }
+.or-pull { fill: none; stroke: var(--accent); stroke-width: 6; }
+.or-raw { fill: var(--ground, #fff); stroke: var(--text); stroke-width: 2.2; }
+.or-shrunk { fill: var(--accent); }
+.or-bell { fill: var(--corr); fill-opacity: 0.16; stroke: var(--corr); stroke-opacity: 0.7; }
+.or-bell.line { fill: none; stroke-width: 3; stroke-opacity: 1; }
+/* where the data sit */
+.or-tri { fill: none; stroke: var(--text); stroke-width: 1.3; stroke-linejoin: round; }
+.or-vert { fill: var(--bad); }
+.or-fan { fill: none; stroke: var(--accent); stroke-width: 1.8; opacity: 0.65; }
+.or-range { fill: none; stroke: var(--bad); stroke-width: 3.5; stroke-linecap: round; }
+/* why right triangles: the Decision Mesh tab's live race, lent to this screen (backstory.js). Its own heading and prose
+   stay behind. Four fits in a row, then the truth, the standings and the error chart, sized so both rows fit the window;
+   a click enlarges any one drawing. */
+.or-slot { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; --rw: min(100%, calc(200vh - 744px)); }
+body.backstory .or-slot > .explorer { padding: 0 !important; margin: 0; max-width: none !important; }
+.or-slot #why, .or-slot .sub, .or-slot .geoms, .or-slot .caption { display: none; }
+.or-slot .panel { border: 0; background: none; padding: 0; margin: 0; box-shadow: none; }
+.or-slot .explorer #race-statusbar { position: static; width: 100%; margin: 0 auto 10px; padding-top: 7px; padding-bottom: 7px; }
+.or-slot .explorer.mesh .stage { grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; max-width: var(--rw); margin: 0 auto; gap: 10px 12px; }
+.or-slot .explorer.mesh figcaption { margin-top: 4px; font-size: 0.8rem; gap: 0 8px; }
+.or-slot .panel > .row { max-width: var(--rw); margin: 6px auto 0 !important; }
+.or-slot .stage .curvefig { grid-column: span 2; display: flex; flex-direction: column; }
+.or-slot .explorer.mesh .stage .curvefig .cv { aspect-ratio: auto; flex: 1; min-height: 0; }
+.or-slot .stage figure .cv { cursor: zoom-in; }
+.or-slot .stage .boardfig .board { cursor: default; }
+.or-slot .explorer.mesh .stage.has-solo { grid-template-columns: 1fr; max-width: min(100%, calc(100vh - 292px)); }
+.or-slot .stage.has-solo figure:not(.solo) { display: none; }
+.or-slot .stage figure.solo .cv { cursor: zoom-out; }
+.or-slot .explorer.mesh .stage.has-solo .curvefig.solo .cv { aspect-ratio: 1; }
+/* the race's extra controls and chart, wherever the race is */
+#race-statusbar select { font: inherit; font-size: 0.88rem; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); }
+#race-statusbar button.on { border-color: var(--accent); color: var(--accent); }
+#mesh-native .stage .curvefig { grid-column: 1 / -1; }
+#mesh-native .explorer.mesh .stage .curvefig .cv { aspect-ratio: 3 / 1; }
+.or-slot .explorer.mesh .board { gap: 8px; padding: 10px 14px; min-height: 0; overflow: hidden; }
+.or-slot .explorer.mesh .board .bfoot { display: none; }
+@media (max-height: 760px) {
+.or-slot { --rw: min(100%, calc(200vh - 770px)); }
+.or-slot .explorer.mesh figcaption span { font-size: 0.7rem; }
+.or-slot .explorer.mesh .board { gap: 4px; font-size: 0.78rem; }
+.or-slot .explorer.mesh .board .bhead { display: none; }
+}
+/* the gate (admit.js): grey candidates, blue admitted and real, amber admitted but noise */
+.or-cand { fill: var(--text); fill-opacity: 0.2; }
+.or-adm { fill: var(--corr); }
+.or-adm.false { fill: var(--noise); }
+.or-lfdr { fill: none; stroke: var(--text); stroke-width: 2; stroke-opacity: 0.75; stroke-linejoin: round; }
+.or-cut { fill: none; stroke: var(--corr); stroke-width: 1.6; stroke-dasharray: 5 4; }
+.or-ctl b { font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; min-width: 4.2em; }
+/* the first tab's table of contents in the bar: chapter names, each followed by its screens' numbered dots */
+.iv-toc { gap: 6px; margin: 0; }
+.iv-toc .grp { display: inline-flex; align-items: center; gap: 2px; padding: 3px 6px 3px 2px; border-radius: 8px; }
+.iv-toc .grp a { padding: 4px 7px; font-size: 0.82rem; opacity: 0.6; }
+.iv-toc .grp.on { background: rgba(127, 127, 127, 0.13); }
+.iv-toc .grp.on a { opacity: 1; font-weight: 600; }
+.iv-toc .grp:not(.on) button { opacity: 0.62; }
+.iv-toc .grp:not(.on) button:hover { opacity: 1; }
+@media (max-width: 1360px) {
+.iv-toc .grp:not(.on) button { display: none; }
+}
+/* narrow: only the current chapter's dots */
+.iv-tip { position: fixed; top: 52px; z-index: 90; padding: 5px 11px; border-radius: 7px; font: 500 0.9rem/1.2 ui-sans-serif, system-ui, sans-serif; white-space: nowrap; pointer-events: none;
+  background: #1b1b1f; color: #f4f4f5; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25); }
+.dark .iv-tip { background: #ececef; color: #18181b; }
+.iv-tip[hidden] { display: none; }
+/* g: the board of screens, a column for each chapter */
+.or-board { position: fixed; inset: 48px 0 0 0; z-index: 80; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; align-content: center; align-items: start; padding: 40px max(32px, 5vw);
+  background: var(--ground) var(--paper-img) 0 0 / 768px 768px; background-blend-mode: var(--patch-blend); }
+.or-board[hidden] { display: none; }
+.or-board .col { display: flex; flex-direction: column; gap: 9px; }
+.or-board h3 { margin: 0 0 6px; font: 600 0.85rem/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
+.or-board button { display: flex; align-items: baseline; gap: 12px; text-align: left; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(127, 127, 127, 0.35); background: none; color: inherit; cursor: pointer;
+  font: 500 1.2rem/1.2 Newsreader, "Iowan Old Style", Georgia, serif; }
+.or-board button b { font: 0.8rem ui-monospace, Menlo, monospace; opacity: 0.6; min-width: 1.4em; }
+.or-board button:hover, .or-board button.on { border-color: #1f3fd0; }
+.dark .or-board button:hover, .dark .or-board button.on { border-color: #8fb0ff; }
+.or-ctl.multi label { width: min(26vw, 330px); }
+/* the race's status line stays one line however long its sentence, and the screen never spills upward over its title */
+.or-slot { justify-content: flex-start; }
+.or-slot .explorer #race-statusbar { flex-wrap: nowrap; }
+.or-slot #race-statustext { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* the line under the map: every part has a fixed place. The scale and the buttons keep their size, the hover readout
+   takes the room between them (cut short if it does not fit), and the row keeps its height whether or not it has text. */
+.gn-foot { flex-wrap: nowrap; height: 2.1em; }
+.gn-foot .scale, .gn-foot .gn-sets, .gn-foot .gn-sets button { flex: none; white-space: nowrap; }
+/* the reading under the cursor has a line of its own, always there, so it is never cut short and nothing moves */
+.or-slide .gn-read { flex: none; height: 1.7em; margin: 2px 0 0; min-height: 0; text-align: center; font-size: 0.98rem; line-height: 1.7em; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.gn-foot .scale i { position: relative; }
+.gn-foot .scale i[style*="--at"]::after { content: ""; position: absolute; left: var(--at); top: -5px; bottom: -5px; width: 2.5px; margin-left: -1.25px; border-radius: 2px; background: var(--text); box-shadow: 0 0 0 1.5px var(--ground, #fff); }
+/* depth: a main screen's deeper screens are small dots after its number; the cue beside a title names what is below or above */
+.iv-toc button.sub { width: 9px; height: 9px; margin: 0 1px 0 -1px; border-color: rgba(127, 127, 127, 0.8); opacity: 0.7; }
+.iv-toc .grp.on button.sub { opacity: 0.6; }
+.iv-toc button.sub.in { opacity: 1; border-color: #1f3fd0; }
+.dark .iv-toc button.sub.in { border-color: #8fb0ff; }
+.or-cue { margin: 0 auto 0 18px; display: inline-flex; gap: 14px; font: 0.92rem/1 ui-sans-serif, system-ui, sans-serif; color: var(--faint); white-space: nowrap; align-self: center; }
+.or-cue span { cursor: pointer; padding: 4px 8px; border-radius: 6px; border: 1px solid transparent; }
+.or-cue span:hover { color: var(--text); border-color: var(--border); }
+.or-cue:empty { display: none; }
+.or-board button.sub { margin-left: 26px; padding: 8px 12px; font-size: 1.02rem; border-style: dashed; }
+/* the last screen: the fit alone, and one level down the pools, the fit and a cut side by side with the numbers */
+.gn-stage { flex: 1; min-height: 0; display: flex; gap: 18px; }
+.gn-stage figure { flex: 1; min-width: 0; margin: 0; display: flex; flex-direction: column; }
+.gn-stage canvas { flex: 1; min-height: 0; width: 100%; display: block; }
+.gn-stage figcaption { flex: none; }
+#gn-cvfit { cursor: crosshair; }
+/* borrowing from neighbors (star.js): the map on the left, the numbers and the two sections on the right */
+.st { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.62fr) minmax(0, 0.95fr); gap: 0 18px; }
+.st-map { min-width: 0; min-height: 0; position: relative; }
+#st-cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.st-side { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.st-title { flex: none; font-size: 0.86rem; color: var(--faint); }
+body.backstory .st-side .cards { flex: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+body.backstory .st-side .card { padding: 7px 11px 8px; background: none; }
+body.backstory .st-side .card .v { font-size: 1.22rem; }
+body.backstory .st-side .card .d { font-size: 0.76rem; line-height: 1.3; }
+.st-side svg { flex: 1 1 0; min-height: 0; width: 100%; display: block; }
+.nw-line { fill: none; stroke: var(--text); stroke-opacity: 0.6; stroke-width: 1.8; stroke-dasharray: 5 5; }
+.or-slide text.st-end { font: 600 14px ui-sans-serif, system-ui, sans-serif; fill: var(--text); }
+.or-slide text.st-end.a { fill: var(--corr); }
+.st-tent { fill: none; stroke: var(--corr); stroke-width: 2.6; stroke-linejoin: round; }
+.st-whisk { fill: none; stroke: var(--noise); stroke-width: 1.6; stroke-linecap: round; }
+.st-box { fill: var(--noise); fill-opacity: 0.38; stroke: var(--noise); stroke-width: 1; }
+.st-exp { fill: none; stroke: var(--text); stroke-width: 2.2; stroke-linecap: round; stroke-opacity: 0.8; }
+.st-obs { fill: var(--text); stroke: var(--ground, #fff); stroke-width: 1.4; }
+.st-obs.off { stroke: var(--bad); stroke-width: 2.2; }
+.st-none { fill: none; stroke: var(--faint); stroke-width: 1.3; }
+.st-key { flex: none; display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.78rem; color: var(--muted); padding-left: 10px; }
+.st-key .k::before { content: ""; display: inline-block; vertical-align: middle; margin-right: 6px; width: 18px; }
+.st-key .par::before { border-top: 2px dashed var(--text); opacity: 0.6; }
+.st-key .own::before { border-top: 2.6px solid var(--corr); }
+.st-key .obs::before { width: 8px; height: 8px; border-radius: 50%; background: var(--text); }
+.st-key .band::before { width: 9px; height: 14px; border-radius: 2.5px; background: var(--noise); opacity: 0.5; }
+.st-key .fit::before { width: 14px; border-top: 2.2px solid var(--text); opacity: 0.8; }
+.st-key .off::before { width: 6px; height: 6px; border-radius: 50%; background: var(--text); border: 2.2px solid var(--bad); }
+/* the live map (topo.js) */
+.tp { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+#tp-cv { display: block; border: 1px solid var(--border); cursor: crosshair; }
+/* and its answer on the next screen: point at the tree and the one region under the cursor lights */
+.or-topo, .or-tint { pointer-events: none; }
+.or-slide[data-name="Decision tree for cohorting"] .or-leaf:hover { fill: var(--accent); fill-opacity: 0.55; }
+.or-slide[data-name="Decision tree for cohorting"] svg:hover .or-cell:not(:hover) { fill: var(--text); fill-opacity: 0.3; }
+/* the rounds slider beside the Decision Mesh tab's two checkboxes */
+label.check.rounds { display: inline-flex; align-items: center; gap: 8px; }
+label.check.rounds input { width: 150px; accent-color: var(--accent); }
+/* slide 11's lineage diagram */
+.st-lin { min-width: 0; min-height: 0; width: 100%; height: 100%; display: block; }
+.st-ledge { fill: none; stroke: var(--corr); stroke-linecap: round; }
+.st-lkid { fill: none; stroke: var(--corr); stroke-width: 1.3; stroke-dasharray: 4 4; }
+.st-ln { cursor: pointer; stroke: var(--ground, #fff); stroke-width: 1.5; }
+.st-ln.up { fill: var(--hi); }
+.st-ln.dn { fill: var(--lo); }
+.st-ln.root { fill: var(--text); fill-opacity: 0.55; }
+.st-ln.kid { fill: var(--ground, #fff); stroke: var(--corr); stroke-width: 1.8; }
+.st-ln:hover { stroke: var(--text); }
+.st-lme { fill: none; stroke: var(--text); stroke-width: 2.4; pointer-events: none; }
+body.backstory .st-side .cards { gap: 6px; }
+/* slide 11: one vertex at its several scales, and a lineage that is easy to point at */
+.st-title { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 1.7em; }
+.st-roles { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); }
+.st-roles button { font: inherit; font-size: 0.82rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--border); background: none; color: var(--muted); cursor: pointer; }
+.st-roles button.on { border-color: var(--corr); color: var(--text); font-weight: 600; }
+.st-lsame { fill: none; stroke: var(--text); stroke-width: 5; stroke-opacity: 0.28; stroke-linecap: round; }
+.st-hit { fill: transparent; cursor: pointer; }
+.st-ln { pointer-events: none; transition: none; }
+.st-ln.hot { stroke: var(--text); stroke-width: 2.6; }
+.st-ln.kid.hot { fill: var(--corr); }
+.or-slide text.st-lname { font: 600 13px ui-monospace, Menlo, monospace; fill: var(--text); paint-order: stroke; stroke: var(--ground, #fff); stroke-width: 4px; pointer-events: none; }
+/* slide 11: the small whole map above the lineage; the borrowing strip */
+.st-mid { min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+#st-mini { flex: none; width: 100%; aspect-ratio: 1.55; display: block; }
+.st-mid .st-lin { flex: 1; min-height: 0; height: auto; }
+.st-read { flex: none; font-size: 0.86rem; color: var(--muted); padding-left: 2px; }
+.st-read b { color: var(--text); font-variant-numeric: tabular-nums; }
+.st-side #st-shr { flex: 1.35 1 0; }
+.st-sch { opacity: 0.5; }
+.st-sch.on { opacity: 1; }
+.st-sch .or-bar { stroke-width: 1.4; }
+.st-sch.on .or-bar { stroke-width: 2.2; }
+.st-sch .or-raw { stroke-width: 1.6; }
+.st-schme { fill: var(--text); stroke: none; }
+#st-shr .or-bell { stroke: none; fill-opacity: 0.16; }
+body.backstory .st-side .card { padding: 5px 10px 6px; }
+body.backstory .st-side .card .v { font-size: 1.1rem; }
+.st-sch .or-raw { fill: var(--ground, #fff); }
+/* slide 11: the two shares of a vertex's value, and the tent its pools alone ask for */
+.st-split { flex: none; padding: 2px 2px 0; }
+.st-split .bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; gap: 2px; }
+.st-split .bar .own { background: var(--corr); }
+.st-split .bar .par { background: var(--text); opacity: 0.35; }
+.st-split .lab { display: flex; justify-content: space-between; gap: 12px; margin-top: 4px; font-size: 0.84rem; color: var(--muted); }
+.st-split .lab b { color: var(--text); font-variant-numeric: tabular-nums; }
+.st-alone { fill: none; stroke: var(--corr); stroke-width: 1.6; stroke-dasharray: 5 4; stroke-linejoin: round; }
+.st-side .or-bar { stroke-width: 2; }
+.st-key .alone::before { border-top: 1.6px dashed var(--corr); }
+/* past two dimensions (third.js) */
+.th { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 0 26px; }
+.th-map { position: relative; min-width: 0; min-height: 0; }
+#th-cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.th-side { display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+#th-box { flex: none; width: 100%; height: auto; }
+.th-edge { fill: none; stroke: var(--text); stroke-opacity: 0.35; stroke-width: 1.1; stroke-linejoin: round; }
+.th-edge.front { stroke-opacity: 0.7; }
+.th-slice { fill: var(--corr); fill-opacity: 0.32; stroke: var(--corr); stroke-width: 1.8; stroke-linejoin: round; }
+body.backstory .th-side .cards { display: grid; grid-template-columns: 1fr; gap: 8px; }
+body.backstory .th-side .card { background: none; }
+.th-note { font-size: 0.78rem; color: var(--faint); line-height: 1.35; }
+.gn-sets > button { font: inherit; font-size: 0.82rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border); background: none; color: var(--muted); cursor: pointer; }
+.gn-sets > button.on { border-color: var(--accent); color: var(--text); }
+/* one pair of colours for "above" and "below" on every screen: the real-data map's own */
+body.backstory .origin { --lo: #1f48c8; --hi: #cd4214; }
+.dark body.backstory .origin { --lo: #6e96ff; --hi: #ff8c50; }
+.st-split .one { margin-top: 3px; font-size: 0.84rem; color: var(--muted); }
+.st-split .one b { color: var(--text); }
+/* past two dimensions: one cut, one axis */
+#th-cuts { flex: none; width: 100%; height: auto; }
+.th-cut { fill: var(--corr); fill-opacity: 0.3; stroke: var(--corr); stroke-width: 1.5; stroke-linejoin: round; }
+/* slide 11: one vertex at its several scales stands on a rail of squares; other vertices are circles */
+.st-lrail { fill: var(--text); fill-opacity: 0.09; stroke: var(--text); stroke-opacity: 0.3; stroke-width: 1; stroke-dasharray: 3 3; }
+rect.st-lme { fill: none; stroke: var(--text); stroke-width: 2.4; pointer-events: none; }
+.st-lsame { stroke-opacity: 0; }
+/* ---- the second tab: the site's Decision Mesh page, cut down to what the first tab does not have. Its heading, its
+   introduction, its sentence of things to try (now in the bar), its geometry race (a screen of the first tab; still here in
+   the page, to be lent) and its notes are left out; the rounds table keeps its one-line caption. */
+#mesh-native #gate > h1, #mesh-native #gate > .sub, #mesh-native #gate > .tries, #mesh-native details.cite { display: none; }
+#mesh-native #race { display: none; }
+#mesh-native #results-rounds .panel > p.caption { display: none; }
+#mesh-native #rounds p.caption { display: block; }
+body.backstory #mesh-native .explorer.gate { padding-top: 4.2rem; }
+.iv-tries { display: inline-flex; gap: 2px; margin-right: 8px; padding: 2px 4px; border-radius: 8px; background: rgba(127, 127, 127, 0.1); }
+.iv-tries a { font-size: 0.8rem; padding: 4px 8px !important; }
+.iv-jumps[data-for="mesh"] .iv-dots button { width: 18px; height: 18px; font-size: 0.62rem; }
+.iv-jumps[data-for="mesh"] a { padding: 6px 7px; }
+@media (max-width: 1340px) {
+.iv-tries { display: none; }
+}
+/* ---- the coin demo, lent to the screen under "The gate" (backstory.js): its controls, its status line, its three
+   drawings and its four numbers, sized so the three drawings and everything round them fit the window */
+.gate-slot { --gw: min(100%, calc((100vh - 500px) * 3.12)); justify-content: flex-start; }
+.gate-slot .explorer.gate .stage { max-width: none; margin: 0; }
+.gate-slot #gate > .crumbs, .gate-slot #gate > h1, .gate-slot #gate > .sub, .gate-slot #gate > .tries { display: none; }
+.gate-slot .panel { border: 0; background: none; padding: 0; margin: 0 auto 8px; box-shadow: none; width: 100%; max-width: var(--gw); }
+.gate-slot .explorer #statusbar { position: static; width: 100%; max-width: var(--gw); margin: 0 auto 8px; padding-top: 6px; padding-bottom: 6px; flex-wrap: nowrap; }
+.gate-slot #statustext { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gate-slot #results { width: 100%; max-width: var(--gw); margin: 0 auto; }
+.gate-slot .explorer .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.gate-slot .explorer .card { padding: 6px 10px; }
+.gate-slot .explorer .card .v { font-size: 1.1rem; }
+.gate-slot .explorer .card .d { font-size: 0.72rem; line-height: 1.25; max-height: 2.5em; overflow: hidden; }
+.or-ctl.tries { gap: 8px; }
+.or-ctl.tries button { font: inherit; font-size: 0.88rem; padding: 4px 13px; border-radius: 999px; border: 1px solid var(--border); background: none; color: var(--muted); cursor: pointer; }
+.or-ctl.tries button:hover { border-color: var(--accent); color: var(--text); }
+.or-slot.gate-slot .explorer.mesh .stage { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; max-width: var(--gw); }
+.gate-slot .explorer.mesh .meshbar { display: flex; flex-wrap: nowrap; gap: 12px; }
+.gate-slot .explorer.mesh .meshbar .ctl { flex: 1 1 0; min-width: 0; }
+.gate-slot .meshbar select, .gate-slot .meshbar input[type=range] { width: 100%; min-width: 0; }
+.gate-slot .explorer.mesh figcaption { flex-wrap: nowrap; white-space: nowrap; overflow: hidden; }
+/* the site doodles in an empty margin when a page is left alone for a while (js/whimsy.js); not while presenting */
+body.backstory .whimsy-doodle { display: none !important; }
+body.backstory #pane-work { height: 100vh; overflow: hidden; }
+/* binomial noise: what the three marks are */
+.tl-key { justify-content: center; padding: 0; gap: 4px 22px; font-size: 0.84rem; }
+.tl-key .nrm::before { border-top: 2.4px solid var(--text); }
+.tl-key .bin::before { width: 10px; height: 12px; background: var(--noise); opacity: 0.85; border-radius: 2px; }
+.tl-key .pool::before { width: 9px; height: 11px; border: 2px solid var(--pool); border-radius: 2px; }
+/* why right triangles: the board shows each geometry's most stretched piece, all drawn to one length */
+.explorer.mesh .board .brow.shape { display: grid; grid-template-columns: 40px minmax(0, 1fr); grid-template-rows: auto auto; align-items: center; gap: 0 9px; }
+.explorer.mesh .board .brow.shape svg { grid-row: 1 / 3; display: block; align-self: end; }
+.explorer.mesh .board .brow.shape .bname { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; line-height: 1.2; }
+.explorer.mesh .board .brow.shape .bval { position: static; font-family: inherit; font-size: inherit; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.or-slot .explorer.mesh .board { gap: 4px; justify-content: space-evenly; }
+@media (max-height: 760px) {
+.or-slot .explorer.mesh .board { padding: 8px 9px; }
+.explorer.mesh .board .brow.shape { gap: 0 7px; }
+}
+/* text pass 2026-10-12: sub-lines of captions that repeat what the drawing shows */
+.or-slot #gate figcaption .muted, .or-slot #race figcaption .muted { display: none; }
+/* "Finding model uncertainty" (months.js): one month's map, the months so far gathered beside it, twelve months under it */
+.mu { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.mu-in { display: grid; grid-template-columns: auto auto; gap: 8px 22px; align-items: start; }
+.mu canvas { display: block; }
+#mu-map, #mu-avg, #mu-sd { border: 1px solid var(--border); border-radius: 3px; }
+#mu-strip { cursor: pointer; }
+.mu-side { align-self: stretch; display: flex; flex-direction: column; justify-content: space-between; font-size: 0.9rem; color: var(--muted); }
+.mu-side figure { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+#mu-t { accent-color: var(--accent); }
+.mu-read { font-size: 0.9rem; color: var(--muted); white-space: nowrap; align-self: center; }
+.or-slide text.or-eq .star { font-size: 0.55em; fill-opacity: 0.75; }
+/* light mode on the paper: the greys are darker (the site's own were set for white), panels are barely lighter than the
+   paper, and the bar's quiet items are less quiet. The dark theme is as it was. */
+html:not(.dark) body.backstory .explorer { --muted: #3f3f46; --faint: #5c5c65; --border: rgba(0, 0, 0, 0.2); --grid: rgba(0, 0, 0, 0.14); --track: rgba(0, 0, 0, 0.22); --panel: rgba(255, 255, 255, 0.28); }
+html:not(.dark) .iv-toc .grp a { opacity: 0.82; }
+html:not(.dark) .iv-toc .grp:not(.on) button, html:not(.dark) .iv-dots button { opacity: 0.88; border-color: rgba(60, 60, 60, 0.55); }
+html:not(.dark) .or-quiet .or-topo { stroke-opacity: 0.27; }
+html:not(.dark) .or-quiet .or-topo.idx { stroke-opacity: 0.42; }
+html:not(.dark) .iv-tabs button:not([aria-selected="true"]) { opacity: 0.75; }
+/* the lent race's and coin demo's status bars are patches of white on the site (they stick over scrolling content); here they stay put, so they are clear */
+.or-slot .explorer #race-statusbar, .gate-slot .explorer #statusbar { background: none; }
+/* a term of the small equation crossed out in red: not in the picture at that point of the story */
+.or-mini .cut { display: inline-block; padding: 0 3px; margin: 0 -1px; --x: var(--bad);
+  background: linear-gradient(to top right, transparent calc(50% - 1.3px), var(--x) calc(50% - 1.3px), var(--x) calc(50% + 1.3px), transparent calc(50% + 1.3px)),
+              linear-gradient(to bottom right, transparent calc(50% - 1.3px), var(--x) calc(50% - 1.3px), var(--x) calc(50% + 1.3px), transparent calc(50% + 1.3px)); }
+/* eight schools: the slider is tau, the spread of the effects themselves (in the mesh, of the surface's heights) */
+.or-ctl > .sym { font: italic 1.7rem/1 Newsreader, "Iowan Old Style", Georgia, serif; color: var(--corr); margin-right: -2px; }
+/* "Analyzing fit", readability: the split's captions stay on one line each; the dark theme's faintest grey is a step lighter on this page */
+.st-split .lab span { white-space: nowrap; }
+.dark body.backstory .explorer { --faint: #8d8d97; }
+/* ---- Dissertation tab: the defense talk's story, drawn the way the first tab is. Blue is who knows (and player 1),
+   orange is player 2 and whatever is being pointed at, red strikes things out. */
+body.backstory .diss { --d1: var(--lo); --d2: #c8730f; }
+.dark body.backstory .diss { --d2: #f2a33c; }
+.diss .or-slide text.di-s { font-size: 19px; fill: var(--muted); }
+.diss .or-slide text.di-t { font: 500 22px ui-sans-serif, system-ui, sans-serif; fill: var(--text); }
+.diss .or-slide text.num { font-variant-numeric: tabular-nums; }
+.diss .or-slide text.b { fill: var(--d1); }
+.diss .or-slide text.w { fill: var(--d2); }
+.diss .or-slide text.k { fill: var(--text); }
+.di-p { fill: var(--text); opacity: 0.26; }
+.di-p.a { fill: var(--d1); opacity: 1; }
+.di-p.a.w { fill: var(--d2); }
+.di-p.a.k { fill: var(--text); opacity: 0.55; }
+.di-ink { fill: var(--text); }
+.di-ink.soft { opacity: 0.6; }
+.di-ln { fill: none; stroke: var(--text); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.di-hd { fill: var(--text); }
+.di-ln.b { stroke: var(--d1); }
+.di-hd.b { fill: var(--d1); }
+.di-ln.w { stroke: var(--d2); }
+.di-hd.w { fill: var(--d2); }
+.di-ln.r { stroke: var(--bad); }
+.di-ln.q { stroke: var(--faint); }
+.di-hd.q { fill: var(--faint); }
+.di-ln.thick { stroke-width: 4.2; }
+.di-ln.thin { stroke-width: 1.4; }
+.di-ln.dash { stroke-dasharray: 9 8; }
+.di-ln.dot { stroke-dasharray: 1 7; }
+.di-ln.faint, .di-hd.faint { opacity: 0.45; }
+.di-ln.echo { stroke-width: 1.5; opacity: 0.55; }
+.di-f.b { fill: var(--d1); }
+.di-f.w { fill: var(--d2); }
+.di-box { fill: var(--panel); stroke: var(--faint); stroke-width: 1.6; }
+.di-box.b { stroke: var(--d1); stroke-width: 2.2; }
+.di-box.w { stroke: var(--d2); stroke-width: 2.2; }
+.di-box.ghost { stroke-dasharray: 6 6; fill: none; }
+.di-box.lit { fill: var(--d2); fill-opacity: 0.22; stroke-width: 3; }
+.di-node { fill: var(--panel); stroke: var(--faint); stroke-width: 2; }
+.di-node.b { stroke: var(--d1); fill: var(--d1); fill-opacity: 0.12; stroke-width: 2.4; }
+.di-slice { fill: var(--d1); fill-opacity: 0.14; stroke: var(--d1); stroke-opacity: 0.5; stroke-width: 1.2; }
+.di-slice.you { fill-opacity: 0.4; stroke-opacity: 1; stroke-width: 2.4; }
+.di-ripple { fill: none; stroke: var(--d1); stroke-opacity: 0.35; stroke-width: 1.6; }
+.di-ring { fill: none; stroke-width: 3; }
+.di-ring.b { stroke: var(--d1); }
+.di-ring.w { stroke: var(--d2); }
+.di-lev circle { fill: var(--d1); }
+.di-lev.k circle { fill: var(--text); }
+.di-true { fill: none; stroke: var(--text); stroke-opacity: 0.55; stroke-width: 1.6; }
+.di-sun.hot { fill: #e8520e; stroke: #a8260b; stroke-width: 2; stroke-linejoin: round; }
+.di-sun.mid { fill: #f5a623; stroke: #e8520e; stroke-width: 1.2; stroke-linejoin: round; }
+.di-sunring { fill: none; stroke: #f5a623; stroke-opacity: 0.3; stroke-width: 1.8; }
+.di-sunray { stroke: #f5a623; stroke-opacity: 0.6; stroke-width: 2; fill: none; }
+.di-sunray.calm { stroke-opacity: 1; stroke-width: 2.4; }
+/* the talk's own pictures: the ink drawings take the page's ink, and a figure on white sits on the paper */
+.di-pic.paper { mix-blend-mode: multiply; }
+.dark .di-pic.paper { filter: invert(1) hue-rotate(180deg); mix-blend-mode: screen; }
+.dark .di-pic.ink { filter: invert(1); }
+.di-wild { flex: 1; min-height: 0; display: grid; grid-template-columns: auto minmax(0, 760px); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: 3vh 4vw; align-items: center; justify-content: center; padding: 2vh 0 1vh; }
+.di-wild img { display: block; min-height: 0; height: 100%; width: auto; border-radius: 8px; }
+.di-wild img.post { height: auto; max-height: 100%; width: 100%; object-fit: contain; border: 1px solid var(--border); }
+.di-solo { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 1vh 0; }
+.di-solo img { max-height: 100%; max-width: 100%; }
+/* a page of the site, one level under a screen */
+.or-slide.di-site { padding-bottom: 0; }
+.or-slide.di-site .iv-frame { flex: 1; min-height: 0; height: auto; margin-top: 6px; border-top: 1px solid var(--border); }
+.or-slide.di-site h2 { font-size: 1.3rem; }
+/* the board of a deck with many chapters */
+.or-board { grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); }
+.or-board[data-deck="diss"] { gap: 18px; padding: 28px max(20px, 2.5vw); }
+.or-board[data-deck="diss"] button { padding: 9px 10px; gap: 9px; font-size: 0.95rem; }
+.or-board[data-deck="diss"] button.sub { margin-left: 16px; padding: 6px 9px; font-size: 0.9rem; }
+/* six chapters in the bar: only the current one shows its dots until the window is wide */
+@media (max-width: 1700px) {
+.iv-jumps[data-for="diss"] .iv-toc .grp:not(.on) button { display: none; }
+}
+.diss .or-slide text.di-halo { paint-order: stroke; stroke: var(--ground, #fff); stroke-width: 7px; stroke-linejoin: round; }
+/* the site's pencil drawings on the Dissertation tab (diss/scenes.js): the dissertation pages' own inks */
+.di-sk, .di-map { --ink: var(--text); --ink-2: var(--muted); --ink-3: var(--faint); --accent: #1f3fd0; --warm: #b4461f; --paper: var(--ground, #fff); color: var(--text); font-family: Newsreader, Georgia, serif; overflow: visible; }
+.dark .di-sk, .dark .di-map { --accent: #8fb0ff; --warm: #ee8a5e; }
+svg.di-bench { position: absolute; left: -3000px; top: 0; visibility: hidden; pointer-events: none; }
+.di-sk .pencil { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+.di-sk .soft { opacity: 0.35; }
+.di-sk .accent { stroke: var(--accent); }
+.di-sk .warm { stroke: var(--warm); }
+.di-sk .fillacc { fill: var(--accent); }
+.di-sk .fillink { fill: var(--ink-2); }
+.di-sk .fillwarm { fill: var(--warm); }
+.or-slide .di-sk text, .di-sk text { fill: currentColor; font: 17px Newsreader, Georgia, serif; }
+.or-slide .di-sk text.label, .di-sk text.label { font-size: 15px; }
+.or-slide .di-sk text.mono, .di-sk text.mono { font-family: ui-monospace, Menlo, monospace; font-size: 11px; letter-spacing: 0.08em; fill: var(--ink-3); }
+.or-slide .di-sk text.quote, .di-sk text.quote { font-family: Newsreader, Georgia, serif; font-style: italic; font-size: 14px; fill: var(--ink-2); }
+.or-slide .di-sk text.src, .di-sk text.src { font: 11px ui-sans-serif, system-ui, sans-serif; fill: var(--ink-3); }
+.or-slide .di-sk text.acc, .di-sk text.acc { fill: var(--accent); }
+.or-slide .di-sk text.warmt, .di-sk text.warmt { fill: var(--warm); }
+.di-sk text.halo { paint-order: stroke; stroke: color-mix(in srgb, var(--paper) 60%, transparent); stroke-width: 6px; stroke-linejoin: round; }
+.di-sk .box, .di-sk .headfill { fill: transparent; }
+.di-sk .sunmid { fill: #f6b53d; }
+.di-sk .suncore { fill: #fff6d8; }
+.di-map .pn { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+.di-map .soft { opacity: 0.35; }
+.di-map .soft2 { opacity: 0.4; }
+.di-map .dash { stroke-dasharray: 3 5 !important; }
+.di-map .hatch { color: var(--ink-3); opacity: 0; }
+.di-map .road { color: var(--ink-2); }
+.di-map .acc { stroke: var(--accent); }
+.di-map .dot { fill: var(--warm); }
+.or-slide .di-map text, .di-map text { fill: var(--ink-2); font: 16px Newsreader, Georgia, serif; }
+.or-slide .di-map text.lab, .di-map .lab { font: 12.5px ui-sans-serif, system-ui, sans-serif; fill: var(--ink-3); }
+.di-map .lab .who { font: 15px Newsreader, Georgia, serif; fill: var(--ink); }
+.or-slide .di-map text.accl, .di-map .accl, .di-map .accl .who { fill: var(--accent); }
+.or-slide .di-map text.bandname, .di-map .bandname { font-size: 19px; font-style: italic; fill: var(--ink); }
+.or-slide .di-map text.mono, .di-map .mono { font: 11px ui-monospace, Menlo, monospace; letter-spacing: 0.2em; fill: var(--ink-3); }
+.di-map .halo { paint-order: stroke; stroke: color-mix(in srgb, var(--paper) 60%, transparent); stroke-width: 7px; stroke-linejoin: round; }
+/* a drawing that runs: one small button where the slider was (space does the same); the range itself is held out of sight */
+.or-ctl.di-play { position: relative; padding-top: 6px; }
+.or-ctl.di-play input.di-scrub { position: absolute; left: 50%; bottom: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.di-playbtn { width: 34px; height: 34px; padding: 0; border: 1px solid var(--faint); border-radius: 50%; background: none; color: var(--muted); cursor: pointer; display: grid; place-items: center; opacity: 0.75; transition: opacity 0.15s, color 0.15s; }
+.di-playbtn:hover { opacity: 1; color: var(--text); }
+.di-playbtn svg { width: 18px; height: 18px; display: block; overflow: visible; }
+.di-playbtn path { display: none; fill: currentColor; }
+.di-playbtn path.p-again { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.di-play[data-state="ready"] .p-play, .di-play[data-state="playing"] .p-pause, .di-play[data-state="done"] .p-again { display: block; }
+.di-sk[data-scene="corner"] { overflow: hidden; }
+/* the neighbours of neighbours run on past the edge, not under the title */
+/* TRIAL switches on Dissertation screens (remove once Sam picks): two ways to show one screen */
+.di-trial { position: absolute; right: 0; bottom: 4px; display: flex; font-size: 0.72rem; }
+.di-trial button { font: inherit; color: var(--muted); background: none; border: 1px dashed var(--faint); padding: 2px 10px; cursor: pointer; }
+.di-trial button:first-child { border-radius: 9px 0 0 9px; border-right: 0; }
+.di-trial button:last-child { border-radius: 0 9px 9px 0; }
+.di-trial button.on { color: var(--text); font-weight: 600; background: rgba(127, 127, 127, 0.16); }
