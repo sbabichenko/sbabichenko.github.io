@@ -1,4 +1,4 @@
-// /backstory, "Borrowing from neighbors": one vertex of the real fit, its place in the network and its evidence.
+// /backstory, "Analyzing fit": one vertex of the real fit, its place in the network and its evidence.
 // The arithmetic is the mesh repository's own star inspector (analysis/starcore.js, loaded unchanged, on the data
 // analysis/star_export.py packs: stars.json, rebuilt by backstory/tools/stars.sh). Only the drawing is this page's.
 //
@@ -9,7 +9,7 @@
 //             surplus is held, darker where it moves it more: full at the vertex, falling to nothing at the edge of the
 //             vertex's neighbourhood at its own scale. (The inspector's star stops at other free vertices instead.)
 //   network   blue arrows run to the vertex from its two parents, the ends A and A' of the edge it bisected, and to them
-//             from theirs, fading generation by generation up to the corners: whom it borrows from. Dashed purple goes
+//             from theirs, fading generation by generation up to the corners: whom it borrows from. Dashed blue goes
 //             to the vertices that borrow from it. Pointing at another vertex previews its ancestry; a click chooses it.
 //   two views the star, framed to hold the vertex's reach and its two parents; and, above the lineage, the whole map
 //             with the same ancestry on it and the star's frame marked. Both take pointing and clicking. Nothing zooms.
@@ -185,12 +185,12 @@ window.Star = (function () {
     // the whole mesh, and the line under it is this vertex.
     const places = S.verts.filter((q) => !q.corner), own = places.filter((q) => q.free).length, held = places.length - own;
     el.innerHTML = `<div class="bar"><i class="par" style="flex:${held}"></i><i class="own" style="flex:${own}"></i></div>`
-      + `<div class="lab"><span><b>${held}</b> vertices take their parents\u2019 average</span><span><b>${own}</b> keep a value of their own</span></div>`
-      + `<div class="one">this one keeps <b>${Math.round(100 * keep)}%</b> of what its own pools say</div>`;
+      + `<div class="lab"><span><b>${held}</b> take their parents\u2019 average</span><span><b>${own}</b> keep their own</span></div>`
+      + `<div class="one">this vertex keeps <b>${Math.round(100 * keep)}%</b> of what its own pools say</div>`;
   }
 
   // ------------------------------------------------------------------ the map
-  const ML = 44, MB = 26, MT = 8, MR = 8;
+  const ML = 58, MB = 40, MT = 8, MR = 8;
   // Two views of the one map, both always on screen, so nothing has to be zoomed: the star, framed to hold the vertex's
   // reach and its two parents; and, in the corner farthest from the vertex, the whole map with the same ancestry drawn
   // on it and the star's frame marked. As on the real-data screen the map fills its frame.
@@ -216,7 +216,7 @@ window.Star = (function () {
     if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
     const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
     const run = S.run, V = run.vertices, F = run.faces, P = run.pools, { main } = frames(W, H); S.vw = main;
-    const ink = css("--text"), blue = css("--corr"), purple = css("--pool"), faint = css("--faint"), ground = css("--ground") || (isDark() ? "#1f2022" : "#fff");
+    const ink = css("--text"), blue = css("--corr"), faint = css("--faint"), ground = css("--ground") || (isDark() ? "#1f2022" : "#fff");
     const rgbOf = (c) => { g.fillStyle = c; const h = g.fillStyle; return [1, 3, 5].map((k) => parseInt(h.slice(k, k + 2), 16)).join(","); }, bl = rgbOf(blue), al = (w) => 0.03 + 0.4 * Math.max(0, Math.min(1, w));
     const who = S.vid, anc = S.anc, soft = 1;   // pointing at another vertex rings it and changes nothing else
 
@@ -271,7 +271,7 @@ window.Star = (function () {
       };
       for (const [id, gen] of [...anc].sort((a, b) => b[1] - a[1])) for (const p of centres(run, id)) arrow(pt(p), pt(id), Math.max(1.1, 3.4 - 0.45 * gen) * (big ? 1 : 0.6), soft * Math.max(0.25, 1 - 0.14 * gen), (gen === 0 ? 9 : 6) * k);
       // who borrows from it
-      if (who === S.vid && big) { g.globalAlpha = 0.9; g.strokeStyle = purple; g.lineWidth = 1.5; g.setLineDash([4, 4]); g.beginPath(); for (const id of S.kids) { const a = pt(S.vid), b = pt(id); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); } g.stroke(); g.setLineDash([]); }
+      if (who === S.vid && big) { g.globalAlpha = 0.9; g.strokeStyle = blue; g.lineWidth = 1.5; g.setLineDash([4, 4]); g.beginPath(); for (const id of S.kids) { const a = pt(S.vid), b = pt(id); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); } g.stroke(); g.setLineDash([]); }
       // the section across the parent edge, B to B'
       const j0 = run.byId.get(S.vid), [p0, p1] = SC().parentsOf(run, S.vid); let ends = null;
       if (p0 >= 0 && big) {
@@ -296,13 +296,35 @@ window.Star = (function () {
       g.globalAlpha = 1;
       for (const [id, gen] of anc) if (id !== who) { const a = pt(id); g.strokeStyle = blue; g.globalAlpha = soft * Math.max(0.4, 1 - 0.1 * gen); g.lineWidth = 1.8 * (big ? 1 : 0.7); g.beginPath(); g.arc(a[0], a[1], 6.5 * k, 0, 6.2832); g.stroke(); }
       g.globalAlpha = 1;
-      if (who === S.vid && big) for (const id of S.kids) { const a = pt(id); g.strokeStyle = purple; g.lineWidth = 1.8; g.beginPath(); g.arc(a[0], a[1], 6, 0, 6.2832); g.stroke(); }
+      if (who === S.vid && big) for (const id of S.kids) { const a = pt(id); g.strokeStyle = blue; g.lineWidth = 1.8; g.beginPath(); g.arc(a[0], a[1], 6, 0, 6.2832); g.stroke(); }
       const me = pt(S.vid); g.strokeStyle = ink; g.lineWidth = big ? 2.6 : 1.8; g.beginPath(); g.arc(me[0], me[1], 9.5 * k, 0, 6.2832); g.stroke();
       if (S.hov !== null && S.hov !== S.vid) { const h = pt(S.hov); g.strokeStyle = ink; g.lineWidth = 2 * (big ? 1 : 0.8); g.setLineDash([3, 3]); g.beginPath(); g.arc(h[0], h[1], 10 * k, 0, 6.2832); g.stroke(); g.setLineDash([]); }
       // the ends of the two sections, named
       if (ends) {
+        // Each name sits just past its end, on a small plate of the page's own tone so that no line or dot runs through it.
+        // It is always inside the picture: an end at or beyond an edge has its name held at that edge, moved aside from the
+        // end's own mark, and two names that would land on each other are parted.
         g.font = "600 14px ui-sans-serif, system-ui, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
-        const tag = (p, s, col) => { const dx = p[0] - me[0], dy = p[1] - me[1], L = Math.hypot(dx, dy) || 1, x = p[0] + dx / L * 13, y = p[1] + dy / L * 13; g.lineWidth = 4; g.strokeStyle = ground; g.globalAlpha = 0.9; g.strokeText(s, x, y); g.globalAlpha = 1; g.fillStyle = col; g.fillText(s, x, y); };
+        const plate = isDark() ? "#26272a" : "#efe6cd", pad = 13, placed = [];
+        const tag = (p, s, col) => {
+          const dx = p[0] - me[0], dy = p[1] - me[1], L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
+          const hold = (x, y) => [Math.max(vw.x + pad, Math.min(vw.x + vw.w - pad, x)), Math.max(vw.y + pad, Math.min(vw.y + vw.h - pad, y))];
+          let [x, y] = hold(p[0] + ux * 15, p[1] + uy * 15);
+          if (Math.hypot(x - p[0], y - p[1]) < 12) {   // held on top of the end's mark: step aside, to whichever side has room
+            const c1 = hold(p[0] - uy * 17 - ux * 4, p[1] + ux * 17 - uy * 4), c2 = hold(p[0] + uy * 17 - ux * 4, p[1] - ux * 17 - uy * 4);
+            [x, y] = Math.hypot(c1[0] - p[0], c1[1] - p[1]) >= Math.hypot(c2[0] - p[0], c2[1] - p[1]) ? c1 : c2;
+          }
+          if (Math.hypot(x - me[0], y - me[1]) < 18) {   // held on top of the vertex itself (its end lies outside the map): beside it
+            const c1 = hold(me[0] - uy * 22, me[1] + ux * 22), c2 = hold(me[0] + uy * 22, me[1] - ux * 22);
+            [x, y] = Math.hypot(c1[0] - me[0], c1[1] - me[1]) >= Math.hypot(c2[0] - me[0], c2[1] - me[1]) ? c1 : c2;
+          }
+          for (const q of placed) if (Math.abs(q[0] - x) < 24 && Math.abs(q[1] - y) < 20) [x, y] = hold(x, y + (y >= q[1] ? 1 : -1) * (20 - Math.abs(q[1] - y)));
+          placed.push([x, y]);
+          const w = g.measureText(s).width + 10, h = 20;
+          g.globalAlpha = 0.94; g.fillStyle = plate; g.beginPath(); g.roundRect(x - w / 2, y - h / 2, w, h, 6); g.fill();
+          g.globalAlpha = 0.45; g.strokeStyle = col; g.lineWidth = 1; g.stroke();
+          g.globalAlpha = 1; g.fillStyle = col; g.fillText(s, x, y + 0.5);
+        };
         tag(ends.A, "A", blue); tag(ends.A2, "A\u2032", blue); tag(ends.B, "B", ink); tag(ends.B2, "B\u2032", ink);
       }
       g.restore();
@@ -322,13 +344,16 @@ window.Star = (function () {
     // the frame and its scales
     const { X, Y } = main;
     g.strokeStyle = css("--border") || "rgba(127,127,127,.3)"; g.lineWidth = 1; g.strokeRect(ML + 0.5, MT + 0.5, main.w - 1, main.h - 1);
-    g.fillStyle = faint; g.font = "11px ui-sans-serif, system-ui, sans-serif";
+    g.fillStyle = faint; g.font = "12px ui-sans-serif, system-ui, sans-serif";
     const m = run.model, age = (x) => m.wala_min + x * (m.wala_max - m.wala_min), cpn = (y) => m.wac_min + y * (m.wac_max - m.wac_min);
     const ticks = (lo, hi, n) => { const s0 = (hi - lo) / n, mag = Math.pow(10, Math.floor(Math.log10(s0))), q = s0 / mag, st = (q < 1.5 ? 1 : q < 3 ? 2 : q < 7 ? 5 : 10) * mag, t = []; for (let v = Math.ceil(lo / st) * st; v <= hi + 1e-9; v += st) t.push(v); return t; };
     g.textAlign = "center"; g.textBaseline = "top";
     for (const a of ticks(age(main.box[0]), age(main.box[1]), 6)) g.fillText(String(+a.toFixed(1)), X((a - m.wala_min) / (m.wala_max - m.wala_min)), MT + main.h + 5);
     g.textAlign = "right"; g.textBaseline = "middle";
     for (const c of ticks(cpn(main.box[2]), cpn(main.box[3]), 5)) g.fillText(+c.toFixed(2) + "%", ML - 6, Y((c - m.wac_min) / (m.wac_max - m.wac_min)));
+    // the axes' names, as on the screen before this one
+    g.textAlign = "center"; g.textBaseline = "top"; g.fillText("loan age, months", ML + main.w / 2, MT + main.h + 22);
+    g.save(); g.translate(10, MT + main.h / 2); g.rotate(-Math.PI / 2); g.textBaseline = "middle"; g.fillText("coupon", 0, 0); g.restore();
   }
 
   // ------------------------------------------------------------------ the lineage: the hierarchy, drawn as one
@@ -393,7 +418,7 @@ window.Star = (function () {
     };
     el.addEventListener("pointermove", (ev) => { const id = idOf(ev); if (id !== S.hov) { S.hov = id; point(id, ev.target); redraw(); } });
     el.addEventListener("pointerleave", () => { if (S.hov !== null) { S.hov = null; point(null); redraw(); } });
-    el.addEventListener("click", (ev) => { const id = idOf(ev); if (id !== null && id !== S.vid) select(id); }); }
+    el.addEventListener("click", (ev) => { const id = idOf(ev); if (id === null) return; const q = placeOf(id); if (q) go(q); else if (id !== S.vid) select(id); }); }
 
   // ------------------------------------------------------------------ the two sections
   function sections() {
@@ -438,7 +463,7 @@ window.Star = (function () {
         }
         for (const b of sec.bins) if (!b.zero) {
           const off = isFinite(b.lo2) && (b.y < b.lo2 || b.y > b.hi2);
-          s += `<circle class="st-obs${off ? " off" : ""}" cx="${f(X(b.x))}" cy="${f(Y(b.y))}" r="${f(2.8 + 3.4 * Math.sqrt(b.loans / most))}"/>`;
+          s += `<circle class="st-obs${off ? " off" : ""}" cx="${f(X(b.x))}" cy="${f(Y(b.y))}" r="${f((off ? 4 : 3.4) + 3 * Math.sqrt(b.loans / most))}"/>`;
         }
       }
       el.innerHTML = s;
@@ -455,15 +480,17 @@ window.Star = (function () {
   }
   cv.addEventListener("pointermove", (ev) => { const q = nearest(ev), id = q && q !== S.place ? q.id : null; cv.style.cursor = q ? "pointer" : "default"; if (id !== S.hov) { S.hov = id; redraw(); } });
   cv.addEventListener("pointerleave", () => { if (S.hov !== null) { S.hov = null; redraw(); } });
-  cv.addEventListener("click", (ev) => {
-    const q = nearest(ev); if (!q) return;
+  // A click on a vertex, on the map, the small map or the lineage: another vertex opens at its coarsest scale; the one
+  // already open goes one scale finer (and from its finest back to its coarsest), if it has more than one.
+  function go(q) {
     if (q !== S.place) select(q.id);
-    else if (q.roles.length > 1) select(q.roles[(q.roles.indexOf(S.vid) + 1) % q.roles.length]);   // the same place again: its other role
-  });
+    else if (q.roles.length > 1) select(q.roles[(q.roles.indexOf(S.vid) + 1) % q.roles.length]);
+  }
+  cv.addEventListener("click", (ev) => { const q = nearest(ev); if (q) go(q); });
   { const mc = $("st-mini");
     mc.addEventListener("pointermove", (ev) => { const q = nearest(ev), id = q && q !== S.place ? q.id : null; mc.style.cursor = q ? "pointer" : "default"; if (id !== S.hov) { S.hov = id; redraw(); } });
     mc.addEventListener("pointerleave", () => { if (S.hov !== null) { S.hov = null; redraw(); } });
-    mc.addEventListener("click", (ev) => { const q = nearest(ev); if (q && q !== S.place) select(q.id); }); }
+    mc.addEventListener("click", (ev) => { const q = nearest(ev); if (q) go(q); }); }
   $("st-title").addEventListener("click", (ev) => { const b = ev.target.closest("button[data-id]"); if (b && +b.dataset.id !== S.vid) select(+b.dataset.id); });
   let rz = 0; window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(draw, 120); });
   new MutationObserver(() => setTimeout(draw, 40)).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });

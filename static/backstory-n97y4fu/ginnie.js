@@ -133,12 +133,12 @@ window.Ginnie = (function () {
   // ------------------------------------------------------------------ colours: slow (blue) to fast (orange), the
   // month's overall rate in the paper's own tone
   function rgb(dl) {
-    const dark = isDark(), lo = dark ? [110, 150, 255] : [31, 72, 200], mid = dark ? [34, 35, 38] : [250, 247, 238], hi = dark ? [255, 140, 80] : [205, 66, 20];
+    const dark = isDark(), lo = dark ? [110, 150, 255] : [31, 72, 200], mid = dark ? [34, 35, 38] : [238, 229, 205], hi = dark ? [255, 140, 80] : [205, 66, 20];
     const s = Math.max(-1, Math.min(1, dl / VMAX)), a = s < 0 ? lo : hi, w = Math.pow(Math.abs(s), 0.8);
     return [0, 1, 2].map((j) => Math.round(mid[j] + (a[j] - mid[j]) * w));
   }
   const css = (c) => `rgb(${c[0]},${c[1]},${c[2]})`;
-  const ink = () => (isDark() ? "#ececef" : "#1b1b1f"), faint = () => (isDark() ? "#8a8a93" : "#6b6b74"), rule = () => (isDark() ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.13)");
+  const ink = () => (isDark() ? "#ececef" : "#1b1b1f"), faint = () => (isDark() ? "#8a8a93" : "#55555d"), rule = () => (isDark() ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.2)");
 
   // ------------------------------------------------------------------ drawing
   function canvas(id) {
@@ -160,7 +160,7 @@ window.Ginnie = (function () {
   function mapAxes(p, b) {
     const { ctx } = p, [x0, x1, y0, y1] = b;
     const X = (a) => M.l + ((a - x0) / (x1 - x0)) * p.pw, Y = (w) => M.t + (1 - (w - y0) / (y1 - y0)) * p.ph;
-    ctx.font = "11px ui-sans-serif, system-ui, sans-serif"; ctx.fillStyle = faint(); ctx.strokeStyle = rule(); ctx.lineWidth = 1;
+    ctx.font = "12px ui-sans-serif, system-ui, sans-serif"; ctx.fillStyle = faint(); ctx.strokeStyle = rule(); ctx.lineWidth = 1;
     ctx.textAlign = "center"; ctx.textBaseline = "top";
     for (const a of ticks(x0, x1, 60)) ctx.fillText(a, X(a), M.t + p.ph + 5);
     ctx.fillText("loan age, months", M.l + p.pw / 2, M.t + p.ph + 19);
@@ -252,7 +252,8 @@ window.Ginnie = (function () {
     // the depth the slider is at (backstory/rounds.js): the mesh down to that depth, the surface it gives, and the vertices
     // admitted at that depth or coarser. A new fit puts the slider at the end, the whole mesh.
     const stops = window.MeshRounds.depths(S.fit), sr = $("gn-depth");
-    if (sr._fit !== S.fit) { const end = +sr.value >= +sr.max; sr._fit = S.fit; sr.max = stops.length - 1; if (end || +sr.value > +sr.max) sr.value = sr.max; }
+    // the screen opens on the coarsest mesh, for the depth to be added by hand; after that a new fit keeps the slider where it is (or at the end, if it was there)
+    if (sr._fit !== S.fit) { const first = !sr._fit, end = !first && +sr.value >= +sr.max; sr._fit = S.fit; sr.max = stops.length - 1; sr.value = first ? 0 : end ? sr.max : Math.min(+sr.value, +sr.max); }
     const stop = stops[Math.min(stops.length - 1, +sr.value)];
     if (S.tri9 !== stop.tri) { S.tri9 = stop.tri; S.grid = null; }
     const g = grid(), octx = off.getContext("2d"), img = octx.createImageData(D, D);
@@ -302,7 +303,7 @@ window.Ginnie = (function () {
     for (let j = 0; j < nb; ++j) if (bn[j] >= 1000 && (100 * bk[j]) / bn[j] > top) top = (100 * bk[j]) / bn[j];
     const step = top > 6 ? 2 : top > 3 ? 1 : 0.5; top = Math.ceil((top * 1.08) / step) * step;
     const X = (a) => M.l + ((a - x0) / (x1 - x0)) * p.pw, Y = (r) => M.t + (1 - r / top) * p.ph;
-    ctx.font = "11px ui-sans-serif, system-ui, sans-serif"; ctx.fillStyle = faint(); ctx.strokeStyle = rule(); ctx.lineWidth = 1;
+    ctx.font = "12px ui-sans-serif, system-ui, sans-serif"; ctx.fillStyle = faint(); ctx.strokeStyle = rule(); ctx.lineWidth = 1;
     ctx.textAlign = "right"; ctx.textBaseline = "middle";
     for (const r of ticks(0, top, step)) { ctx.fillText(r + "%", M.l - 6, Y(r)); ctx.beginPath(); ctx.moveTo(M.l, Y(r) + 0.5); ctx.lineTo(M.l + p.pw, Y(r) + 0.5); ctx.stroke(); }
     ctx.textAlign = "center"; ctx.textBaseline = "top";

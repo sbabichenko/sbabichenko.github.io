@@ -1,20 +1,21 @@
 // /backstory: the bar. Tabs, jumps within the Decision Mesh page, the gate story's steps as dots, framed pages, keys.
 //   1 2 3        the three tabs
-//   ← →          the previous / next main screen (Where it started) or step of the gate story (Decision Mesh)
-//   ↓ ↑          on the first tab: down to the screen under this one, where there is one, and back up
-//   space, page keys, home, end   also step the first tab's screens (a clicker sends the page keys); on the race
+//   ← →          the previous / next main screen (Where it started, Dissertation)
+//   ↓ ↑          down to the screen under this one, where there is one, and back up
+//   space, page keys, home, end   also step the screens (a clicker sends the page keys); on the race
 //                screen, space plays and pauses instead and escape closes an enlarged drawing
+//                and on a Dissertation screen whose drawing runs, space plays and pauses it (again from the start once it is done)
 //   f            full screen
-//   g            a board of every screen's title; click one to go there
+//   g            a board of every screen's title in this tab; click one to go there
 //   t            light or dark
-//   a d          on a first-tab screen with exactly one slider: move it left and right
-//   w s          on "Borrowing from neighbors": the chosen vertex at its coarser / finer scale
+//   a d          on a screen with exactly one slider: move it left and right
+//   w s          on "Analyzing fit": the chosen vertex at its coarser / finer scale
 (function () {
   "use strict";
   const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => [...(r || document).querySelectorAll(s)];
   const TABS = ["origin", "diss", "work"].filter((t) => document.getElementById("pane-" + t));   // a build may leave the last one out; the site's Decision Mesh page (#pane-mesh) stays hidden: it only lends its parts
   const bar = $("#iv-bar"), native = $("#mesh-native");
-  const frames = { mesh: $("#frame-mesh"), diss: $("#frame-diss") };
+  const frames = { mesh: $("#frame-mesh") };
   const scrollAt = { origin: 0, mesh: 0, diss: 0, work: 0 };
   let tab = null, meshSeen = false;
 
@@ -23,13 +24,14 @@
     if (!TABS.includes(name) || name === tab) return;
     if (tab) scrollAt[tab] = window.scrollY;
     tab = name;
-    lendRace(name === "origin" && !!raceSlot && !!slides[oi] && slides[oi].contains(raceSlot));
-    lendGate(name === "origin" && !!gateSlot && !!slides[oi] && slides[oi].contains(gateSlot));
+    lendRace(name === "origin" && !!raceSlot && O.slides[O.oi].contains(raceSlot));
+    lendGate(name === "origin" && !!gateSlot && O.slides[O.oi].contains(gateSlot));
+    for (const d of Object.values(decks)) d.showBoard(false);
     for (const t of TABS) $("#pane-" + t).hidden = t !== name;
     for (const b of $$(".iv-tabs button")) b.setAttribute("aria-selected", b.dataset.tab === name);
     for (const j of $$(".iv-jumps")) j.hidden = j.dataset.for !== name;
     document.body.dataset.tab = name;
-    if (name === "diss" && !frames.diss.src) frame("diss", $('.iv-jumps[data-for="diss"] a.on').dataset.frame);
+    if (decks[name]) decks[name].shown();
     if (name === "work" && window.Flow) window.Flow.shown();
     if (name === "origin" && window.Ginnie) window.Ginnie.shown();
     // the mesh page drew into hidden canvases at load: its own resize handler redraws them at their real size
@@ -48,7 +50,7 @@
     for (const a of $$(`.iv-jumps[data-for="${which}"] a`)) a.classList.toggle("on", a.dataset.frame === url);
     window.scrollTo(0, 0);
   }
-  for (const f of Object.values(frames)) f.addEventListener("load", () => {
+  for (const f of $$("iframe.iv-frame")) f.addEventListener("load", () => {
     try {
       const d = f.contentDocument, st = d.createElement("style");
       // (a framed page is being talked over: its idle doodles stay away and its animations run once)
@@ -169,90 +171,99 @@
     stageOf(sec);
   }
 
-  // ---- the heavy drawings are not in the page: each is fetched once, the current screen's first, then its neighbours,
-  // then the rest while nothing else is happening, so the page opens at once and every screen is there when stepped to
-  const fetched = new Map();
-  function fill(i) {
-    const sec = slides[i], svg = sec && $("svg[data-src]", sec);
-    if (!svg) return Promise.resolve();
-    if (!fetched.has(i)) fetched.set(i, fetch(svg.dataset.src).then((r) => r.text()).then((t) => { svg.innerHTML = t; stageOf(sec); }).catch(() => { fetched.delete(i); }));
-    return fetched.get(i);
-  }
-  const idle = window.requestIdleCallback || ((f) => setTimeout(f, 60));
-  function fillRest(i) { if (i < slides.length) fill(i).then(() => idle(() => fillRest(i + 1))); }
-
-  // ---- Where it started: one drawing per screen. Left and right walk the main screens; some have more underneath,
+  // ---- a deck: a tab told one drawing per screen. Left and right walk the main screens; some have more underneath,
   // reached with the down arrow and left with up, for going further only when the conversation asks for it. A "view" is
   // a screen, or a deeper layout of the same screen (data-modes on its section; the section then carries data-mode).
-  const slides = $$(".or-slide"), odots = $("#or-dots"), views = [];
-  slides.forEach((sec, si) => {
-    views.push({ si, sec, mode: 0, name: sec.dataset.name, depth: +sec.dataset.depth || 0 });
-    (sec.dataset.modes || "").split("|").filter(Boolean).forEach((name, k) => views.push({ si, sec, mode: k + 1, name, depth: (+sec.dataset.depth || 0) + k + 1 }));
-  });
-  const mains = views.map((v, i) => i).filter((i) => views[i].depth === 0);
-  const mainOf = (i) => { while (views[i].depth) --i; return i; };
-  let oi = 0, vi = 0;   // oi: the section on screen (what the rest of this file reads); vi: the view
-  function toSlide(i) {
-    vi = Math.max(0, Math.min(views.length - 1, i));
-    const v = views[vi]; oi = v.si;
-    fill(oi); fill(oi + 1); fill(oi - 1);
-    slides.forEach((s, k) => { s.hidden = k !== oi; });
-    if (v.sec.dataset.modes) v.sec.dataset.mode = v.mode;
-    lendRace(tab === "origin" && !!raceSlot && slides[oi].contains(raceSlot));
-    lendGate(tab === "origin" && !!gateSlot && slides[oi].contains(gateSlot));
-    obtn.forEach((b, k) => { b.classList.toggle("on", k === vi); b.classList.toggle("in", views[k].depth > 0 && mainOf(k) === mainOf(vi)); });
-    for (const g of odots.children) g.classList.toggle("on", g.dataset.group === slides[oi].dataset.group);
-    // beside the title: what lies one level down, or the way back up
-    const below = views[vi + 1] && views[vi + 1].depth > v.depth ? views[vi + 1] : null;
-    cue.innerHTML = (v.depth ? `<span>\u2191 ${views[vi - 1].name === v.name ? "" : views[mainOf(vi)].name}</span>` : "") + (below ? `<span>\u2193 ${below.name}</span>` : "");
-    $(".or-head h2", v.sec).after(cue);
-    if (vi === starView && window.Star) { window.Star.open(starKey()); requestAnimationFrame(() => window.Star.shown()); }
-    try { sessionStorage.setItem("iv-slide", vi); } catch (e) {}
-    if (tab === "origin" && window.Ginnie) window.Ginnie.shown();   // the live fit redraws at its real size when its screen comes up
-  }
-  // ---- "Borrowing from neighbors" shows one vertex of the real fit (star.js). It follows the data set chosen on the
-  // real-data screen, and a vertex clicked on that screen's map opens here.
-  const starView = views.findIndex((v) => v.sec.querySelector("#st"));
-  const starKey = () => $("#gn-pools").value + "-" + $("#gn-month").value;
-  window.addEventListener("gn-vertex", (ev) => { if (starView < 0 || !window.Star) return; window.Star.open(starKey(), ev.detail); toSlide(starView); });
-  const across = (d) => { const m = mains.indexOf(mainOf(vi)) + d; if (m >= 0 && m < mains.length) toSlide(mains[m]); };
-  const deeper = (d) => { const n = views[vi + d]; if (d > 0 ? n && n.depth > views[vi].depth : views[vi].depth > 0) toSlide(vi + d); };
-  const cue = document.createElement("span"); cue.className = "or-cue";
-  cue.addEventListener("click", (ev) => { if (ev.target.textContent.startsWith("\u2191")) deeper(-1); else deeper(1); });
-  // the bar's table of contents: each chapter's name, then a numbered dot for each main screen and a small dot for each
-  // screen under it. A chapter's name goes to its first screen; pointing at a dot names its screen at once.
-  const obtn = [], tip = document.createElement("div"); tip.className = "iv-tip"; tip.hidden = true; document.body.appendChild(tip);
-  views.forEach((v, i) => {
-    let g = odots.lastElementChild; const group = v.sec.dataset.group;
-    if (!g || g.dataset.group !== group) {
-      g = document.createElement("span"); g.className = "grp"; g.dataset.group = group;
-      const a = document.createElement("a"); a.textContent = group; a.addEventListener("click", () => toSlide(i));
-      g.appendChild(a); odots.appendChild(g);
+  // The heavy drawings are not in the page: each is fetched once, the current screen's first, then its neighbours, then
+  // the rest while nothing else is happening, so the page opens at once and every screen is there when stepped to.
+  const idle = window.requestIdleCallback || ((f) => setTimeout(f, 60));
+  const tip = document.createElement("div"); tip.className = "iv-tip"; tip.hidden = true; document.body.appendChild(tip);
+  function Deck(name, key, after) {
+    const root = $("#pane-" + name), odots = $(`.iv-jumps[data-for="${name}"] .iv-toc`);
+    const slides = $$(".or-slide", root), views = [], fetched = new Map(), obtn = [];
+    slides.forEach((sec, si) => {
+      views.push({ si, sec, mode: 0, name: sec.dataset.name, depth: +sec.dataset.depth || 0 });
+      (sec.dataset.modes || "").split("|").filter(Boolean).forEach((nm, k) => views.push({ si, sec, mode: k + 1, name: nm, depth: (+sec.dataset.depth || 0) + k + 1 }));
+    });
+    const mains = views.map((v, i) => i).filter((i) => views[i].depth === 0);
+    const mainOf = (i) => { while (views[i].depth) --i; return i; };
+    const D = { name, slides, views, mains, mainOf, oi: 0, vi: 0 };   // oi: the section on screen; vi: the view
+    function fill(i) {
+      const sec = slides[i], svg = sec && $("svg[data-src]", sec);
+      if (!svg) return Promise.resolve();
+      if (!fetched.has(i)) fetched.set(i, fetch(svg.dataset.src).then((r) => r.text()).then((t) => { svg.innerHTML = t; stageOf(sec); }).catch(() => { fetched.delete(i); }));
+      return fetched.get(i);
     }
-    const b = document.createElement("button");
-    if (v.depth) b.className = "sub"; else b.textContent = mains.indexOf(i) + 1;
-    b.dataset.name = v.name; b.setAttribute("aria-label", v.name);
-    b.addEventListener("click", () => { toSlide(i); tip.hidden = true; });
-    b.addEventListener("mouseenter", () => { const r = b.getBoundingClientRect(); tip.textContent = (v.depth ? "\u2193 " : "") + v.name; tip.hidden = false; tip.style.left = Math.max(8, Math.min(window.innerWidth - tip.offsetWidth - 8, r.left + r.width / 2 - tip.offsetWidth / 2)) + "px"; });
-    b.addEventListener("mouseleave", () => { tip.hidden = true; });
-    g.appendChild(b); obtn.push(b);
+    function fillRest(i) { if (i < slides.length) fill(i).then(() => idle(() => fillRest(i + 1))); }
+    let filling = false;
+    D.shown = () => { if (!filling) { filling = true; setTimeout(() => fillRest(0), 300); } };
+    const cue = document.createElement("span"); cue.className = "or-cue";
+    D.toSlide = function (i) {
+      const vi = D.vi = Math.max(0, Math.min(views.length - 1, i)), v = views[vi], oi = D.oi = v.si;
+      fill(oi); fill(oi + 1); fill(oi - 1);
+      slides.forEach((s, k) => { s.hidden = k !== oi; });
+      if (v.sec.dataset.modes) v.sec.dataset.mode = v.mode;
+      const fr = $("iframe[data-url]", v.sec); if (fr && !fr.getAttribute("src")) fr.src = fr.dataset.url;   // a page of the site, loaded when first shown
+      obtn.forEach((b, k) => { b.classList.toggle("on", k === vi); b.classList.toggle("in", views[k].depth > 0 && mainOf(k) === mainOf(vi)); });
+      for (const g of odots.children) g.classList.toggle("on", g.dataset.group === slides[oi].dataset.group);
+      // beside the title: what lies one level down, or the way back up
+      const below = views[vi + 1] && views[vi + 1].depth > v.depth ? views[vi + 1] : null;
+      cue.innerHTML = (v.depth ? `<span>↑ ${views[vi - 1].name === v.name ? "" : views[vi - 1].name}</span>` : "") + (below ? `<span>↓ ${below.name}</span>` : "");
+      $(".or-head h2", v.sec).after(cue);
+      try { sessionStorage.setItem(key, vi); } catch (e) {}
+      if (after) after(v);
+    };
+    D.across = (d) => { const m = mains.indexOf(mainOf(D.vi)) + d; if (m >= 0 && m < mains.length) D.toSlide(mains[m]); };
+    D.deeper = (d) => { const n = views[D.vi + d]; if (d > 0 ? n && n.depth > views[D.vi].depth : views[D.vi].depth > 0) D.toSlide(D.vi + d); };
+    cue.addEventListener("click", (ev) => { if (ev.target.textContent.startsWith("↑")) D.deeper(-1); else D.deeper(1); });
+    // the bar's table of contents: each chapter's name, then a numbered dot for each main screen and a small dot for each
+    // screen under it. A chapter's name goes to its first screen; pointing at a dot names its screen at once.
+    views.forEach((v, i) => {
+      let g = odots.lastElementChild; const group = v.sec.dataset.group;
+      if (!g || g.dataset.group !== group) {
+        g = document.createElement("span"); g.className = "grp"; g.dataset.group = group;
+        const a = document.createElement("a"); a.textContent = group; a.addEventListener("click", () => D.toSlide(i));
+        g.appendChild(a); odots.appendChild(g);
+      }
+      const b = document.createElement("button");
+      if (v.depth) b.className = "sub"; else b.textContent = mains.indexOf(i) + 1;
+      b.dataset.name = v.name; b.setAttribute("aria-label", v.name);
+      b.addEventListener("click", () => { D.toSlide(i); tip.hidden = true; });
+      b.addEventListener("mouseenter", () => { const r = b.getBoundingClientRect(); tip.textContent = (v.depth ? "↓ " : "") + v.name; tip.hidden = false; tip.style.left = Math.max(8, Math.min(window.innerWidth - tip.offsetWidth - 8, r.left + r.width / 2 - tip.offsetWidth / 2)) + "px"; });
+      b.addEventListener("mouseleave", () => { tip.hidden = true; });
+      g.appendChild(b); obtn.push(b);
+    });
+    // g: every screen's title on one board, to jump straight to one when a question comes
+    const board = D.board = document.createElement("div"); board.className = "or-board"; board.hidden = true; board.dataset.deck = name;
+    { let h = "", g = null, cols = 0;
+      views.forEach((v, i) => { const grp = v.sec.dataset.group; if (grp !== g) { h += (g === null ? "" : "</div>") + `<div class="col"><h3>${grp}</h3>`; g = grp; ++cols; } h += `<button data-i="${i}"${v.depth ? ' class="sub"' : ""}><b>${v.depth ? "↓" : mains.indexOf(i) + 1}</b>${v.name}</button>`; });
+      board.innerHTML = h + "</div>"; board.style.setProperty("--cols", cols); }
+    document.body.appendChild(board);
+    D.showBoard = (on) => { board.hidden = !on; if (on) for (const b of $$("button", board)) b.classList.toggle("on", +b.dataset.i === D.vi); };
+    board.addEventListener("click", (ev) => { const b = ev.target.closest("button"); if (b) { show(name); D.toSlide(+b.dataset.i); } D.showBoard(false); });
+    return D;
+  }
+
+  // ---- Where it started. Some of its screens borrow live parts of the site's Decision Mesh page, and "Analyzing fit"
+  // shows one vertex of the real fit (star.js): it follows the data set chosen on the real-data screen, and a vertex
+  // clicked on that screen's map opens here.
+  const decks = {};
+  const starKey = () => $("#gn-pools").value + "-" + $("#gn-month").value;
+  const O = decks.origin = Deck("origin", "iv-slide", (v) => {
+    lendRace(tab === "origin" && !!raceSlot && v.sec.contains(raceSlot));
+    lendGate(tab === "origin" && !!gateSlot && v.sec.contains(gateSlot));
+    if (O.vi === starView && window.Star) { window.Star.open(starKey()); requestAnimationFrame(() => window.Star.shown()); }
+    if (tab === "origin" && window.Ginnie) window.Ginnie.shown();   // the live fit redraws at its real size when its screen comes up
   });
-
-  try { toSlide(+sessionStorage.getItem("iv-slide") || 0); } catch (e) { toSlide(0); }
-  window.addEventListener("load", () => setTimeout(() => fillRest(0), 300));
-
+  const starView = O.views.findIndex((v) => v.sec.querySelector("#st"));
+  window.addEventListener("gn-vertex", (ev) => { if (starView < 0 || !window.Star) return; window.Star.open(starKey(), ev.detail); O.toSlide(starView); });
+  // ---- Dissertation: the same kind of deck; every slider on it shows one of several ready-drawn stages
+  if ($("#pane-diss .or-slide")) decks.diss = Deck("diss", "iv-slide-diss");
+  for (const [k, d] of Object.entries(decks)) { let at = 0; try { at = +sessionStorage.getItem(k === "origin" ? "iv-slide" : "iv-slide-" + k) || 0; } catch (e) {} d.toSlide(at); }
+  window.addEventListener("load", () => O.shown());
 
   // the opening screen: its slider carries every pool to its cohort's average pool and back
   { const m = $("#co-merge"), g = $(".or-pools"); if (m && g) m.addEventListener("input", () => g.style.setProperty("--p", m.value)); }
-
-  // ---- g: every screen's title on one board, to jump straight to one when a question comes
-  const board = document.createElement("div"); board.className = "or-board"; board.hidden = true;
-  { let h = "", g = null;
-    views.forEach((v, i) => { const grp = v.sec.dataset.group; if (grp !== g) { h += (g === null ? "" : "</div>") + `<div class="col"><h3>${grp}</h3>`; g = grp; } h += `<button data-i="${i}"${v.depth ? ' class="sub"' : ""}><b>${v.depth ? "\u2193" : mains.indexOf(i) + 1}</b>${v.name}</button>`; });
-    board.innerHTML = h + "</div>"; }
-  document.body.appendChild(board);
-  const showBoard = (on) => { board.hidden = !on; if (on) for (const b of $$("button", board)) b.classList.toggle("on", +b.dataset.i === vi); };
-  board.addEventListener("click", (ev) => { const b = ev.target.closest("button"); if (b) { show("origin"); toSlide(+b.dataset.i); } showBoard(false); });
 
   // The Decision Mesh tab's live fit no longer colours its dots by round (this page's copy of gate.js): say what they are
   { const cap = $$("#mesh-native figcaption span").find((e) => /admitted, by round/.test(e.textContent)); if (cap) cap.textContent = "dots: admitted vertices"; }
@@ -263,7 +274,7 @@
   // ---- theme: the site's own button does the work (it is in the page, hidden); frames follow
   $("#iv-theme").addEventListener("click", () => {
     const b = $(".btn-dark"); if (b) b.click();
-    setTimeout(() => { for (const f of Object.values(frames)) try { f.contentDocument.documentElement.classList.toggle("dark", document.documentElement.classList.contains("dark")); } catch (e) {} }, 50);
+    setTimeout(() => { for (const f of $$("iframe.iv-frame")) try { f.contentDocument.documentElement.classList.toggle("dark", document.documentElement.classList.contains("dark")); } catch (e) {} }, 50);
   });
 
   // ---- keys (never while typing in a control)
@@ -273,12 +284,13 @@
     if (t && (t.isContentEditable || /^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName))) return;
     if (ev.key >= "1" && ev.key <= "3") { show(TABS[+ev.key - 1]); return; }
     if (ev.key === "t") { $("#iv-theme").click(); return; }
-    if (ev.key === "g") { showBoard(board.hidden); return; }
-    if (!board.hidden) { if (ev.key === "Escape") showBoard(false); return; }
+    const D = decks[tab];
+    if (ev.key === "g" && D) { D.showBoard(D.board.hidden); return; }
+    if (D && !D.board.hidden) { if (ev.key === "Escape") D.showBoard(false); return; }
     if (ev.key === "f") { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => {}); return; }
     if (tab === "work" && (ev.key === "ArrowRight" || ev.key === "ArrowLeft") && window.Flow) { window.Flow.setView(ev.key === "ArrowRight" ? 1 : -1); ev.preventDefault(); return; }
-    if (tab === "origin") {
-      if ((ev.key === "w" || ev.key === "s") && vi === starView && window.Star) { window.Star.role(ev.key === "w" ? -1 : 1); return; }   // one vertex, coarser or finer
+    if (D) {
+      if (tab === "origin" && (ev.key === "w" || ev.key === "s") && O.vi === starView && window.Star) { window.Star.role(ev.key === "w" ? -1 : 1); return; }   // one vertex, coarser or finer
       if (ev.key === "a" || ev.key === "d") {   // on a screen with one slider, a and d move it (about a twenty-fifth of its run a press)
         const sl = $$(".or-slide:not([hidden]) input[type=range]").filter((x) => x.offsetParent);
         if (sl.length === 1) {
@@ -287,13 +299,14 @@
         }
         return;
       }
-      const onRace = race && race.parentNode === raceSlot;
+      const onRace = tab === "origin" && race && race.parentNode === raceSlot;
       if (onRace && ev.key === " ") { $("#race-playbtn").click(); ev.preventDefault(); return; }             // space plays and pauses the race
       if (onRace && ev.key === "Escape") { solo(null); return; }
+      if (tab === "diss" && ev.key === " " && window.DissPlay && window.DissPlay()) { ev.preventDefault(); return; }   // space plays and pauses a drawing that runs
       const step = { ArrowRight: 1, PageDown: 1, " ": 1, ArrowLeft: -1, PageUp: -1 }[ev.key];             // a clicker sends the page keys
-      if (step) { across(step); ev.preventDefault(); return; }
-      if (ev.key === "ArrowDown" || ev.key === "ArrowUp") { deeper(ev.key === "ArrowDown" ? 1 : -1); ev.preventDefault(); return; }
-      if (ev.key === "Home" || ev.key === "End") { toSlide(ev.key === "Home" ? 0 : mains[mains.length - 1]); ev.preventDefault(); return; }
+      if (step) { D.across(step); ev.preventDefault(); return; }
+      if (ev.key === "ArrowDown" || ev.key === "ArrowUp") { D.deeper(ev.key === "ArrowDown" ? 1 : -1); ev.preventDefault(); return; }
+      if (ev.key === "Home" || ev.key === "End") { D.toSlide(ev.key === "Home" ? 0 : D.mains[D.mains.length - 1]); ev.preventDefault(); return; }
     }
     if (tab === "mesh" && (ev.key === "ArrowRight" || ev.key === "ArrowLeft")) {
       const c = current(), fwd = ev.key === "ArrowRight";
