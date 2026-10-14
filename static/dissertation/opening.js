@@ -90,15 +90,15 @@
       { name: "cedar", who: "\u201cthe logger in Oregon\u201d", from: [-170, -160], lx: 150, ly: 150, tx: 236, ty: 283, build(pg) {
           return [stroke(pg, pencil([[170, 283], [440, 283]], 1), "", 2), stroke(pg, pencil([[170, 327], [440, 327]], 2), "", 2),
                   stroke(pg, pencil([[440, 283], [482, 301]], 4), "", 2), stroke(pg, pencil([[440, 327], [482, 309]], 12), "", 2)]; } },   // the body; its cone stops at the lead
-      // the graphite is a rod with a point: it flies in to line up with the pencil beyond its tip, then slides in
-      // along the axis; once inside, the hidden core fades out and the sharpened point shows past the wood
+      // the graphite is a rod with a point: it flies in from beyond the corner to line up with the pencil beyond its
+      // tip, then slides in along the axis, the wood hiding what has gone in, until only the sharpened point shows
       { name: "graphite", who: "\u201cthe miner of graphite in Ceylon\u201d", from: [170, -170], lx: 480, ly: 170, tx: 490, ty: 301,
-        path: (k) => (k < 0.55 ? [170 + (300 - 170) * (k / 0.55), -170 * (1 - k / 0.55)] : [300 * (1 - (k - 0.55) / 0.45), 0]),
+        path: (k) => (k < 0.55 ? [400 - 100 * (k / 0.55), -330 * (1 - k / 0.55)] : [300 * (1 - (k - 0.55) / 0.45), 0]),
         build(pg) {
           this.rod = el("path", { d: "M172,301 L482,301 L482,309 L172,309 Z", class: "fillink" }, pg);        // the core
           this.point = el("path", { d: "M482,301 L500,305 L482,309 Z", class: "fillink", opacity: 0 }, pg);   // the exposed lead
           this.edge = stroke(pg, pencil([[482, 301], [172, 301], [172, 309], [482, 309]], 3), "", 1.2);
-          return [this.edge, stroke(pg, pencil([[482, 301], [500, 305], [482, 309]], 5), "", 1.4)]; } },
+          return [this.edge, this.tip = stroke(pg, pencil([[482, 301], [500, 305], [482, 309]], 5), "", 1.4)]; } },
       { name: "lacquer", who: "\u201cthe growers of castor beans\u201d", from: [160, 170], lx: 470, ly: 440, tx: 392, ty: 326, build(pg) {
           const f = el("rect", { x: 171, y: 284, width: 268, height: 42, class: "fillacc", opacity: 0.1 }, pg);
           return [{ set: (t) => fade(f, t * 0.16) }, stroke(pg, pencil([[176, 294], [434, 294]], 6), "accent soft", 1)]; } },
@@ -107,8 +107,12 @@
                   stroke(pg, pencil([[150, 283], [150, 327]], 8), "soft", 1), stroke(pg, pencil([[160, 283], [160, 327]], 9), "soft", 1),
                   stroke(pg, pencil([[140, 286], [116, 288], [112, 305], [116, 322], [140, 324]], 10), "warm", 2)]; } },
     ];
+    // the wood hides what has gone into it: the graphite is drawn only outside the pencil's body and cone
+    const sheath = (into) => { const id = "wood-" + name, c = el("clipPath", { id, clipPathUnits: "userSpaceOnUse" }, into);
+      el("path", { d: "M-2000,-2000 H3000 V3000 H-2000 Z M130,280 H440 L482,301 L482,309 L440,330 H130 Z", "clip-rule": "evenodd" }, c);
+      return el("g", { "clip-path": `url(#${id})` }, into); };
     for (const p of parts) {
-      p.g = el("g", {}, g);
+      p.g = el("g", {}, p.name === "graphite" ? sheath(g) : g);
       p.lines = p.build(p.g);
       // in Leonard Read's own words, who or what brings the part (I, Pencil): above the leader at the top, below it
       // at the bottom
@@ -142,8 +146,9 @@
         },
       };
     }
-    // the graphite's flight and slide home is one action, timed, so it is seen whole however fast the page is scrolled
-    const slide = oneShot(0.12, 1.7);
+    // the graphite's flight and slide home is one action, timed, so it is seen whole however fast the page is scrolled;
+    // it starts once the wood has landed (0.4), so it lines up with the pencil where the pencil is
+    const slide = oneShot(0.4, 1.7);
     return {
       g, live: false, shots: [slide],
       update(t, now, dt) {
@@ -152,11 +157,11 @@
           const k = p.path ? kg : seg(t, 0.05 + 0.1 * i, 0.4 + 0.1 * i), off = p.path ? p.path(k) : [p.from[0] * (1 - k), p.from[1] * (1 - k)];
           p.g.setAttribute("transform", `translate(${off[0]},${off[1]})`);
           if (p.rod) {                                                  // solid while it travels
-            const inside = seg(k, 0.9, 1);
-            const shown = seg(t, 0.12, 0.22);                           // once in: the point clear, the hidden core gone
-            p.rod.setAttribute("opacity", 0.7 * (1 - inside) * shown);
-            p.point.setAttribute("opacity", 0.7 * shown);
-            p.edge.a.style.opacity = p.edge.b.style.opacity = 1 - inside;
+            const seen = seg(k, 0, 0.04);                                // out of sight until it sets off
+            p.rod.setAttribute("opacity", 0.7 * seen);
+            p.point.setAttribute("opacity", 0.7 * seen);
+            p.edge.a.style.opacity = p.edge.b.style.opacity = seen;
+            p.tip.a.style.opacity = p.tip.b.style.opacity = seen;
           }
           p.lines.forEach((l) => l.set(seg(t, 0.02 + 0.1 * i, 0.3 + 0.1 * i)));
           fade(p.label, seg(t, 0.02 + 0.1 * i, 0.2 + 0.1 * i));
@@ -250,6 +255,10 @@
     el("path", { d: "M60,250 Q60,215 125,215 Q195,215 195,250 Q195,282 125,282 L112,300 L108,282 Q60,282 60,250 Z", class: "box pencil", "stroke-width": 1.5 }, bub);
     text(bub, 127, 256, "runs great", "label");
     const bell = (m) => { const p = []; for (let i = 0; i <= 40; ++i) { const x = 400 + 190 * i / 40; p.push([x, 250 - 90 * Math.exp(-((x - m) ** 2) / (2 * 26 ** 2))]); } return p; };
+    const think = el("g", {}, g);                                 // what you believe the car is worth, as a thought of yours
+    el("path", { d: "M415,148 H570 Q602,148 602,180 V232 Q602,264 570,264 H415 Q383,264 383,232 V180 Q383,148 415,148 Z", class: "box pencil", "stroke-width": 1.5 }, think);
+    el("circle", { cx: 507, cy: 278, r: 5, class: "box pencil", "stroke-width": 1.3 }, think);
+    el("circle", { cx: 509, cy: 294, r: 3, class: "box pencil", "stroke-width": 1.3 }, think);
     const axis = el("line", { x1: 395, y1: 250, x2: 595, y2: 250, class: "pencil soft", "stroke-width": 1 }, g);
     const old = el("path", { d: pencil(bell(470), 82, 0.2), class: "pencil soft", "stroke-width": 1.4, "stroke-dasharray": "4 4" }, g);
     const now_ = el("path", { class: "pencil accent", "stroke-width": 2 }, g);
@@ -258,7 +267,7 @@
       update(t) {
         body.set(seg(t, 0.02, 0.25)); win.set(seg(t, 0.15, 0.3)); wheels.forEach((w) => fade(w, seg(t, 0.2, 0.3)));
         fade(seller, seg(t, 0.25, 0.35)); fade(buyer, seg(t, 0.3, 0.4));
-        fade(axis, seg(t, 0.35, 0.45)); fade(old, seg(t, 0.35, 0.45));
+        fade(think, seg(t, 0.35, 0.45)); fade(axis, seg(t, 0.35, 0.45)); fade(old, seg(t, 0.35, 0.45));
         fade(bub, seg(t, 0.5, 0.6));
         now_.setAttribute("d", pencil(bell(470 + 55 * seg(t, 0.58, 0.85)), 83, 0.2)); fade(now_, seg(t, 0.55, 0.62));
       },
