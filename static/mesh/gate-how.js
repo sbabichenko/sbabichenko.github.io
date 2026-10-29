@@ -475,7 +475,7 @@
       const C = el("g", {}, g);
       text(C, 70, 462, "3 · remove the shrinkage bias, divide by the standard deviation", "mono", "start");
       const zl = text(C, 300, 506, "z  =  (centered score on the remainder − shrinkage bias) / sd", "label");
-      const cap = text(g, 300, 570, "a one-dimensional sketch, not the run", "tiny");
+      const cap = text(g, 300, 570, "a one-dimensional sketch", "tiny");
       return { g, update(t) {
         const u = seg(t, 0.12, 0.32);
         dotsA.forEach((d, i) => { d.setAttribute("cy", Ay - As * (R[i] - u * E[i])); fade(d, seg(t, 0, 0.1)); });
@@ -803,7 +803,7 @@
   document.addEventListener("gatefit", (ev) => {
     const d = ev.detail;
     if (d.error) { svg.style.opacity = 1; status("the fit failed: " + d.error); return; }
-    if (d.user) { svg.style.opacity = 1; status(run ? "the story follows the coins: back to them above to refit it" : "the story follows the coins, not a file"); return; }
+    if (d.user) { svg.style.opacity = 1; status(run ? "the story follows the coins: back to them above to refit it" : "the story follows the coins"); return; }
     show(d);
   });
   let wasDark = document.documentElement.classList.contains("dark");   // only a change of theme, not every class on <html>
@@ -868,7 +868,7 @@
   }
   function queueDraw() { if (!queued) { queued = true; requestAnimationFrame(redraw); } }
   if (!(G && G.run && show(G.run))) {
-    if (G && G.user) status("the story follows the coins, not a file");
+    if (G && G.user) status("the story follows the coins");
     else { status("Fitting…", true); text(svg, 300, 300, "fitting…", "stagebusy"); }
   }
   measure();

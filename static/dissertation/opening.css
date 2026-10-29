@@ -267,7 +267,6 @@
 .spike .scrub.when { flex: 2 1 12rem; }
 .spike .scrub small { color: var(--ink-3); font-weight: 400; }
 .spike .clock { font-variant-numeric: tabular-nums; min-width: 2.6em; }
-.spike .howto { font: 0.8rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); margin: 0.6rem 0 0; }
 .spike .strip { display: grid; grid-template-columns: minmax(0, 19rem) minmax(0, 1fr); gap: 10px 32px; padding: 1.6rem 0; border-bottom: 1px solid var(--rule); }
 .spike .strip h2 { font-family: Newsreader, Georgia, serif; font-weight: 400; font-size: 1.55rem; line-height: 1.1; margin: 0 0 0.45rem; }
 .spike .strip h2 small { display: block; font: 0.7rem ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 0.35rem; }
