@@ -27,9 +27,8 @@
             <label class="scrub age">age of the spike <input type="range" id="scrub" min="0" max="1000" value="0" /><span class="clock" id="clock">0.00</span></label>
             <label class="scrub when">when in the game <small>(Chapters 1&ndash;2)</small> <input type="range" id="when" min="0" max="999" value="120" /></label>
           </div>
-          <span id="many-note" class="hint" hidden>Spikes arrive at random, in both directions, and every row lives through the same one; tap a chart to send one.</span>
+          <span id="many-note" class="hint" hidden>Spikes arrive at random, and every row lives through the same one; tap a chart to send one.</span>
         </div>
-        <p class="howto" id="howto">Drag the age slider, or drag across any chart.</p>
         <div id="strips"></div>
         <p class="note">Each row is the response to a single spike. The player who made it carries on playing its best;
           everyone else keeps their plan and reacts to what they see. In the finite games a spike&rsquo;s life depends on
@@ -39,11 +38,10 @@
       </section>
 
       <section class="lemma" id="lemma">
-        <h2>Two ways to carry on, one equilibrium</h2>
+        <h2>Two ways to carry on</h2>
         <p class="lede2">After a spike, the player who made it can hold still (a <em>frozen</em> spike) or keep playing its
           best knowing what it did (a <em>blip</em>). The lives above use blips. The two tell different stories, yet they
-          pick out the same equilibrium, because each can be built out of the other: they are two ways of listing the
-          same moves.</p>
+          pick out the same equilibrium, because each can be built out of the other.</p>
         <figure class="build">
           <div class="build-controls">
             <div class="modes" role="group" aria-label="Which way to build">
@@ -61,11 +59,10 @@
           <svg id="lemma-bowls" role="img" aria-label="Player 1's extra cost against the size of a change to its strategy, three ways"></svg>
           <div class="legend" id="lemma-bowls-legend"></div>
           <label class="scrub lemma-scrub">size of the change <input type="range" id="lemma-eps" min="-1000" max="1000" value="190" /></label>
-          <figcaption>So the first-order condition is the same in either basis. Player 1&rsquo;s extra cost from a small change
+          <figcaption>The first-order condition is the same in either basis. Player 1&rsquo;s extra cost from a small change
             to its strategy, then holding still or playing on: both curves are flat at zero, because a move that helped
             in one list would be a combination of moves in the other, and none of those helps. The two part only at
-            second order: holding still after a change costs more. Counted as if nobody reacted, the same change looks
-            profitable; the bottom is flat only because the others react.</figcaption>
+            second order: holding still after a change costs more. Counted as if nobody reacted, the same change looks profitable.</figcaption>
         </figure>
         <h3>When someone is watching</h3>
         <p class="lede2">With nobody privy to the spike, how the deviator carries on after it is invisible to the others:
@@ -75,7 +72,7 @@
           this with the blip: privy players expect the deviator to treat the spike as bygone and carry on playing its
           best. The deviator&rsquo;s own first-order
           condition is the same under either convention; what the privy players expect, and so how they respond, is
-          not. So the lives above use the blip.</p>
+          not.</p>
         <figure class="watchfig">
           <svg id="watch" role="img" aria-label="The privy trader's orders after the market maker's quote spike, expecting it to play on or to hold still"></svg>
           <div class="legend" id="watch-legend"></div>

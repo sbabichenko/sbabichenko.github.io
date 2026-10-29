@@ -33,7 +33,7 @@
         <p class="lede2">Whether a small change to a plan pays is a derivative: the change in cost, averaged over the
           outcomes the player thinks possible. For a risk-neutral player that average is taken with its beliefs. For a
           risk-averse one, differentiating log&thinsp;E&thinsp;<i>e</i><sup><i>&theta;C</i></sup> gives the same average with every
-          outcome weighted by <i>e</i><sup><i>&theta;C</i></sup>: the costly outcomes count for more. The weight is the exponential of a quadratic, so weighted Gaussian densities are Gaussian again, with a
+          outcome weighted by <i>e</i><sup><i>&theta;C</i></sup>. The weight is the exponential of a quadratic, so weighted Gaussian densities are Gaussian again, with a
           moved center. And the change in cost from a small deviation is a straight line in the shocks, and the
           average of a straight line is the line at the average. So the risk-averse judgment is the risk-neutral one,
           taken at the moved center.</p>
@@ -48,9 +48,7 @@
             <figcaption>One shock <i>w</i>. Gray: the player&rsquo;s belief about it. Orange: the weight
               <i>e</i><sup><i>&theta;C</i></sup> on a log scale, where it is the parabola <i>&theta;C</i>, the cost <i>C</i>
               being quadratic in <i>w</i>. Dashed blue: the belief times the
-              weight, again a bell curve, shifted and widened. It is not a new belief: the player
-              still believes the gray curve, and the blue one only says how much each outcome counts in the average that
-              judges a deviation. Below: the change in cost from a small deviation, a
+              weight, again a bell curve, shifted and widened. Below: the change in cost from a small deviation, a
               straight line in <i>w</i>. Its average under each curve (computed by summing over <i>w</i>) equals the line
               at that curve&rsquo;s center.</figcaption>
           </figure>
@@ -86,8 +84,7 @@
             <figcaption>Gray: what the player believes, the past shock about 0.6 and the next one anybody&rsquo;s guess.
               Dashed blue: the same belief with every outcome weighted by <i>e</i><sup><i>&theta;C</i></sup>. It leans along the
               costly diagonal, and its hollow center, the point where a deviation is judged, moves off zero on the future
-              shock&rsquo;s axis. The player does not expect the next shock to push; it weighs the outcomes where it
-              does.</figcaption>
+              shock&rsquo;s axis.</figcaption>
           </figure>
         </div>
       </section>
@@ -99,8 +96,7 @@
           risk-neutral one evaluated at the risk-adjusted noise-state,
           <span class="nw"><i>&Wcirc;</i><sup><i>&theta;</i></sup> = (<i>I</i> &minus; <i>&theta;</i>&Sigma;<i>K</i>)<sup>&minus;1</sup><i>&Wcirc;</i></span>
           (no shift here: the game has no targets), where &Sigma; is how uncertain player 1 still is about the shocks
-          and <i>K</i> is how they enter its cost. Like an adjoint, it is a point at which a derivative is taken, not a
-          belief.</p>
+          and <i>K</i> is how they enter its cost.</p>
         <div class="rcontrols">
           <label class="scrub"><span><i>&theta;</i> / <i>&theta;</i>*</span> <input type="range" id="theta" min="0" max="40" value="24" /><span class="clock" id="theta-read"></span></label>
         </div>
@@ -110,15 +106,14 @@
             <div class="legend" id="state-legend"></div>
             <figcaption>Gray: what player 1 believes, its estimate of the state so far and its forecast of the rest;
               the thin dark line is what actually happened. Dashed blue: the same path averaged over outcomes weighted by
-              their cost, where the risk-averse player judges a change in its plan. It is neither an estimate nor a
-              forecast: it leans up, past and future, because the outcomes
+              their cost, where the risk-averse player judges a change in its plan. It leans up, past and future, because the outcomes
               where the state ran high are the ones that count most.</figcaption>
           </figure>
           <figure class="wide">
             <svg id="push" role="img" aria-label="What a small extra push against the state is worth, judged with the belief and cost-weighted"></svg>
             <div class="legend" id="push-legend"></div>
-            <figcaption>The judgment itself: how much player 1&rsquo;s cost changes if, now, it pushes a little harder
-              against the state. With its belief the answer is zero (up to the time cells), as it must be: the plan is
+            <figcaption>How much player 1&rsquo;s cost changes if, now, it pushes a little harder
+              against the state. With its belief the answer is zero (up to the time cells): the plan is
               optimal for a risk-neutral player. Cost-weighted, the push lowers the cost, more so as <i>&theta;</i> grows:
               a risk-averse player would push harder, as in <a href="#eq-section">the equilibrium below</a>.</figcaption>
           </figure>
@@ -130,8 +125,7 @@
               weighted toward the bigger pushes. Thin dark line: what actually happened.</figcaption>
           </figure>
         </div>
-        <p class="rnote">Because the map is affine, the first-order system stays a linear system in noise-states, with
-          the same filters: CARA fits the noise-state method without changing its machinery. Past
+        <p class="rnote">Because the map is affine, the first-order system stays a linear system in noise-states, with the same filters. Past
           <i>&theta;</i>*, when <i>I</i> &minus; <i>&theta;</i>&Sigma;<sup>1/2</sup><i>K</i>&Sigma;<sup>1/2</sup> stops being positive, the
           weighting has no average. These drawings hold the strategies at the risk-neutral equilibrium&rsquo;s; <a href="#eq-section">the
           equilibrium section</a> solves for risk-averse ones. Computed on 100 time cells; the belief matches player 1&rsquo;s own filter
@@ -143,8 +137,7 @@
         <p class="lede2">Chapter 1&rsquo;s appendix and the noisestate solver compute this weighting in different orders.
           The appendix looks first: each time the player sees something, it takes the player&rsquo;s updated belief and
           weights it by <i>e</i><sup><i>&theta;C</i></sup>, so the weighting is redone at every moment. The solver weights
-          first: it weights every outcome of the whole game once, then conditions on what the player has seen. Could
-          the two disagree? They cannot: by Bayes&rsquo; rule the two orders give the same weighted curve, so the
+          first: it weights every outcome of the whole game once, then conditions on what the player has seen. By Bayes&rsquo; rule the two orders give the same weighted curve, so the
           derivative that decides whether a plan is best comes out the same either way. Here are two shocks, one the
           player has seen and one still to come, correlated, with cost <i>C</i> = &frac12;(seen + to come)&sup2;.</p>
         <div class="rcontrols">
@@ -158,7 +151,7 @@
             <p class="rarrow">weight every outcome by <i>e</i><sup><i>&theta;C</i></sup></p>
             <div class="rstep"><svg id="r1b" role="img" aria-label="Both shocks, every outcome weighted by cost"></svg><span>weighted (not a belief)</span></div>
             <p class="rarrow">condition on what was seen (read along the line)</p>
-            <div class="rstep"><svg id="r1c" role="img" aria-label="The weighting read along the line of what was seen"></svg><span>weighted curve (not a belief)</span></div>
+            <div class="rstep"><svg id="r1c" role="img" aria-label="The weighting read along the line of what was seen"></svg><span>weighted curve</span></div>
           </div>
           <div class="route">
             <p class="rname">Look, then weight<small>the appendix: redone at each moment</small></p>
@@ -172,8 +165,7 @@
           <figcaption>In every panel the shock still to come runs across. In the squares the shock already seen runs up,
             and the dark line is its value; conditioning on it reads the square along that line. The two shocks are
             correlated, so what was seen moves the player&rsquo;s belief. The last panel draws both routes&rsquo; curves: they
-            are one curve. Its center (the circle) is the point at which a derivative of the cost is taken, the same
-            either way. In symbols: <i>e</i><sup><i>&theta;C</i>(<i>x</i>,<i>y</i>)</sup><i>p</i>(<i>x</i>, <i>y</i>) read at
+            are one curve. Its center (the circle) is the point at which a derivative of the cost is taken. In symbols: <i>e</i><sup><i>&theta;C</i>(<i>x</i>,<i>y</i>)</sup><i>p</i>(<i>x</i>, <i>y</i>) read at
             <i>x</i> = <i>x</i><sub>0</sub> is <i>e</i><sup><i>&theta;C</i>(<i>x</i><sub>0</sub>,<i>y</i>)</sup><i>p</i>(<i>y</i> | <i>x</i><sub>0</sub>),
             up to a constant. The prior is standard normal with correlation 0.6, and <i>&theta;</i>* = 1/3.2; near it the
             weighting spreads along the costly diagonal.</figcaption>
@@ -199,8 +191,7 @@
             <svg id="eq-costs" role="img" aria-label="Each player's entropic and expected cost against its risk aversion"></svg>
             <div class="legend" id="eq-costs-legend"></div>
             <figcaption>Each player&rsquo;s entropic cost rises with <i>&theta;</i> here. Its expected cost first
-              falls, a little, to its lowest near <i>&theta;</i> = 0.9: when both push harder, both gain on average, which
-              suggests the risk-neutral players each leave some of the pushing to the other. Far enough out, they over-insure, and at <i>&theta;</i> &asymp;
+              falls, a little, to its lowest near <i>&theta;</i> = 0.9: when both push harder, both gain on average. Far enough out, they over-insure, and at <i>&theta;</i> &asymp;
               3.04 the equilibrium breaks down. That is higher than <a href="#state">the tracking game&rsquo;s</a> <i>&theta;</i>* = 1.93: here the players push
               harder, damp the shocks, and so can bear more risk aversion.</figcaption>
           </figure>

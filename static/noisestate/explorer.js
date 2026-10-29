@@ -1641,7 +1641,7 @@ function renderResults(res) {
   }).join("");
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Equilibrium costs</h2><div class="cards">${cards}</div>
     <p class="caption">Expected losses at the equilibrium (${esc(costKind(res))}); smaller is better.${prevResult ? " Arrows: the change from the previous solve." : ""}${res.compare ? ` These are the ${esc(((PRESETS[game].compare || {}).mainLabel || "first").toLowerCase())} market's; the ${esc((res.compare.label || "compared").toLowerCase())} one's are in the next panel.` : ""}</p>
-    ${res.engine === "ch6-markov" ? `<p class="caption">The finite-state solution includes the full inventory tail. The response plots show the first ${fmt(res.reference.plot_extent, 1)} units of time; their right edge is a crop, not an end to the response.${res.params_used.gamma === 0 ? " At zero inventory cost, inventory is a random walk and carries no penalty; this is a different limit from a positive penalty on a stationary inventory." : ""}</p>` : ""}
+    ${res.engine === "ch6-markov" ? `<p class="caption">The finite-state solution includes the full inventory tail. The response plots show the first ${fmt(res.reference.plot_extent, 1)} units of time.${res.params_used.gamma === 0 ? " At zero inventory cost, inventory is a random walk and carries no penalty; this is a different limit from a positive penalty on a stationary inventory." : ""}</p>` : ""}
     ${res.warnings && res.warnings.length ? `<p class="caption" style="color:var(--warn)">${res.warnings.map(esc).join("<br>")}</p>` : ""}</section>`);
   if (res.kind === "transition") renderTransition(res, out);
   if (res.compare) renderCompare(res, out);
@@ -1905,7 +1905,7 @@ function renderSurface(res, out, names) {
   out.insertAdjacentHTML("beforeend", `<section class="panel"><h2>Response surface</h2>
     <div class="row"><label for="svar" class="small muted">Response of</label><select id="svar">${pairs.map(([nm, c], i) => `<option value="${i}">${esc(label(nm))} to ${esc(chLabel(res, c))}</option>`).join("")}</select></div>
     <div class="plot tall" id="psurf"></div>
-    <p class="caption">Each row is a date t, each column a shock time s: the color is how much a unit shock at s moves the quantity at t. Gray is where s is after t: a shock cannot move anything before it strikes, so there is nothing to show. Rows of the shock-response plots below are horizontal slices of this picture.${res.kind === "transition" ? " Columns left of s = 0 are the old regime's shocks." : ""} The color is on a square-root scale, so weak responses still show.</p></section>`);
+    <p class="caption">Each row is a date t, each column a shock time s: the color is how much a unit shock at s moves the quantity at t. Gray is where s is after t. Rows of the shock-response plots below are horizontal slices of this picture.${res.kind === "transition" ? " Columns left of s = 0 are the old regime's shocks." : ""} The color is on a square-root scale, so weak responses still show.</p></section>`);
   const draw = (i) => {
     const [nm, c] = pairs[i], rows = P.kernels[nm][c], M = P.times.length - 1, nb = P.band;
     const sgrid = Array.from({ length: nb + M }, (_, k) => (k - nb + 0.5) * P.h);
