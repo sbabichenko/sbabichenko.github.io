@@ -167,7 +167,7 @@
             items[j].em.textContent = life.perm[j] ? ` (market maker alone ${fmt(a * valueAt(life.perm[j], row.du, age))})` : "";
           }
         });
-        if (newest && life.s !== null) when.textContent = `this spike came at t = ${life.s.toFixed(2)}, in a game that ends at t = ${row.T}`;
+        if (newest && life.s !== null) when.textContent = `this spike came at t = ${life.s.toFixed(2)}`;
       });
     }
     return { draw, frame };
@@ -262,7 +262,6 @@
       bMany.setAttribute("aria-pressed", m === "many");
       oneControls.hidden = m !== "one";
       manyNote.hidden = m !== "many";
-      $("howto").hidden = m !== "one";
       rows.forEach((r) => r.frame(m === "many"));
       if (m === "many") { setPlay(false); spikes = []; tsec = 0; next = 0.2; wake(); }
       else drawOne();

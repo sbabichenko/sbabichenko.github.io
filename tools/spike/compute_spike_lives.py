@@ -170,7 +170,7 @@ def ch2():
 cached("delay", ch2)
 
 # Chapter 3: no clock; the life is a fixed shape in the spike's age
-cached("ch3", lambda: stationary("ch3", "No end", "The stationary game has no deadline: a spike's life is the same shape whenever it "
+cached("ch3", lambda: stationary("ch3", "No end", "A spike's life is the same shape whenever it "
                "happens. Player 1 undoes most of its own spike, player 2 helps, and the state returns all the way home.",
                both(ns.solve(longer(ns.example("ch3_two_player"), 6.0, 48)), "player1", [("X", "the state"), ("D2", "player 2's response")]),
                milestones=[peak("2 pushes back hardest", 1), first_below("half the spike is gone", 0, 0.5)]))
@@ -190,7 +190,7 @@ def ch4():
                   "story": "The spike is an extra order from trader 1, who then sells part of it back. The market "
                            "maker cannot tell any of it from informed trading, and its own update to trader 1's orders is the "
                            "dashed line. Trader 2's signal says the asset is now overpriced, so it sells too, and between them "
-                           "the price comes all the way back: the impact is temporary.",
+                           "the price comes all the way back.",
                   "y": ys, "perm": [Pp, None],
                   "marks": events([at("trader 2 sells at once", 0.0), first_below("half the jump is undone", 0, 0.5)], U, ys)})
 cached("ch4", ch4)
@@ -222,8 +222,7 @@ cached("ch4b", ch4b)
 from make_ch5_cycle_market import build
 cached("ch5", lambda: stationary("ch5", "A network", "Firm 0 places an unusual order with its supplier, firm 2, who sees the order "
                "book almost exactly and moves its price at once. Firm 1, the next firm around the cycle, sees firm 0's orders "
-               "only through a much noisier signal, and its price moves later and less: the spike travels around the "
-               "network, fading as it goes.",
+               "only through a much noisier signal, and its price moves later and less.",
                both(ns.solve(build(N=3)), "firm0", [("P2", "firm 2's price"), ("P1", "firm 1's price")]), control="o0",
                milestones=[at("firm 2 moves at once", 0.0), peak("firm 1 feels it most", 1)]))
 
@@ -260,8 +259,7 @@ def ch6():
     for g in np.round(np.arange(0.0, 0.1001, 0.02), 3):
         mixed = ns.solve(two(float(g)), **({"start_from": mixed.maps} if mixed is not None else {})).require_converged()
     stationary("ch6", "Who is watching",
-               "The market maker posts a quote that is too high for its plan. A trader privy to it knows the quote is a "
-               "deviation, not news, and sells a block of 2.5 into it at once. A naive trader, who sees the quote but not "
+               "The market maker posts a quote that is too high for its plan. A trader privy to it knows the quote is a " "deviation and sells a block of 2.5 into it at once. A naive trader, who sees the quote but not "
                "the order flow, reads it as noise traders buying and sells less than a third as much. Either way the market "
                "maker, knowing what it did, then quotes low to work off the inventory. Facing one of each, it takes both "
                "blocks at once, the privy trader's whole and the naive one's partial.",

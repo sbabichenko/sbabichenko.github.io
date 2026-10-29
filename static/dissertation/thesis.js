@@ -198,7 +198,7 @@
     zoom = document.createElement("div");
     zoom.className = "figzoom";
     zoom.setAttribute("role", "dialog"); zoom.setAttribute("aria-modal", "true");
-    zoom.innerHTML = `<div class="fz-bar"><span>${num ? num.textContent.trim().replace(/\.$/, "") + " · " : ""}drag to pan, pinch to zoom</span>`
+    zoom.innerHTML = `<div class="fz-bar"><span>${num ? num.textContent.trim().replace(/\.$/, "") : ""}</span>`
       + `<button type="button" aria-label="Close">&times;</button></div><div class="fz-scroll"></div>`;
     const big = document.createElement("img");
     big.src = img.currentSrc || img.src; big.alt = "";

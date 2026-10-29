@@ -358,8 +358,8 @@
 .gpanel { position: sticky; bottom: 0; z-index: 5; margin-top: 0.6rem; padding: 0.9rem 1.1rem; background: var(--ground) var(--paper-img) 0 var(--paper-y, 0px) / 768px 768px fixed; background-blend-mode: var(--patch-blend); border: 1px solid var(--rule);
   border-radius: 8px; box-shadow: 0 -10px 30px -22px rgba(0, 0, 0, 0.4); font-size: 0.98rem; }
 .gpanel .gp-body { overflow: auto; max-height: 38vh; }
-/* at rest, with nothing chosen, the panel sits below the map instead of over its bottom rows */
-.gpanel:not(.chosen) { position: static; }
+/* with nothing chosen there is no panel: the intro above the map says to tap a result */
+.gpanel:not(.chosen) { display: none; }
 .gpanel .gp-bar { display: none; align-items: baseline; gap: 1rem; font: 0.8rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); }
 .gpanel.chosen .gp-bar { display: flex; }
 .gpanel .gp-sum { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; visibility: hidden; }
@@ -370,7 +370,6 @@
 .gpanel.folded .gp-body { display: none; }
 .gpanel.folded .gp-sum { visibility: visible; color: var(--ink-2); }
 @media (max-width: 700px) { .gpanel { padding: 0.7rem 0.8rem; } .gpanel .gp-body { max-height: 36vh; } .gpanel .gp-stmt { max-height: none; } }
-.gpanel .gp-hint { margin: 0; color: var(--ink-3); font: 0.82rem ui-sans-serif, system-ui, sans-serif; }
 .gpanel .gp-head b { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
 .gpanel .gp-head em { float: right; font: 0.75rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-3); font-style: normal; }
 .gpanel p { margin: 0.4em 0 0; }

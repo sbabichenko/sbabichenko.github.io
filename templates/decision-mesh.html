@@ -80,8 +80,8 @@
 
       <p class="tries">Try giving <a href="#truth=hills&amp;flips=160">the hill and the pit more flips</a> and watch the mesh fill
         in around them; pick <a href="#truth=nothing&amp;flips=160">&ldquo;nothing at all&rdquo;</a>, which it leaves uncut at
-        any number of flips; pick <a href="#truth=drawing">&ldquo;your drawing&rdquo;</a> and paint on the odds (drag to
-        raise them, tick &ldquo;lower&rdquo; or hold shift to lower them).</p>
+        any number of flips; pick <a href="#truth=drawing">&ldquo;your drawing&rdquo;</a> and paint on the odds (hold
+        shift to lower them).</p>
     </div>
 
     <section class="gatehow" id="gatehow" data-engine="tri"
@@ -101,9 +101,8 @@
           <div class="step" data-scene="sites">
             <p>The odds of a coin vary over this square. <span data-v="sitesWord">Six thousand</span> sites each flip a
               coin about <span data-v="flipsWord">twenty</span> times. Each dot is one site&rsquo;s share of heads.</p>
-            <p class="small">Each coin also has an effect of its own on its log-odds, with the standard deviation set by
-              the slider above. Half the sites are held out: the estimator never sees them, and they are used to score the
-              fit at the end.</p>
+            <p class="small">Half the sites are held out: the estimator never sees them, and they are used to score the fit at
+              the end.</p>
           </div>
           <div class="step" data-scene="funnel">
             <p>For a binomial, the variance is determined by the mean. If you know a coin&rsquo;s odds, you know how much
@@ -120,8 +119,8 @@
               don&rsquo;t capture, which here is the coin effect.</p>
           </div>
           <div class="step" data-scene="coherent">
-            <p>So there are two kinds of overdispersion. <em>Coherent</em>: neighboring sites share it, and the surface
-              should change there. <em>Incoherent</em>: each site has its own, and no surface can fit it.</p>
+            <p>There are two kinds of overdispersion. <em>Coherent</em>: neighboring sites share it, and the surface
+              should change there. <em>Incoherent</em>: each site has its own.</p>
             <p class="small">An error in the surface is shared by neighbors, since they sit under the same part of it. The
               part the axes miss is specific to each site; anything in it that varied along the axes would belong to the
               surface. Against a flat surface the mean squared residual is <span data-v="dispFlat">&hellip;</span> and the
@@ -147,18 +146,15 @@
               toward zero, more strongly for deeper vertices, so fine corrections need more evidence than coarse ones.</p>
           </div>
           <div class="step" data-scene="score">
-            <p>Each round scores every candidate against the current fit: would a nonzero surplus there improve it? The
-              score is a weighted sum of the residuals of the sites under the candidate&rsquo;s tent.</p>
-            <p class="small">Blue means the data pull the surface up there, orange means down; larger dots are larger
-              scores. Round 0 scored <span data-v="M0">&hellip;</span> candidates. Over the whole run,
+            <p>Each round scores every candidate against the current fit. The score is a weighted sum of the residuals of the sites under the candidate&rsquo;s tent.</p>
+            <p class="small">Round 0 scored <span data-v="M0">&hellip;</span> candidates. Over the whole run,
               <span data-v="unscoreable">some</span> more had too few sites under them to be scored.</p>
           </div>
           <div class="step" data-scene="corrections">
-            <p>The raw score is biased, and three corrections are applied. First, each residual is <em>centered</em>:
+            <p>The raw score is biased. Each residual is <em>centered</em>:
               shrinkage and the discreteness of the counts give it a nonzero mean even when the surface is right.</p>
-            <p class="small">Second, the part of the candidate&rsquo;s tent that the existing coefficients could absorb is
-              removed (a first-order refit), so a candidate isn&rsquo;t credited for a slope its parents could fit. Third,
-              the bias from the prior&rsquo;s shrinkage is removed. Dividing by the standard deviation gives the
+            <p class="small">The part of the candidate&rsquo;s tent that the existing coefficients could absorb is
+              removed (a first-order refit), so a candidate isn&rsquo;t credited for a slope its parents could fit. The bias from the prior&rsquo;s shrinkage is removed. Dividing by the standard deviation gives the
               candidate&rsquo;s <i>z</i>.</p>
           </div>
           <div class="step" data-scene="family">
@@ -166,8 +162,7 @@
               single bell curve, the null.</p>
             <p class="small">Lindsey&rsquo;s method fits the density of the scores and estimates the null from its
               center, so a round whose scores are shifted or spread out is compared with its own null rather than
-              N(0,&nbsp;1). The null can come out wider than the sharp peak of the bars, which is right, since many null
-              scores really are that spread out. Here the null has center <span data-v="nullMean">&hellip;</span> and spread
+              N(0,&nbsp;1). The null can come out wider than the sharp peak of the bars. Here the null has center <span data-v="nullMean">&hellip;</span> and spread
               <span data-v="nullSd">&hellip;</span>, and <span data-v="pi0">&hellip;</span> of candidates are estimated to
               be noise.<span data-v="capnote"></span></p>
           </div>
@@ -196,7 +191,7 @@
               posterior variance keeps a depth&rsquo;s variance from getting stuck at its floor.</p>
           </div>
           <div class="step" data-scene="done">
-            <p>The final surface is flat where the data show nothing and refined where they show a pattern.</p>
+            
             <p class="small">On the held-out half: <span data-v="heldout">&hellip;</span>. (A site&rsquo;s deviance is
               twice the log of how much likelier its flips are under its own share of heads than under the fit: zero only for a
               perfect match.) Changing any setting above
@@ -214,8 +209,7 @@
           <a href="https://github.com/sbabichenko/rectangular-decision-mesh">rectangular-decision-mesh</a> compiled to
           WebAssembly. The scores, nulls, false discovery rates, admissions and variances drawn here are the
           engine&rsquo;s own, from a trace of each round&rsquo;s candidates; the trace is the builds&rsquo; one addition,
-          and it changes nothing the fit computes. The fifth drawing is a one-dimensional sketch of the corrections, not
-          the run.</p>
+          and it changes nothing the fit computes. The fifth drawing is a one-dimensional sketch of the corrections.</p>
       </div>
     </section>
     <a class="skip-pill" href="#why" data-from="#story">Skip past the story</a>
@@ -292,8 +286,7 @@
             estimates the share &pi;<sub>0</sub> that are noise, and admits the candidates that stand out from that null
             at a controlled false-discovery rate. When the scores have no central peak to read a null from, it falls
             back to the textbook one. <span id="coinnote">Each coin also has an effect of its own on the log-odds, and the coin variance is
-            the estimator’s estimate of their spread, fitted alongside the surface. As the mesh learns the odds, what it
-            can’t explain shrinks toward the spread the slider set.</span><span id="sitenote" hidden>Each site also has an
+            the estimator’s estimate of their spread, fitted alongside the surface. </span><span id="sitenote" hidden>Each site also has an
             effect of its own on the log-odds, and the site variance is the estimator’s estimate of their spread, fitted
             alongside the surface.</span></p>
         </section>
