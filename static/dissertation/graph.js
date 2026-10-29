@@ -13,10 +13,16 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const SHORT = { assumption: "Asm", definition: "Def", lemma: "Lem", proposition: "Prop", theorem: "Thm", corollary: "Cor", conjecture: "Conj" };
   const short = (n) => n.kind === "equation" ? n.label.replace(/^Equation\s*/, "") : `${SHORT[n.kind] || n.kind} ${n.label.split(" ").pop()}`;
-  // the chapter pages, fetched once: statements and equations are shown as they are typeset there
-  const pages = new Map();
+  // the chapter pages: statements and equations are shown as they are typeset there. A parsed chapter is tens of
+  // thousands of elements, so it is let go half a minute after its last use (asked again, it comes from the cache).
+  // Its pictures are dropped before it is parsed: no statement or proof holds one, and a parsed picture kept the
+  // whole page in memory after it was let go.
+  const pages = new Map(), letGo = new Map();
   const page = (slug) => {
-    if (!pages.has(slug)) pages.set(slug, fetch(`${BASE}${slug}/`).then((r) => r.text()).then((t) => new DOMParser().parseFromString(t, "text/html")));
+    if (!pages.has(slug)) pages.set(slug, fetch(`${BASE}${slug}/`).then((r) => r.text())
+      .then((t) => new DOMParser().parseFromString(t.replace(/<picture[\s\S]*?<\/picture>|<img\b[^>]*>/g, ""), "text/html")));
+    clearTimeout(letGo.get(slug));
+    letGo.set(slug, setTimeout(() => { pages.delete(slug); letGo.delete(slug); }, 30000));
     return pages.get(slug);
   };
 

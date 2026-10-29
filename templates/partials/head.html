@@ -58,19 +58,8 @@
   paginator.current_index == 1) %}
   <!-- Avatar: not preloaded; the home page (projects.html) does not show the theme's profile avatar -->
 
-  <!-- Social List -->
-  {% if config.extra.profile.social and section.path == "/" and (paginator is undefined or
-  paginator.current_index == 1) %}
-  <!---->
-  {% for social in config.extra.profile.social %}
-  <link rel="preload" as="image" href="{{ get_url(path="icons/" ~ social.name ~ ".svg") | default(value="https://cdn.jsdelivr.net/npm/simple-icons/icons/" ~ social.name ~ ".svg") }}" />  {% endfor %}
   <!---->
   {% endif %}
-  <!---->
-  {% endif %}
-
-  <!-- Dark Icon -->
-  <link rel="preload" as="image" href="{{ get_url(path=`icons/theme.svg`) }}" />
 
   <!-- Math -->
   {%- set wants_math = config.extra.math %}

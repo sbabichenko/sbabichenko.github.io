@@ -123,10 +123,10 @@
   .home *, .home *::before { transition: none !important; animation: none !important; }
 }
 
-/* the social icons are the theme's black SVGs: inverted in dark, dimmed until hover */
-.home .social img { opacity: 0.62; transition: opacity 0.15s; }
-.dark .home .social img { filter: invert(1); }
-.home .social a:hover img { opacity: 1; }
+/* the social icons: black (white in dark), dimmed until hover */
+.home .social svg { color: #000; opacity: 0.62; transition: opacity 0.15s; }
+.dark .home .social svg { color: #fff; }
+.home .social a:hover svg { opacity: 1; }
 /* the card pictures come in a light and a dark version; as specific as ".home .demo .shot img", which sets them
    display: block and would otherwise show both (only the first fits the frame, so dark mode showed the light one) */
 .home .img-dark, .home .demo .shot img.img-dark { display: none; }
@@ -179,6 +179,12 @@
 .home .hero .geom svg { fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linejoin: round; }
 .home .hero .geom:hover { opacity: 1; color: var(--accent); background: color-mix(in srgb, currentColor 6%, transparent); }
 .home .hero .geom:active { background: color-mix(in srgb, currentColor 11%, transparent); }
+/* the hint is one line the script rewrites (heroink.js): it fades out, changes, and fades back in */
+.home .hero .poke span { transition: opacity 0.3s; }
+.home .hero .poke.swap span { opacity: 0; }
+.home .hero .poke.lit { opacity: 0.85; }
+.home .hero .poke.named span { pointer-events: auto; cursor: pointer; }
+.home .hero .poke.named span:hover { color: var(--accent); }
 /* touch-only and mouse-only wording: two spans, one shown. Touch needs both a coarse pointer and no hover, so a browser
    that is unsure (a touchscreen laptop, a locked-down work browser) gets the mouse wording, and never both */
 .home .for-touch { display: none; }

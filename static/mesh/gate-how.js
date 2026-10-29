@@ -16,8 +16,10 @@
 
   // ------------------------------------------------------------------ helpers
   // a canvas given as an attribute (an image's href) is encoded off the main thread (toBlob) and set when ready
+  // (each picture's URL is let go when the story is rebuilt, or the old pictures would stay in memory)
+  let blobs = [];
   const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag);
-    for (const [k, v] of Object.entries(attrs || {})) if (v instanceof HTMLCanvasElement) v.toBlob((b) => b && n.setAttribute(k, URL.createObjectURL(b))); else n.setAttribute(k, v);
+    for (const [k, v] of Object.entries(attrs || {})) if (v instanceof HTMLCanvasElement) v.toBlob((b) => { if (!b || !n.isConnected) return; const u = URL.createObjectURL(b); blobs.push(u); n.setAttribute(k, u); }); else n.setAttribute(k, v);
     if (parent) parent.appendChild(n); return n; };
   const pencil = (pts, seed, wob = 0.6) => Sketch.pencil(pts, seed, wob);
   const fmt = (v, d = 2) => (Math.abs(v) < 0.005 && d <= 2 ? "0" : v.toFixed(d)).replace("-", "−");
@@ -218,11 +220,26 @@
   }
 
   // ------------------------------------------------------------------ the scenes, built from one run
-  let scenes = {}, active = null, prog = 0, run = null;
-  const group = (name) => { const g = el("g", { "data-scene": name }, svg); g.style.opacity = 0; g.style.transition = "opacity 0.6s"; return g; };
+  // A scene is drawn the first time it is needed, or in idle time before that, one a turn: drawn all at once they
+  // held the page for a third of a second on a phone. Each has its place in the drawing's order from the start.
+  let scenes = {}, active = null, prog = 0, run = null, slot = null, built = 0;
+  const group = (name) => {
+    if (slot && slot.dataset.scene === name) { const g = slot; slot = null; return g; }
+    const g = el("g", { "data-scene": name }, svg); g.style.opacity = 0; g.style.transition = "opacity 0.6s"; return g;
+  };
+  const idle = window.requestIdleCallback || ((f) => setTimeout(f, 50));
+  function scene(name, make) {
+    const g = group(name), gen = built;
+    let sc = null;
+    Object.defineProperty(scenes, name, { enumerable: true, get() { if (!sc) { slot = g; sc = make(); slot = null; } return sc; } });
+    const early = () => { if (gen !== built) return; if (sc) return; scenes[name]; };
+    idle(early, { timeout: 4000 });
+  }
 
   function build(data, fit) {
-    svg.textContent = ""; scenes = {};
+    svg.textContent = ""; scenes = {}; ++built;
+    for (const u of blobs) URL.revokeObjectURL(u);
+    blobs = [];
     inks();
     const D = fit.detail, cands = D.cands, rounds = [...new Set(cands.map((c) => c.round))].sort((a, b) => a - b);
     // A triangle-mesh location can hold a coarse and a fine vertex (the two-node hierarchy), and the worker's trace keys
@@ -252,7 +269,7 @@
     const predicted = Array.from(data.x, (_, i) => { const p = expit(fitLogit(data.x[i], data.y[i])); return 1 + (data.n[i] - 1) * p * (1 - p) * fit.poolVariance; }).reduce((a, b) => a + b, 0) / data.x.length;
 
     // 1. the sites ----------------------------------------------------------------------------------------------
-    scenes.sites = (() => {
+    scene("sites", () => {
       const g = group("sites");
       const c = document.createElement("canvas"), N = 440; c.width = c.height = N * 2;
       const ctx = c.getContext("2d");
@@ -268,10 +285,10 @@
       const leg = el("g", {}, g);
       [["more heads than usual", "pos"], ["fewer", "neg"]].forEach(([s, cls], i) => { el("circle", { cx: SQ.x + 6 + i * 170, cy: SQ.y + SQ.s + 22, r: 5, class: cls }, leg); text(leg, SQ.x + 16 + i * 170, SQ.y + SQ.s + 26, s, "tiny", "start"); });
       return { g, update(t) { fade(img, seg(t, 0, 0.15)); truth.style.opacity = 0.9 * seg(t, 0.55, 0.8); fade(leg, seg(t, 0.1, 0.25) * (1 - seg(t, 0.55, 0.7))); } };
-    })();
+    });
 
     // 1b. the funnel: how far a binomial may stray is known from its mean ---------------------------------------
-    scenes.funnel = (() => {
+    scene("funnel", () => {
       const g = group("funnel");
       const B = { x: 80, y: 110, w: 440, h: 360 }, nmin = Math.min(...data.n), nmax = Math.max(...data.n), ymax = 1.1;
       const X = (n) => B.x + ((n - nmin) / (nmax - nmin + 1)) * B.w, Y = (v) => B.y + B.h / 2 - (v / ymax) * (B.h / 2);
@@ -293,12 +310,12 @@
       const lab = text(g, B.x + 6, B.y + B.h - 10, "a binomial stays between the lines 95% of the time", "label warmt halo", "start");
       const cap = text(g, 300, B.y + B.h + 50, `outside: ${pct(outside)} of sites, not 5%; mean squared residual ${disp(zFit).toFixed(2)}, not 1`, "mono");
       return { g, update(t) { fade(img, seg(t, 0, 0.2)); up.set(seg(t, 0.25, 0.5)); dn.set(seg(t, 0.25, 0.5)); fade(lab, seg(t, 0.45, 0.6)); fade(cap, seg(t, 0.6, 0.75)); } };
-    })();
+    });
 
     // 1b'. a wrong mean shows up as variance, whichever way the mean is missed ----------------------------------
     // A site's miss is its true log-odds less the fitted: the fitted surface missing the true surface, plus the
     // coin's own effect, the part of its odds the two axes don't describe. Both are known here, since the page drew them.
-    scenes.wrongmean = (() => {
+    scene("wrongmean", () => {
       const g = group("wrongmean");
       const tf = data.tf;
       const zTrue = resid(tf);
@@ -357,10 +374,10 @@
         const n = Math.floor(seg(t, 0.32, 0.55) * d0.length); d0.forEach((d, i) => fade(d, i < n ? 1 : 0));
         dF.forEach((d) => fade(d, seg(t, 0.55, 0.65))); dT.forEach((d) => fade(d, seg(t, 0.68, 0.78))); fade(leg, seg(t, 0.3, 0.4));
       } };
-    })();
+    });
 
     // 1c. two kinds of excess: shared by neighbors, or each site's own ------------------------------------------
-    scenes.coherent = (() => {
+    scene("coherent", () => {
       const g = group("coherent");
       const w = 250, gap = 20, x0 = 300 - w - gap / 2, x1 = 300 + gap / 2, y0 = 150;
       const map = (z) => {
@@ -379,10 +396,10 @@
       text(Bg, x1 + w / 2, y0 + w + 56, `the coin variance alone predicts ${predicted.toFixed(2)}`, "tiny");
       const cap = text(g, 300, y0 + w + 96, "each dot: (heads − n p) / √(n p (1 − p)), blue above, orange below", "tiny");
       return { g, update(t) { fade(A, seg(t, 0, 0.2)); fade(Bg, seg(t, 0.35, 0.55)); fade(cap, seg(t, 0.55, 0.7)); } };
-    })();
+    });
 
     // 2. the coarse mesh: round 0's candidate segments are the edges the fit starts with ---------------------------
-    scenes.coarse = (() => {
+    scene("coarse", () => {
       const g = group("coarse");
       frame(g, "round 0: the segments a candidate could split");
       const segs = r0.filter((c) => c.seg);
@@ -398,10 +415,10 @@
         dots.forEach((d) => fade(d, seg(t, 0.35, 0.5)));
         mids.forEach((m) => fade(m, seg(t, 0.5, 0.7))); fade(cap, seg(t, 0.55, 0.75));
       } };
-    })();
+    });
 
     // 3. surplus: one segment in profile --------------------------------------------------------------------------
-    scenes.surplus = (() => {
+    scene("surplus", () => {
       const g = group("surplus");
       const X0 = 110, X1 = 490, XM = 300, base = 430, h0 = 190, h1 = 270, hm = (h0 + h1) / 2, s = 120;
       line(g, 70, base, 530, base, "soft", 1);
@@ -423,10 +440,10 @@
         const d = `M${X0},${base - h0} L${XM},${ym} L${X1},${base - h1}`;
         tentl.setAttribute("d", d); tent.setAttribute("d", d + " Z"); fade(tentl, seg(t, 0.5, 0.65)); fade(tent, seg(t, 0.55, 0.7));
       } };
-    })();
+    });
 
     // 4. the scores of round 0 on the square ------------------------------------------------------------------------
-    scenes.score = (() => {
+    scene("score", () => {
       const g = group("score");
       frame(g, `round 0: ${r0.length} candidates, sized by |z|`);
       const segs = el("g", {}, g);
@@ -441,10 +458,10 @@
         dots.forEach((d, i) => fade(d, i < n ? 1 : 0));
         fade(lab, seg(t, 0.6, 0.75));
       } };
-    })();
+    });
 
     // 5. the corrections, sketched in one dimension ---------------------------------------------------------------
-    scenes.corrections = (() => {
+    scene("corrections", () => {
       const g = group("corrections");
       const r = mulberry32(5), n = 36, U = [], R = [], E = [];
       for (let i = 0; i < n; ++i) { const u = (i + 0.5) / n; U.push(u); E.push(0.18 + 0.1 * Math.sin(7 * u)); R.push(0.55 * (u - 0.5) + 0.6 * Math.max(0, 1 - Math.abs(2 * u - 1)) - 0.25 + E[i] + 0.22 * gauss(r)); }
@@ -484,7 +501,7 @@
         lb.forEach((l, i) => fade(l, seg(t, 0.38 + i * 0.1, 0.48 + i * 0.1)));
         fade(C, seg(t, 0.7, 0.85)); fade(zl, seg(t, 0.75, 0.9)); fade(cap, seg(t, 0.2, 0.3));
       } };
-    })();
+    });
 
     // histogram of a round's scores, with the textbook null and the round's own
     function histogram(g, zs, c, box, opts = {}) {
@@ -504,7 +521,7 @@
     }
 
     // 6. the family: round 0's scores and its null ---------------------------------------------------------------
-    scenes.family = (() => {
+    scene("family", () => {
       const g = group("family");
       text(g, 70, 90, `round 0: ${r0.length} scores`, "mono", "start");
       const H = histogram(g, r0, cal0, { x: 70, y: 120, w: 460, h: 300 });
@@ -531,7 +548,7 @@
         if (H.own) fade(H.own, seg(t, 0.5, 0.65)); fade(l2, seg(t, 0.5, 0.65));
         fade(l4, seg(t, 0.65, 0.8));
       } };
-    })();
+    });
 
     // 7. lfdr, best first, and the running mean -------------------------------------------------------------------
     // The cutoff q sweeps slowly while the scene is on screen (reduced motion: the live fit's q, still), and the run it
@@ -542,7 +559,7 @@
     const QLO = 0.03, QHI = 0.4, QPER = 14;   // the sweep: 3% to 40% and back, evenly in log q, every 14 s
     const u0 = clamp(Math.log(qLive / QLO) / Math.log(QHI / QLO)), ph0 = Math.acos(1 - 2 * u0);
     const qAt = (s) => QLO * Math.pow(QHI / QLO, (1 - Math.cos(ph0 + (2 * Math.PI * s) / QPER)) / 2);
-    scenes.lfdr = (() => {
+    scene("lfdr", () => {
       const g = group("lfdr");
       const K = Math.min(byL.length, Math.max(40, Math.min(110, runOf(QHI) + 12))), x0 = 70, w = 460, y0 = 130, h = 330, bw = w / K;
       text(g, x0, 100, `round 0, best ${K} of ${byL.length} candidates by lfdr`, "mono", "start");
@@ -585,13 +602,13 @@
         show(s == null ? qLive : qAt(s));
         return s != null;
       } };
-    })();
+    });
 
     // 8. admission: round 0's selections, admitted or turned back -----------------------------------------------------
     // Time-driven while it is on screen: the selections are taken best first, each lighting the segment it splits,
     // then the new lines grow from its midpoint (the closure's a beat later, one step of the chain at a time), then
     // its dot, or a cross if re-scoring turned it back. The first few go slowly; the rest at about four a second.
-    scenes.admit = (() => {
+    scene("admit", () => {
       const g = group("admit");
       const sel = r0.filter((c) => c.selected).sort((a, b) => a.lfdr - b.lfdr || Math.abs(b.z) - Math.abs(a.z));
       el("rect", { x: SQ.x, y: SQ.y, width: SQ.s, height: SQ.s, class: "frame" }, g);
@@ -665,10 +682,10 @@
         fade(cap, (now - END) / 0.8);
         return now < END + 1.6;
       } };
-    })();
+    });
 
     // 9. the rounds, side by side ------------------------------------------------------------------------------------
-    scenes.rounds = (() => {
+    scene("rounds", () => {
       const g = group("rounds");
       const R = rounds.slice(0, 6), cols = R.length > 3 ? 3 : R.length, rows = Math.ceil(R.length / cols);
       const cw = 460 / cols, ch = rows > 1 ? 190 : 300, panels = [];
@@ -686,10 +703,10 @@
       });
       const cap = text(g, 300, 588, "bars: the scores; dashed: N(0, 1); blue: the round's own null", "tiny");
       return { g, update(t) { panels.forEach((p, i) => fade(p, seg(t, i * 0.1, i * 0.1 + 0.15))); fade(cap, seg(t, 0.5, 0.65)); } };
-    })();
+    });
 
     // 10. the two variances ------------------------------------------------------------------------------------
-    scenes.variance = (() => {
+    scene("variance", () => {
       const g = group("variance");
       // pool variance by round
       const pv = fit.rounds.map((r) => r.poolVariance).concat([fit.poolVariance]), truth = data.sd * data.sd;
@@ -724,10 +741,10 @@
         fade(a, seg(t, 0, 0.1)); pl.set(seg(t, 0.05, 0.4)); pd.forEach((d, i) => fade(d, seg(t, 0.05 + (0.35 * i) / pd.length, 0.1 + (0.35 * i) / pd.length)));
         fade(b, seg(t, 0.35, 0.45)); dots.forEach((d) => fade(d, seg(t, 0.45, 0.6))); bands.forEach((d) => fade(d, seg(t, 0.6, 0.75))); fade(cap, seg(t, 0.65, 0.8));
       } };
-    })();
+    });
 
     // 11. the fit, against the odds -------------------------------------------------------------------------------
-    scenes.done = (() => {
+    scene("done", () => {
       const g = group("done");
       const surf = (x, y) => fitLogit(x, y) - BASE;
       const w = 250, gap = 20, x0 = 300 - w - gap / 2, x1 = 300 + gap / 2, y0 = 150;
@@ -741,7 +758,7 @@
       Object.assign(SQ, saved);
       text(g, x0, y0 - 12, "the odds", "mono", "start"); text(g, x1, y0 - 12, "the fit, with its mesh", "mono", "start");
       return { g, update(t) { fade(fitImg, seg(t, 0.05, 0.25)); fade(ml, seg(t, 0.25, 0.45)); dots.forEach((d) => fade(d, seg(t, 0.35, 0.5))); } };
-    })();
+    });
 
     // the numbers in the text
     const setV = (k, s) => root.querySelectorAll(`[data-v="${k}"]`).forEach((n) => { n.textContent = s; });
@@ -829,7 +846,7 @@
       shown = active && steps.indexOf(best) > steps.indexOf(active) ? 0 : prog; lastDraw = null;
       active = best; clock = 0; lastNow = null;     // a scene that moves by itself starts over each time it is reached
       for (const s of steps) s.classList.toggle("on", s === best);
-      for (const [name, sc] of Object.entries(scenes)) sc.g.style.opacity = name === best.dataset.scene ? 1 : 0;
+      for (const g of svg.querySelectorAll(":scope > g[data-scene]")) g.style.opacity = g.dataset.scene === best.dataset.scene ? 1 : 0;
     }
     queueDraw();
   }

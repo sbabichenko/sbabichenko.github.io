@@ -12,7 +12,13 @@ window.Sketch = (() => {
   const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
   const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
   const seg = (t, a, b) => ease(clamp((t - a) / (b - a)));   // 0 before a, 1 after b
-  const fade = (n, t) => { n.style.opacity = clamp(t); };
+  // the drawings call these every frame with mostly unchanged values; a value already set is not set again, so the
+  // browser is not asked to restyle anything that did not change (unless a page set it some other way meanwhile)
+  const fade = (n, t) => {
+    t = clamp(t);
+    if (n._op === t && n.style.opacity === n._opSeen) return;
+    n.style.opacity = t; n._op = t; n._opSeen = n.style.opacity;
+  };
   // A one-shot motion: once the step's progress passes `at` it plays over `dur` seconds whatever the scroll speed, and
   // runs back if the reader scrolls above `at` again. With reduced motion it jumps to where it is headed. step(t, dt)
   // returns 0..1, not eased.
@@ -37,7 +43,12 @@ window.Sketch = (() => {
     const a = el("path", { d, class: "pencil " + (cls || ""), "stroke-width": width }, g);
     const len = a.getTotalLength() || 1;
     a.style.strokeDasharray = `${len} ${len}`; a.style.strokeDashoffset = len;
-    return { a, set(t) { a.style.strokeDashoffset = len * (1 - clamp(t)); } };
+    let was = null, seen = null;
+    return { a, set(t) {
+      const o = len * (1 - clamp(t));
+      if (o === was && a.style.strokeDashoffset === seen) return;
+      a.style.strokeDashoffset = o; was = o; seen = a.style.strokeDashoffset;
+    } };
   }
   // the same line drawn twice, the second faint and a hair off (dx, dy), as a pencil goes over its own stroke
   function stroke2(g, d, cls, w, base, dx, dy) {
@@ -45,7 +56,12 @@ window.Sketch = (() => {
     const b = el("path", { d, class: base + " soft " + (cls || ""), "stroke-width": w * 0.6, transform: `translate(${dx},${dy})` }, g);
     const len = a.getTotalLength();
     for (const p of [a, b]) { p.style.strokeDasharray = `${len} ${len}`; p.style.strokeDashoffset = len; }
-    return { a, b, len, set(t) { const o = len * (1 - clamp(t)); a.style.strokeDashoffset = o; b.style.strokeDashoffset = o; } };
+    let was = null, seen = null;
+    return { a, b, len, set(t) {
+      const o = len * (1 - clamp(t));
+      if (o === was && a.style.strokeDashoffset === seen && b.style.strokeDashoffset === seen) return;
+      a.style.strokeDashoffset = o; b.style.strokeDashoffset = o; was = o; seen = a.style.strokeDashoffset;
+    } };
   }
   const line = (g, x1, y1, x2, y2, cls, w = 1) => el("line", { x1, y1, x2, y2, class: "pencil " + (cls || ""), "stroke-width": w }, g);
   const poly = (pts) => "M" + pts.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" L");
