@@ -562,7 +562,7 @@
     ctx.lineWidth = L.lw;
     ctx.lineCap = "round";
     pxPerUnit = G.side / (HI - LO) / dpr;
-    const lensR = 150 * dpr, lensOn = pointer && now - lensAt < 2500 ? 1 - Math.max(0, (now - lensAt - 1500) / 1000) : 0;
+    const lensR = 55 * dpr, lensOn = pointer && now - lensAt < 2500 ? 1 - Math.max(0, (now - lensAt - 1500) / 1000) : 0;
     // the vignette is per edge, not a CSS mask: a clipped mask cuts lines off square, this fades them
     const edge = (e, t) => {
       const s = statOf(e);
@@ -575,7 +575,8 @@
       const age = (now - t) / 2000;                       // a new cut glows, then settles
       const fresh = age < 1 ? 1 - age : 0;
       const a = L.K * fade * v + L.KL * lens * band * band;
-      const glowing = fresh > 0.02 || lens > 0.05, al = glowing ? a + 0.55 * Math.max(fresh * v, lens * 0.6) * L.KG : a;
+      // only new cuts glow in the accent; under the pointer the lines just darken in their own ink
+      const glowing = fresh > 0.02, al = glowing ? a + 0.55 * fresh * v * L.KG : a;
       if (s.off || al < INK) return;                      // no ink on the canvas either way
       ctx.strokeStyle = glowing ? `rgba(${glow},${al})` : `rgba(${L.base},${al})`;
       ctx.beginPath();

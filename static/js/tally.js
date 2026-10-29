@@ -14,7 +14,7 @@
     const t = read(), parts = [];
     for (const k of ["solve", "fit", "grow"]) if (t[k]) parts.push(`<b>${t[k].toLocaleString()}</b> ${words[k][t[k] === 1 ? 0 : 1]}`);
     const last = t.last ? ` Last: ${t.last.replace(/[<&]/g, "")}.` : "";
-    el.innerHTML = parts.length ? `This visit, on your machine: ${parts.join(", ")}.${last}` : "Nothing computed yet this visit.";
+    el.innerHTML = parts.length ? `This visit, on your machine: ${parts.join(", ")}.${last}` : "";   // nothing until something has been computed
   }
   window.siteTally = function (kind, n, note) {
     const t = read(); t[kind] = (t[kind] || 0) + (n || 1); if (note) t.last = note; write(t); render();

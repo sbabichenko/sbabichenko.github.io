@@ -72,8 +72,17 @@
 .home h2 {
   font-family: Newsreader, "Iowan Old Style", Georgia, serif;
   font-size: 1.05rem; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--ink-3); margin: 0 0 1.5rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--rule);
-  display: flex; align-items: baseline; gap: 0.75rem;
+  color: var(--ink-3); margin: 0 0 1.5rem; padding-bottom: 0.6rem;
+  display: flex; align-items: baseline; gap: 0.75rem; position: relative;
+}
+/* the rule under the heading is a pencil line across the page: a tile of graphite grain (images/rule-grain.svg),
+   repeated so it looks the same at any width, fading in at the start and out over the last third */
+.home h2::after {
+  content: ""; position: absolute; left: -2px; right: 0; top: calc(100% - 0.7rem); height: 5.3px; background: var(--ink-3); opacity: 0.8;
+  -webkit-mask: url(../images/rule-grain.svg) 0 0 / 5.5rem 100% repeat-x, linear-gradient(to right, transparent, #000 1.5%, #000 70%, transparent);
+  -webkit-mask-composite: source-in;
+  mask: url(../images/rule-grain.svg) 0 0 / 5.5rem 100% repeat-x, linear-gradient(to right, transparent, #000 1.5%, #000 70%, transparent);
+  mask-composite: intersect;
 }
 
 /* ---------------------------------------------------------------- the two demos */
@@ -83,8 +92,8 @@
   display: flex; flex-direction: column; border: 1px solid var(--rule); border-radius: 14px;
   overflow: hidden; background: var(--card); transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
 }
-.home .demo:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07); }
-.dark .home .demo:hover { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+/* no lift shadow: it would trace the box's rectangle, while each card's frame is drawn by hand */
+.home .demo:hover { border-color: var(--accent); transform: translateY(-3px); }
 .home .demo .shot { aspect-ratio: 2 / 1; overflow: hidden; border-bottom: 1px solid var(--rule); background: var(--rule-2); }
 .home .demo .shot img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease; }
 .home .demo:hover .shot img { transform: scale(1.04); }
