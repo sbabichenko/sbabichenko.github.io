@@ -52,7 +52,7 @@
     fold.type = "button";
     fold.setAttribute("aria-expanded", "true");
     bar.appendChild(fold);
-    const body = el("div", "gp-body", '<p class="gp-hint">Tap a result.</p>');
+    const body = el("div", "gp-body");
     panel.append(bar, body);
     out.append(controls, wrap, panel);
     fold.addEventListener("click", () => {
@@ -135,7 +135,7 @@
       cols.classList.toggle("focused", !!selected);
       draw();
       panel.classList.toggle("chosen", !!selected);
-      if (!selected) { body.innerHTML = '<p class="gp-hint">Tap a result.</p>'; history.replaceState(null, "", location.pathname); return; }
+      if (!selected) { body.innerHTML = ""; history.replaceState(null, "", location.pathname); return; }
       history.replaceState(null, "", "#focus=" + encodeURIComponent(selected));
       const n = byId.get(selected);
       const count = (s, one, many) => `${s.size} ${s.size === 1 ? one : many}`;

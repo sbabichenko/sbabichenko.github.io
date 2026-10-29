@@ -16,8 +16,7 @@
         <p class="eyebrow"><a href="{{ get_url(path='') }}#projects">Projects</a> &middot; <a href="{{ get_url(path='decisionmesh/') }}">Decision Mesh</a> &middot; in detail</p>
         <h1>The Decision Mesh, in Detail</h1>
         <p class="lede">The <a href="{{ get_url(path='decisionmesh/') }}#how">illustrated gate</a> follows one fit from start to
-          finish. This page goes one level down: how a triangle is split, how a height is stored, where a candidate&rsquo;s
-          score and its <i>z</i> come from, how the null is fitted, how candidates are admitted, and when the fit stops.
+          finish. This page goes one level down.
           Both estimators run in your browser on coin flips drawn on this page.</p>
         <div class="howbar">
           <label>The odds <select id="truth"><option value="peaks" selected>Three peaks</option><option value="hills">A hill and a pit</option><option value="ring">A ring</option></select></label>
@@ -36,8 +35,7 @@
               its longest edge. Both halves are right triangles again, and each half&rsquo;s longest edge is one of the old
               triangle&rsquo;s short edges.</p>
             <p class="small">A vertex asked for in the middle of a short edge forces the triangle to split its long edge
-              first, and that split can force a neighbor in turn. This chain is the <em>conformity closure</em>: it keeps
-              every vertex at a corner of each triangle around it, never in the middle of an edge. The run starts from the
+              first, and that split can force a neighbor in turn. This chain is the <em>conformity closure</em>: it keeps every vertex at a corner of each triangle around it. The run starts from the
               square cut along one diagonal and split evenly to <span data-v="faces0">&hellip;</span> faces. The drawing
               then asks for five splits near the run&rsquo;s deepest vertex, with the engine&rsquo;s rule computed on this
               page; the <span class="warmword">orange</span> vertices are the ones the closure added, <span data-v="forced">&hellip;</span> in all. A vertex
@@ -51,7 +49,7 @@
             <p class="small">Changing one surplus moves that vertex and everything finer built on it. The surface changes by
               the surplus times a <em>tent</em>: a function that is 1 at the vertex and falls linearly to 0 at the
               neighboring vertices of its level. Level by level, the tents add up to the whole surface, and on a smooth
-              surface the deep surpluses are small. That is why a prior can pull each surplus toward zero. This drawing is a
+              surface the deep surpluses are small. A prior can pull each surplus toward zero. This drawing is a
               one-dimensional sketch.</p>
           </div>
           <div class="step" data-scene="basis2d">
@@ -65,8 +63,7 @@
           </div>
           <div class="step" data-scene="score">
             <h2>Where the Score Comes From</h2>
-            <p>A candidate is a vertex whose surplus is still held at zero. Its score says which way the fit would like
-              that surplus to move: it is the slope of the log-likelihood as the surplus leaves zero.</p>
+            <p>A candidate is a vertex whose surplus is still held at zero. Its score is the slope of the log-likelihood as the surplus leaves zero.</p>
             <p class="small">For a site with <i>n</i> flips, <i>k</i> heads and fitted probability <i>p</i>, the slope is the
               tent&rsquo;s height at the site times <i>k</i> &minus; <i>np</i>, summed over the sites under the tent. Each
               term has variance tent&sup2; &times; <i>np</i>(1 &minus; <i>p</i>): the site&rsquo;s Fisher information, which
@@ -111,8 +108,7 @@
               |<i>z</i>| &le; 2 (central matching). Its peak gives the null&rsquo;s center, its curvature the spread, and its
               height <i>&pi;</i><sub>0</sub>, the share of candidates that are noise. Recomputed on this page from round
               0&rsquo;s scores: <span data-v="lnull">&hellip;</span>. The engine&rsquo;s: <span data-v="enull">&hellip;</span>.
-              The fitted null can come out wider than the sharp peak of the bars, which is right, since many null scores
-              really are that spread out.
+              The fitted null can come out wider than the sharp peak of the bars.
               The spread is held between 0.35 and 6 (3 in the rectangle engine).</p>
           </div>
           <div class="step" data-scene="select">
@@ -184,7 +180,7 @@
 
       <a class="skip-pill" href="#more" data-from="#story">Skip to the end</a>
       <section class="ideafoot" id="more">
-        <p>The same run, told as a story rather than taken apart, is on the <a href="{{ get_url(path='decisionmesh/') }}#how">illustrated gate</a>.</p>
+        <p>The same run is on the <a href="{{ get_url(path='decisionmesh/') }}#how">illustrated gate</a>.</p>
         <div class="cta">
           <a class="primary" href="{{ get_url(path='decisionmesh/') }}#truth=drawing">Fit your own drawing</a>
           <a href="{{ get_url(path='decisionmesh/') }}#how">The gate, step by step</a>
