@@ -30,7 +30,7 @@
       const frames = meshFrames(r.left + r.width / 2, r.top + r.height / 2);
       const t = document.startViewTransition(() => { passing = true; btn.click(); passing = false; });
       t.ready.then(() => document.documentElement.animate({ clipPath: frames },
-        { duration: 400, easing: "cubic-bezier(0.25, 0.6, 0.4, 1)", fill: "both", pseudoElement: "::view-transition-new(root)" })).catch(() => {});
+        { duration: 480, easing: "cubic-bezier(0.25, 0.6, 0.4, 1)", fill: "both", pseudoElement: "::view-transition-new(root)" })).catch(() => {});
     }, true);
   }
 
@@ -214,12 +214,19 @@
     }
     return true;
   }
+  // and well clear of every picture on the page, including ones the pointer passes through (the home page's mesh)
+  const clear = (x, y, boxes) => boxes.every((r) => x - 16 > r.right || x + 106 < r.left || y - 16 > r.bottom || y + 106 < r.top);
   function doodle() {
     if (document.hidden || innerWidth < 1100) return;
+    const boxes = [];
+    for (const el of document.querySelectorAll("canvas, svg:not(.whimsy-doodle), img, picture, video, iframe, figure")) {
+      const r = el.getBoundingClientRect();
+      if (r.width && r.height && r.bottom > 0 && r.top < innerHeight) boxes.push(r);
+    }
     let spot = null;
     for (let k = 0; k < 40 && !spot; ++k) {
       const x = Math.random() < 0.5 ? 10 + Math.random() * 90 : innerWidth - 100 - Math.random() * 90, y = 80 + Math.random() * (innerHeight - 200);
-      if (blank(x, y)) spot = [x, y];
+      if (clear(x, y, boxes) && blank(x, y)) spot = [x, y];
     }
     if (!spot) { poke(); return; }
     const svg = document.createElementNS(NS, "svg");
@@ -301,9 +308,11 @@
     // pages without their own reading script: the share of the page scrolled, never sliding back while scrolling
     // down (figures that load late make the page taller under the reader)
     if (bar.hasAttribute("data-auto")) {
-      let lastY = -1, lastF = 0;
+      // the page's height is read when it changes, not on every scroll, where reading it could force a layout
+      let lastY = -1, lastF = 0, full = document.documentElement.scrollHeight;
+      new ResizeObserver(() => { full = document.documentElement.scrollHeight; auto(); }).observe(document.body);
       const auto = () => {
-        const h = document.documentElement.scrollHeight - window.innerHeight;
+        const h = full - window.innerHeight;
         let f = h > 0 ? Math.min(1, Math.max(0, window.scrollY / h)) : 0;
         if (window.scrollY > lastY && f < lastF) f = lastF;
         lastY = window.scrollY; lastF = f;

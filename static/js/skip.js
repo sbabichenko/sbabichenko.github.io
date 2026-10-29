@@ -9,9 +9,13 @@
     const target = document.querySelector(pill.getAttribute("href"));
     if (!from || !until || !target) return;
     document.body.appendChild(pill);   // out of any sticky or transformed parent, so it stays fixed to the window
+    // where the stretch starts and ends on the page, read when the page's size changes, not on every scroll (where
+    // reading them could force a layout)
+    let top = 0, bottom = 0;
+    const place = () => { top = from.getBoundingClientRect().top + scrollY; bottom = until.getBoundingClientRect().bottom + scrollY; check(); };
     function check() {
-      const vh = innerHeight, a = from.getBoundingClientRect(), b = until.getBoundingClientRect();
-      pill.classList.toggle("on", a.top < vh * 0.6 && b.bottom > vh * 2.1);
+      const vh = innerHeight;
+      pill.classList.toggle("on", top - scrollY < vh * 0.6 && bottom - scrollY > vh * 2.1);
     }
     pill.addEventListener("click", (e) => {
       e.preventDefault();
@@ -22,7 +26,8 @@
       check();
     });
     addEventListener("scroll", check, { passive: true });
-    addEventListener("resize", check);
-    check();
+    addEventListener("resize", place);
+    new ResizeObserver(place).observe(document.body);
+    place();
   });
 })();

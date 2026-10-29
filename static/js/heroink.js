@@ -10,8 +10,8 @@
 // drawn line fades away from its start to its end as the mesh catches up. A click leaves a small ring that fades
 // as its cuts come in. Pressing and holding keeps collecting samples under the pointer, so the mesh
 // gets finer there the longer you hold (moving while holding paints). Cuts made by pokes keep a good shape (no
-// sliver past 4 to 1) and stop at about 14 pixels, and shorter edges are drawn lighter, so a poked patch reads as
-// finer texture rather than a tangle. A poked picture lasts a minute; a double-click starts a new one.
+// sliver past 4 to 1) and have no smallest size; shorter edges are drawn lighter, so a poked patch reads as finer
+// texture rather than a tangle. A poked picture lasts a minute; a double-click starts a new one.
 //
 // On the 404 page (data-mode="nothing") there is no field at all: the starting mesh sits there and
 // its candidate cuts light up one at a time and are turned down, since there is nothing to find.
@@ -102,17 +102,6 @@
     const on = (p, b) => Math.abs((b.v1.x - b.v0.x) * (p.y - b.v0.y) - (b.v1.y - b.v0.y) * (p.x - b.v0.x)) < 1e-9 &&
       p.x >= Math.min(b.v0.x, b.v1.x) - 1e-9 && p.x <= Math.max(b.v0.x, b.v1.x) + 1e-9 &&
       p.y >= Math.min(b.v0.y, b.v1.y) - 1e-9 && p.y <= Math.max(b.v0.y, b.v1.y) + 1e-9;
-    // the smallest edge a candidate's cut would make, in field units: the halves of a right triangle's hypotenuse,
-    // or the halves of a rectangle's side and the chord across it (cuts that completion forces nearby are coarser)
-    function cutSize(mid) {
-      if (rect) {
-        let s = Infinity;
-        for (const h of mid.hits) s = Math.min(s, h.along === "x" ? Math.min(h.half / m.sx, h.span / m.sy) : Math.min(h.half / m.sy, h.span / m.sx));
-        return s;
-      }
-      const f = mid.faces[0];
-      return 0.5 * Math.hypot((f.b.ix - f.c.ix) / m.sx, (f.b.iy - f.c.iy) / m.sy);
-    }
     return { activeEdges, lattice: true, get pieces() { return rect ? m.cells : m.faces; },
       get X() { return m.X; }, get Y() { return m.Y; }, get n() { return m.n; },
       step() { const r = m.step(); if (r !== "none") sync(); return r; },
@@ -129,14 +118,11 @@
         });
         m.refresh();
       },
-      // the engine's best cut at a place where(x, y) allows, making no edge shorter than minLen; returns the lines it
+      // the engine's best cut at a place where(x, y) allows; returns the lines it
       // made, which old line each piece of a cut line came from, and the lines cut, or null. Refits move no line,
       // so a few may come first.
-      local(where, minLen) {
-        const accept = (v, mid) => {
-          const p = v || mid;
-          return where(m.xmin + p.ix / m.sx, m.ymin + p.iy / m.sy) && (!mid || cutSize(mid) >= minLen);
-        };
+      local(where) {
+        const accept = (v, mid) => { const p = v || mid; return where(m.xmin + p.ix / m.sx, m.ymin + p.iy / m.sy); };
         for (let k = 0; k < 8; ++k) {
           if (m.step(accept) === "none") return null;
           const { born, gone } = sync();
@@ -348,20 +334,16 @@
     const was = (e) => (c.from ? c.from.get(e) : e === c.pe.sub["0"] || e === c.pe.sub["1"] ? c.pe : null);
     for (const e of c.born) { const b = was(e); drawn.set(e, b ? (drawn.has(b) ? drawn.get(b) : P.T0 - 5000) : t); }
   }
-  // a cut is taken only if no new triangle is thinner than 4 to 1 and no new edge is shorter than about 14 pixels
+  // a cut is taken only if no new triangle is thinner than 4 to 1 (making room first keeps the shape on its own)
   function shapely(v) {
-    if (v.active) return true;
-    for (const f of v.getSimFaces()) {
-      if (!f) continue;
-      if (!mesh.longSidesFirst && f.aspectRatio() > 4) return false;     // making room first keeps the shape
-      for (const e of f.edges) if (e.length * pxPerUnit < 14) return false;
-    }
+    if (v.active || mesh.longSidesFirst) return true;
+    for (const f of v.getSimFaces()) if (f && f.aspectRatio() > 4) return false;
     return true;
   }
   // the engine's best cut inside the poked region (on a drag, the part planned so far); returns the edges it
   // creates, or null. Refits, which move no line, are left to the engine's own growth.
   function localStep() {
-    if (mesh.lattice) return mesh.local((x, y) => { const m = hit(x, y, region); return m.in && m.idx <= planFront; }, 14 / pxPerUnit);
+    if (mesh.lattice) return mesh.local((x, y) => { const m = hit(x, y, region); return m.in && m.idx <= planFront; });
     let best = null, bp = -1e-12;
     for (const [v, p] of mesh.heap) if (p < bp && !v.active) { const m = hit(v.x, v.y, region); if (m.in && m.idx <= planFront && shapely(v)) { bp = p; best = v; } }
     if (!best) return null;
@@ -719,6 +701,25 @@
   // the button that cycles the geometry (home page only): the next one's script loads first, then the picture fades
   // out and the same surface grows again in the new geometry; with reduced motion it is redrawn at once
   const btn = nothing ? null : document.querySelector(".hero .geom");
+  // the hint under the mesh says how to poke it until it has been poked or switched, then names the geometry (as it
+  // does while the pointer is on the button), and the name, like the button, switches it; a poke fades the hint into
+  // the name, the button swaps it at once; one line of text, so a browser that
+  // is unsure whether it is a phone never shows two
+  const hint = document.querySelector(".hero .poke"), hintText = hint && hint.firstElementChild;
+  const touch = matchMedia("(hover: none) and (pointer: coarse)").matches;
+  let found = false, onButton = false, hintTimer = 0, shown = geom;
+  function sayHint(now) {
+    if (!hintText) return;
+    const named = found || onButton, text = named ? GEOMS[shown].name : touch ? "tap the mesh" : "click or drag the mesh";
+    hint.classList.toggle("named", named && !!btn);
+    clearTimeout(hintTimer);
+    if (now) { hintText.textContent = text; hint.classList.remove("swap"); return; }
+    if (text === hintText.textContent) { hint.classList.remove("swap"); return; }
+    hint.classList.add("swap");
+    hintTimer = setTimeout(() => { hintText.textContent = text; hint.classList.remove("swap"); }, 300);
+  }
+  function poked() { if (!found) { found = true; sayHint(); } }
+  if (hintText && touch) hintText.textContent = "tap the mesh";
   let switching = false, keep = false, still = null;
   const loaded = {};
   const load = (src) => loaded[src] || (loaded[src] = new Promise((ok, no) => {
@@ -726,23 +727,31 @@
     s.src = src; s.onload = ok; s.onerror = () => { delete loaded[src]; no(); };
     document.head.appendChild(s);
   }));
-  function paintButton() {
-    const G = GEOMS[geom];
+  function paintButton(now) {
+    const G = GEOMS[shown];
     btn.innerHTML = `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="${G.icon}"/></svg>`;
-    btn.title = G.name;
-    btn.setAttribute("aria-label", btn.title);
+    btn.setAttribute("aria-label", G.name);
+    sayHint(now);
   }
   if (btn) {
     paintButton(); btn.hidden = false;
-    btn.addEventListener("click", async () => {
+    const light = (on) => { onButton = on; hint && hint.classList.toggle("lit", on); sayHint(on); };
+    btn.addEventListener("pointerenter", (ev) => { if (ev.pointerType === "mouse") light(true); });
+    btn.addEventListener("pointerleave", () => light(false));
+    btn.addEventListener("focus", () => { if (btn.matches(":focus-visible")) light(true); });
+    btn.addEventListener("blur", () => light(false));
+    // a switch names the next geometry at once, then the picture fades out (its script loads meanwhile)
+    const switchGeom = async () => {
       if (switching) return;
       const next = (geom + 1) % GEOMS.length, src = btn.dataset[GEOMS[next].key];
-      switching = true;
-      try { if (src) await load(src); } catch (e) { switching = false; return; }
-      geom = next; paintButton();
+      switching = true; shown = next; found = true; paintButton(true);
+      try { if (src) await load(src); } catch (e) { switching = false; shown = geom; paintButton(true); return; }
+      geom = next;
       if (still) { still(); switching = false; return; }
       phase = "out"; acc = 0; keep = true; asleep = false; wake();
-    });
+    };
+    btn.addEventListener("click", switchGeom);
+    if (hintText) hintText.addEventListener("click", () => { if (hint.classList.contains("named")) switchGeom(); });
   }
   const pokeable = () => !switching;
 
@@ -767,7 +776,7 @@
   const overMesh = (ev) => {
     const r = cv.getBoundingClientRect();
     if (ev.clientX < r.left || ev.clientX > r.right || ev.clientY < r.top || ev.clientY > r.bottom) return false;
-    return !(ev.target.closest && ev.target.closest("a, button, input, select, textarea, header, nav, .motif"));
+    return !(ev.target.closest && ev.target.closest("a, button, input, select, textarea, header, nav, .motif, .poke.named"));
   };
   document.addEventListener("pointermove", (ev) => {
     const on = overMesh(ev);
@@ -784,7 +793,7 @@
     if (x < LO || x > HI || y < LO || y > HI) return;
     const now = performance.now();
     pointer = p; lensAt = now; ripple = { x: p.x, y: p.y, t: now };
-    poke({ x, y, r: 1.05 }, pokes % 2 ? -3.2 : 3.2, 0.3, 750, 0.55);
+    poke({ x, y, r: 1.05 }, pokes % 2 ? -3.2 : 3.2, 0.3, 750, 0.55); poked();
     marks.push({ x, y, R: region, f: 0 });
   });
   // is the pointer on a line of text (not merely inside a text block's box, which runs the column's width)?
@@ -820,7 +829,7 @@
           if (q.x > LO && q.x < HI && q.y > LO && q.y < HI) { collect(q.x, q.y); holdRing = { x: q.cx, y: q.cy, t: performance.now() }; }
           s0.hold = setTimeout(tick, 250);
         };
-        s0.holding = true; ++pokes; tick();
+        s0.holding = true; ++pokes; poked(); tick();
       }, 350);
     });
     document.addEventListener("pointermove", (ev) => {
@@ -848,7 +857,7 @@
       if (pts.length < 2) return;
       const path = pts.slice(0, 80), now = performance.now();
       ripple = null;
-      poke({ pts: path, r: 0.55, t0: now + 150, dur: Math.min(3600, 1000 + 110 * path.length) }, 2.8, 0.12, 1400, 0.35);
+      poke({ pts: path, r: 0.55, t0: now + 150, dur: Math.min(3600, 1000 + 110 * path.length) }, 2.8, 0.12, 1400, 0.35); poked();
       (trace = trace || []).push({ pts: path, R: region, f: 0 });
     });
   }
@@ -949,7 +958,7 @@
         }
       } else {
         acc += dt;
-        fade = Math.max(0, 1 - acc / 1600);
+        fade = Math.max(0, 1 - acc / (keep ? 450 : 1600));    // a geometry switch fades out quickly; a new picture, slowly
         if (fade <= 0) { start(keep); keep = switching = false; }
         draw(now);
       }
