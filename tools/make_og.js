@@ -9,7 +9,7 @@ const BASE = process.argv[2] || "http://127.0.0.1:8770";
 const OUT = path.join(__dirname, "..", "static", "images");
 
 const CARDS = [
-  { out: "og.png", art: "mesh", surface: "hills", seed: 20260924,
+  { out: "og.png", art: "mesh", surface: "hills", seed: 20260924, dark: true,   // the site's dark paper and inks
     eyebrow: "Quantitative research &middot; PhD, UC Santa Barbara",
     title: "Sam Babichenko",
     sub: "Game theory, empirical Bayes, machine learning, and quantitative finance." },
@@ -60,7 +60,7 @@ const page = (c) => `<!doctype html><html><head><meta charset="utf-8">
 <link rel="stylesheet" href="${BASE}/fonts/newsreader.css">
 <style>
  html,body{margin:0;width:1200px;height:630px;overflow:hidden}
- body{background:#ecdebe url(${BASE}/images/paper/brown-light-2x.webp) 0 0/768px 768px;background-blend-mode:multiply;position:relative;font-family:Newsreader,Georgia,serif;color:#17171b}   /* the site's paper */
+ body{background:${c.dark ? "#1f2022" : "#ecdebe"} url(${BASE}/images/paper/brown-${c.dark ? "dark" : "light"}-2x.webp) 0 0/768px 768px;${c.dark ? "" : "background-blend-mode:multiply;"}position:relative;font-family:Newsreader,Georgia,serif;color:${c.dark ? "#e9eaee" : "#17171b"}}   /* the site's paper */
  canvas,img.art{position:absolute;inset:0;width:1200px;height:630px;object-fit:cover}
  canvas.fade{-webkit-mask-image:linear-gradient(100deg,transparent 42%,#000 75%)}
  img.art{mix-blend-mode:multiply;opacity:.9;object-position:right center;-webkit-mask-image:linear-gradient(100deg,transparent 47%,#000 72%)}   /* clear of the subtitle */
@@ -68,11 +68,11 @@ const page = (c) => `<!doctype html><html><head><meta charset="utf-8">
  img.art.contain.wide{width:560px;right:36px;border-radius:14px;mix-blend-mode:normal}   /* a capture already on the paper */
  body.narrow h1{font-size:62px;max-width:600px}
  body.narrow p{font-size:26px;max-width:580px}
- .e{position:absolute;left:78px;top:128px;font-size:19px;letter-spacing:.14em;text-transform:uppercase;color:#85858f;z-index:2;font-family:ui-sans-serif,system-ui,sans-serif}
+ .e{position:absolute;left:78px;top:128px;font-size:19px;letter-spacing:.14em;text-transform:uppercase;color:${c.dark ? "#9a9ba6" : "#85858f"};z-index:2;font-family:ui-sans-serif,system-ui,sans-serif}
  .t{position:absolute;left:78px;top:190px;z-index:2}
  h1{font-size:${c.titleSize || (c.title.length > 22 ? 72 : 88)}px;font-weight:400;letter-spacing:-0.02em;margin:0 0 20px;max-width:760px;line-height:1.02}
- p{font-size:29px;color:#4a4a55;margin:0;max-width:660px;line-height:1.35}
- .u{position:absolute;left:78px;bottom:70px;font-size:24px;color:#1f3fd0;z-index:2;font-family:ui-sans-serif,system-ui,sans-serif}
+ p{font-size:29px;color:${c.dark ? "#b9bac4" : "#4a4a55"};margin:0;max-width:660px;line-height:1.35}
+ .u{position:absolute;left:78px;bottom:70px;font-size:24px;color:${c.dark ? "#8fb0ff" : "#1f3fd0"};z-index:2;font-family:ui-sans-serif,system-ui,sans-serif}
 </style></head><body class="${c.fit === "contain" ? "narrow" : ""}">
 ${c.art === "mesh" || c.art === "shocks" ? `<canvas id="c"${c.fade ? ' class="fade"' : ""} width="2400" height="1260"></canvas>` : `<img class="art${c.fit === "contain" ? " contain" : ""}${c.wide ? " wide" : ""}" src="${BASE}${c.src}">`}
 <div class="e">${c.eyebrow}</div>
@@ -114,7 +114,7 @@ if (c && ${JSON.stringify(c.art)} === "shocks") {
     const d=Math.hypot(mx-fx,(my-fy)*0.85)/R; if(d>=1) continue;
     const band=Math.min(1,Math.min(my,H-my)/(0.28*H));
     const v=(1-d)*(1-d)*band*band;
-    g.strokeStyle='rgba(20,22,40,'+(0.34*v)+')';
+    g.strokeStyle=${c.dark ? "'rgba(233,234,238,'+(0.30*v)+')'" : "'rgba(20,22,40,'+(0.34*v)+')'"};
     g.beginPath(); g.moveTo(x0,y0); g.lineTo(x1,y1); g.stroke();
   }
 }
