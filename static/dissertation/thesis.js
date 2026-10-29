@@ -223,10 +223,24 @@
   // ---- previews
   const peek = document.getElementById("peek");
   if (!peek || window.matchMedia("(hover: none) and (pointer: coarse)").matches) return;
-  const pages = new Map();                               // url -> Promise<Document>
+  // Another chapter is parsed for its previews and let go half a minute after the last one (asked again, it comes
+  // from the cache). Its pictures are parsed as inert stand-ins (x-picture, x-img) and made real only in a preview:
+  // a parsed picture kept the whole chapter in memory after it was let go.
+  const pages = new Map(), letGo = new Map();            // url -> Promise<Document>
   const getDoc = (url) => {
-    if (!pages.has(url)) pages.set(url, fetch(url).then((r) => r.text()).then((t) => new DOMParser().parseFromString(t, "text/html")));
+    if (!pages.has(url)) pages.set(url, fetch(url).then((r) => r.text())
+      .then((t) => new DOMParser().parseFromString(t.replace(/<(\/?)picture\b/g, "<$1x-picture").replace(/<img\b([^>]*?)\/?>/g, "<x-img$1></x-img>"), "text/html")));
+    clearTimeout(letGo.get(url));
+    letGo.set(url, setTimeout(() => { pages.delete(url); letGo.delete(url); }, 30000));
     return pages.get(url);
+  };
+  const realPictures = (box) => {
+    for (const x of box.querySelectorAll("x-picture, x-img")) {
+      const n = document.createElement(x.localName.slice(2));
+      for (const at of x.attributes) n.setAttribute(at.name, at.value);
+      n.append(...x.childNodes);
+      x.replaceWith(n);
+    }
   };
   function excerpt(el) {
     if (!el) return null;
@@ -257,6 +271,7 @@
     if (!ex) return;
     ex.removeAttribute("id");
     ex.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id"));
+    realPictures(ex);
     peek.innerHTML = "";
     const where = document.createElement("div");
     where.className = "where";

@@ -1563,7 +1563,7 @@ function glide(el, data, layout, cfg) {
 }
 
 // Plotly loads in idle time after the page (the template passes its URL); a plot asked for before it arrives waits for it.
-// Once it is loaded, plotly() draws synchronously, as it always did.
+// Once it is loaded, plotly() draws through the queue below: the first chart at once, the rest a task apiece.
 const PLOTLY_SRC = (document.currentScript && document.currentScript.dataset.plotly) || "vendor/plotly-cartesian-2.35.2.min.js";
 let plotlyLoading = null;
 function ensurePlotly() {
@@ -1577,12 +1577,27 @@ function ensurePlotly() {
 }
 window.addEventListener("load", () => (window.requestIdleCallback || ((f) => setTimeout(f, 200)))(() => ensurePlotly().catch(() => {})));
 
+// A solve draws a dozen charts; drawn back to back they held the page for most of a second on a phone. The first
+// is drawn at once and each of the rest in a task of its own, so scrolling and taps get in between.
+const plotQueue = [];
+let plotBusy = false;
+function nextPlot() {
+  const job = plotQueue.shift();
+  if (!job) { plotBusy = false; return; }
+  plotBusy = true; job(); setTimeout(nextPlot, 0);
+}
 function plotly(method, id, data, layout, cfg) {
   // Capture this node before waiting for the lazy script. A later render can
   // reuse its id, but the earlier data must never draw into that new chart.
   const el = typeof id === "string" ? document.getElementById(id) : id;
   if (!el || !el.isConnected) return Promise.resolve();
   if (!window.Plotly) return ensurePlotly().then(() => plotly(method, el, data, layout, cfg));
+  return trackPlot(el, new Promise((resolve, reject) => {
+    plotQueue.push(() => { try { resolve(el.isConnected ? drawPlot(method, el, data, layout, cfg) : undefined); } catch (e) { reject(e); } });
+    if (!plotBusy) nextPlot();
+  }));
+}
+function drawPlot(method, el, data, layout, cfg) {
   if (el && el.clientWidth && el.clientWidth < 520 && layout) {
     layout = { ...layout };
     const t = layout.xaxis && layout.xaxis.title && (layout.xaxis.title.text || layout.xaxis.title);
@@ -1592,8 +1607,8 @@ function plotly(method, id, data, layout, cfg) {
     }
     layout.legend = { ...(layout.legend || {}), y: -0.12 };
   }
-  if (method === "newPlot" && el) { const g = glide(el, data, layout, cfg); if (g) return trackPlot(el, g); }
-  return trackPlot(el, Plotly[method](el, data, layout, cfg));
+  if (method === "newPlot" && el) { const g = glide(el, data, layout, cfg); if (g) return g; }
+  return Plotly[method](el, data, layout, cfg);
 }
 const plotCfg = { responsive: true, displaylogo: false, modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"] };
 const titleOf = (s) => ({ text: s, font: { size: 13 }, x: 0, xanchor: "left", xref: "paper" });
