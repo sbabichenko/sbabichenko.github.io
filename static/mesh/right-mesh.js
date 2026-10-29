@@ -219,13 +219,16 @@
       }
       return col;
     }
-    step() {
+    // accept (optional): a test (vertex, midpoint) => bool that limits the candidates, as the home page's pokes
+    // ask for the best cut inside a region; without it every candidate is weighed
+    step(accept) {
       this.steps++;
       this.buildIndex();
       const col = this.scratch || (this.scratch = { val: new Float64Array(this.n), hit: new Int32Array(this.n), k: 0 });
       const floor = Math.max(3, 2 * this.minPoints);
       let best = null, bestGain = 0;
       const consider = (v, mid) => {
+        if (accept && !accept(v, mid)) return;
         this.column(v, mid, col);
         if (col.k < floor) return;
         let num = 0, den = 0;
