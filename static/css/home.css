@@ -288,19 +288,20 @@ body:has(.home .hero) { overflow-x: clip; }
 @media (prefers-reduced-motion: reduce) { .home .demo:hover .shot.draw .dh-pic { transform: none; } }
 
 /* Noise-State Calculus: two pencil heads, each holding its own estimate of one shared row of shocks and picturing the
-   other in a thought cloud (images/card-nsheads-*). At rest the card is the baked image. On hover, keyboard focus in
+   other in a thought cloud (images/card-nsheads-*). At rest the card is the base image under the overlay, whose two
+   thought clouds cards.js draws as puffs. On hover, keyboard focus in
    the card, or a tap on a touch screen (.on, from cards.js), the fourth wall breaks, in four beats: the two thought
    clouds fade away; a trail of small bubbles rises from each head, one bubble at a time, up to the card's edge; and,
    once each trail is there, the whole card fades in as that player's thought cloud, two scalloped rims in the two
-   colours. Each player now thinks about the whole system, the one shared world of shocks, not about the other's mind.
+   colours, puffed like the clouds. Each player now thinks about the whole system, the one shared world of shocks, not about the other's mind.
    Last, each shock of the shared row splits into a blue and a warm tick, each at that player's own estimate, the
    same ticks as the bars in that player's head; three ink ticks stay between their pair, the world itself. The small
    sky cloud splits the same way, into a blue and a warm copy a little apart: beliefs about reality, not reality.
-   The base image (no clouds, no ticks, no sky cloud) takes over at once, and the overlay (partials/card-nsheads.html)
-   fades copies of them away; the rims and trails are the svg at the card's foot, laid out by cards.js to the
+   The base image has no clouds, no ticks and no sky cloud; the overlay (partials/card-nsheads.html) draws them, and
+   fades them away; the rims and trails are the svg at the card's foot, laid out by cards.js to the
    card's size. Everything is CSS transitions. On the way out the story runs back, a little faster (about 2.2 s): the
    world comes back together (0 to 0.94 s), the rims clear (0.59 to 1.32 s), and the minds return, the trails shrinking
-   back last bubble first and the two clouds fading in (1.03 to 2.2 s); then the rest image takes over again. */
+   back last bubble first and the two clouds fading in (1.03 to 2.2 s). */
 .home .demo.nsheads-card { overflow: visible; }   /* so the rim and the trails sit outside the card */
 .home .demo.nsheads-card .shot.nsheads { position: relative; overflow: visible; -webkit-tap-highlight-color: transparent;
   --nscw: 1.6px; --nshw: 1.8px; --nsmw: 0.4; --nsink: 0.8; --nsfaint: 0.44; --nsbird: 0.52; --nswx: 0.8; --nsglow: 0.26; }
@@ -308,10 +309,7 @@ body:has(.home .hero) { overflow-x: clip; }
 /* the pictures are clipped by their own frame now (the card no longer clips), with the card's top corners */
 .home .shot.nsheads { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
 .home .shot.nsheads .pics { position: absolute; inset: 0; overflow: hidden; border-radius: 13px 13px 0 0; }
-.home .demo .shot.nsheads img.base { position: absolute; inset: 0; opacity: 0; transition: opacity 0s linear calc(max(0s, 1.027s - var(--nsout, 0s)) + 1.173s), transform 0.4s ease, clip-path 0.4s ease; }
-/* the rest image steps aside while the base shows: both are multiplied onto the paper, so one cannot hide the other.
-   On the way back both wait for the overlay to have drawn the rest picture again (the gate), then swap in one frame */
-.home .demo .shot.nsheads img:not(.base) { transition: opacity 0s linear calc(max(0s, 1.027s - var(--nsout, 0s)) + 1.173s), transform 0.4s ease, clip-path 0.4s ease; }
+.home .demo .shot.nsheads img.base { position: absolute; inset: 0; transition: transform 0.4s ease, clip-path 0.4s ease; }
 .home .shot.nsheads .ov { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible;
   color: var(--ink); transition: transform 0.4s ease, clip-path 0.4s ease; }
 html:not(.dark) .home .shot.nsheads .ov { mix-blend-mode: multiply; }   /* onto the paper, as the images are */
@@ -323,9 +321,7 @@ html:not(.dark) .home .shot.nsheads .ov { mix-blend-mode: multiply; }   /* onto 
 .home .shot.nsheads .ov .facc { fill: var(--accent); }
 .home .shot.nsheads .ov .fwarm { fill: var(--warm); }
 .home .shot.nsheads .ov .fink { fill: currentColor; }
-/* the copies of the clouds and the sky cloud: shown (.pic visible) from the first moment of the hover until the gate
-   after it, while the base image is the picture; their own opacity is the fade */
-.home .shot.nsheads .ov .pic { visibility: hidden; transition: visibility 0s linear calc(max(0s, 1.027s - var(--nsout, 0s)) + 1.173s); }
+/* the clouds and the sky cloud, over the base image; their own opacity is the fade */
 .home .shot.nsheads .ov :is(.nest, .cloud) { opacity: 1; transition: opacity 1.173s ease-in-out max(0s, 1.027s - var(--nsout, 0s)); }
 .home .shot.nsheads .ov .wx { opacity: 1; transition: opacity 0.44s ease max(0s, 0.367s - var(--nsout, 0s)); }
 .home .shot.nsheads .ov .boost { opacity: 0; transition: opacity 0.44s ease max(0s, 0.293s - var(--nsout, 0s)); }
@@ -373,12 +369,6 @@ html:not(.dark) .home .shot.nsheads .ov { mix-blend-mode: multiply; }   /* onto 
 .home .nsheads-card .nsheads-rim .acc { stroke: var(--accent); }
 .home .nsheads-card .nsheads-rim .warm { stroke: var(--warm); }
 .home .demo.nsheads-card { transition: border-color 0.733s ease max(0s, 0.587s - var(--nsout, 0s)), top 0.18s, box-shadow 0.18s; }
-@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads img.base { opacity: 1; transition: opacity 0s, transform 0.4s ease, clip-path 0.4s ease; } }
-.home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads img.base { opacity: 1; transition: opacity 0s, transform 0.4s ease, clip-path 0.4s ease; }
-@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads img:not(.base) { opacity: 0; transition: opacity 0s, transform 0.4s ease, clip-path 0.4s ease; } }
-.home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads img:not(.base) { opacity: 0; transition: opacity 0s, transform 0.4s ease, clip-path 0.4s ease; }
-@media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads .ov .pic { visibility: visible; transition: visibility 0s; } }
-.home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads .ov .pic { visibility: visible; transition: visibility 0s; }
 /* beat 1 (0 to 1.15 s): the clouds and their small heads fade slowly, gone just as the last trail bubble is in */
 @media (hover: hover) { .home .demo.nsheads-card:hover .shot.nsheads :is(.nest, .cloud) { opacity: 0; transition: opacity 1.15s ease-in-out; } }
 .home .demo.nsheads-card:is(:has(:focus-visible), .on) .shot.nsheads :is(.nest, .cloud) { opacity: 0; transition: opacity 1.15s ease-in-out; }
