@@ -58,7 +58,7 @@
   const GEOMS = [
     { key: "freeform", name: "freeform triangles", target: TARGET, prefill: PREFILL,
       icon: "M2 14 9.5 2 14 14Z M9.5 2 4.5 14 M9.5 2 7 14 M9.5 2 10.5 14" },                 // a fan of slivers
-    { key: "round", name: "freeform triangles without slivers", target: TARGET, prefill: PREFILL,
+    { key: "round", name: "fat triangles", target: TARGET, prefill: PREFILL,
       opts: { maxAspectRatio: Infinity, minCircleFill: 0.4, longSidesFirst: true, splitAt: [0.3, 0.4, 0.5, 0.6, 0.7] },
       icon: "M2 13.5 8 2.5 14 13.5Z M5 8 11 8 8.5 13.5Z" },                                  // plump triangles
     { key: "right", name: "right triangles", target: TARGET, prefill: PREFILL,
