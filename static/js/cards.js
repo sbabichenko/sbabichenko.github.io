@@ -514,8 +514,20 @@
     // rounded rectangle just outside the card, one per player, a few pixels apart and with their own hand wobble, and
     // the bubble trails that lead up to them from the heads. CSS fades them in and out; nothing here runs per frame.
     const PAD = 12;
+    // The rims and the two small clouds at rest are rings of puffs. n: puffs in a small cloud; gap: the rim's spacing
+    // between puffs, as a multiple of its step; alt: how much the puffs are big and small by turns; rnd: how much
+    // their spacing varies at random; bulge: each puff's radius over its width (0.5 would be a half circle), plus up to
+    // the second number at random
+    const PUFF = { n: 8, gap: 1.7, alt: 0.25, rnd: 0.12, bulge: [0.54, 0.06] };
+    // how far a puff reaches out past its two ends, as a share of its width
+    const reach = (() => { const b = PUFF.bulge[0] + PUFF.bulge[1] / 2; return b - Math.sqrt(b * b - 0.25); })();
+    // a rim's points are set in by about how much further its puffs reach out than a plain scallop 30 wide (about 9),
+    // so the rim reaches out about as far as the card's border allows
+    const rimInset = (inset, step = 30) => inset + Math.max(0, reach * step * PUFF.gap - 9.2);
     function scallops(W, H, inset, step, seed) {
-      const r = mulberry32(seed), x0 = inset, y0 = inset, w = W - 2 * inset, h = H - 2 * inset, R = 16;
+      inset = rimInset(inset, step);
+      // big puffs turn a corner over several puffs
+      const r = mulberry32(seed), x0 = inset, y0 = inset, w = W - 2 * inset, h = H - 2 * inset, R = Math.max(16, 0.9 * step * PUFF.gap);
       const straight = [w - 2 * R, h - 2 * R], arc = (Math.PI / 2) * R, P = 2 * (straight[0] + straight[1]) + 4 * arc;
       const at = (d) => {                     // the point at distance d along the rounded rectangle, clockwise from its top-left
         d = ((d % P) + P) % P;
@@ -527,12 +539,13 @@
         }
         return [x0 + R, y0];
       };
-      const n = Math.max(12, Math.round(P / step)), off = r() * P / n;
-      const pts = Array.from({ length: n }, (_, k) => at(off + (k * P) / n));
+      // the gaps between points are long and short by turns (n is even, so the pattern closes)
+      const n = Math.max(8, Math.round(P / (step * PUFF.gap)) & ~1), off = r() * P / n;
+      const pts = Array.from({ length: n }, (_, k) => at(off + ((k + PUFF.alt * ((k % 2) - 0.5) + PUFF.rnd * (r() - 0.5)) * P) / n));
       let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
       const line = [];                          // the same scallops as points, for the morph
       for (let k = 1; k <= n; ++k) {
-        const [x, y] = pts[k % n], [px, py] = pts[k - 1], c = Math.hypot(x - px, y - py), rr = c * (0.56 + 0.1 * r());
+        const [x, y] = pts[k % n], [px, py] = pts[k - 1], c = Math.hypot(x - px, y - py), rr = c * (PUFF.bulge[0] + PUFF.bulge[1] * r());
         d += ` A${rr.toFixed(1)},${rr.toFixed(1)} 0 0 1 ${x.toFixed(1)},${y.toFixed(1)}`;   // clockwise arcs bulge outward
         const hh = Math.sqrt(Math.max(0, rr * rr - (c / 2) * (c / 2))), mx = (x + px) / 2, my = (y + py) / 2;
         const cx = mx - ((y - py) / c) * hh, cy = my + ((x - px) / c) * hh;           // the centre, inside the rectangle
@@ -559,7 +572,7 @@
       const pic = ([u, v]) => [PAD + shot.offsetLeft + sw / 2 + Z * (u - 240) * k, PAD + shot.offsetTop + sh / 2 + Z * (v - 120) * k];
       const R = [2, 2.9, 3.8, 4.8].map((r) => r * Math.min(1, Math.max(0.8, k)));
       [["acc", [128, 45], 7], ["warm", [352, 45], 3]].forEach(([c, at, inset]) => {
-        const [x0, y0] = pic(at), y1 = 7 + 3.6 + R[3], lean = (at[0] < 240 ? 1 : -1) * 0.32 * (y0 - y1);
+        const [x0, y0] = pic(at), y1 = rimInset(7) + 3.6 + R[3], lean = (at[0] < 240 ? 1 : -1) * 0.32 * (y0 - y1);
         rim.querySelectorAll(".tail." + c).forEach((b, j) => {
           const t = [0, 0.3, 0.62, 1][j], x = x0 + lean * t * t, y = y0 + (y1 - y0) * t;   // a gentle curve, steeper at the start
           b.setAttribute("cx", x.toFixed(1)); b.setAttribute("cy", y.toFixed(1)); b.setAttribute("r", R[j].toFixed(1));
@@ -569,6 +582,28 @@
     const rims = [null, null]; let shapes = null;
     layout();
     if ("ResizeObserver" in window) new ResizeObserver(layout).observe(card);
+    // the two small clouds at rest (the overlay's, over the cloudless base image), redrawn as puffs in the drawn
+    // cloud's box: points on an oval, each pair joined by an arc that bulges outward, the oval sized (three times over,
+    // as the arcs grow with it) so the cloud's box is the drawn one's
+    shot.querySelectorAll(".ov .bb.cloud > path").forEach((p, i) => {
+      const b = p.getBBox(), cx = b.x + b.width / 2, cy = b.y + b.height / 2, n = PUFF.n;
+      const puffs = (rx, ry) => {
+        const r = mulberry32(91 + i), off = r() * 2 * Math.PI / n;
+        const pts = Array.from({ length: n }, (_, k) => {
+          const a = off + (2 * Math.PI * (k + PUFF.alt * ((k % 2) - 0.5) + PUFF.rnd * (r() - 0.5))) / n, w = 1 + 0.03 * (r() - 0.5);
+          return [cx + w * rx * Math.cos(a), cy + w * ry * Math.sin(a)];
+        });
+        let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+        for (let k = 1; k <= n; ++k) {
+          const [x, y] = pts[k % n], [px, py] = pts[k - 1], c = Math.hypot(x - px, y - py), rr = c * (PUFF.bulge[0] + PUFF.bulge[1] * r());
+          d += ` A${rr.toFixed(1)},${rr.toFixed(1)} 0 0 1 ${x.toFixed(1)},${y.toFixed(1)}`;
+        }
+        return d + " Z";
+      };
+      let rx = 0.8 * b.width / 2, ry = 0.8 * b.height / 2;
+      for (let it = 0; it < 3; ++it) { p.setAttribute("d", puffs(rx, ry)); const nb = p.getBBox(); rx *= b.width / nb.width; ry *= b.height / nb.height; }
+      p.setAttribute("d", puffs(rx, ry));
+    });
 
     // ---------------------------------------------------------------- the frame becomes the two rims
     // On the way in (0.5 to 1.45 s), as the trails rise, the card's own frame line (the random walk, cardFrames)
