@@ -8,6 +8,9 @@
   "use strict";
 
   let SEQ = 0;
+  // the value at the point a fraction e.t of the way along edge e, between a (at e.v0) and b (at e.v1); at the
+  // midpoint it is the plain mean, the arithmetic the Python uses
+  const along = (e, a, b) => (e.t === 0.5 ? (a + b) / 2 : a + e.t * (b - a));
 
   class Vertex {
     constructor(mesh, x, y, active = false, parentEdge = null) {
@@ -17,7 +20,7 @@
       this.active = active;
       this.disqualified = false;
       this.parentEdge = parentEdge;
-      this.height = parentEdge ? (parentEdge.v0.height + parentEdge.v1.height) / 2 : 0.0;
+      this.height = parentEdge ? along(parentEdge, parentEdge.v0.height, parentEdge.v1.height) : 0.0;
       this.edges = new Set();
       this.neighbors = new Set();
       this.newHeight = this.height; this.lossReduction = 0; this.affected = new Set();
@@ -35,6 +38,7 @@
       this.mesh.heap.set(this, 0);
     }
     updateInfo() {
+      if (this.dead) return;                           // a split point an edge has since moved (Edge.place)
       const r = this.locRegress();
       this.newHeight = r[0]; this.lossReduction = r[1]; this.affected = r[2];
       if (!this.disqualified) this.mesh.heap.set(this, -this.lossReduction);
@@ -47,7 +51,7 @@
         for (const f of this.getFaces())
           for (const e of f.edges) {
             const m = e.midpoint;
-            if (m && !m.active) { m.height = (e.v0.height + e.v1.height) / 2; m.updateInfo(); }
+            if (m && !m.active) { m.height = along(e, e.v0.height, e.v1.height); m.updateInfo(); }
           }
       }
       this.lossReduction = 0;
@@ -111,7 +115,8 @@
       this.length = Math.hypot(dx, dy);
       this.nx = -dy / this.length; this.ny = dx / this.length;
       this.intercept = this.nx * v0.x + this.ny * v0.y;
-      this.midpoint = null;
+      this.midpoint = null;                            // the split point, at t of the way from v0 to v1 (see choose)
+      this.t = 0.5;
       this.sub = { "0": null, "1": null, "+": null, "-": null };
       this.active = false;
       if (active) this.activate();
@@ -122,7 +127,7 @@
       if (this.active) return;
       this.active = true;
       this.mesh.activeEdges.add(this);
-      if (!this.midpoint) this.midpoint = new Vertex(this.mesh, (this.v0.x + this.v1.x) / 2, (this.v0.y + this.v1.y) / 2, false, this);
+      if (!this.midpoint) this.midpoint = new Vertex(this.mesh, along(this, this.v0.x, this.v1.x), along(this, this.v0.y, this.v1.y), false, this);
       this.v0.addEdge(this); this.v1.addEdge(this);
       this.sub = { "0": new Edge(this.mesh, this.v0, this.midpoint, false), "1": new Edge(this.mesh, this.midpoint, this.v1, false), "+": null, "-": null };
     }
@@ -138,8 +143,12 @@
       this.mesh.activeEdges.delete(this);
       this.v0.removeEdge(this); this.v1.removeEdge(this);
     }
-    // attach a face and precompute its split through this edge's midpoint
+    // attach a face, precompute its split through this edge's split point, and choose where that point is
     addFace(face) {
+      this.attach(face);
+      this.choose();
+    }
+    attach(face) {
       const mesh = this.mesh;
       const opposing = face.vertices[face.edges.indexOf(this)];
       const type = this.test(opposing) > 0 ? "+" : "-";
@@ -166,11 +175,39 @@
         face.subdiv[face.edges.indexOf(this)] = { e: chord, "+": face1, "-": face0 };
       }
       if (Math.max(face0.aspectRatio(), face1.aspectRatio()) >= mesh.maxAspectRatio ||
+          (!mesh.longSidesFirst && Math.min(face0.circleFill(), face1.circleFill()) < mesh.minCircleFill) ||
           Math.min(face0.idx.length, face1.idx.length) < mesh.minPoints) {
         this.disqualifying.add(face);
         if (!this.midpoint.disqualified) { this.midpoint.disqualified = true; mesh.heap.delete(this.midpoint); }
       }
+    }
+    // With splitAt (more than one place), the split point is put at each place in turn and kept where its split saves
+    // the most error, among the places whose split is allowed; every face that joins the edge chooses again. With the default, the point stays at the midpoint, as in the Python.
+    choose() {
+      const ts = this.mesh.splitAt;
+      if (ts.length > 1) {
+        let best = this.t, bs = -Infinity;
+        for (const t of ts) {
+          this.place(t);
+          const m = this.midpoint;
+          m.updateInfo();
+          const sc = m.disqualified ? -Infinity : m.lossReduction;
+          if (sc > bs) { bs = sc; best = t; }
+        }
+        if (best !== this.t) this.place(best);
+      }
       this.midpoint.updateInfo();
+    }
+    // move the split point to t of the way along: a new candidate vertex there (the old one is dropped), its two
+    // half edges, and the split of each face on the edge through it
+    place(t) {
+      const mesh = this.mesh, old = this.midpoint;
+      if (old) { old.dead = true; mesh.vertices.delete(old); mesh.heap.delete(old); }
+      this.t = t;
+      this.midpoint = new Vertex(mesh, along(this, this.v0.x, this.v1.x), along(this, this.v0.y, this.v1.y), false, this);
+      this.sub["0"] = new Edge(mesh, this.v0, this.midpoint, false); this.sub["1"] = new Edge(mesh, this.midpoint, this.v1, false);
+      this.disqualifying.clear();
+      for (const s of ["+", "-"]) if (this.faces[s]) this.attach(this.faces[s]);
     }
     removeFace(face) {
       if (this.faces["+"] === face) this.faces["+"] = null;
@@ -198,6 +235,13 @@
     aspectRatio() {
       const L = this.edges.map((e) => e.length);
       return Math.max(...L) / Math.min(...L);
+    }
+    // how much of the triangle its inscribed circle fills, against an equilateral triangle: pi r^2 / area =
+    // pi area / s^2 (s the semiperimeter), scaled so an equilateral triangle scores 1, which gives 3 sqrt(3) area / s^2.
+    // Any thin triangle, a needle or a flat cap, scores near 0
+    circleFill() {
+      const s = (this.edges[0].length + this.edges[1].length + this.edges[2].length) / 2;
+      return (3 * Math.sqrt(3) * this.area) / (s * s);
     }
     // barycentric weights of the face's points, (n, 3) row-major, computed when first needed
     weights() {
@@ -243,9 +287,18 @@
     // new triangle would hold fewer data points, which keeps a vertex from being fitted to one or two points
     // refresh (not in the Python's default; false keeps its behaviour): after a vertex is refitted, refit the candidate
     // midpoints on its triangles as well, so that no step acts on a fit made against an old height
-    constructor(X, Y, { maxAspectRatio = 5, minPoints = 0, refresh = false, rng = Math.random } = {}) {
+    // minCircleFill (not in the Python; 0 keeps its behaviour): a split is refused when either new triangle's circleFill()
+    // is below it; with it set, a random step that lands on a refused split takes the greedy step instead, so the
+    // limit holds everywhere (the Python's random step splits whatever it draws)
+    // longSidesFirst (not in the Python; with minCircleFill): a split that would leave a triangle below minCircleFill is
+    // not refused; when it is taken, the triangles in its way are first cut across their longest sides (see cut)
+    // splitAt (not in the Python; [0.5] keeps its behaviour): the places along an edge, as fractions of the way from one
+    // end, where its split may be made; each edge keeps the one whose split saves the most error (Edge.choose)
+    constructor(X, Y, { maxAspectRatio = 5, minCircleFill = 0, longSidesFirst = false, splitAt = [0.5], minPoints = 0, refresh = false, rng = Math.random } = {}) {
       this.X = X; this.Y = Y; this.n = Y.length;
-      this.maxAspectRatio = maxAspectRatio; this.minPoints = minPoints; this.refresh = refresh; this.rng = rng;
+      this.maxAspectRatio = maxAspectRatio; this.minCircleFill = minCircleFill; this.longSidesFirst = longSidesFirst && minCircleFill > 0;
+      this.splitAt = splitAt;
+      this.minPoints = minPoints; this.refresh = refresh; this.rng = rng;
       this.vertices = new Set(); this.activeFaces = new Set(); this.activeEdges = new Set();
       this.heap = new Map();
       let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
@@ -284,14 +337,61 @@
         const L = Math.max(...face.edges.map((e) => e.length));
         const cand = face.edges.filter((e) => Math.abs(e.length - L) <= 1e-12);
         best = cand[Math.floor(this.rng() * cand.length)].midpoint;
-      } else {
+        if (this.minCircleFill > 0 && best.disqualified) best = null;
+      }
+      if (!best) {
         let bp = Infinity;
         for (const [v, p] of this.heap) if (p < bp) { bp = p; best = v; }
       }
       this.steps++;
       if (!best) return "none";
       if (best.active) { best.updateHeight(); return "refit"; }
-      best.activate(); return "split";
+      this.cut(best); return "split";
+    }
+
+    // Splits through the midpoint v. With longSidesFirst, while the split would leave a triangle on either side below
+    // minCircleFill and the edge is not that triangle's longest side, that triangle is first cut across its longest
+    // side (Rivara's longest-edge refinement): each such cut moves on to a longer side, so they end, and they never
+    // reach v's own edge. A vertex made this way only makes room: it starts at its edge's mean height, which leaves
+    // the surface as it was, and the greedy rule may refit it later. v's split is then refitted on the new triangles
+    // and made, unless they hold too few points for it.
+    cut(v) {
+      const e = v.parentEdge;
+      if (this.longSidesFirst) {
+        for (let guard = 0; guard < 64; ++guard) {
+          let f = null, moved = false;
+          for (const s of ["+", "-"]) {
+            const g = e.faces[s];
+            if (!g) continue;
+            const sd = g.subdiv[g.edges.indexOf(e)];
+            if (Math.min(sd["+"].circleFill(), sd["-"].circleFill()) >= this.minCircleFill) continue;
+            // on a triangle's longest side only the midpoint is sure to leave no thin half: the split moves there
+            if (isLongest(g, e)) { if (e.t !== 0.5) { e.place(0.5); e.midpoint.updateInfo(); moved = true; break; } continue; }
+            f = g; break;
+          }
+          if (moved) continue;
+          if (!f) break;
+          this.bisectLongest(f);
+        }
+        v = e.midpoint;                                 // making room may have moved the split point (Edge.choose)
+        if (v.disqualified) return;
+      }
+      v.activate();
+    }
+    // cut f across its longest side L, and the triangle on the other side of L with it; when L is not that
+    // triangle's longest side, that triangle is cut across its own longest side first
+    bisectLongest(f) {
+      const L = longestEdge(f);
+      for (let guard = 0; guard < 64; ++guard) {
+        const g = L.faces["+"] === f ? L.faces["-"] : L.faces["+"];
+        if (!g || isLongest(g, L)) break;
+        this.bisectLongest(g);
+      }
+      if (L.t !== 0.5) L.place(0.5);                     // a cut that makes room is at the midpoint, as Rivara's is
+      const m = L.midpoint;
+      m.newHeight = (L.v0.height + L.v1.height) / 2;
+      m.disqualified = false;                          // an active vertex stays in the queue for its refits
+      m.activate();
     }
 
     activeVertices() { let k = 0; for (const v of this.vertices) if (v.active) ++k; return k; }
@@ -305,6 +405,9 @@
       return s;
     }
   }
+
+  const longestEdge = (f) => f.edges.reduce((a, b) => (b.length > a.length ? b : a));
+  const isLongest = (f, e) => e.length >= Math.max(f.edges[0].length, f.edges[1].length, f.edges[2].length) - 1e-12;
 
   const api = { DecisionMesh, Vertex, Edge, Face, reset: () => { SEQ = 0; } };
   if (typeof module !== "undefined" && module.exports) module.exports = api;

@@ -207,7 +207,7 @@
     S.history = []; S.done = false; S.counted = false;
     sync(); record();
     drawTruth(); draw();
-    setStatus(S.running ? "busy" : "idle", S.running ? "Growing" : "Ready", S.running ? "" : "Press play, or step once.");
+    setStatus(S.running ? "busy" : "idle", S.running ? "Growing" : "Ready", "");
   }
 
   // the three fits are matched on free parameters, not on pieces: a tree leaf carries one mean, a
@@ -383,9 +383,8 @@
     const h = S.history[S.history.length - 1];
     const names = ["freeform triangles", "right triangles", "rectangles", "the tree"], errs = [h.m, h.q, h.r, h.t];
     let w = 0; for (let i = 1; i < 4; ++i) if (errs[i] < errs[w]) w = i;
-    const rest = errs.filter((_, i) => i !== w).sort((a, b) => a - b)[0];
     const txt = `${h.df.toLocaleString()} free parameters each: ${names[w]} closest to the truth `
-      + `(RMSE ${errs[w].toFixed(3)}), ${(100 * (rest / errs[w] - 1)).toFixed(0)}% ahead of the next.`;
+      + `(RMSE ${errs[w].toFixed(3)}).`;
     if ($("speedfact")) $("speedfact").textContent = `about ${stepMs < 1 ? stepMs.toFixed(2) : stepMs.toFixed(1)} ms a step here`;
     if (S.done) { S.running = false; $("playbtn").textContent = "Play"; setStatus("ok", "Done", txt + " Stopped at ten points per freeform triangle, on average."); }
     else setStatus(S.running ? "busy" : "idle", S.running ? "Growing" : "Paused", txt);

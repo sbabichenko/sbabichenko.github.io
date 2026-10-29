@@ -280,13 +280,16 @@
     // The ranking uses the columns above. The winner is then cut in, which does not move the
     // surface, and its surplus is fitted against the exact column of the geometry that results, so
     // the applied step is a least-squares step and the squared error cannot rise.
-    step() {
+    // accept (optional): a test (vertex, midpoint) => bool that limits the candidates, as the home page's pokes
+    // ask for the best cut inside a region; without it every candidate is weighed
+    step(accept) {
       this.steps++;
       this.buildIndex();
       const col = this.scratch || (this.scratch = { val: new Float64Array(this.n), hit: new Int32Array(this.n), k: 0 });
       const floor = Math.max(3, 2 * this.minPoints);
       let best = null, bestGain = 0;
       const consider = (v, mid) => {
+        if (accept && !accept(v, mid)) return;
         // a cut that would leave a hair-thin cell is not offered: the same limit the triangles use
         if (mid && this.maxAspect > 0 && !v) {
           let ok = false;
