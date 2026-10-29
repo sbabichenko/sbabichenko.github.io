@@ -31,9 +31,10 @@
           {% endfor %}
         </ul>
         {% endif %}
-        <p class="starthere">New here? Start with <a href="{{ get_url(path='dissertation/idea/') }}">the noise-state, explained</a>,
-          or <a href="{{ get_url(path='noisestate/') }}">solve a game</a> in your browser.</p>
-        <p class="poke" aria-hidden="true"><span class="for-mouse">click the mesh in the background to poke it, or drag to draw a ridge</span><span class="for-touch">tap the mesh in the background to poke it</span></p>
+        <p class="poke" aria-hidden="true"><span class="for-mouse">click or drag the mesh</span><span class="for-touch">tap the mesh</span></p>
+        <button class="geom" type="button" hidden
+                data-right="{{ get_url(path='mesh/right-mesh.js', cachebust=true) }}"
+                data-rect="{{ get_url(path='mesh/rect-mesh.js', cachebust=true) }}"></button>
         {%- set formula = load_data(path="data/formula.json") %}
         <a class="motif" href="{{ get_url(path='dissertation/idea/') }}"
            aria-label="The noise-state: player i's estimate, at time t, of the primitive shock W at an earlier time u, given everything player i knows">
@@ -55,8 +56,6 @@
             <div class="shot nsheads" role="img" data-think="{{ get_url(path='js/card-nsheads-think.json', cachebust=true) }}"
                  aria-label="Two people facing each other, each with their own estimate of a shared row of shocks, each picturing the other; on hover, the pictures of each other leave and the whole card becomes one thought about the shared world">
               <div class="pics">
-                <img class="img-light" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-rest-light.webp', cachebust=true) }}" alt="" width="480" height="240" />
-                <img class="img-dark" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-rest-dark.webp', cachebust=true) }}" alt="" width="480" height="240" />
                 <img class="img-light base" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-base-light.webp', cachebust=true) }}" alt="" width="480" height="240" />
                 <img class="img-dark base" loading="lazy" decoding="async" draggable="false" src="{{ get_url(path='images/card-nsheads-base-dark.webp', cachebust=true) }}" alt="" width="480" height="240" />
               </div>

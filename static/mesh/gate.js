@@ -317,7 +317,6 @@
       : `Admitted nothing: the fit is the starting mesh.`;
     if (r0 && !admitted && r0.method === "lindsey" && r0.nullSd > 2.5) say += ` In round 0 the empirical null came out ${fmt(r0.nullSd, 1)} times as wide as the textbook one${r0.nullSd >= cap - 1e-3 ? " (its cap)" : ""}, so it took in the scores that stood out and nothing cleared the gate.`;
     else if (r0 && r0.method === "BH-fallback") say += " In round 0 the scores had no central peak to fit a null to, so the gate used the textbook null.";
-    else if (!admitted && !S.user && $("truth").value === "nothing") say += " There was nothing to find.";
     $("statustext").textContent = say + ` ${Math.round(f.ms)} ms.`;
   }
 

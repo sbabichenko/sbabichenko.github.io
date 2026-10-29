@@ -81,7 +81,7 @@
       blip: "In Chapter 3\u2019s game, player 1\u2019s blip is its spike followed by its own follow-up, and the follow-up is just more small spikes, later "
           + "(the bars below). Each frozen spike moves the state along the frozen life, shifted to when it happens and scaled "
           + "by its size; add them up and you get the blip\u2019s life. The small steps come from spacing the spikes apart; they shrink as the spikes get finer.",
-      frozen: "The other way round: a frozen spike is a blip minus blips that cancel its follow-up. Those corrections have "
+      frozen: "A frozen spike is a blip minus blips that cancel its follow-up. Those corrections have "
           + "follow-ups of their own, canceled in the next round, and so on. The leftover shrinks every round, because a "
           + "follow-up only reaches forward in time, so the rounds settle on the frozen life."};
 

@@ -266,7 +266,7 @@
       for (const f of [0, 0.25, 0.5, 0.75, 1]) el("text", { x: X(f), y: H - 5, "text-anchor": f === 0 ? "start" : f === 1 ? "end" : "middle" }, svg).textContent = f === 1 ? "\u03b8*" : f === 0 ? "\u03b8/\u03b8* = 0" : f;
       el("text", { x: 4, y: H - PADB - 8 }, svg).textContent = W < 520 ? "change in cost from a harder push" : "change in cost from pushing harder now (below zero: it pays)";
 
-      pl[0].textContent = P[0].toFixed(3); pl[1].textContent = `${P[i].toFixed(3)}` + (kend > 0 ? `, falling to ${P[P.length - 1].toFixed(1)} near \u03b8*` : "");
+      pl[0].textContent = P[0].toFixed(3); pl[1].textContent = P[i].toFixed(3);
     }
     slider.addEventListener("input", draw); stoy.addEventListener("input", drawToy);
     new ResizeObserver(() => { draw(); drawToy(); }).observe(document.getElementById("state"));

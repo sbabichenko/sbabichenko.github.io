@@ -44,6 +44,112 @@
     (x, y) => 2.0 * Math.tanh(1.1 * (2.2 - Math.hypot(x, y))),
   ];
 
+  // The geometries the small button under the hero cycles through: these freeform triangles; the same engine kept
+  // free of slivers; and the race's right triangles and rectangles (static/mesh/right-mesh.js, rect-mesh.js), whose
+  // scripts load the first time they are asked for. A switch keeps the surface and its samples, so only the geometry
+  // changes. A rectangle covers about two triangles, so it gets half as many pieces. Pokes work on all of them: the
+  // two lattice engines take a filter on their candidates, so a poke asks each for its best cut inside the poked
+  // region, as the freeform one does.
+  //
+  // Without slivers (decision-mesh.js options): no triangle whose inscribed circle fills less than 0.4 of what an
+  // equilateral triangle's does; a cut that would make one first makes room by cutting the triangles in its way
+  // across their longest sides; and an edge is cut at whichever of five points from 30% to 70% of the way along it
+  // saves the most error, not always at its midpoint, so the vertices do not line up on a grid.
+  const GEOMS = [
+    { key: "freeform", name: "freeform triangles", target: TARGET, prefill: PREFILL,
+      icon: "M2 14 9.5 2 14 14Z M9.5 2 4.5 14 M9.5 2 7 14 M9.5 2 10.5 14" },                 // a fan of slivers
+    { key: "round", name: "freeform triangles without slivers", target: TARGET, prefill: PREFILL,
+      opts: { maxAspectRatio: Infinity, minCircleFill: 0.4, longSidesFirst: true, splitAt: [0.3, 0.4, 0.5, 0.6, 0.7] },
+      icon: "M2 13.5 8 2.5 14 13.5Z M5 8 11 8 8.5 13.5Z" },                                  // plump triangles
+    { key: "right", name: "right triangles", target: TARGET, prefill: PREFILL,
+      icon: "M2 2h12v12H2Z M2 2l12 12 M14 2 2 14 M8 2v6" },
+    { key: "rect", name: "rectangles", target: TARGET / 2, prefill: PREFILL / 2,
+      icon: "M2 2h12v12H2Z M8 2v12 M2 8h6 M8 6h6 M11 6v8" },
+  ];
+  let geom = 0;
+  // a right-triangle or rectangle mesh as the drawing sees one: line segments in field units, each kept as the same
+  // object from step to step, in the order they appeared (a line that is cut leaves, and its pieces join at the end)
+  function latticeMesh(m, rect) {
+    const lines = new Map(), activeEdges = new Set(), at = (ix, iy) => ({ x: m.xmin + ix / m.sx, y: m.ymin + iy / m.sy });
+    // the rectangles' outlines cut at every corner on them, so a long side next to two short ones is drawn once, in
+    // two pieces, and no stretch of line is stroked twice
+    function outlines() {
+      const H = new Map(), V = new Map(), out = [];
+      const put = (M, a, b) => { let s = M.get(a); if (!s) M.set(a, s = []); s.push(b); };
+      for (const c of m.leaves) for (const [x, y] of [[c.x0, c.y0], [c.x1, c.y0], [c.x0, c.y1], [c.x1, c.y1]]) { put(H, y, x); put(V, x, y); }
+      for (const s of H.values()) s.sort((a, b) => a - b);
+      for (const s of V.values()) s.sort((a, b) => a - b);
+      const cut = (s, a, b, emit) => { let p = a; for (const t of s) if (t > p && t < b) { emit(p, t); p = t; } emit(p, b); };
+      for (const c of m.leaves) {
+        for (const y of [c.y0, c.y1]) cut(H.get(y), c.x0, c.x1, (p, q) => out.push([p, y, q, y]));
+        for (const x of [c.x0, c.x1]) cut(V.get(x), c.y0, c.y1, (p, q) => out.push([x, p, x, q]));
+      }
+      return out;
+    }
+    // brings the lines up to date; returns the ones that joined and the ones that left
+    function sync() {
+      const live = new Set(), born = [], gone = [];
+      for (const [x0, y0, x1, y1] of rect ? outlines() : m.edges()) {
+        const k = x0 + "," + y0 + "," + x1 + "," + y1;
+        live.add(k);
+        if (!lines.has(k)) { const e = { v0: at(x0, y0), v1: at(x1, y1) }; lines.set(k, e); activeEdges.add(e); born.push(e); }
+      }
+      for (const [k, e] of lines) if (!live.has(k)) { lines.delete(k); activeEdges.delete(e); gone.push(e); }
+      return { born, gone };
+    }
+    sync();
+    // does segment a lie along segment b (a piece of it, left when b was cut)?
+    const on = (p, b) => Math.abs((b.v1.x - b.v0.x) * (p.y - b.v0.y) - (b.v1.y - b.v0.y) * (p.x - b.v0.x)) < 1e-9 &&
+      p.x >= Math.min(b.v0.x, b.v1.x) - 1e-9 && p.x <= Math.max(b.v0.x, b.v1.x) + 1e-9 &&
+      p.y >= Math.min(b.v0.y, b.v1.y) - 1e-9 && p.y <= Math.max(b.v0.y, b.v1.y) + 1e-9;
+    // the smallest edge a candidate's cut would make, in field units: the halves of a right triangle's hypotenuse,
+    // or the halves of a rectangle's side and the chord across it (cuts that completion forces nearby are coarser)
+    function cutSize(mid) {
+      if (rect) {
+        let s = Infinity;
+        for (const h of mid.hits) s = Math.min(s, h.along === "x" ? Math.min(h.half / m.sx, h.span / m.sy) : Math.min(h.half / m.sy, h.span / m.sx));
+        return s;
+      }
+      const f = mid.faces[0];
+      return 0.5 * Math.hypot((f.b.ix - f.c.ix) / m.sx, (f.b.iy - f.c.iy) / m.sy);
+    }
+    return { activeEdges, lattice: true, get pieces() { return rect ? m.cells : m.faces; },
+      get X() { return m.X; }, get Y() { return m.Y; }, get n() { return m.n; },
+      step() { const r = m.step(); if (r !== "none") sync(); return r; },
+      // new samples [x, y, value]: each joins the leaf that holds it, and every point's weights are worked out again
+      add(pts) {
+        const n0 = m.n, n1 = n0 + pts.length, k = rect ? 4 : 3, grow = (A, w) => { const B = new Float64Array(w * n1); B.set(A); return B; };
+        m.X = grow(m.X, 2); m.Y = grow(m.Y, 1); m.px = grow(m.px, 1); m.py = grow(m.py, 1); m.pred = grow(m.pred, 1); m.W = grow(m.W, k);
+        m.n = n1; m.scratch = null;
+        pts.forEach(([x, y, v], j) => {
+          const i = n0 + j, S = rect ? RM.S : TM.S;
+          m.X[2 * i] = x; m.X[2 * i + 1] = y; m.Y[i] = v;
+          m.px[i] = Math.min(S, Math.max(0, (x - m.xmin) * m.sx)); m.py[i] = Math.min(S, Math.max(0, (y - m.ymin) * m.sy));
+          m.leafAt(m.px[i], m.py[i]).idx.push(i);
+        });
+        m.refresh();
+      },
+      // the engine's best cut at a place where(x, y) allows, making no edge shorter than minLen; returns the lines it
+      // made, which old line each piece of a cut line came from, and the lines cut, or null. Refits move no line,
+      // so a few may come first.
+      local(where, minLen) {
+        const accept = (v, mid) => {
+          const p = v || mid;
+          return where(m.xmin + p.ix / m.sx, m.ymin + p.iy / m.sy) && (!mid || cutSize(mid) >= minLen);
+        };
+        for (let k = 0; k < 8; ++k) {
+          if (m.step(accept) === "none") return null;
+          const { born, gone } = sync();
+          if (!born.length) continue;
+          const from = new Map();
+          for (const e of born) { const b = gone.find((g) => on(e.v0, g) && on(e.v1, g)); if (b) from.set(e, b); }
+          return { deps: gone, born, from };
+        }
+        return null;
+      } };
+  }
+  const pieces = () => (mesh.activeFaces ? mesh.activeFaces.size : mesh.pieces);
+
   let mesh, seed = (Date.now() / 1000) | 0, drawn = new Map(), phase = "grow", fade = 1, rng, field, target = TARGET;
   // after a poke: where it landed (a disk, or a tube along a drag that is uncovered from its start), the steps left
   // to spend there, and the bumps raised so far (new samples are drawn from the field with all of them added)
@@ -74,21 +180,23 @@
   // every poke runs on its own clock, R.T0 to R.T0 + R.D, which ends at its last cut; its line or ring fades on it
   const progress = (R, now) => Math.min(1, Math.max(0, (now - R.T0) / R.D));
 
-  // a new surface: a fresh field, fresh samples, the mesh grown from its start
-  function start() {
-    seed = (seed * 1103515245 + 12345) >>> 0;
+  // a new surface: a fresh field, fresh samples, the mesh grown from its start (same: the same field and samples)
+  function start(same) {
+    if (!same) seed = (seed * 1103515245 + 12345) >>> 0;
     rng = mulberry32(seed);
-    field = FIELDS[seed % FIELDS.length]; target = TARGET;
-    region = null; pokes = 0; bumps = []; trace = null; marks = [];
+    const GM = GEOMS[geom];
+    field = FIELDS[seed % FIELDS.length]; target = GM.target;
+    region = null; planner = null; pokes = 0; bumps = []; trace = null; marks = [];
     const X = new Float64Array(2 * N), Y = new Float64Array(N);
     for (let i = 0; i < N; ++i) {
       const x = LO + (HI - LO) * rng(), y = LO + (HI - LO) * rng();
       X[2 * i] = x; X[2 * i + 1] = y; Y[i] = (nothing ? 0 : field(x, y)) + 0.45 * gauss(rng);
     }
     if (nothing) { mesh = startingMesh(); drawn = new Map(); phase = "grow"; fade = 1; return; }
-    DM.reset();
-    mesh = new DM.DecisionMesh(X, Y, { maxAspectRatio: 4, minPoints: 4, refresh: true, rng: mulberry32(seed + 1) });
-    for (let i = 0; i < PREFILL * 3 && mesh.activeFaces.size < PREFILL; ++i) if (mesh.step(0.08) === "none") break;
+    if (GM.key === "right") { TM.reset(); mesh = latticeMesh(new TM.RightMesh(X, Y, { depth: 4, minPoints: 4 }), false); }
+    else if (GM.key === "rect") { RM.reset(); mesh = latticeMesh(new RM.RectMesh(X, Y, { grid: 4, minPoints: 4, maxAspect: 4, rng: mulberry32(seed + 2) }), true); }
+    else { DM.reset(); mesh = new DM.DecisionMesh(X, Y, Object.assign({ maxAspectRatio: 4, minPoints: 4, refresh: true, rng: mulberry32(seed + 1) }, GM.opts)); }
+    for (let i = 0; i < GM.prefill * 3 && pieces() < GM.prefill; ++i) if (mesh.step(0.08) === "none") break;
     drawn = new Map();
     phase = "grow"; fade = 1;
   }
@@ -158,9 +266,12 @@
     // the bump is raised out to where it is still a fair fraction of the noise (3 w), and only triangles whose box
     // comes that close are looked at
     const reach = Math.sqrt(3 * w), P = R.pts || [R];
+    if (mesh.lattice) {                                // every point is looked at; the engine reads Y afresh each step
+      for (let i = 0; i < mesh.n; ++i) { const d2 = d2to(R, X[2 * i], X[2 * i + 1]); if (d2 < 3 * w) Y[i] += h * Math.exp(-d2 / w); }
+    }
     const bx0 = Math.min(...P.map((q) => q.x)) - reach, bx1 = Math.max(...P.map((q) => q.x)) + reach;
     const by0 = Math.min(...P.map((q) => q.y)) - reach, by1 = Math.max(...P.map((q) => q.y)) + reach;
-    for (const f of mesh.activeFaces) {
+    if (!mesh.lattice) for (const f of mesh.activeFaces) {
       const [a, b, c] = f.vertices;
       if (Math.max(a.x, b.x, c.x) < bx0 || Math.min(a.x, b.x, c.x) > bx1 || Math.max(a.y, b.y, c.y) < by0 || Math.min(a.y, b.y, c.y) > by1) continue;
       let any = false;
@@ -175,8 +286,8 @@
       const x = Math.min(HI, Math.max(LO, cx + sd * gauss(r))), y = Math.min(HI, Math.max(LO, cy + sd * gauss(r)));
       pts.push([x, y, valueAt(x, y) + 0.45 * gauss(r)]);
     }
-    for (const f of addData(pts)) touched.add(f);
-    rescore(touched);
+    if (mesh.lattice) mesh.add(pts);
+    else { for (const f of addData(pts)) touched.add(f); rescore(touched); }
     ++pokes; lastPoke = performance.now();
     plan(R, R.pts ? 180 : 70, R.pts ? Math.min(9000, R.dur + 4000) : 3500);
   }
@@ -188,7 +299,7 @@
       const px_ = Math.min(HI, Math.max(LO, x + 0.3 * gauss(r))), py_ = Math.min(HI, Math.max(LO, y + 0.3 * gauss(r)));
       pts.push([px_, py_, valueAt(px_, py_) + 0.45 * gauss(r)]);
     }
-    rescore(addData(pts));
+    if (mesh.lattice) mesh.add(pts); else rescore(addData(pts));
     lastPoke = performance.now();
     plan({ x, y, r: 0.55 }, 10, 600);
   }
@@ -196,36 +307,53 @@
   // (i + 1) / n)), quick at first and easing off, the last exactly at T0 + D, where the poke's clock (R.D) ends. An edge
   // gets the time it is to appear: a new chord its cut's time, the two halves of a split edge the time of the edge they
   // came from (the line was already there). On a drag the cuts are taken in order along the path.
+  // The freeform engine's cuts are cheap and are all worked out at once. The lattice engines' cost a few
+  // milliseconds each, so they are worked out a few per frame (planMore), each shown on the schedule for the cuts
+  // asked for, or as soon as it is found if that is later; the clock is set to end at the last cut once all are in.
+  let planner = null;
   function plan(R, want, D) {
     region = R; phase = "grow"; fade = 1;
-    const cuts = [];
-    let pf = R.pts ? 0.15 : 1, guard = 0;
-    while (cuts.length < want && guard++ < want * 4) {
-      planFront = R.pts ? Math.min(1, Math.max(pf, 0.15 + 1.1 * (cuts.length + 1) / want)) : 1;
+    // (a freeform mesh that tries several points along each edge also costs more per cut, and is planned the same way)
+    planner = { R, want, D, cuts: [], pf: R.pts ? 0.15 : 1, guard: 0, slow: !!mesh.lattice || (mesh.splitAt || []).length > 1 };
+    if (planner.slow) { planner.T0 = planner.last = R.T0 = performance.now(); R.D = D; }
+    planMore(Infinity);
+  }
+  function planMore(budget) {
+    const P = planner, R = P.R, t0 = performance.now();
+    let open = true;
+    while (!P.slow || performance.now() - t0 < Math.min(budget, 8)) {
+      if (P.cuts.length >= P.want || P.guard++ >= P.want * 4) { open = false; break; }
+      planFront = R.pts ? Math.min(1, Math.max(P.pf, 0.15 + 1.1 * (P.cuts.length + 1) / P.want)) : 1;
       const did = localStep();
-      if (!did) { if (pf < 1 && R.pts) { pf = Math.min(1, planFront + 0.1); continue; } break; }
-      cuts.push(did);
+      if (!did) { if (P.pf < 1 && R.pts) { P.pf = Math.min(1, planFront + 0.1); continue; } open = false; break; }
+      P.cuts.push(did);
+      if (P.slow) show(P, did, P.cuts.length - 1, P.want);
     }
     planFront = 1;
-    const T0 = performance.now(), n = cuts.length;
-    let last = T0;
-    cuts.forEach((c, i) => {
-      // on schedule, but never before a line it attaches to (a cut still pending from an earlier poke may be one)
-      let t = T0 + D * (1 - Math.sqrt(Math.max(0, 1 - (i + 1) / n)));
-      for (const e of c.deps) { const te = drawn.get(e); if (te !== undefined && te >= t) t = te + 1; }
-      last = Math.max(last, t);
-      // the halves keep the split edge's time (the line was already there); the chords are the new lines
-      const tg = drawn.has(c.pe) ? drawn.get(c.pe) : T0 - 5000;
-      for (const e of c.born) drawn.set(e, e === c.pe.sub["0"] || e === c.pe.sub["1"] ? tg : t);
-    });
-    R.T0 = T0; R.D = n ? last - T0 : 600;                  // the clock ends at the last cut
+    if (open) return;
+    if (!P.slow) {
+      P.T0 = P.last = performance.now();
+      P.cuts.forEach((c, i) => show(P, c, i, P.cuts.length));
+    }
+    R.T0 = P.T0; R.D = P.cuts.length ? P.last - P.T0 : 600;    // the clock ends at the last cut
+    planner = null;
+  }
+  function show(P, c, i, n) {
+    // on schedule, but never before a line it attaches to (a cut still pending from an earlier poke may be one)
+    let t = P.T0 + P.D * (1 - Math.sqrt(Math.max(0, 1 - (i + 1) / n)));
+    if (P.slow) t = Math.max(t, performance.now());
+    for (const e of c.deps) { const te = drawn.get(e); if (te !== undefined && te >= t) t = te + 1; }
+    P.last = Math.max(P.last, t);
+    // the pieces of a cut line keep its time (the line was already there); the chords are the new lines
+    const was = (e) => (c.from ? c.from.get(e) : e === c.pe.sub["0"] || e === c.pe.sub["1"] ? c.pe : null);
+    for (const e of c.born) { const b = was(e); drawn.set(e, b ? (drawn.has(b) ? drawn.get(b) : P.T0 - 5000) : t); }
   }
   // a cut is taken only if no new triangle is thinner than 4 to 1 and no new edge is shorter than about 14 pixels
   function shapely(v) {
     if (v.active) return true;
     for (const f of v.getSimFaces()) {
       if (!f) continue;
-      if (f.aspectRatio() > 4) return false;
+      if (!mesh.longSidesFirst && f.aspectRatio() > 4) return false;     // making room first keeps the shape
       for (const e of f.edges) if (e.length * pxPerUnit < 14) return false;
     }
     return true;
@@ -233,13 +361,24 @@
   // the engine's best cut inside the poked region (on a drag, the part planned so far); returns the edges it
   // creates, or null. Refits, which move no line, are left to the engine's own growth.
   function localStep() {
+    if (mesh.lattice) return mesh.local((x, y) => { const m = hit(x, y, region); return m.in && m.idx <= planFront; }, 14 / pxPerUnit);
     let best = null, bp = -1e-12;
     for (const [v, p] of mesh.heap) if (p < bp && !v.active) { const m = hit(v.x, v.y, region); if (m.in && m.idx <= planFront && shapely(v)) { bp = p; best = v; } }
     if (!best) return null;
     const pe = best.parentEdge, deps = [];
     for (const side of ["+", "-"]) if (pe.faces[side]) deps.push(...pe.faces[side].edges);   // the lines the cut attaches to
-    best.activate();
-    return { pe, deps, born: [pe.sub["0"], pe.sub["1"], pe.sub["+"], pe.sub["-"]].filter((e) => e && e.active) };
+    if (!mesh.longSidesFirst) {
+      best.activate();
+      return { pe, deps, born: [pe.sub["0"], pe.sub["1"], pe.sub["+"], pe.sub["-"]].filter((e) => e && e.active) };
+    }
+    // the cut may first make room by cutting nearby triangles across their longest sides: every line that joined is new, and the halves of every line
+    // that left keep its time
+    const before = new Set(mesh.activeEdges);
+    mesh.cut(best);
+    const born = [], from = new Map();
+    for (const e of mesh.activeEdges) if (!before.has(e)) born.push(e);
+    for (const e of before) if (!e.active) { deps.push(e); from.set(e.sub["0"], e); from.set(e.sub["1"], e); }
+    return born.length ? { deps, born, from } : null;
   }
 
   // the engine's starting mesh: the square cut along its diagonal and bisected evenly, 128 right triangles
@@ -577,11 +716,44 @@
     }
   }
 
+  // the button that cycles the geometry (home page only): the next one's script loads first, then the picture fades
+  // out and the same surface grows again in the new geometry; with reduced motion it is redrawn at once
+  const btn = nothing ? null : document.querySelector(".hero .geom");
+  let switching = false, keep = false, still = null;
+  const loaded = {};
+  const load = (src) => loaded[src] || (loaded[src] = new Promise((ok, no) => {
+    const s = document.createElement("script");
+    s.src = src; s.onload = ok; s.onerror = () => { delete loaded[src]; no(); };
+    document.head.appendChild(s);
+  }));
+  function paintButton() {
+    const G = GEOMS[geom];
+    btn.innerHTML = `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="${G.icon}"/></svg>`;
+    btn.title = G.name;
+    btn.setAttribute("aria-label", btn.title);
+  }
+  if (btn) {
+    paintButton(); btn.hidden = false;
+    btn.addEventListener("click", async () => {
+      if (switching) return;
+      const next = (geom + 1) % GEOMS.length, src = btn.dataset[GEOMS[next].key];
+      switching = true;
+      try { if (src) await load(src); } catch (e) { switching = false; return; }
+      geom = next; paintButton();
+      if (still) { still(); switching = false; return; }
+      phase = "out"; acc = 0; keep = true; asleep = false; wake();
+    });
+  }
+  const pokeable = () => !switching;
+
   if (reduced) {                                          // one still figure, no motion
-    start();
-    if (!nothing) for (let i = 0; i < 700 && mesh.activeFaces.size < TARGET; ++i) if (mesh.step(0.08) === "none") break;
     const once = () => draw(performance.now() + 1e6);            // long after every cut: settled, none glowing
-    once(); window.addEventListener("resize", once);
+    still = () => {
+      start(!!mesh);                                      // a switch of geometry keeps the surface
+      if (!nothing) for (let i = 0; i < 700 && pieces() < target; ++i) if (mesh.step(0.08) === "none") break;
+      once();
+    };
+    still(); window.addEventListener("resize", once);
     new MutationObserver(once).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     return;
   }
@@ -599,7 +771,7 @@
   };
   document.addEventListener("pointermove", (ev) => {
     const on = overMesh(ev);
-    document.documentElement.classList.toggle("over-mesh", on && !nothing);
+    document.documentElement.classList.toggle("over-mesh", on && !nothing && pokeable());
     if (on && ev.pointerType === "mouse") { pointer = toCanvas(ev); lensAt = performance.now(); }
     else if (!on) pointer = null;
   }, { passive: true });
@@ -607,7 +779,7 @@
   let dragged = false;
   if (!nothing) document.addEventListener("click", (ev) => {
     if (dragged) { dragged = false; return; }
-    if (!overMesh(ev)) return;
+    if (!overMesh(ev) || !pokeable()) return;
     const p = toCanvas(ev), G = geometry(), x = G.ux(p.x), y = G.uy(p.y);
     if (x < LO || x > HI || y < LO || y > HI) return;
     const now = performance.now();
@@ -633,7 +805,7 @@
     window.addEventListener("blur", cancelStroke);
     document.addEventListener("visibilitychange", () => { if (document.hidden) cancelStroke(); });
     document.addEventListener("pointerdown", (ev) => {
-      if (ev.pointerType !== "mouse" || ev.button !== 0 || !overMesh(ev) || overText(ev)) return;
+      if (ev.pointerType !== "mouse" || ev.button !== 0 || !pokeable() || !overMesh(ev) || overText(ev)) return;
       ev.preventDefault();                                 // a press on the background starts no text selection
       cancelStroke();
       const p = toCanvas(ev), G = geometry();
@@ -689,7 +861,7 @@
 
   // unfolding the phone draws a ridge down the middle of the field, where the fold was, for the mesh to find
   if (!nothing) window.addEventListener("sitefold", (ev) => {
-    if (ev.detail.kind !== "unfold") return;
+    if (ev.detail.kind !== "unfold" || !pokeable()) return;
     const G = geometry(), r = cv.getBoundingClientRect(), dpr = cv.width / Math.max(1, r.width), cx = G.ux((innerWidth / 2 - r.left) * dpr);
     if (!(cx > LO && cx < HI)) return;
     const path = [-3.6, -2.4, -1.2, 0, 1.2, 2.4, 3.6].map((y) => ({ x: cx, y }));
@@ -751,12 +923,13 @@
         acc += dt;
         // before any poke the whole mesh grows, slowly; after one, only the poked region does, and faster
         const every = region ? 30 : 120;
+        if (planner) planMore(8);
         while (acc > every) {
           acc -= every;
           if (region) {                                   // a poke's cuts are planned: wait for the last to show
-            if (progress(region, now) >= 1) { phase = "hold"; acc = 0; }
+            if (!planner && progress(region, now) >= 1) { phase = "hold"; acc = 0; }
             break;
-          } else if (mesh.activeFaces.size >= target || mesh.step(0.08) === "none") { phase = "hold"; acc = 0; break; }
+          } else if (pieces() >= target || mesh.step(0.08) === "none") { phase = "hold"; acc = 0; break; }
         }
         draw(now);
       } else if (phase === "hold") {
@@ -777,7 +950,7 @@
       } else {
         acc += dt;
         fade = Math.max(0, 1 - acc / 1600);
-        if (fade <= 0) start();
+        if (fade <= 0) { start(keep); keep = switching = false; }
         draw(now);
       }
       announce(now);

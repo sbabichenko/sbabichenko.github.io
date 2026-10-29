@@ -225,7 +225,7 @@
     S.history = []; S.done = false; S.counted = false;
     sync(); record();
     drawTruth(); draw();
-    setStatus(S.running ? "busy" : "idle", S.running ? "Growing" : "Ready", S.running ? "" : "Press play, or step once.");
+    setStatus(S.running ? "busy" : "idle", S.running ? "Growing" : "Ready", "");
   }
 
   // the three fits are matched on free parameters, not on pieces: a tree leaf carries one mean, a
