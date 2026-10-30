@@ -37,33 +37,31 @@
   }
 
   // The throw. One sheet does it all: an HTML box laid exactly over the top page (so it can follow a CSS motion path)
-  // holds a copy of that page, and its outline is folded into an airplane, the way one is folded by hand: the top
-  // corners in to the middle, the new edges in again, then in half with the wings down. Each outline has the same six
-  // points, so one shape eases into the next (SMIL, so every browser animates it). The folded plane then turns its
-  // nose along the path and flies off it, drawing the trail behind it.
+  // holds a copy of that page, and its outline is folded into an airplane in two moves: the top corners in to the
+  // middle, then the sides in and the wings down. Each outline has the same six points, so one shape eases into the
+  // next (SMIL, so every browser animates it). The plane is no wider than the folded sheet, so nothing seems to
+  // unfold; only once it is folded does it turn its nose onto the path, already moving, and fly.
   const h = H / 2, w = W / 2, pts = (p) => "M" + p.map((q) => q.join(" ")).join(" L") + "Z";
   const OUTLINE = [
-    [[-w, -h], [0, -h], [w, -h], [w, h], [0, h], [-w, h]],                           // the sheet
-    [[-w, -h * 0.25], [0, -h], [w, -h * 0.25], [w, h], [0, h], [-w, h]],             // top corners to the middle
-    [[-w * 0.5, h * 0.3], [0, -h], [w * 0.5, h * 0.3], [w * 0.5, h], [0, h], [-w * 0.5, h]],   // the edges in again
-    [[-w * 0.85, h * 0.8], [0, -h], [w * 0.85, h * 0.8], [w * 0.13, h * 0.58], [0, h * 0.86], [-w * 0.13, h * 0.58]],   // in half, wings down
+    [[-w, -h], [0, -h], [w, -h], [w, h], [0, h], [-w, h]],                                                    // the sheet
+    [[-w, -h * 0.25], [0, -h], [w, -h * 0.25], [w, h], [0, h], [-w, h]],                                      // top corners to the middle
+    [[-w * 0.6, h * 0.75], [0, -h], [w * 0.6, h * 0.75], [w * 0.12, h * 0.55], [0, h * 0.8], [-w * 0.12, h * 0.55]],   // sides in, wings down
   ];
   const CREASE = [   // the lines the folds leave: the flaps' lower edges, then the wing roots
     [[0, -h], [0, -h], [0, -h], [0, -h]],
     [[-w, -h * 0.25], [0, -h * 0.25], [w, -h * 0.25], [0, -h * 0.25]],
-    [[-w * 0.5, h * 0.3], [0, -h * 0.1], [w * 0.5, h * 0.3], [0, -h * 0.1]],
-    [[-w * 0.13, h * 0.58], [0, -h], [w * 0.13, h * 0.58], [0, -h]],
+    [[-w * 0.12, h * 0.55], [0, -h], [w * 0.12, h * 0.55], [0, -h]],
   ].map((p) => `M${p[0].join(" ")} L${p[1].join(" ")} M${p[2].join(" ")} L${p[3].join(" ")}`);
-  const FOLD = { begin: 0.12, dur: 0.62 }, SPLINES = ".45 0 .55 1;.45 0 .55 1;.45 0 .55 1";
+  const FOLD = { begin: 0.1, dur: 0.45 }, KEYS = "0;.45;1", SPLINES = ".45 0 .55 1;.45 0 .55 1";
 
   function flyer(a, top) {
     const box = document.createElement("span"); box.className = "cvp-flyer"; box.setAttribute("aria-hidden", "true");
     const s = el("svg", { width: W + 10, height: H + 10, viewBox: `${-w - 5} ${-h - 5} ${W + 10} ${H + 10}` });
     const turn = el("g", { class: "cvp-turn" }, s);
     const sheet = el("path", { class: "cvp-sheet", d: pts(OUTLINE[0]) }, turn);
-    el("animate", { attributeName: "d", values: OUTLINE.map(pts).join(";"), keyTimes: "0;.3;.62;1", calcMode: "spline", keySplines: SPLINES, dur: FOLD.dur + "s", begin: "indefinite", fill: "freeze" }, sheet);
+    el("animate", { attributeName: "d", values: OUTLINE.map(pts).join(";"), keyTimes: KEYS, calcMode: "spline", keySplines: SPLINES, dur: FOLD.dur + "s", begin: "indefinite", fill: "freeze" }, sheet);
     const crease = el("path", { class: "cvp-fold", d: CREASE[0] }, turn);
-    el("animate", { attributeName: "d", values: CREASE.join(";"), keyTimes: "0;.3;.62;1", calcMode: "spline", keySplines: SPLINES, dur: FOLD.dur + "s", begin: "indefinite", fill: "freeze" }, crease);
+    el("animate", { attributeName: "d", values: CREASE.join(";"), keyTimes: KEYS, calcMode: "spline", keySplines: SPLINES, dur: FOLD.dur + "s", begin: "indefinite", fill: "freeze" }, crease);
     // the page's own lines, which vanish into the first fold
     const words = el("g", { class: "cvp-words", transform: `translate(${-w} ${-h})` }, turn);
     for (const n of top.querySelectorAll(".cvp-line, .cvp-fold")) words.appendChild(n.cloneNode());
@@ -77,11 +75,11 @@
     return function launch() {
       const r = a.getBoundingClientRect(), q = top.querySelector(".cvp-sheet").getBoundingClientRect();
       const x = q.left + q.width / 2 - r.left, y = q.top + q.height / 2 - r.top;
-      const path = `M${x} ${y} C ${x + 36} ${y - 66}, ${x + 108} ${y - 98}, ${x + 148} ${y - 68} C ${x + 176} ${y - 46}, ${x + 150} ${y - 14}, ${x + 124} ${y - 30} C ${x + 98} ${y - 48}, ${x + 200} ${y - 100}, ${x + 406} ${y - 152}`;
+      const path = `M${x} ${y} C ${x + 40} ${y - 40}, ${x + 150} ${y - 62}, ${x + 330} ${y - 80}`;   // one climbing glide, below the title
       box.style.offsetPath = `path("${path}")`; reveal.setAttribute("d", path); dash.setAttribute("d", path);
       // the box turns with the path from the start (offset-rotate: auto); the sheet inside is turned back to upright,
       // and turns its nose (the top of the sheet) onto the path as the last fold closes
-      box.style.setProperty("--a0", (-Math.atan2(-66, 36) * 180 / Math.PI) + "deg");
+      box.style.setProperty("--a0", (-Math.atan2(-40, 40) * 180 / Math.PI) + "deg");   // the path's first heading
       for (const m of s.querySelectorAll("animate")) m.beginElementAt(FOLD.begin);
     };
   }
@@ -106,7 +104,7 @@
     a.style.setProperty("--n", n);
     a.style.setProperty("--rest", (H * 0.55) + "px");
     // the print runs once, on the first visit; a throw asked for while it runs waits for it to finish
-    const PRINT = n === 1 ? 400 : 420 + (n - 1) * 450 + 50, FLY = 3100;   // ms, as in custom.css
+    const PRINT = n === 1 ? 400 : 420 + (n - 1) * 450 + 50, FLY = 1900;   // ms, as in custom.css
     let printed = false, queued = false;
     const done = () => a.classList.add("printed");
     const print = () => {
