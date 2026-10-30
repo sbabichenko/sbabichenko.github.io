@@ -50,7 +50,9 @@
     // drawn by how far down the page you are, not where the screen is: at the top only the first pin, at the
     // bottom the last, so the walk runs ahead of the scroll and finishes exactly when the page does
     const room = document.documentElement.scrollHeight - innerHeight;
-    const q = room > 0 ? Math.min(1, Math.max(0, scrollY / room)) : 1;
+    // within 2px of the bottom counts as the bottom: with display scaling or browser zoom the page often stops a
+    // fraction of a pixel short, and the last pin would stay grey
+    const q = room > 0 && scrollY < room - 2 ? Math.max(0, scrollY / room) : 1;
     const first = pinLen.length ? path.getPointAtLength(pinLen[0]).y : 0, last = pinLen.length ? path.getPointAtLength(pinLen[pinLen.length - 1]).y : a.height;
     const seen = reduced ? a.height : first + (last - first) * q + (q >= 1 ? 1 : 0);
     let far = 0;

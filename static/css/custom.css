@@ -236,3 +236,17 @@ blockquote.twitter-tweet p { margin: 0 0 0.5em; }
 @keyframes cvp-trail-fade { 0%, 74% { opacity: 1; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .cv-download .cvp * { animation: none !important; transition: none !important; } }
 
+
+/* ---------------------------------------------------------------- pencil rules */
+/* The page's structural lines are the same pencil-grain stroke as the rule under the home page's section headings
+   (images/rule-grain.svg, repeated, fading in at the start and out over the last third): the footer's, the CV's
+   section breaks, the writing list's top, the end of a dissertation chapter and its breaks. Row separators, tables,
+   the controls' edges and the lines inside the cards stay plain hairlines. */
+:root { --grain-ink: rgba(112, 112, 122, 0.8); --grain-mask: url(/images/rule-grain.svg) 0 0 / 5.5rem 100% repeat-x, linear-gradient(to right, transparent, #000 1.5%, #000 70%, transparent); }
+.dark { --grain-ink: rgba(142, 143, 152, 0.8); }
+footer.site-foot, .home .entries, .pager { position: relative; border-top: 0; }
+:is(footer.site-foot, .home .entries, .pager)::before { content: ""; position: absolute; left: -2px; right: 0; top: -2.6px; height: 5.3px; pointer-events: none; }
+:is(footer.site-foot, .home .entries, .pager)::before, article hr, .body hr {
+  background: var(--grain-ink); -webkit-mask: var(--grain-mask); -webkit-mask-composite: source-in; mask: var(--grain-mask); mask-composite: intersect; }
+footer.site-foot::before { opacity: 0.6; }   /* the footer's line is the quietest */
+article hr, .body hr { border: 0; height: 5.3px; }
