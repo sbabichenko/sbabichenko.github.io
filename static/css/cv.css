@@ -13,7 +13,7 @@ article .nw { white-space: nowrap; }
   .cv-print-head { display: block; margin: 0 0 6pt; }
   .cv-print-head p { margin: 0 !important; }
   .cv-print-head .n { font-size: 20pt; line-height: 1.1; letter-spacing: -0.01em; }
-  .cv-print-head .c { font: 9pt ui-sans-serif, system-ui, sans-serif; color: #444; margin-top: 3pt !important; }
+  .cv-print-head .c { font: 9pt 'Newsreader Print', Georgia, serif; color: #444; margin-top: 3pt !important; }
   article h2 { font-size: 14pt !important; font-weight: 500 !important; font-variant: normal !important; text-transform: none !important; letter-spacing: 0 !important; margin: 8pt 0 3pt !important; padding-bottom: 1.5pt; border-bottom: 0.6pt solid #bbb; break-after: avoid; }
   article section, article h2 + p { break-before: auto !important; page-break-before: auto !important; }
   article hr { display: none; }

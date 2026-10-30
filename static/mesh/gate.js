@@ -172,7 +172,7 @@
     if ($("truth").value === "drawing") {
       const W = ctx.canvas.width;
       ctx.fillStyle = isDark() ? "rgba(255,255,255,0.7)" : "rgba(20,20,30,0.6)";
-      ctx.font = `${Math.round(W / 26)}px ui-sans-serif, system-ui, sans-serif`;
+      ctx.font = `${Math.round(W / 26)}px Newsreader, Georgia, serif`;
       ctx.fillText("draw here", W * 0.04, W * 0.07);
     }
   }

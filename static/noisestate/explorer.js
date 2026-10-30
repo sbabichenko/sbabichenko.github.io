@@ -1478,7 +1478,7 @@ function baseLayout(extra) {
   const text = css("--text"), muted = css("--muted"), grid = css("--grid");
   return Object.assign({
     paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
-    font: { family: "-apple-system, BlinkMacSystemFont, Segoe UI, Inter, sans-serif", size: 12, color: text },
+    font: { family: "Newsreader, Georgia, serif", size: 12, color: text },
     margin: { l: 52, r: 12, t: 34, b: 70 },
     xaxis: { gridcolor: grid, zerolinecolor: grid, linecolor: grid, tickfont: { color: muted }, automargin: false },
     yaxis: { gridcolor: grid, zerolinecolor: muted, linecolor: grid, tickfont: { color: muted }, automargin: false, exponentformat: "power" },
