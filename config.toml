@@ -71,7 +71,7 @@ header_blur = true
 [extra.profile]
 name = "Sam Babichenko"
 bio = """
-Quantitative researcher at Wells Fargo in Charlotte, NC. I work on game theory, empirical Bayes, machine learning, and quantitative finance, and increasingly on high-dimensional probability and statistics. My research during my PhD solved the problem of forecasting the forecasts of others, which economics has had to work around since Keynes. Here’s some projects and writing about what’s been on my mind. Feel free to reach out!
+Quantitative researcher at Wells Fargo in Charlotte, NC. I work on game theory, empirical Bayes, machine learning, and quantitative finance, and increasingly on high-dimensional probability and statistics. My research during my PhD solved the problem of forecasting the forecasts of others, which economics has had to work around since Keynes. Here’s some projects and writing about what’s been on my mind. I love chatting with people, so feel free to reach out!
 """
 # The URL of avatar.
 avatar_url = "images/profile.jpeg"

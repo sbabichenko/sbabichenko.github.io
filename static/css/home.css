@@ -455,7 +455,7 @@ html:not(.dark) .home .shot.nsheads .ov { mix-blend-mode: multiply; }   /* onto 
 .home .demo .pipline code { font: 0.84rem ui-monospace, Menlo, monospace; }
 .home .demo .pipline .copy { position: relative; }
 .home .demo .pipline .copy.done::after { content: "copied"; position: absolute; left: calc(100% + 0.6rem); top: 50%; transform: translateY(-50%);   /* beside the box, not in it */
-  font: 0.8rem ui-sans-serif, system-ui, sans-serif; color: var(--accent); white-space: nowrap; pointer-events: none; }
+  font: 0.8rem Newsreader, Georgia, serif; color: var(--accent); white-space: nowrap; pointer-events: none; }
 
 /* The cards' borders, drawn by hand now that their pictures lie on the paper itself; each project draws its own
    (cards.js): the Noise-State card's is one random walk around the card, the Decision Mesh card's a thin band of the

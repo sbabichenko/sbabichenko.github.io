@@ -35,7 +35,7 @@ nav li a:hover, .rail li a:hover, .toc li a:hover { text-decoration-line: none; 
 
 /* the coin */
 .whimsy-coin { position: fixed; right: 22px; bottom: 22px; z-index: 90; display: flex; align-items: center; gap: 10px; perspective: 400px;
-  font: 0.82rem ui-sans-serif, system-ui, sans-serif; color: var(--ink, #222); transition: opacity 0.5s, transform 0.5s; }
+  font: 0.82rem Newsreader, Georgia, serif; color: var(--ink, #222); transition: opacity 0.5s, transform 0.5s; }
 .whimsy-coin.gone { opacity: 0; transform: translateY(8px); pointer-events: none; }
 /* the floating notes are patches of the site's paper (partials/header.html), not flat cream or grey */
 .whimsy-coin p { margin: 0; padding: 0.35rem 0.7rem; border-radius: 999px; background: var(--ground, #fff) var(--paper-img) 0 var(--paper-y, 0px) / 768px 768px fixed; background-blend-mode: var(--patch-blend); border: 1px solid var(--rule, #ddd); }
@@ -77,7 +77,7 @@ nav li a:hover, .rail li a:hover, .toc li a:hover { text-decoration-line: none; 
 
 /* the forecaster */
 .whimsy-forecast { position: fixed; left: 22px; bottom: 22px; z-index: 90; max-width: 300px; padding: 0.55rem 0.85rem; border-radius: 12px;
-  background: var(--ground, #fff) var(--paper-img) 0 var(--paper-y, 0px) / 768px 768px fixed; background-blend-mode: var(--patch-blend); border: 1px solid var(--rule, #ddd); font: 0.82rem ui-sans-serif, system-ui, sans-serif; color: var(--ink, #222);
+  background: var(--ground, #fff) var(--paper-img) 0 var(--paper-y, 0px) / 768px 768px fixed; background-blend-mode: var(--patch-blend); border: 1px solid var(--rule, #ddd); font: 0.82rem Newsreader, Georgia, serif; color: var(--ink, #222);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06); transition: opacity 0.5s, transform 0.5s; }
 .whimsy-forecast p { margin: 0; }
 .whimsy-forecast .s { margin-top: 0.2rem; color: var(--ink-3, #888); font-variant-numeric: tabular-nums; }
@@ -88,7 +88,7 @@ nav li a:hover, .rail li a:hover, .toc li a:hover { text-decoration-line: none; 
 /* the way past a scroll-told section (static/js/skip.js) */
 .skip-pill { position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); z-index: 80; transform: translate(-50%, 12px);
   opacity: 0; pointer-events: none; transition: opacity 0.3s, transform 0.3s;
-  font: 600 0.82rem ui-sans-serif, system-ui, sans-serif; padding: 0.5rem 0.95rem; border-radius: 999px; text-decoration: none;
+  font: 600 0.82rem Newsreader, Georgia, serif; padding: 0.5rem 0.95rem; border-radius: 999px; text-decoration: none;
   color: var(--ink, #222); background: var(--ground, #fff) var(--paper-img) 0 var(--paper-y, 0px) / 768px 768px fixed; background-blend-mode: var(--patch-blend); border: 1px solid var(--rule, #ddd);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08); white-space: nowrap; }
 .skip-pill::after { content: " ↓"; }

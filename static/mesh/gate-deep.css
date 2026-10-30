@@ -1,6 +1,6 @@
 /* /gate/deep: the decision mesh one level down. Layout and inks come from dissertation/opening.css; this adds the
    controls, the step headings and the colours the runs are drawn in (the same as /gate/how). */
-.gatedeep .howbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: 2rem 0 0; font: 0.9rem ui-sans-serif, system-ui, sans-serif; color: var(--ink-2); }
+.gatedeep .howbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: 2rem 0 0; font: 0.9rem Newsreader, Georgia, serif; color: var(--ink-2); }
 .gatedeep .howbar label { display: inline-flex; align-items: center; gap: 8px; }
 .gatedeep .howbar select, .gatedeep .howbar button { font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--rule); border-radius: 999px; padding: 0.35rem 0.8rem; }
 .gatedeep .howbar button { cursor: pointer; }
@@ -12,7 +12,7 @@
 @keyframes deeppulse { 50% { opacity: 0.2; } }
 .gatedeep .ideahead .lede a { color: var(--accent); text-decoration: none; }
 .gatedeep [data-v] { font-variant-numeric: tabular-nums; }
-.gatedeep .step h2 { font: 600 0.74rem ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0 0 0.9rem; }
+.gatedeep .step h2 { font: 600 0.74rem Newsreader, Georgia, serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0 0 0.9rem; }
 .gatedeep .step h2 i { text-transform: none; }
 .gatedeep .step em { font-style: italic; }
 .gatedeep .step sub, .gatedeep .step sup { font-size: 0.65em; line-height: 0; }
