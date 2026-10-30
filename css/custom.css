@@ -1,0 +1,253 @@
+@keyframes spin-configurable {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+:root { --font-sans: Newsreader, "Iowan Old Style", Georgia, serif; }   /* the theme's base font: the site is set in Newsreader throughout */
+
+/* Accent color for links and interactive elements */
+:root {
+  --accent: #1f3fd0;
+  --accent-hover: #2c53ea;
+}
+.dark {
+  --accent: #8fb0ff;
+  --accent-hover: #b3caff;
+}
+
+/* the site's display face: headings and the header wordmark, as on the home page */
+:is(h1, h2, h3, .prose h1, .prose h2, .prose h3),
+header a[class*="text-2xl"] {
+  font-family: Newsreader, "Iowan Old Style", Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+header a[class*="text-2xl"] { font-size: 1.35rem; letter-spacing: -0.015em; }
+
+/* Style links in prose content with accent color */
+.prose a {
+  color: var(--accent) !important;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.prose a:hover {
+  color: var(--accent-hover) !important;
+  text-decoration: underline;
+}
+
+/* Nav link accent on hover */
+header a:hover {
+  color: var(--accent-hover) !important;
+}
+
+/* Profile social icons accent on hover */
+.dark nav a:hover {
+  opacity: 0.7;
+}
+
+/* Smoother page transitions */
+main {
+  animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Long-form pages read as a page of type: serif body at a comfortable measure, which also sits
+   better beside KaTeX's own faces. Code, tables and the UI stay in the sans. */
+.prose :is(p, li, blockquote, dd, figcaption) {
+  font-family: Newsreader, "Iowan Old Style", Georgia, serif;
+  font-size: 1.12rem;
+  line-height: 1.68;
+}
+.prose blockquote { font-style: italic; }
+.prose :is(code, pre, kbd, samp) { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92rem; font-style: normal; }
+.prose :is(h1, h2, h3, h4) { letter-spacing: -0.015em; }
+.prose h2 { font-size: 1.75rem; margin-top: 2.2em; }
+.prose h3 { font-size: 1.35rem; }
+
+/* ---------------------------------------------------------------- header and footer
+   The header is the page's own paper, frosted, with a hairline under it, rather than a grey band;
+   it spans the same measure as the home page. */
+header.blur-header { background-color: rgba(255, 255, 240, 0.82); border-bottom: 1px solid rgba(20, 20, 30, 0.07); }
+.dark header.blur-header { background-color: rgba(31, 32, 34, 0.82); border-bottom-color: rgba(255, 255, 255, 0.07); }
+.open header.blur-header { background-color: var(--ground, #fffff0); }
+.dark.open header.blur-header { background-color: var(--ground, #1f2022); }   /* the open phone menu is solid, so the hero does not show through */
+header.blur-header > div { max-width: 1072px; padding-left: 16px; padding-right: 16px; }
+header .primary-link { font-size: 0.98rem; font-weight: 500; }
+@media (min-width: 1024px) { header .primary-link { padding-left: 0.7rem; padding-right: 0.7rem; } }
+
+footer.site-foot { width: min(1040px, calc(100% - 40px)); margin: 72px auto 0; padding: 18px 0 40px; font-size: 0.84rem;
+  display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; color: rgba(20, 20, 30, 0.62);
+  border-top: 1px solid rgba(20, 20, 30, 0.08); }
+.dark footer.site-foot { color: rgba(255, 255, 255, 0.58); border-top-color: rgba(255, 255, 255, 0.08); }
+footer.site-foot a { color: inherit; text-decoration: none; border-bottom: 1px solid currentColor; border-bottom-color: color-mix(in srgb, currentColor 35%, transparent); }
+footer.site-foot a:hover { color: var(--accent); }
+footer.site-foot .tally { margin-left: auto; font-variant-numeric: tabular-nums; }
+footer.site-foot .tally b { font-weight: 600; color: var(--accent); }
+footer.site-foot .tally:has(> #tally:empty):has(> #foldtally:empty) { display: none; }   /* nothing computed or unfolded yet: no line, no gap */
+@media (max-width: 640px) { footer.site-foot .tally { margin-left: 0; flex-basis: 100%; } }
+/* the CV's two downloads, as sheets of paper drawn in pencil beside their names: two sheets for the full CV, one for
+   the one-page resume. On hover the top sheet lifts off the pile a little */
+.cv-download { position: relative; display: inline-block; padding: 0.35rem 0 0.35rem 2.15rem; margin: 0 1.6rem 0.4rem 0; color: var(--accent) !important;
+  text-decoration: none !important; font-size: 1rem; }
+.cv-download::before, .cv-download::after { content: ""; position: absolute; left: 0; top: 50%; width: 28px; height: 32px; margin-top: -16px;
+  background: rgba(23, 23, 27, 0.62); -webkit-mask: var(--sheet) center / contain no-repeat; mask: var(--sheet) center / contain no-repeat;
+  transition: transform 0.25s cubic-bezier(.3,.7,.3,1); transform-origin: 20% 90%; }
+.cv-download::after { --sheet: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 28 32%22 fill=%22none%22 stroke=%22black%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M3.3 5.2 Q9 4.9 15.7 5.1 L21.2 10.4 Q21.5 19 21.3 29.6 Q12 29.9 3.5 29.7 Q3.1 17 3.3 5.2Z%22 stroke-width=%221.25%22/%3E%3Cpath d=%22M15.7 5.1 Q15.9 8 15.8 10.5 Q18.6 10.6 21.2 10.4%22 stroke-width=%221.1%22/%3E%3Cpath d=%22M6.6 14.2 Q12 14 17.9 14.3 M6.6 17.6 Q12.5 17.5 18.2 17.7 M6.6 21 Q11 20.9 15.6 21.1 M6.6 24.4 Q9.5 24.3 12.8 24.5%22 stroke-width=%220.9%22 stroke-opacity=%220.75%22/%3E%3C/svg%3E"); }
+.cv-download::before { --sheet: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 28 32%22 fill=%22none%22 stroke=%22black%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpath d=%22M7.4 5 Q7.3 3 7.5 1.4 Q16 1.1 24.7 1.5 Q25 13 24.8 25.8 Q23 26 21.6 25.9%22 stroke-width=%221.15%22 stroke-opacity=%220.8%22/%3E%3C/svg%3E"); }
+.cv-download[href*="Resume_"]::before { content: none; }
+.dark .cv-download::before, .dark .cv-download::after { background: rgba(237, 238, 241, 0.6); }
+.cv-download:hover::after, .cv-download:focus-visible::after { transform: translate(-1px, -2px) rotate(-5deg); }
+.cv-download:hover::before, .cv-download:focus-visible::before { transform: rotate(2deg); }
+.cv-download:hover { text-decoration: underline !important; text-underline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .cv-download::before, .cv-download::after { transition: none; } }
+
+/* a display equation wider than the screen scrolls inside its own box instead of widening the page
+   (on a phone, a long line in the writing pieces pushed the whole page, and the menu button, sideways) */
+.prose .katex-display { position: relative; overflow-x: auto; overflow-y: hidden; padding-block: 0.2em; }   /* relative: KaTeX's hidden MathML copy is absolutely positioned and would still widen the page */
+
+/* the closing figure of a writing piece (templates/page.html), as the dissertation's chapters end */
+.fin { display: flex; justify-content: center; margin: 3rem 0 2rem; }
+.fin svg { width: 180px; height: 28px; overflow: visible; }
+.fin path { fill: none; stroke: #8a8a93; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.fin circle { fill: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .fin path { stroke-dasharray: 320; stroke-dashoffset: 320; }
+  .fin circle { opacity: 0; }
+  .fin.drawn path { transition: stroke-dashoffset 2.2s cubic-bezier(.3, .1, .3, 1); stroke-dashoffset: 0; }
+  .fin.drawn circle { transition: opacity 0.4s 2s; opacity: 1; }
+}
+.dark .fin path { stroke: #7c7d86; }
+/* a diagram drawn at a fixed width in a writing piece shrinks to the screen (KaTeX's own SVGs are not touched) */
+.prose section > svg { max-width: 100%; height: auto; }
+
+/* the eight schools, pooled as you drag tau (static/js/pooltoy.js, in the partial-pooling post) */
+.pooltoy { margin: 1.6em 0; }
+.pooltoy .pt-svg { width: 100%; height: auto; display: block; }
+.pooltoy .pt-grid { stroke: currentColor; opacity: 0.1; }
+.pooltoy .pt-tick, .pooltoy .pt-meanlab { font: 11px Newsreader, Georgia, serif; fill: currentColor; opacity: 0.6; }
+.pooltoy .pt-bar { stroke: currentColor; opacity: 0.25; stroke-width: 1.5; }
+.pooltoy .pt-raw { fill: none; stroke: currentColor; opacity: 0.55; stroke-width: 1.3; }
+.pooltoy .pt-pull { stroke: #1f3fd0; opacity: 0.45; stroke-width: 1.5; }
+.pooltoy .pt-dot { fill: #1f3fd0; }
+.pooltoy .pt-mean { stroke: #a8431c; stroke-dasharray: 4 4; stroke-width: 1.3; }
+.pooltoy .pt-meanlab { fill: #a8431c; opacity: 0.9; }
+.dark .pooltoy .pt-pull, .dark .pooltoy .pt-dot { stroke: #8fb0ff; fill: #8fb0ff; }
+.dark .pooltoy .pt-pull { fill: none; }
+.dark .pooltoy .pt-mean { stroke: #f0a27a; } .dark .pooltoy .pt-meanlab { fill: #f0a27a; }
+.pooltoy .pt-row { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; align-items: center; font: 0.85rem Newsreader, Georgia, serif; margin-top: 0.4rem; }
+.pooltoy .pt-row input { flex: 1; min-width: 10rem; }
+.pooltoy .pt-note { opacity: 0.6; font-size: 0.8rem; }
+
+/* the colophon ends on a strip of the site's mesh: right triangles, a few bisected */
+.colophon-mesh { height: 40px; margin-top: 2.5rem; opacity: 0.35; background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'><g fill='none' stroke='%23888' stroke-width='0.8'><path d='M0,0 H80 M0,40 H80 M0,0 V40 M40,0 V40 M80,0 V40 M0,0 L40,40 M80,0 L40,40 M20,20 L40,0 M60,20 L40,0 M20,20 L0,40'/></g></svg>") repeat-x left center;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+.dark .colophon-mesh { opacity: 0.5; }
+
+/* a quoted post from X, shown as a quote until someone asks for the embed (Partial-Pooling.md) */
+blockquote.twitter-tweet { margin: 1.4em 0 0.4em; padding: 0.9rem 1.1rem; border: 1px solid rgba(127, 127, 127, 0.3);
+  border-left: 3px solid #1f3fd0; border-radius: 0 8px 8px 0; font-style: normal; }
+blockquote.twitter-tweet p { margin: 0 0 0.5em; }
+.tweet-load { font: 0.8rem Newsreader, Georgia, serif; background: none; border: 1px solid rgba(127, 127, 127, 0.4);
+  border-radius: 999px; padding: 0.15em 0.8em; cursor: pointer; color: inherit; opacity: 0.75; margin-bottom: 1.2em; }
+.tweet-load:hover { opacity: 1; }
+
+/* ---------------------------------------------------------------- the CV's downloads (static/js/cvpages.js) */
+/* the pages drawn by cvpages.js replace the plain sheets; without the script the sheets stay */
+.cv-download.cvp-on { padding-left: 3.3rem; }
+.cv-download.cvp-on::before, .cv-download.cvp-on::after { content: none; }
+.cvp { position: absolute; left: -7px; top: 50%; transform: translateY(-50%); overflow: visible; pointer-events: none; }
+.cvp-sheet { fill: var(--ground, #ecdebe); stroke: rgba(23, 23, 27, 0.6); stroke-width: 1.1; stroke-linejoin: round; }
+.cvp-fold { fill: none; stroke: rgba(23, 23, 27, 0.5); stroke-width: 0.9; stroke-linecap: round; stroke-linejoin: round; }
+.cvp-line { fill: none; stroke: rgba(23, 23, 27, 0.42); stroke-width: 0.55; stroke-linecap: round; }
+.cvp-h { stroke: rgba(23, 23, 27, 0.7); stroke-width: 0.9; }
+.cvp-t { stroke: rgba(23, 23, 27, 0.75); stroke-width: 1.4; }
+.cvp-light { fill: rgba(23, 23, 27, 0.35); }
+.dark .cvp-sheet { stroke: rgba(237, 238, 241, 0.55); }
+.dark .cvp-fold { stroke: rgba(237, 238, 241, 0.45); }
+.dark .cvp-line { stroke: rgba(237, 238, 241, 0.38); }
+.dark .cvp-h { stroke: rgba(237, 238, 241, 0.66); }
+.dark .cvp-t { stroke: rgba(237, 238, 241, 0.72); }
+.dark .cvp-light { fill: rgba(237, 238, 241, 0.35); }
+/* a pile: each page under the first sits a little up and to the right */
+.cvp-page { translate: calc(var(--i) * 3px) calc(var(--i) * -3px); }
+.cvp-printer, .cvp-flyer, .cvp-trail { display: none; }
+
+/* print: the pile stands in a printer. Until the pointer first comes by, the top page is still half in the slot (and
+   the CV's second page not out yet); the first visit finishes the print, the top page out and then the next one
+   behind it, fed up in steps while the light blinks. It prints once: afterwards a visit just lifts the top page */
+.cvp-printer { display: inline; }
+.cvp { margin-top: -5px; }
+.cv-download:not(.printed) .cvp-page { transform: translateY(var(--H)); }
+.cv-download:not(.printed) .cvp-top { transform: translateY(var(--rest)); }
+.cv-download.printing .cvp-page { animation: cvp-feed 0.45s steps(8, end) both; animation-delay: calc(0.12s + (var(--i) - 1) * 0.45s + 0.3s); }
+.cv-download.printing .cvp-top { animation: cvp-feed-rest 0.3s steps(5, end) 0.05s both; }
+.cv-download.printing .cvp-printer { animation: cvp-hum 0.08s linear calc(var(--n) * 5 + 1) both; }
+.cv-download.printing .cvp-light { animation: cvp-blink 0.24s steps(1) calc(var(--n) * 2 + 1) both; }
+@keyframes cvp-feed { from { transform: translateY(var(--H)); } to { transform: none; } }
+@keyframes cvp-feed-rest { from { transform: translateY(var(--rest)); } to { transform: none; } }
+@keyframes cvp-hum { 50% { transform: translate(0.3px, 0.25px); } }
+@keyframes cvp-blink { 50% { fill: var(--accent); } }
+.cv-download:is(.printed, :not(.printing)) .cvp-top { transition: transform 0.2s ease-out; }
+.cv-download.printed:hover .cvp-top { transform: rotate(-3deg) translateY(-1.5px); }
+
+/* plane: the click that downloads throws the top page. A copy of it takes its place (.cvp-flyer, cvpages.js), tips
+   back (the wind-up), is folded into an airplane, turns its nose onto the path and leaves fast, then glides off to
+   the upper right below the page's title, drawing a short dashed pencil trail that fades. The printer then prints
+   another copy. Timeline 1.9s: wind-up 0-0.1, folds 0.1-0.55, flight 0.55-1.45 with the nose coming round
+   in its first 0.12s, the new copy 1.45-1.75. A click while a plane is out just downloads */
+.cv-download.flying .cvp-top { animation: cvp-reprint 1.9s linear both; }
+@keyframes cvp-reprint {
+  0%, 76.3% { opacity: 1; transform: translateY(var(--H)); animation-timing-function: steps(6, end); }
+  92%, 100% { opacity: 1; transform: none; } }
+.cvp-flyer { position: absolute; left: 0; top: 0; offset-rotate: auto; offset-anchor: 50% 50%; pointer-events: none; line-height: 0; }
+.cvp-flyer svg { overflow: visible; }
+.cvp-turn { transform: rotate(var(--a0, 0deg)); }
+.cv-download.flying .cvp-flyer { display: block; animation: cvp-fly 1.9s linear both; }
+.cv-download.flying .cvp-turn { animation: cvp-turn 1.9s linear both; }
+.cv-download.flying .cvp-words { animation: cvp-words 1.9s linear both; }
+/* fast off the hand, then a glide: the first quarter of the flight covers two fifths of the path */
+@keyframes cvp-fly {
+  0%, 28.9% { offset-distance: 0%; opacity: 1; animation-timing-function: cubic-bezier(.15,.6,.4,1); }
+  40.8% { offset-distance: 40%; animation-timing-function: cubic-bezier(.4,.1,.6,1); }
+  64% { opacity: 1; }
+  76.3%, 100% { offset-distance: 100%; opacity: 0; } }
+/* upright, tipped back for the wind-up, then the nose comes round onto the path (+90deg: the sheet's top to the box's +x) */
+@keyframes cvp-turn {
+  0% { transform: rotate(var(--a0)); animation-timing-function: ease-in; }
+  5.3% { transform: rotate(calc(var(--a0) + 6deg)); animation-timing-function: ease-in-out; }
+  16%, 28.9% { transform: rotate(var(--a0)); animation-timing-function: ease-out; }
+  35.2% { transform: rotate(90deg); animation-timing-function: ease-out; }
+  50%, 100% { transform: rotate(90deg) scale(0.8); } }
+@keyframes cvp-words { 0%, 5.3% { opacity: 1; } 11%, 100% { opacity: 0; } }
+.cvp-trail { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.cv-download.flying .cvp-trail { display: block; animation: cvp-trail-fade 1.9s linear both; }
+.cvp-dash { fill: none; stroke: rgba(23, 23, 27, 0.4); stroke-width: 1; stroke-dasharray: 2.5 4; stroke-linecap: round; }
+.dark .cvp-dash { stroke: rgba(237, 238, 241, 0.38); }
+.cvp-reveal { fill: none; stroke: #fff; stroke-width: 6; stroke-dasharray: 100; stroke-dashoffset: 100; }
+.cv-download.flying .cvp-reveal { animation: cvp-reveal 0.9s linear 0.55s both; }
+@keyframes cvp-reveal {
+  0% { stroke-dashoffset: 100; animation-timing-function: cubic-bezier(.15,.6,.4,1); }
+  25% { stroke-dashoffset: 60; animation-timing-function: cubic-bezier(.4,.1,.6,1); }
+  100% { stroke-dashoffset: 0; } }
+@keyframes cvp-trail-fade { 0%, 55% { opacity: 1; } 85%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .cv-download .cvp * { animation: none !important; transition: none !important; } }
+
+
+/* ---------------------------------------------------------------- pencil rules */
+/* The page's structural lines are the same pencil-grain stroke as the rule under the home page's section headings
+   (images/rule-grain.svg, repeated, fading in at the start and out over the last third): the footer's, the CV's
+   section breaks, the writing list's top, the end of a dissertation chapter and its breaks. Row separators, tables,
+   the controls' edges and the lines inside the cards stay plain hairlines. */
+:root { --grain-ink: rgba(112, 112, 122, 0.8); --grain-mask: url(/images/rule-grain.svg) 0 0 / 5.5rem 100% repeat-x, linear-gradient(to right, transparent, #000 1.5%, #000 70%, transparent); }
+.dark { --grain-ink: rgba(142, 143, 152, 0.8); }
+footer.site-foot, .home .entries, .pager { position: relative; border-top: 0; }
+:is(footer.site-foot, .home .entries, .pager)::before { content: ""; position: absolute; left: -2px; right: 0; top: -2.6px; height: 5.3px; pointer-events: none; }
+:is(footer.site-foot, .home .entries, .pager)::before, article hr, .body hr {
+  background: var(--grain-ink); -webkit-mask: var(--grain-mask); -webkit-mask-composite: source-in; mask: var(--grain-mask); mask-composite: intersect; }
+footer.site-foot::before { opacity: 0.6; }   /* the footer's line is the quietest */
+article hr, .body hr { border: 0; height: 5.3px; }
+
