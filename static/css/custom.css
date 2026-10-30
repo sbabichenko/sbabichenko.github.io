@@ -195,45 +195,45 @@ blockquote.twitter-tweet p { margin: 0 0 0.5em; }
 .cv-download.printed:hover .cvp-top { transform: rotate(-3deg) translateY(-1.5px); }
 
 /* plane: the click that downloads throws the top page. A copy of it takes its place (.cvp-flyer, cvpages.js), tips
-   back (the wind-up), is folded into an airplane, turns its nose onto the path and leaves fast, then glides: a climb,
-   a loop clear of the name, and away, drawing a dashed pencil trail that fades. The printer then prints another copy.
-   Timeline 3.1s: wind-up 0-0.12, folds 0.12-0.74, nose round 0.5-0.8, flight 0.8-2.4, the new copy 2.4-2.8. A click while a plane is out just downloads */
-/* the page that flew is printed again, fed up in steps */
-.cv-download.flying .cvp-top { animation: cvp-reprint 3.1s linear both; }
+   back (the wind-up), is folded into an airplane, turns its nose onto the path and leaves fast, then glides off to
+   the upper right below the page's title, drawing a short dashed pencil trail that fades. The printer then prints
+   another copy. Timeline 1.9s: wind-up 0-0.1, folds 0.1-0.55, flight 0.55-1.45 with the nose coming round
+   in its first 0.12s, the new copy 1.45-1.75. A click while a plane is out just downloads */
+.cv-download.flying .cvp-top { animation: cvp-reprint 1.9s linear both; }
 @keyframes cvp-reprint {
-  0%, 77.4% { opacity: 1; transform: translateY(var(--H)); animation-timing-function: steps(8, end); }
-  91%, 100% { opacity: 1; transform: none; } }
+  0%, 76.3% { opacity: 1; transform: translateY(var(--H)); animation-timing-function: steps(6, end); }
+  92%, 100% { opacity: 1; transform: none; } }
 .cvp-flyer { position: absolute; left: 0; top: 0; offset-rotate: auto; offset-anchor: 50% 50%; pointer-events: none; line-height: 0; }
 .cvp-flyer svg { overflow: visible; }
 .cvp-turn { transform: rotate(var(--a0, 0deg)); }
-.cv-download.flying .cvp-flyer { display: block; animation: cvp-fly 3.1s linear both; }
-.cv-download.flying .cvp-turn { animation: cvp-turn 3.1s linear both; }
-.cv-download.flying .cvp-words { animation: cvp-words 3.1s linear both; }
-/* the flight proper: fast off the hand, then a glide (the first fifth of it covers a third of the path) */
+.cv-download.flying .cvp-flyer { display: block; animation: cvp-fly 1.9s linear both; }
+.cv-download.flying .cvp-turn { animation: cvp-turn 1.9s linear both; }
+.cv-download.flying .cvp-words { animation: cvp-words 1.9s linear both; }
+/* fast off the hand, then a glide: the first quarter of the flight covers two fifths of the path */
 @keyframes cvp-fly {
-  0%, 25.8% { offset-distance: 0%; opacity: 1; animation-timing-function: cubic-bezier(.15,.6,.4,1); }
-  36.1% { offset-distance: 34%; animation-timing-function: cubic-bezier(.4,.1,.6,1); }
-  71% { opacity: 1; }
-  77.4%, 100% { offset-distance: 100%; opacity: 0; } }
+  0%, 28.9% { offset-distance: 0%; opacity: 1; animation-timing-function: cubic-bezier(.15,.6,.4,1); }
+  40.8% { offset-distance: 40%; animation-timing-function: cubic-bezier(.4,.1,.6,1); }
+  64% { opacity: 1; }
+  76.3%, 100% { offset-distance: 100%; opacity: 0; } }
 /* upright, tipped back for the wind-up, then the nose comes round onto the path (+90deg: the sheet's top to the box's +x) */
 @keyframes cvp-turn {
   0% { transform: rotate(var(--a0)); animation-timing-function: ease-in; }
-  3.9% { transform: rotate(calc(var(--a0) + 6deg)); animation-timing-function: ease-in-out; }
-  16% { transform: rotate(var(--a0)); animation-timing-function: ease-in-out; }
-  25.8% { transform: rotate(90deg); animation-timing-function: ease-out; }
-  40%, 100% { transform: rotate(90deg) scale(0.8); } }
-@keyframes cvp-words { 0%, 3.9% { opacity: 1; } 10%, 100% { opacity: 0; } }
+  5.3% { transform: rotate(calc(var(--a0) + 6deg)); animation-timing-function: ease-in-out; }
+  16%, 28.9% { transform: rotate(var(--a0)); animation-timing-function: ease-out; }
+  35.2% { transform: rotate(90deg); animation-timing-function: ease-out; }
+  50%, 100% { transform: rotate(90deg) scale(0.8); } }
+@keyframes cvp-words { 0%, 5.3% { opacity: 1; } 11%, 100% { opacity: 0; } }
 .cvp-trail { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
-.cv-download.flying .cvp-trail { display: block; animation: cvp-trail-fade 3.1s linear both; }
+.cv-download.flying .cvp-trail { display: block; animation: cvp-trail-fade 1.9s linear both; }
 .cvp-dash { fill: none; stroke: rgba(23, 23, 27, 0.4); stroke-width: 1; stroke-dasharray: 2.5 4; stroke-linecap: round; }
 .dark .cvp-dash { stroke: rgba(237, 238, 241, 0.38); }
 .cvp-reveal { fill: none; stroke: #fff; stroke-width: 6; stroke-dasharray: 100; stroke-dashoffset: 100; }
-.cv-download.flying .cvp-reveal { animation: cvp-reveal 1.6s linear 0.8s both; }
+.cv-download.flying .cvp-reveal { animation: cvp-reveal 0.9s linear 0.55s both; }
 @keyframes cvp-reveal {
   0% { stroke-dashoffset: 100; animation-timing-function: cubic-bezier(.15,.6,.4,1); }
-  20% { stroke-dashoffset: 66; animation-timing-function: cubic-bezier(.4,.1,.6,1); }
+  25% { stroke-dashoffset: 60; animation-timing-function: cubic-bezier(.4,.1,.6,1); }
   100% { stroke-dashoffset: 0; } }
-@keyframes cvp-trail-fade { 0%, 74% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes cvp-trail-fade { 0%, 55% { opacity: 1; } 85%, 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .cv-download .cvp * { animation: none !important; transition: none !important; } }
 
 
@@ -250,3 +250,4 @@ footer.site-foot, .home .entries, .pager { position: relative; border-top: 0; }
   background: var(--grain-ink); -webkit-mask: var(--grain-mask); -webkit-mask-composite: source-in; mask: var(--grain-mask); mask-composite: intersect; }
 footer.site-foot::before { opacity: 0.6; }   /* the footer's line is the quietest */
 article hr, .body hr { border: 0; height: 5.3px; }
+
